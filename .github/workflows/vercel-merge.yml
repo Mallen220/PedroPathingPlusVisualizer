@@ -13,7 +13,7 @@ jobs:
         with:
           token: ${{ secrets.VERCEL_TOKEN }}
           teamId: ${{ secrets.ORG_ID }}
-          projectName: events-app
+          projectName: pedro-path-generator
           envVariableKeys: CLIENT_EMAIL,PRIVATE_KEY,SPREADSHEET_ID
         env:
           CLIENT_EMAIL: ${{ secrets.CLIENT_EMAIL }}
