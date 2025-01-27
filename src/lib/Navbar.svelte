@@ -98,7 +98,7 @@
 </svelte:head>
 
 <div
-  class="absolute top-0 left-0 w-full bg-neutral-50 dark:bg-neutral-900 shadow-md flex flex-row justify-between items-center px-6 py-4 border-b-[0.75px] border-purple-500"
+  class="absolute top-0 left-0 w-full bg-neutral-50 dark:bg-neutral-900 shadow-md flex flex-row justify-between items-center px-6 py-4 border-b-[0.75px] border-[#b300e6]"
 >
   <div class="flex flex-row justify-start items-center gap-2">
     <div class="font-semibold flex flex-col justify-start items-start">
