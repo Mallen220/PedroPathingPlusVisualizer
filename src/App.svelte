@@ -6,6 +6,7 @@
   import type { Line as PathLine } from "two.js/src/shapes/line";
   import ControlTab from "./lib/ControlTab.svelte";
   import Navbar from "./lib/Navbar.svelte";
+  import _ from "lodash";
   import {
     easeInOutQuad,
     getCurvePoint,
@@ -412,11 +413,28 @@
     }
   }
 
-  hotkeys('', function(event, handler){
-    // Prevent the default refresh event under WINDOWS system
-    event.preventDefault()
-    alert('you pressed F5!')
-  });
+  function addNewLine() {
+  lines = [
+    ...lines,
+    {
+      endPoint: {
+        x: _.random(36, 108),
+        y: _.random(36, 108),
+        heading: "tangential",
+        reverse: false,
+      },
+      controlPoints: [],
+      color: getRandomColor(),
+    },
+  ];
+}
+
+hotkeys('w', function(event, handler){
+  // Prevent the default refresh event under WINDOWS system
+  event.preventDefault();
+  addNewLine();
+});
+
 </script>
 
 <Navbar bind:lines bind:startPoint {saveFile} {loadFile} />

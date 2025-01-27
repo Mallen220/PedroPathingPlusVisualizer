@@ -99,8 +99,8 @@
                 line.controlPoints = [
                   ...line.controlPoints,
                   {
-                    x: _.random(0, 144),
-                    y: _.random(0, 144),
+                    x: _.random(36, 108),
+                    y: _.random(36, 108),
                   },
                 ];
               }}
