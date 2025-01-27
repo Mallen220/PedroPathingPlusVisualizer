@@ -444,7 +444,7 @@ hotkeys('w', function(event, handler){
 
   setTimeout(() => {
     lastWPress = 0;
-  }, 100);
+  }, 1000);
 });
 
 </script>
