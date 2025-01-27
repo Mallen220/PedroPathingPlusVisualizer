@@ -102,14 +102,14 @@
 >
   <div class="flex flex-row justify-start items-center gap-2">
     <div class="font-semibold flex flex-col justify-start items-start">
-      <div>Pedro Pathing Simulator</div>
+      <div>Pedro Pathing Visualizer</div>
 
     </div>
     <a
       target="_blank"
       rel="norefferer"
       title="GitHub Repo"
-      href="https://github.com/Pedro-Pathing/Simulator"
+      href="https://github.com/Pedro-Pathing/Visualizer"
     >
       <svg
         xmlns="http://www.w3.org/2000/svg"
