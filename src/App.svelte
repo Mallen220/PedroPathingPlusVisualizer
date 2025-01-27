@@ -429,10 +429,41 @@
   ];
 }
 
+function addControlPoint() {
+  if (lines.length > 0) {
+    const lastLine = lines[lines.length - 1];
+    lastLine.controlPoints = [
+      ...lastLine.controlPoints,
+      {
+        x: _.random(36, 108),
+        y: _.random(36, 108),
+      },
+    ];
+  }
+}
+
+function removeControlPoint() {
+  if (lines.length > 0) {
+    const lastLine = lines[lines.length - 1];
+    if (lastLine.controlPoints.length > 0) {
+      lastLine.controlPoints.pop();
+    }
+  }
+}
+
 hotkeys('w', function(event, handler){
-  // Prevent the default refresh event under WINDOWS system
   event.preventDefault();
   addNewLine();
+});
+
+hotkeys('a', function(event, handler){
+  event.preventDefault();
+  addControlPoint();
+});
+
+hotkeys('s', function(event, handler){
+  event.preventDefault();
+  removeControlPoint();
 });
 
 </script>
