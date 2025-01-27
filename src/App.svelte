@@ -429,16 +429,14 @@
   ];
 }
 
+
 function addControlPoint() {
   if (lines.length > 0) {
     const lastLine = lines[lines.length - 1];
-    lastLine.controlPoints = [
-      ...lastLine.controlPoints,
-      {
-        x: _.random(36, 108),
-        y: _.random(36, 108),
-      },
-    ];
+    lastLine.controlPoints.push({
+      x: _.random(36, 108),
+      y: _.random(36, 108),
+    });
   }
 }
 
