@@ -15,6 +15,7 @@
     radiansToDegrees,
     shortestRotation,
   } from "./utils";
+  import hotkeys from 'hotkeys-js';
 
   let two: Two;
   let twoElement: HTMLDivElement;
@@ -25,6 +26,8 @@
   let robotHeight = 18;
 
   let percent: number = 0;
+
+
 
   /**
    * Converter for X axis from inches to pixels.
@@ -407,6 +410,12 @@
       reader.readAsText(file);
     }
   }
+
+  hotkeys('', function(event, handler){
+    // Prevent the default refresh event under WINDOWS system
+    event.preventDefault()
+    alert('you pressed F5!')
+  });
 </script>
 
 <Navbar bind:lines bind:startPoint {saveFile} {loadFile} />
