@@ -22,8 +22,8 @@
 
   let pointRadius = 1.15;
   let lineWidth = 0.57;
-  let robotWidth = 19;
-  let robotHeight = 18;
+  let robotWidth = 16;
+  let robotHeight = 16;
 
   let percent: number = 0;
 
