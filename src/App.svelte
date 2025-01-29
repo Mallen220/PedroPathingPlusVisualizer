@@ -419,7 +419,7 @@
     const elem = evt.target as HTMLInputElement;
     const file = elem.files?.[0];
 
-    if (file) {
+    if (file && file.type === "image/png") {
       const reader = new FileReader();
 
       reader.onload = function (e: ProgressEvent<FileReader>) {
@@ -429,6 +429,8 @@
       };
 
       reader.readAsDataURL(file);
+    } else {
+      console.error("Invalid file type. Please upload a PNG file.");
     }
   }
 
