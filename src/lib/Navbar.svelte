@@ -264,7 +264,7 @@
             id="robot-input"
             type="file"
             accept="image/png"
-            on:change={loadFile}
+            on:change={loadRobot}
             class="hidden"
     />
     <label
