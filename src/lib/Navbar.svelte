@@ -170,24 +170,20 @@
     <button
       title="Delete/Reset path"
       on:click={() => {
-        startPoint = {
-          x: 9.757,
-          y: 84.983,
-          heading: "constant",
-          degrees: 0,
-        };
-        lines = [
-          {
-            endPoint: {
-              x: 36.668,
-              y: 84.983,
-              heading: "tangential",
-              reverse: false,
-            },
-            controlPoints: [],
-            color: getRandomColor(),
-          },
-        ];
+       startPoint = {
+    x: 8,
+    y: 80,
+    heading: "linear",
+    startDeg: 0,
+    endDeg: 0
+  };
+  lines = [
+    {
+      endPoint: { x: 36, y: 80, heading: "linear", startDeg: 0, endDeg: 0 },
+      controlPoints: [],
+      color: getRandomColor(),
+    },
+  ];
       }}
     >
       <svg
