@@ -1,3 +1,3 @@
 # Pedro Pathing Visualizer
 
-Big Thanks to #16116 for developing this, we really appreciate your work.
+Big Thanks to #16166 Watt's Up for developing this, we really appreciate your work.
