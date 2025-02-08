@@ -49,14 +49,14 @@
 
     if(separateLines) {
       file = `
-    public class GeneratedPath {
-      public GeneratedPath() {
-        PathBuilder builder = new PathBuilder();
+    public class GeneratedPaths {
+
+    public static PathBuilder builder = new PathBuilder();
 
 ${lines
               .map(
-                      (line, idx) => `PathChain line${idx + 1} = builder
-.addPath(  // Line ${idx + 1}
+                      (line, idx) => `public static PathChain line${idx + 1} = builder
+.addPath(
   ${line.controlPoints.length === 0 ? `new BezierLine` : `new BezierCurve`}(
     ${
                               idx === 0
@@ -79,17 +79,17 @@ ${lines
 ${line.endPoint.reverse ? ".setReversed(true)" : ""}
 .build();`
               )
-              .join("\n")};
-      }
+              .join("\n\n")};
+
     }
     `;
     } else {
       file = `
     public class GeneratedPath {
-      public GeneratedPath() {
-        PathBuilder builder = new PathBuilder();
 
-        builder${lines
+      public static PathBuilder builder = new PathBuilder();
+
+        public static PathChain paths = builder${lines
               .map(
                       (line, idx) => `.addPath(  // Line ${idx + 1}
               ${line.controlPoints.length === 0 ? `new BezierLine` : `new BezierCurve`}(
@@ -115,7 +115,6 @@ ${line.endPoint.reverse ? ".setReversed(true)" : ""}
           `
               )
               .join("\n")};
-      }
     }
     `;
     }
