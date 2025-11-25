@@ -1,6 +1,8 @@
 <script lang="ts">
   import _ from "lodash";
   import { getRandomColor } from "../utils";
+  import { optimizeAllPaths, fpa } from '../utils/optimization';
+
 
   export let percent: number;
   export let playing: boolean;
@@ -12,10 +14,10 @@
   export let robotHeight: number = 16;
   export let robotXY: BasePoint;
   export let robotHeading: number;
-  export let fpa: (l: FPALine, s: FPASettings, o: Shape) => Promise<Line>;
   export let x: d3.ScaleLinear<number, number, number>;
   export let y: d3.ScaleLinear<number, number, number>;
   export let settings: FPASettings;
+
   export let shapes: Shape[];
 
   function createTriangle(): Shape {
@@ -512,6 +514,24 @@ With tangential heading, the heading follows the direction of the line."
       </svg>
       <p>Add Line</p>
     </button>
+
+    <button
+      on:click={async () => {
+        try {
+          await optimizeAllPaths();
+        } catch (error) {
+          console.error('Global optimization failed:', error);
+          alert(`❌ Global optimization failed: ${error.message}`);
+        }
+      }}
+      class="font-semibold text-blue-500 text-sm flex flex-row justify-start items-center gap-1"
+    >
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width={2} stroke="currentColor" class="size-5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 0 1 3 19.875v-6.75ZM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V8.625ZM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V4.125Z" />
+      </svg>
+      <p>Optimize All Paths</p>
+    </button>
+
   </div>
   <div
     class="w-full bg-neutral-50 dark:bg-neutral-900 rounded-lg p-3 flex flex-row justify-start items-center gap-3 shadow-lg"
