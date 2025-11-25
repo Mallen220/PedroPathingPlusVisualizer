@@ -110,12 +110,12 @@ function getRobotCorners(
   
   return [
     {
-      x: center.x + (-halfWidth * cos - -halfHeight * sin),
-      y: center.y + (-halfWidth * sin + -halfHeight * cos)
+      x: center.x + (-halfWidth * cos + halfHeight * sin),
+      y: center.y + (-halfWidth * sin - halfHeight * cos)
     },
     {
-      x: center.x + (halfWidth * cos - -halfHeight * sin),
-      y: center.y + (halfWidth * sin + -halfHeight * cos)
+      x: center.x + (halfWidth * cos + halfHeight * sin),
+      y: center.y + (halfWidth * sin - halfHeight * cos)
     },
     {
       x: center.x + (halfWidth * cos - halfHeight * sin),
@@ -165,8 +165,8 @@ function lineSegmentsIntersect(
     return false; // Parallel or coincident
   }
   
-  const lambda = ((p4.y - p3.y) * (p4.x - p1.x) + (p3.x - p4.x) * (p4.y - p1.y)) / det;
-  const gamma = ((p1.y - p2.y) * (p4.x - p1.x) + (p2.x - p1.x) * (p4.y - p1.y)) / det;
+  const lambda = ((p4.y - p3.y) * (p3.x - p1.x) + (p3.x - p4.x) * (p3.y - p1.y)) / det;
+  const gamma = ((p1.y - p2.y) * (p3.x - p1.x) + (p2.x - p1.x) * (p3.y - p1.y)) / det;
   
   return (lambda >= 0 && lambda <= 1) && (gamma >= 0 && gamma <= 1);
 }
@@ -193,8 +193,17 @@ function sampleBezierCurve(
 
 /**
  * Calculate heading at a point on the path
+ * @param point The point with heading information
+ * @param prevPoint Previous point for tangent calculation
+ * @param nextPoint Next point for tangent calculation  
+ * @param t Optional parameter for linear interpolation (0-1)
  */
-function calculateHeading(point: Point, prevPoint: BasePoint, nextPoint: BasePoint): number {
+function calculateHeading(
+  point: Point, 
+  prevPoint: BasePoint, 
+  nextPoint: BasePoint,
+  t?: number
+): number {
   if (point.heading === "constant") {
     return point.degrees;
   } else if (point.heading === "tangential") {
@@ -206,8 +215,15 @@ function calculateHeading(point: Point, prevPoint: BasePoint, nextPoint: BasePoi
     }
     return angle;
   } else if (point.heading === "linear") {
-    // Interpolate between start and end degrees
-    // This is simplified; actual implementation would need position along path
+    // Interpolate between start and end degrees based on t (position along path)
+    if (t !== undefined) {
+      let diff = point.endDeg - point.startDeg;
+      // Take shortest angular path
+      while (diff > 180) diff -= 360;
+      while (diff < -180) diff += 360;
+      return point.startDeg + diff * t;
+    }
+    // Fallback to startDeg if t is not provided
     return point.startDeg;
   }
   return 0;
@@ -344,8 +360,8 @@ export function optimizePath(
         // Calculate heading at this point
         let heading = 0;
         if (j === samples.length - 1) {
-          // Use endpoint heading
-          heading = calculateHeading(line.endPoint, prevSample, segment.end);
+          // Use endpoint heading with full interpolation (t=1)
+          heading = calculateHeading(line.endPoint, prevSample, segment.end, 1.0);
         } else {
           // Use tangent of path
           const dx = nextSample.x - prevSample.x;
