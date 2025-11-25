@@ -21,7 +21,7 @@ const SAMPLES_QUALITY_MULTIPLIER = 10; // Multiplier for optimization quality to
 const MIN_SMOOTHING_ANGLE_RAD = 0.1; // Minimum angle change (in radians) to trigger smoothing (~5.7 degrees)
 const CONTROL_DISTANCE_FACTOR = 0.3; // Factor for control point distance from waypoint
 const MULTI_CONTROL_POINT_FACTOR = 0.5; // Additional factor for multiple control points
-const MIN_SEGMENT_LENGTH = 1e-6; // Minimum segment length to avoid division by zero
+const MIN_SEGMENT_LENGTH = 1e-6; // Minimum segment length in inches to avoid division by zero (effectively zero)
 
 interface OptimizationResult {
   success: boolean;
@@ -336,6 +336,11 @@ function smoothPath(
         y: segment.end.y - segment.start.y
       };
       const currLength = vectorLength(currDir);
+      
+      // Skip if either segment has zero length
+      if (prevLength < MIN_SEGMENT_LENGTH || currLength < MIN_SEGMENT_LENGTH) {
+        return [];
+      }
       
       // Calculate the angle between segments
       let angle = Math.atan2(currDir.y, currDir.x) - Math.atan2(prevDir.y, prevDir.x);
