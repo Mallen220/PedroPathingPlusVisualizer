@@ -16,7 +16,6 @@
   export let x: d3.ScaleLinear<number, number, number>;
   export let y: d3.ScaleLinear<number, number, number>;
   export let settings: FPASettings;
-  export let onOptimizeAllPaths: () => Promise<void>;
 
 
   export let shapes: Shape[];
@@ -405,30 +404,6 @@ With tangential heading, the heading follows the direction of the line."
               <p class="text-sm font-extralight">Reverse:</p>
               <input type="checkbox" bind:checked={line.endPoint.reverse} title="Reverse the direction the robot faces along the tangential path" />
             {/if}
-            <button
-              class="px-2 rounded-md bg-neutral-100 dark:bg-neutral-950 dark:border-neutral-700 border-[0.5px] focus:outline-none text-sm"
-              title="Optimize"
-              name="Optimize"
-              on:click={async () => { 
-                try {
-                  const optimizedLine = await fpa(
-                    {
-                      startPoint: idx === 0 ? startPoint : lines[idx - 1].endPoint,
-                      endPoint: line.endPoint,
-                      controlPoints: line.controlPoints,
-                      interpolation: line.endPoint.heading,
-                      color: line.color,
-                    },
-                    settings,
-                    shapes.length > 0 ? shapes[0] : { name: "", vertices: [] }
-                  );
-                  lines = lines.map((l, i) => i === idx ? optimizedLine : l);
-                } catch (error) {
-                  console.error('Optimization failed:', error);
-                  alert(`❌ Optimization failed: ${error.message}`);
-                }
-              }}
-            >Optimize</button>
           </div>
         </div>
         {#each line.controlPoints as point, idx1}
@@ -514,23 +489,6 @@ With tangential heading, the heading follows the direction of the line."
         />
       </svg>
       <p>Add Line</p>
-    </button>
-
-    <button
-      on:click={async () => {
-        try {
-          await onOptimizeAllPaths();
-        } catch (error) {
-          console.error('Global optimization failed:', error);
-          alert(`❌ Global optimization failed: ${error.message}`);
-        }
-      }}
-      class="font-semibold text-blue-500 text-sm flex flex-row justify-start items-center gap-1"
-    >
-      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width={2} stroke="currentColor" class="size-5">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 0 1 3 19.875v-6.75ZM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V8.625ZM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V4.125Z" />
-      </svg>
-      <p>Optimize All Paths</p>
     </button>
 
   </div>

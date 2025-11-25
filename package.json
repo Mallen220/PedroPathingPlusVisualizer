@@ -40,7 +40,8 @@
     "sass": "^1.77.8",
     "svelte-copy": "^1.4.2",
     "svelte-highlight": "^7.7.0",
-    "two.js": "^0.8.14"
+    "two.js": "^0.8.14",
+    "update-electron-app": "^3.1.1"
   },
   "build": {
     "appId": "com.pedropathing.visualizer",
