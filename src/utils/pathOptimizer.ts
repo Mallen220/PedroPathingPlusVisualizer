@@ -253,15 +253,22 @@ function checkCollision(
   settings: FPASettings,
   shapes: Shape[]
 ): boolean {
-  const robotWidth = settings.rWidth + settings.safetyMargin * 2;
-  const robotHeight = settings.rHeight + settings.safetyMargin * 2;
+  // Use actual robot dimensions for field bounds checking
+  const actualRobotWidth = settings.rWidth;
+  const actualRobotHeight = settings.rHeight;
   
-  // Check bounds (field is 0-144 inches)
+  // Use expanded dimensions (with safety margin) for obstacle collision
+  const expandedRobotWidth = settings.rWidth + settings.safetyMargin * 2;
+  const expandedRobotHeight = settings.rHeight + settings.safetyMargin * 2;
+  
+  const headingRad = (heading * Math.PI) / 180;
+  
+  // Check bounds (field is 0-144 inches) using actual robot dimensions
   const robotCorners = getRobotCorners(
     position,
-    robotWidth,
-    robotHeight,
-    (heading * Math.PI) / 180
+    actualRobotWidth,
+    actualRobotHeight,
+    headingRad
   );
   
   for (const corner of robotCorners) {
@@ -270,9 +277,9 @@ function checkCollision(
     }
   }
   
-  // Check obstacle collisions
+  // Check obstacle collisions using expanded dimensions (with safety margin)
   for (const shape of shapes) {
-    if (rectangleIntersectsPolygon(position, robotWidth, robotHeight, heading, shape.vertices)) {
+    if (rectangleIntersectsPolygon(position, expandedRobotWidth, expandedRobotHeight, heading, shape.vertices)) {
       return true;
     }
   }
@@ -293,6 +300,7 @@ function calculateTurnSharpness(angle1: number, angle2: number): number {
 
 /**
  * Optimize control points to create smoother paths
+ * Focuses on smoothing heading changes and preventing harsh jumps
  */
 function smoothPath(
   segment: PathSegment,
@@ -301,28 +309,95 @@ function smoothPath(
 ): ControlPoint[] {
   // If no control points, consider adding some for smoother transition
   if (segment.controlPoints.length === 0) {
-    // For now, return empty - could add logic to insert control points
+    // For straight line segments, add control points for smoother transitions
+    // This helps create gradual heading changes instead of sharp corners
+    if (prevSegment) {
+      // Calculate the incoming direction from previous segment
+      const prevDir = {
+        x: prevSegment.end.x - prevSegment.start.x,
+        y: prevSegment.end.y - prevSegment.start.y
+      };
+      const prevLength = Math.sqrt(prevDir.x * prevDir.x + prevDir.y * prevDir.y);
+      
+      // Calculate the outgoing direction for current segment
+      const currDir = {
+        x: segment.end.x - segment.start.x,
+        y: segment.end.y - segment.start.y
+      };
+      const currLength = Math.sqrt(currDir.x * currDir.x + currDir.y * currDir.y);
+      
+      // Calculate the angle between segments
+      const angle = Math.atan2(currDir.y, currDir.x) - Math.atan2(prevDir.y, prevDir.x);
+      
+      // If there's a significant heading change, add control points to smooth it
+      if (Math.abs(angle) > 0.1) { // ~5.7 degrees
+        const smoothingFactor = settings.optimizationQuality / SMOOTHING_SCALE;
+        const controlDist = Math.min(prevLength, currLength) * 0.3 * smoothingFactor;
+        
+        // Add two control points for a smooth cubic bezier curve
+        return [
+          {
+            x: segment.start.x + (prevDir.x / prevLength) * controlDist,
+            y: segment.start.y + (prevDir.y / prevLength) * controlDist
+          },
+          {
+            x: segment.start.x + (currDir.x / currLength) * controlDist,
+            y: segment.start.y + (currDir.y / currLength) * controlDist
+          }
+        ];
+      }
+    }
     return [];
   }
   
-  // Apply smoothing based on optimization quality
+  // Apply smoothing to existing control points
   // Higher quality = more aggressive smoothing
   const smoothingFactor = settings.optimizationQuality / SMOOTHING_SCALE;
   
   // Clone control points
   const optimized = segment.controlPoints.map(cp => ({ ...cp }));
   
-  // Simple smoothing: move control points slightly toward the midpoint
-  if (optimized.length >= 1) {
-    const mid = {
-      x: (segment.start.x + segment.end.x) / 2,
-      y: (segment.start.y + segment.end.y) / 2
+  // For paths with control points, adjust them to create smoother heading transitions
+  if (optimized.length === 1) {
+    // Single control point - adjust it to be on the line between start and end
+    // but maintain some curvature based on its current offset
+    const lineDir = {
+      x: segment.end.x - segment.start.x,
+      y: segment.end.y - segment.start.y
+    };
+    const lineLength = Math.sqrt(lineDir.x * lineDir.x + lineDir.y * lineDir.y);
+    
+    // Project control point onto the line
+    const t = ((optimized[0].x - segment.start.x) * lineDir.x + 
+               (optimized[0].y - segment.start.y) * lineDir.y) / (lineLength * lineLength);
+    
+    const projectedPoint = {
+      x: segment.start.x + t * lineDir.x,
+      y: segment.start.y + t * lineDir.y
     };
     
+    // Move control point toward the projected point, but not all the way
+    // This maintains curvature while reducing sharpness
+    const factor = smoothingFactor * SMOOTHING_MULTIPLIER;
+    optimized[0].x = optimized[0].x + (projectedPoint.x - optimized[0].x) * factor;
+    optimized[0].y = optimized[0].y + (projectedPoint.y - optimized[0].y) * factor;
+    
+  } else if (optimized.length >= 2) {
+    // Multiple control points - ensure they create a smooth curve
+    // Adjust them to be more evenly distributed and aligned
     for (let i = 0; i < optimized.length; i++) {
-      const cp = optimized[i];
-      cp.x = cp.x + (mid.x - cp.x) * smoothingFactor * SMOOTHING_MULTIPLIER;
-      cp.y = cp.y + (mid.y - cp.y) * smoothingFactor * SMOOTHING_MULTIPLIER;
+      const t = (i + 1) / (optimized.length + 1);
+      
+      // Calculate ideal position on a line from start to end
+      const idealLinePos = {
+        x: segment.start.x + t * (segment.end.x - segment.start.x),
+        y: segment.start.y + t * (segment.end.y - segment.start.y)
+      };
+      
+      // Move control point toward ideal position to reduce curvature sharpness
+      const factor = smoothingFactor * SMOOTHING_MULTIPLIER * 0.5;
+      optimized[i].x = optimized[i].x + (idealLinePos.x - optimized[i].x) * factor;
+      optimized[i].y = optimized[i].y + (idealLinePos.y - optimized[i].y) * factor;
     }
   }
   
