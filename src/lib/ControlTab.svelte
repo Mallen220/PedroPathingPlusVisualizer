@@ -111,14 +111,23 @@
       {#each shapes as shape, shapeIdx}
         <div class="flex flex-col w-full justify-start items-start gap-1 p-2 border rounded-md border-neutral-300 dark:border-neutral-600">
           <div class="flex flex-row w-full justify-between items-center">
+
             <div class="font-medium text-sm flex flex-row items-center gap-2">
               <input
                 bind:value={shape.name}
                 placeholder="Obstacle {shapeIdx + 1}"
                 class="pl-1.5 rounded-md bg-neutral-100 dark:bg-neutral-950 dark:border-neutral-700 border-[0.5px] focus:outline-none text-sm font-medium"
               />
-              <div class="size-2 rounded-full bg-red-600"></div>
+              <div class="relative size-5 rounded-full overflow-hidden shadow-sm border border-neutral-300 dark:border-neutral-600 shrink-0" style="background-color: {shape.color}">
+                <input 
+                  type="color" 
+                  bind:value={shape.color} 
+                  class="opacity-0 absolute inset-0 w-full h-full cursor-pointer"
+                  title="Change Obstacle Color"
+                />
+              </div>
             </div>
+
             <div class="flex flex-row gap-1">
               <button
                 title="Add Vertex"
@@ -185,30 +194,28 @@
         </div>
       {/each}
       
-      {#if shapes.length === 0}
-        <button
-          on:click={() => {
-            shapes = [...shapes, createTriangle()];
-          }}
-          class="font-semibold text-red-500 text-sm flex flex-row justify-start items-center gap-1"
+      <button
+        on:click={() => {
+          shapes = [...shapes, createTriangle()];
+        }}
+        class="font-semibold text-red-500 text-sm flex flex-row justify-start items-center gap-1"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke-width={2}
+          stroke="currentColor"
+          class="size-5"
         >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke-width={2}
-            stroke="currentColor"
-            class="size-5"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              d="M12 4.5v15m7.5-7.5h-15"
-            />
-          </svg>
-          <p>Add Obstacle</p>
-        </button>
-      {/if}
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            d="M12 4.5v15m7.5-7.5h-15"
+          />
+        </svg>
+        <p>Add Obstacle</p>
+      </button>
     </div>
 
     <div class="flex flex-col w-full justify-start items-start gap-0.5 text-sm">
@@ -257,15 +264,21 @@
           <div
             class="font-semibold flex flex-row justify-start items-center gap-2"
           >
+
             <input
               bind:value={line.name}
               placeholder="Path {idx + 1}"
               class="pl-1.5 rounded-md bg-neutral-100 dark:bg-neutral-950 dark:border-neutral-700 border-[0.5px] focus:outline-none text-sm font-semibold"
             />
-            <div
-              class="size-2.5 rounded-full shadow-md"
-              style={`background: ${line.color}`}
-            />
+            <div class="relative size-5 rounded-full overflow-hidden shadow-sm border border-neutral-300 dark:border-neutral-600 shrink-0" style="background-color: {line.color}">
+                <input 
+                  type="color" 
+                  bind:value={line.color} 
+                  class="opacity-0 absolute inset-0 w-full h-full cursor-pointer"
+                  title="Change Path Color"
+                />
+            </div>
+            
           </div>
           <div class="flex flex-row justify-end items-center gap-1">
             <button

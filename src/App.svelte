@@ -293,9 +293,9 @@
         
         let shapeElement = new Two.Path(vertices);
         shapeElement.id = `shape-${idx}`;
-        shapeElement.stroke = "#991b1b"; // Deeper red border (red-800)
-        shapeElement.fill = "#ef4444"; // Deeper red fill (red-500)
-        shapeElement.opacity = 0.4; // Make it pretty transparent
+        shapeElement.stroke = shape.color; 
+        shapeElement.fill = shape.color;   
+        shapeElement.opacity = 0.4;
         shapeElement.linewidth = x(0.8); // Make border more visible
         shapeElement.automatic = false;
         
