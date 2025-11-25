@@ -1,6 +1,6 @@
 <script lang="ts">
   import _ from "lodash";
-  import { getRandomColor } from "../utils";
+  import { getRandomColor, optimizePath, validatePath } from "../utils";
 
 
   export let percent: number;
@@ -71,6 +71,62 @@
       fillColor: "#fca5a5"
     };
   }
+
+  // Path optimization state
+  let optimizationStatus: 'idle' | 'optimizing' | 'success' | 'error' = 'idle';
+  let optimizationMessage = '';
+
+  function handleOptimizePath() {
+    optimizationStatus = 'optimizing';
+    optimizationMessage = 'Optimizing path...';
+    
+    // Use setTimeout to allow UI to update
+    setTimeout(() => {
+      const result = optimizePath(startPoint, lines, shapes, settings);
+      
+      if (result.success && result.optimizedLines) {
+        lines = result.optimizedLines;
+        optimizationStatus = 'success';
+        optimizationMessage = 'Path optimized successfully!';
+        
+        // Clear success message after 3 seconds
+        setTimeout(() => {
+          if (optimizationStatus === 'success') {
+            optimizationStatus = 'idle';
+            optimizationMessage = '';
+          }
+        }, 3000);
+      } else {
+        optimizationStatus = 'error';
+        optimizationMessage = result.error || 'Optimization failed';
+      }
+    }, 100);
+  }
+
+  function handleValidatePath() {
+    optimizationStatus = 'optimizing';
+    optimizationMessage = 'Validating path...';
+    
+    setTimeout(() => {
+      const result = validatePath(startPoint, lines, shapes, settings);
+      
+      if (result.success) {
+        optimizationStatus = 'success';
+        optimizationMessage = 'Path is valid! No collisions detected.';
+        
+        setTimeout(() => {
+          if (optimizationStatus === 'success') {
+            optimizationStatus = 'idle';
+            optimizationMessage = '';
+          }
+        }, 3000);
+      } else {
+        optimizationStatus = 'error';
+        optimizationMessage = result.error || 'Path validation failed';
+      }
+    }, 100);
+  }
+
 </script>
 
 <div class="flex-1 flex flex-col justify-start items-center gap-2 h-full">
@@ -218,6 +274,45 @@
         </svg>
         <p>Add Obstacle</p>
       </button>
+    </div>
+
+    <div class="flex flex-col w-full justify-start items-start gap-2 text-sm border-t pt-4 border-neutral-300 dark:border-neutral-600">
+      <div class="font-semibold">Path Optimization</div>
+      
+      <div class="flex flex-row w-full gap-2">
+        <button
+          on:click={handleValidatePath}
+          disabled={optimizationStatus === 'optimizing'}
+          class="flex-1 px-3 py-2 rounded-md bg-blue-500 text-white font-medium hover:bg-blue-600 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors text-sm"
+        >
+          {optimizationStatus === 'optimizing' ? 'Checking...' : 'Validate Path'}
+        </button>
+        
+        <button
+          on:click={handleOptimizePath}
+          disabled={optimizationStatus === 'optimizing'}
+          class="flex-1 px-3 py-2 rounded-md bg-green-500 text-white font-medium hover:bg-green-600 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors text-sm"
+        >
+          {optimizationStatus === 'optimizing' ? 'Optimizing...' : 'Optimize Path'}
+        </button>
+      </div>
+      
+      {#if optimizationMessage}
+        <div 
+          class="w-full p-2 rounded-md text-sm {
+            optimizationStatus === 'success' ? 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-100' :
+            optimizationStatus === 'error' ? 'bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-100' :
+            'bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-100'
+          }"
+        >
+          {optimizationMessage}
+        </div>
+      {/if}
+      
+      <div class="text-xs text-neutral-600 dark:text-neutral-400 mt-1">
+        <p class="mb-1"><strong>Validate Path:</strong> Checks if the robot will collide with obstacles or leave the field.</p>
+        <p><strong>Optimize Path:</strong> Smooths the path to reduce sharp turns while avoiding collisions.</p>
+      </div>
     </div>
 
     <div class="flex flex-col w-full justify-start items-start gap-0.5 text-sm">

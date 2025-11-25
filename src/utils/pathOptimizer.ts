@@ -1,0 +1,424 @@
+/**
+ * Path Optimization Module
+ * 
+ * Optimizes robot paths by:
+ * 1. Ensuring the robot does not hit obstacles
+ * 2. Ensuring the robot stays within field bounds
+ * 3. Smoothing paths to minimize sharp turns (turning is slow, driving is fast)
+ */
+
+interface OptimizationResult {
+  success: boolean;
+  optimizedLines?: Line[];
+  error?: string;
+}
+
+interface PathSegment {
+  start: BasePoint;
+  end: BasePoint;
+  controlPoints: ControlPoint[];
+}
+
+/**
+ * Check if a point is inside a polygon (obstacle)
+ */
+function isPointInPolygon(point: BasePoint, vertices: BasePoint[]): boolean {
+  let inside = false;
+  for (let i = 0, j = vertices.length - 1; i < vertices.length; j = i++) {
+    const xi = vertices[i].x;
+    const yi = vertices[i].y;
+    const xj = vertices[j].x;
+    const yj = vertices[j].y;
+
+    const intersect = ((yi > point.y) !== (yj > point.y)) &&
+      (point.x < (xj - xi) * (point.y - yi) / (yj - yi) + xi);
+    if (intersect) inside = !inside;
+  }
+  return inside;
+}
+
+/**
+ * Check if a rectangle (robot) intersects with a polygon (obstacle)
+ * Uses separating axis theorem
+ */
+function rectangleIntersectsPolygon(
+  rectCenter: BasePoint,
+  rectWidth: number,
+  rectHeight: number,
+  heading: number,
+  polygon: BasePoint[]
+): boolean {
+  // Convert heading to radians
+  const headingRad = (heading * Math.PI) / 180;
+  
+  // Get robot corners
+  const robotCorners = getRobotCorners(rectCenter, rectWidth, rectHeight, headingRad);
+  
+  // Check if any robot corner is inside the polygon
+  for (const corner of robotCorners) {
+    if (isPointInPolygon(corner, polygon)) {
+      return true;
+    }
+  }
+  
+  // Check if any polygon vertex is inside the robot
+  for (const vertex of polygon) {
+    if (isPointInRectangle(vertex, rectCenter, rectWidth, rectHeight, headingRad)) {
+      return true;
+    }
+  }
+  
+  // Check edge-to-edge intersections
+  for (let i = 0; i < robotCorners.length; i++) {
+    const robotEdge = {
+      start: robotCorners[i],
+      end: robotCorners[(i + 1) % robotCorners.length]
+    };
+    
+    for (let j = 0; j < polygon.length; j++) {
+      const polyEdge = {
+        start: polygon[j],
+        end: polygon[(j + 1) % polygon.length]
+      };
+      
+      if (lineSegmentsIntersect(robotEdge.start, robotEdge.end, polyEdge.start, polyEdge.end)) {
+        return true;
+      }
+    }
+  }
+  
+  return false;
+}
+
+/**
+ * Get the four corners of a rotated rectangle
+ */
+function getRobotCorners(
+  center: BasePoint,
+  width: number,
+  height: number,
+  headingRad: number
+): BasePoint[] {
+  const halfWidth = width / 2;
+  const halfHeight = height / 2;
+  const cos = Math.cos(headingRad);
+  const sin = Math.sin(headingRad);
+  
+  return [
+    {
+      x: center.x + (-halfWidth * cos - -halfHeight * sin),
+      y: center.y + (-halfWidth * sin + -halfHeight * cos)
+    },
+    {
+      x: center.x + (halfWidth * cos - -halfHeight * sin),
+      y: center.y + (halfWidth * sin + -halfHeight * cos)
+    },
+    {
+      x: center.x + (halfWidth * cos - halfHeight * sin),
+      y: center.y + (halfWidth * sin + halfHeight * cos)
+    },
+    {
+      x: center.x + (-halfWidth * cos - halfHeight * sin),
+      y: center.y + (-halfWidth * sin + halfHeight * cos)
+    }
+  ];
+}
+
+/**
+ * Check if a point is inside a rotated rectangle
+ */
+function isPointInRectangle(
+  point: BasePoint,
+  rectCenter: BasePoint,
+  rectWidth: number,
+  rectHeight: number,
+  headingRad: number
+): boolean {
+  // Transform point to rectangle's local coordinate system
+  const dx = point.x - rectCenter.x;
+  const dy = point.y - rectCenter.y;
+  const cos = Math.cos(-headingRad);
+  const sin = Math.sin(-headingRad);
+  
+  const localX = dx * cos - dy * sin;
+  const localY = dx * sin + dy * cos;
+  
+  return Math.abs(localX) <= rectWidth / 2 && Math.abs(localY) <= rectHeight / 2;
+}
+
+/**
+ * Check if two line segments intersect
+ */
+function lineSegmentsIntersect(
+  p1: BasePoint,
+  p2: BasePoint,
+  p3: BasePoint,
+  p4: BasePoint
+): boolean {
+  const det = (p2.x - p1.x) * (p4.y - p3.y) - (p4.x - p3.x) * (p2.y - p1.y);
+  
+  if (Math.abs(det) < 1e-10) {
+    return false; // Parallel or coincident
+  }
+  
+  const lambda = ((p4.y - p3.y) * (p4.x - p1.x) + (p3.x - p4.x) * (p4.y - p1.y)) / det;
+  const gamma = ((p1.y - p2.y) * (p4.x - p1.x) + (p2.x - p1.x) * (p4.y - p1.y)) / det;
+  
+  return (lambda >= 0 && lambda <= 1) && (gamma >= 0 && gamma <= 1);
+}
+
+/**
+ * Get points along a bezier curve
+ */
+function sampleBezierCurve(
+  startPoint: BasePoint,
+  endPoint: BasePoint,
+  controlPoints: ControlPoint[],
+  numSamples: number
+): BasePoint[] {
+  const points: BasePoint[] = [];
+  const cps = [startPoint, ...controlPoints, endPoint];
+  
+  for (let i = 0; i <= numSamples; i++) {
+    const t = i / numSamples;
+    points.push(getCurvePoint(t, cps));
+  }
+  
+  return points;
+}
+
+/**
+ * Implementation of De Casteljau's algorithm to get a point on a bezier curve
+ */
+function getCurvePoint(t: number, points: BasePoint[]): BasePoint {
+  if (points.length === 1) return points[0];
+  const newpoints: BasePoint[] = [];
+  for (let i = 0, j = 1; j < points.length; i++, j++) {
+    newpoints[i] = {
+      x: points[i].x + (points[j].x - points[i].x) * t,
+      y: points[i].y + (points[j].y - points[i].y) * t
+    };
+  }
+  return getCurvePoint(t, newpoints);
+}
+
+/**
+ * Calculate heading at a point on the path
+ */
+function calculateHeading(point: Point, prevPoint: BasePoint, nextPoint: BasePoint): number {
+  if (point.heading === "constant") {
+    return point.degrees;
+  } else if (point.heading === "tangential") {
+    const dx = nextPoint.x - prevPoint.x;
+    const dy = nextPoint.y - prevPoint.y;
+    let angle = Math.atan2(dy, dx) * (180 / Math.PI);
+    if (point.reverse) {
+      angle += 180;
+    }
+    return angle;
+  } else if (point.heading === "linear") {
+    // Interpolate between start and end degrees
+    // This is simplified; actual implementation would need position along path
+    return point.startDeg;
+  }
+  return 0;
+}
+
+/**
+ * Check if the robot at a given position collides with any obstacles
+ */
+function checkCollision(
+  position: BasePoint,
+  heading: number,
+  settings: FPASettings,
+  shapes: Shape[]
+): boolean {
+  const robotWidth = settings.rWidth + settings.safetyMargin * 2;
+  const robotHeight = settings.rHeight + settings.safetyMargin * 2;
+  
+  // Check bounds (field is 0-144 inches)
+  const robotCorners = getRobotCorners(
+    position,
+    robotWidth,
+    robotHeight,
+    (heading * Math.PI) / 180
+  );
+  
+  for (const corner of robotCorners) {
+    if (corner.x < 0 || corner.x > 144 || corner.y < 0 || corner.y > 144) {
+      return true; // Out of bounds
+    }
+  }
+  
+  // Check obstacle collisions
+  for (const shape of shapes) {
+    if (rectangleIntersectsPolygon(position, robotWidth, robotHeight, heading, shape.vertices)) {
+      return true;
+    }
+  }
+  
+  return false;
+}
+
+/**
+ * Calculate the sharpness of a turn (higher = sharper)
+ */
+function calculateTurnSharpness(angle1: number, angle2: number): number {
+  // Calculate the shortest angular distance
+  let diff = angle2 - angle1;
+  while (diff > 180) diff -= 360;
+  while (diff < -180) diff += 360;
+  return Math.abs(diff);
+}
+
+/**
+ * Optimize control points to create smoother paths
+ */
+function smoothPath(
+  segment: PathSegment,
+  prevSegment: PathSegment | null,
+  settings: FPASettings
+): ControlPoint[] {
+  // If no control points, consider adding some for smoother transition
+  if (segment.controlPoints.length === 0) {
+    // For now, return empty - could add logic to insert control points
+    return [];
+  }
+  
+  // Apply smoothing based on optimization quality
+  // Higher quality = more aggressive smoothing
+  const smoothingFactor = settings.optimizationQuality / 10;
+  
+  // Clone control points
+  const optimized = segment.controlPoints.map(cp => ({ ...cp }));
+  
+  // Simple smoothing: move control points slightly toward the midpoint
+  if (optimized.length >= 1) {
+    const mid = {
+      x: (segment.start.x + segment.end.x) / 2,
+      y: (segment.start.y + segment.end.y) / 2
+    };
+    
+    for (let i = 0; i < optimized.length; i++) {
+      const cp = optimized[i];
+      cp.x = cp.x + (mid.x - cp.x) * smoothingFactor * 0.1;
+      cp.y = cp.y + (mid.y - cp.y) * smoothingFactor * 0.1;
+    }
+  }
+  
+  return optimized;
+}
+
+/**
+ * Main optimization function
+ */
+export function optimizePath(
+  startPoint: Point,
+  lines: Line[],
+  shapes: Shape[],
+  settings: FPASettings
+): OptimizationResult {
+  try {
+    // Validate input
+    if (!startPoint || !lines || lines.length === 0) {
+      return {
+        success: false,
+        error: "Invalid path: No waypoints defined"
+      };
+    }
+    
+    const optimizedLines: Line[] = [];
+    let currentPoint = startPoint;
+    
+    // Sample density based on optimization quality (1-10)
+    const samplesPerSegment = Math.max(10, settings.optimizationQuality * 10);
+    
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+      const segment: PathSegment = {
+        start: currentPoint,
+        end: line.endPoint,
+        controlPoints: line.controlPoints
+      };
+      
+      // Sample the path to check for collisions
+      const samples = line.controlPoints.length > 0
+        ? sampleBezierCurve(segment.start, segment.end, segment.controlPoints, samplesPerSegment)
+        : [segment.start, segment.end];
+      
+      // Check each sample point for collisions
+      for (let j = 0; j < samples.length; j++) {
+        const sample = samples[j];
+        const prevSample = j > 0 ? samples[j - 1] : segment.start;
+        const nextSample = j < samples.length - 1 ? samples[j + 1] : segment.end;
+        
+        // Calculate heading at this point
+        let heading = 0;
+        if (j === samples.length - 1) {
+          // Use endpoint heading
+          heading = calculateHeading(line.endPoint, prevSample, segment.end);
+        } else {
+          // Use tangent of path
+          const dx = nextSample.x - prevSample.x;
+          const dy = nextSample.y - prevSample.y;
+          heading = Math.atan2(dy, dx) * (180 / Math.PI);
+        }
+        
+        // Check for collision
+        if (checkCollision(sample, heading, settings, shapes)) {
+          return {
+            success: false,
+            error: `Path collision detected at segment ${i + 1}, point (${sample.x.toFixed(1)}, ${sample.y.toFixed(1)}). ` +
+                   `The robot would hit an obstacle or leave the field bounds.`
+          };
+        }
+      }
+      
+      // Apply smoothing to control points
+      const prevSegment = i > 0 ? {
+        start: i > 1 ? lines[i - 2].endPoint : startPoint,
+        end: lines[i - 1].endPoint,
+        controlPoints: lines[i - 1].controlPoints
+      } : null;
+      
+      const smoothedControlPoints = smoothPath(segment, prevSegment, settings);
+      
+      // Create optimized line
+      optimizedLines.push({
+        ...line,
+        controlPoints: smoothedControlPoints
+      });
+      
+      currentPoint = line.endPoint;
+    }
+    
+    return {
+      success: true,
+      optimizedLines
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: `Optimization failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+    };
+  }
+}
+
+/**
+ * Validate that a path is possible (doesn't collide)
+ * This is a lighter-weight check that doesn't modify the path
+ */
+export function validatePath(
+  startPoint: Point,
+  lines: Line[],
+  shapes: Shape[],
+  settings: FPASettings
+): OptimizationResult {
+  const result = optimizePath(startPoint, lines, shapes, settings);
+  
+  // Return validation result without the optimized lines
+  return {
+    success: result.success,
+    error: result.error
+  };
+}

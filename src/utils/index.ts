@@ -1,5 +1,6 @@
 export * from "./draw";
 export * from "./math";
+export * from "./pathOptimizer";
 
 export const DPI = 96 / 5;
 
