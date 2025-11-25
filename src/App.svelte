@@ -9,6 +9,8 @@
   import Navbar from "./lib/Navbar.svelte";
   import MathTools from "./lib/MathTools.svelte";
   import _ from "lodash";
+  import { optimizeAllPaths, fpa } from './utils/optimization';
+
   import {
     easeInOutQuad,
     getCurvePoint,
@@ -33,7 +35,9 @@
     aVelocity: Math.PI,
     kFriction: 0.05,
     rWidth: robotWidth,
-    rHeight: robotHeight
+    rHeight: robotHeight,
+    safetyMargin: 1,
+    optimizationQuality: 3
   };
 
   let x
@@ -458,111 +462,6 @@
     cancelAnimationFrame(animationFrame);
   }
 
-  async function fpa(l: FPALine, s: FPASettings, o: Shape): Promise<Line> {
-  console.log('Starting local optimization with obstacle avoidance...');
-  
-  try {
-    // Convert the path to a format we can optimize locally
-    const waypoints = [l.startPoint, ...l.controlPoints, l.endPoint].map(p => [p.x, p.y]);
-    
-    // Run local optimization with obstacle avoidance
-    const optimizedWaypoints = await runLocalOptimization(waypoints, o, s);
-    
-    // Convert back to control points format
-    const controlPoints = optimizedWaypoints.slice(1, -1).map((p: number[]) => ({ 
-      x: p[0], 
-      y: p[1] 
-    }));
-    
-    // Return the optimized line
-    return {
-      name: l.name,
-      endPoint: l.endPoint,
-      controlPoints,
-      color: l.color
-    };
-    
-  } catch (error) {
-    console.error('Local optimization failed:', error);
-    throw new Error(`Local optimization failed: ${error.message}`);
-  }
-}
-
-// Local optimization implementation
-async function runLocalOptimization(
-  waypoints: number[][], 
-  obstacle: Shape, 
-  settings: FPASettings
-): Promise<number[][]> {
-  return new Promise((resolve) => {
-    // Simulate processing time (remove in production)
-    setTimeout(() => {
-      // Simple obstacle-aware path smoothing algorithm
-      const optimized = smoothPathWithObstacles(waypoints, obstacle, settings);
-      resolve(optimized);
-    }, 500);
-  });
-}
-
-// Path smoothing algorithm that considers obstacles
-function smoothPathWithObstacles(
-  waypoints: number[][], 
-  obstacle: Shape, 
-  settings: FPASettings
-): number[][] {
-  if (waypoints.length < 2) return waypoints;
-  
-  const optimized: number[][] = [waypoints[0]];
-  const obstacleVertices = obstacle.vertices || [];
-  
-  // Simple path smoothing with obstacle checking
-  for (let i = 1; i < waypoints.length - 1; i++) {
-    const prev = waypoints[i - 1];
-    const current = waypoints[i];
-    const next = waypoints[i + 1];
-    
-    // Calculate a smoothed point
-    let smoothed = [
-      (prev[0] + current[0] + next[0]) / 3,
-      (prev[1] + current[1] + next[1]) / 3
-    ];
-    
-    // Check if smoothed point is too close to obstacles
-    if (obstacleVertices.length >= 3) {
-      const isInObstacle = pointInPolygon(smoothed, obstacleVertices);
-      const distanceToObstacle = minDistanceToPolygon(smoothed, obstacleVertices);
-      
-      // If too close to obstacle, push point away
-      if (isInObstacle || distanceToObstacle < Math.max(settings.rWidth, settings.rHeight) * 1.5) {
-        // Find a safe direction to push the point
-        const center = polygonCenter(obstacleVertices);
-        const direction = [
-          smoothed[0] - center[0],
-          smoothed[1] - center[1]
-        ];
-        const length = Math.sqrt(direction[0] ** 2 + direction[1] ** 2);
-        
-        if (length > 0) {
-          const pushDistance = Math.max(settings.rWidth, settings.rHeight) * 2;
-          smoothed = [
-            smoothed[0] + (direction[0] / length) * pushDistance,
-            smoothed[1] + (direction[1] / length) * pushDistance
-          ];
-        }
-      }
-    }
-    
-    // Ensure point stays within field bounds
-    smoothed[0] = Math.max(0, Math.min(144, smoothed[0]));
-    smoothed[1] = Math.max(0, Math.min(144, smoothed[1]));
-    
-    optimized.push(smoothed);
-  }
-  
-  optimized.push(waypoints[waypoints.length - 1]);
-  return optimized;
-}
-
 // Utility functions for obstacle detection
 function pointInPolygon(point: number[], polygon: BasePoint[]): boolean {
   const x = point[0], y = point[1];
@@ -889,6 +788,5 @@ hotkeys('s', function(event, handler){
     bind:shapes
     {x}
     {y}
-    {fpa}
   />
 </div>

@@ -725,6 +725,30 @@
               bind:value={settings.kFriction}
             />
           </div>
+          <div class="flex flex-row justify-between items-center w-full">
+            <div class="font-light">Safety Margin (in):</div>
+            <input
+              class="px-3 py-2 rounded-md bg-neutral-100 dark:bg-neutral-950 dark:border-neutral-700 border focus:outline-none focus:ring-2 focus:ring-blue-500 w-24 text-base"
+              step="0.5"
+              type="number"
+              min="0"
+              max="24"
+              bind:value={settings.safetyMargin}
+            />
+          </div>
+
+          <div class="flex flex-row justify-between items-center w-full">
+            <div class="font-light">Optimization Quality:</div>
+            <select
+              class="px-3 py-2 rounded-md bg-neutral-100 dark:bg-neutral-950 dark:border-neutral-700 border focus:outline-none focus:ring-2 focus:ring-blue-500 w-24 text-base"
+              bind:value={settings.optimizationQuality}
+            >
+              <option value={1}>Fast</option>
+              <option value={3}>Balanced</option>
+              <option value={5}>High</option>
+            </select>
+          </div>
+          
         </div>
       </div>
     </div>
