@@ -113,17 +113,54 @@ async function createGitHubRelease(version, dmgPath) {
   const title = `Pedro Pathing Visualizer ${version}`;
   
   // Try to get changelog if it exists
-  let notes = `## What's New\n\n- See the changes in the latest version\n\n## Installation\n\n### Via Homebrew:\n\`\`\`bash\nbrew tap Mallen220/PedroPathingVisualizer\nbrew install --cask pedro-pathing-visualizer\n\`\`\`\n\n### Direct Download:\nDownload the DMG above and drag to Applications.\n\nFirst run: Right-click → Open, then click "Open" in security dialog.`;
-  
-  try {
-    const changelog = await fs.readFile(path.join(__dirname, '../CHANGELOG.md'), 'utf8');
-    const versionSection = changelog.match(new RegExp(`## ${version}[\\s\\S]*?(?=## |$)`));
-    if (versionSection) {
-      notes = versionSection[0];
-    }
-  } catch (error) {
-    // No changelog, use default
+  let notes = `## 🚀 Quick Install
+
+To update/install, simply run this one command in your terminal:
+
+\`\`\`bash
+curl -fsSL https://raw.githubusercontent.com/Mallen220/PedroPathingVisualizer/main/install.sh | bash
+\`\`\`
+
+Enter your password when prompted (for clearing old versions and fixing permissions).
+
+## 📦 Installation Options
+
+### **Option 1: One-Line Install (Recommended)**
+\`\`\`bash
+curl -fsSL https://raw.githubusercontent.com/Mallen220/PedroPathingVisualizer/main/install.sh | bash
+\`\`\`
+
+### **Option 2: Homebrew**
+\`\`\`bash
+brew tap Mallen220/PedroPathingVisualizer
+brew install --cask pedro-pathing-visualizer
+\`\`\`
+
+### **Option 3: Manual Download**
+1. Download the DMG above
+2. Double-click to mount it
+3. Drag to Applications folder
+4. On first run: Right-click → Open, then click "Open"
+
+## 🔧 First Run Fix
+If you get "App is damaged", run this one-time fix:
+\`\`\`bash
+sudo xattr -rd com.apple.quarantine "/Applications/Pedro Pathing Visualizer.app"
+\`\`\`
+
+`;
+
+try {
+  const changelog = await fs.readFile(path.join(__dirname, '../CHANGELOG.md'), 'utf8');
+  const versionSection = changelog.match(new RegExp(`## ${version}[\\s\\S]*?(?=## |$)`));
+  if (versionSection) {
+    notes += `\n## 📝 What's New in ${version}\n\n${versionSection[0].replace(`## ${version}`, '')}`;
+  } else {
+    notes += `\n## 📝 What's New\n\n- Bug fixes and improvements`;
   }
+} catch (error) {
+  notes += `\n## 📝 What's New\n\n- Bug fixes and improvements`;
+}
   
   console.log(`\n📦 Creating GitHub release ${tag}...`);
   console.log(`📁 DMG: ${dmgPath}`);
