@@ -86,6 +86,14 @@
         "node_modules/electron-updater"
       ]
     },
+    "dmg": {
+      "icon": "build/icon.png",
+      "background": "build/dmg-background.png",
+      "window": {
+        "width": 540,
+        "height": 380
+      }
+    },
     "publish": {
       "provider": "github",
       "owner": "Mallen220",
