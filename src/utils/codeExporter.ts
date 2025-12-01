@@ -250,16 +250,16 @@ export async function generateSequentialCommandCode(
       eventMarkerNames.add(event.name);
     });
   });
+
   // Determine class name from file name or use default
   let className = "AutoPath";
   if (fileName) {
-    // Extract file name without extension and replace spaces with underscores
     const baseName = fileName.split(/[\\/]/).pop() || "";
     className = baseName.replace(".pp", "").replace(/[^a-zA-Z0-9]/g, "_");
     if (!className) className = "AutoPath";
   }
 
-  // Generate pose declarations without initialization
+  // Generate pose declarations
   const allPoses: string[] = [];
 
   // Add start point
@@ -273,7 +273,7 @@ export async function generateSequentialCommandCode(
     allPoses.push(`  private Pose ${endPointName};`);
   });
 
-  // Generate path chain declarations using FirstPointTOLastPoint naming
+  // Generate path chain declarations
   const pathChainDeclarations = lines
     .map((line, idx) => {
       const startPoseName =
@@ -290,7 +290,10 @@ export async function generateSequentialCommandCode(
     })
     .join("\n");
 
-  // Generate addCommands calls using FirstPointTOLastPoint naming
+  // Generate ProgressTracker field
+  const progressTrackerField = `  private final ProgressTracker progressTracker;`;
+
+  // Generate addCommands calls with event handling
   const addCommandsCalls = lines
     .map((line, idx) => {
       const startPoseName =
@@ -303,11 +306,42 @@ export async function generateSequentialCommandCode(
         ? line.name.replace(/[^a-zA-Z0-9]/g, "")
         : `point${idx + 1}`;
       const pathName = `${startPoseName}TO${endPoseName}`;
-      return `        new FollowPathCommand(follower, ${pathName})`;
+
+      if (line.eventMarkers && line.eventMarkers.length > 0) {
+        // Path has event markers - use parallel command with event checking
+        return `        new SequentialCommandGroup(
+            new InstantCommand(() -> {
+                progressTracker.setCurrentChain(${pathName});
+                ${line.eventMarkers
+                  .map(
+                    (event) =>
+                      `progressTracker.registerEvent("${event.name}", ${event.position.toFixed(3)});`,
+                  )
+                  .join("\n                ")}
+            }),
+            new ParallelCommandGroup(
+                new FollowPathCommand(follower, ${pathName}),
+                new SequentialCommandGroup(
+                    ${line.eventMarkers
+                      .map(
+                        (event, eventIdx) =>
+                          `new ParallelRaceGroup(
+                        new WaitUntilCommand(() -> progressTracker.shouldTriggerEvent("${event.name}")),
+                        new InstantCommand(() -> progressTracker.executeEvent("${event.name}"))
+                    )`,
+                      )
+                      .join(",\n                    ")}
+                )
+            )
+        )`;
+      } else {
+        // No event markers - simple follow path command
+        return `        new FollowPathCommand(follower, ${pathName})`;
+      }
     })
     .join(",\n");
 
-  // Generate buildPaths method using FirstPointTOLastPoint naming
+  // Generate path building
   const pathBuilders = lines
     .map((line, idx) => {
       const startPoseName =
@@ -324,7 +358,6 @@ export async function generateSequentialCommandCode(
       const isCurve = line.controlPoints.length > 0;
       const curveType = isCurve ? "BezierCurve" : "BezierLine";
 
-      // Build control point names for this path
       const controlPointNames = line.controlPoints.map(
         (_, cpIdx) => `${endPoseName}_control${cpIdx + 1}`,
       );
@@ -340,45 +373,31 @@ export async function generateSequentialCommandCode(
             ? `setLinearHeadingInterpolation(${startPoseName}.getHeading(), ${endPoseName}.getHeading())`
             : `setTangentHeadingInterpolation()`;
 
-      // Add event markers
-      let eventMarkerCode = "";
-      if (line.eventMarkers && line.eventMarkers.length > 0) {
-        eventMarkerCode = line.eventMarkers
-          .map(
-            (event) =>
-              `\n            .addEventMarker(${event.position.toFixed(3)}, "${event.name}")`,
-          )
-          .join("");
-      }
-
       return `    ${pathName} =
         follower
             .pathBuilder()
             .addPath(new ${curveType}(${curvePoints}))
-            .${headingType}${eventMarkerCode}
+            .${headingType}
             .build();`;
     })
     .join("\n\n");
-
-  // Generate pose assignments in constructor
-  const poseAssignments: string[] = [];
-  poseAssignments.push('    startPoint = pp.get("startPoint");');
-  lines.forEach((line, idx) => {
-    const endPointName = line.name
-      ? line.name.replace(/[^a-zA-Z0-9]/g, "")
-      : `point${idx + 1}`;
-    poseAssignments.push(`    ${endPointName} = pp.get("${endPointName}");`);
-  });
 
   const namedCommandsSection =
     eventMarkerNames.size > 0
       ? `
   
   // ===== NAMED COMMANDS =====
-  // These commands must be named in your RobotContainer:
+  // These commands must be registered in your RobotContainer class:
   ${Array.from(eventMarkerNames)
-    .map((name) => `// NamedCommands.registerCommand("${name}", yourCommand);`)
+    .map(
+      (name) =>
+        `// NamedCommands.registerCommand("${name}", your${name.replace(/[^a-zA-Z0-9]/g, "")}Command);`,
+    )
     .join("\n  ")}
+    
+  // The ProgressTracker.executeEvent() method will automatically call:
+  // NamedCommands.getCommand("${Array.from(eventMarkerNames)[0]}").schedule();
+  // when the event position is reached
   `
       : "";
 
@@ -392,7 +411,13 @@ import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.PathChain;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
+import com.seattlesolvers.solverslib.command.ParallelCommandGroup;
+import com.seattlesolvers.solverslib.command.ParallelRaceGroup;
+import com.seattlesolvers.solverslib.command.WaitUntilCommand;
+import com.seattlesolvers.solverslib.command.InstantCommand;
 import com.seattlesolvers.solverslib.pedroCommand.FollowPathCommand;
+import org.firstinspires.ftc.teamcode.Utils.Pathing.ProgressTracker;
+${eventMarkerNames.size > 0 ? "import com.pedropathing.NamedCommands;" : ""}
 import java.io.IOException;
 import org.firstinspires.ftc.teamcode.Subsystems.Drivetrain;
 import org.firstinspires.ftc.teamcode.Utils.PedroPathReader;
@@ -400,6 +425,7 @@ import org.firstinspires.ftc.teamcode.Utils.PedroPathReader;
 public class ${className} extends SequentialCommandGroup {
 
   private final Follower follower;
+  ${progressTrackerField}
 
   // Poses
 ${allPoses.join("\n")}
@@ -409,10 +435,36 @@ ${pathChainDeclarations}
 
   public ${className}(final Drivetrain drive, HardwareMap hw) throws IOException {
     this.follower = drive.getFollower();
+    this.progressTracker = new ProgressTracker(follower);
 
     PedroPathReader pp = new PedroPathReader("${fileName ? fileName.split(/[\\/]/).pop() + ".pp" || "AutoPath.pp" : "AutoPath.pp"}", hw.appContext);
 
-${poseAssignments.join("\n")}
+    // Load poses
+    startPoint = pp.get("startPoint");
+    ${lines
+      .map((line, idx) => {
+        const endPointName = line.name
+          ? line.name.replace(/[^a-zA-Z0-9]/g, "")
+          : `point${idx + 1}`;
+        return `${endPointName} = pp.get("${endPointName}");`;
+      })
+      .join("\n    ")}
+    
+    // Load control points if they exist
+    ${lines
+      .map((line, idx) => {
+        const endPoseName = line.name
+          ? line.name.replace(/[^a-zA-Z0-9]/g, "")
+          : `point${idx + 1}`;
+        return line.controlPoints
+          .map(
+            (_, cpIdx) =>
+              `${endPoseName}_control${cpIdx + 1} = pp.get("${endPoseName}_control${cpIdx + 1}");`,
+          )
+          .join("\n    ");
+      })
+      .filter(Boolean)
+      .join("\n    ")}
 
     follower.setStartingPose(startPoint);
 
@@ -452,8 +504,7 @@ ${pathBuilders}
             .build();
      */
   }
-
-  ${namedCommandsSection}
+${namedCommandsSection}
 }
 `;
 
