@@ -73,7 +73,7 @@ const createWindow = () => {
   mainWindow.webContents.session.on(
     "will-download",
     (event, item, webContents) => {
-      item.setSavePathDialog(true);
+      // item.setSavePathDialog(true);
       item.on("updated", (event, state) => {
         if (state === "interrupted") {
           console.log("Download is interrupted but can be resumed");

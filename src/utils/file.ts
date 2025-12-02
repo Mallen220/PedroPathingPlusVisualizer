@@ -44,6 +44,16 @@ export function loadTrajectoryFromFile(
   const elem = evt.target as HTMLInputElement;
   const file = elem.files?.[0];
 
+  if (!file) return;
+
+  // Check file extension
+  if (!file.name.toLowerCase().endsWith(".pp")) {
+    const error = new Error("Please select a .pp file");
+    if (onError) onError(error);
+    alert(error.message);
+    return;
+  }
+
   if (file) {
     const reader = new FileReader();
 

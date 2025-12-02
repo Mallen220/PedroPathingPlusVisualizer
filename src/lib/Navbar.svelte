@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { onMount } from "svelte";
+  import { onMount, onDestroy } from "svelte";
   import {
     darkMode,
     showRuler,
@@ -23,7 +23,6 @@
 
   export let loadFile: (evt: any) => any;
   export let loadRobot: (evt: any) => any;
-  export let saveFile: () => any;
 
   export let startPoint: Point;
   export let lines: Line[];
@@ -32,10 +31,17 @@
   export let robotHeight: number;
   export let settings: FPASettings;
 
+  export let saveProject: () => any;
+  export let saveFileAs: () => any;
+
   let fileManagerOpen = false;
   let settingsOpen = false;
   let exportMenuOpen = false;
   let exportDialog: ExportCodeDialog;
+
+  let saveDropdownOpen = false;
+  let saveDropdownRef: HTMLElement;
+  let saveButtonRef: HTMLElement;
 
   let selectedGridSize = 12;
   const gridSizeOptions = [12, 24, 36, 48];
@@ -110,6 +116,35 @@
     settings.rHeight = robotHeight;
     settings.rWidth = robotWidth;
   }
+
+  function handleClickOutside(event: MouseEvent) {
+    if (
+      saveDropdownOpen &&
+      saveDropdownRef &&
+      !saveDropdownRef.contains(event.target as Node) &&
+      saveButtonRef &&
+      !saveButtonRef.contains(event.target as Node)
+    ) {
+      saveDropdownOpen = false;
+    }
+  }
+
+  // Handle Escape key to close dropdown
+  function handleKeyDown(event: KeyboardEvent) {
+    if (saveDropdownOpen && event.key === "Escape") {
+      saveDropdownOpen = false;
+    }
+  }
+
+  onMount(() => {
+    document.addEventListener("click", handleClickOutside);
+    document.addEventListener("keydown", handleKeyDown);
+  });
+
+  onDestroy(() => {
+    document.removeEventListener("click", handleClickOutside);
+    document.removeEventListener("keydown", handleKeyDown);
+  });
 </script>
 
 {#if fileManagerOpen}
@@ -319,23 +354,125 @@
     ></div>
 
     <div class="flex items-center gap-3">
-      <!-- Save/Load buttons -->
-      <button title="Save trajectory as a file" on:click={() => saveFile()}>
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke-width="2"
-          stroke="currentColor"
-          class="size-6"
+      <!-- Save dropdown -->
+      <div class="relative">
+        <button
+          bind:this={saveButtonRef}
+          title="Save options"
+          on:click={() => (saveDropdownOpen = !saveDropdownOpen)}
+          class="flex items-center gap-1 hover:bg-neutral-200 dark:hover:bg-neutral-800 px-2 py-1 rounded transition-colors"
+          aria-expanded={saveDropdownOpen}
+          aria-label="Save options"
         >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3"
-          />
-        </svg>
-      </button>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke-width="2"
+            stroke="currentColor"
+            class="size-6"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M16.5 3.75V16.5L12 14.25 7.5 16.5V3.75m9 0H18A2.25 2.25 0 0 1 20.25 6v12A2.25 2.25 0 0 1 18 20.25H6A2.25 2.25 0 0 1 3.75 18V6A2.25 2.25 0 0 1 6 3.75h1.5m9 0h-9"
+            />
+          </svg>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke-width="2"
+            stroke="currentColor"
+            class="size-4 transition-transform"
+            class:rotate-180={saveDropdownOpen}
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="m19.5 8.25-7.5 7.5-7.5-7.5"
+            />
+          </svg>
+        </button>
+
+        <!-- Dropdown menu -->
+        {#if saveDropdownOpen}
+          <div
+            bind:this={saveDropdownRef}
+            class="absolute right-0 mt-2 w-48 bg-white dark:bg-neutral-800 rounded-md shadow-lg py-1 z-50 border border-neutral-200 dark:border-neutral-700"
+            role="menu"
+          >
+            <!-- Save option -->
+            <button
+              on:click={() => {
+                saveProject();
+                saveDropdownOpen = false;
+              }}
+              class="flex items-center gap-3 w-full text-left px-4 py-2 text-sm text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700"
+              role="menuitem"
+              title="Save to current file"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke-width="2"
+                stroke="currentColor"
+                class="size-4"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M16.5 3.75V16.5L12 14.25 7.5 16.5V3.75m9 0H18A2.25 2.25 0 0 1 20.25 6v12A2.25 2.25 0 0 1 18 20.25H6A2.25 2.25 0 0 1 3.75 18V6A2.25 2.25 0 0 1 6 3.75h1.5m9 0h-9"
+                />
+              </svg>
+              <div class="flex flex-col">
+                <span class="font-medium">Save</span>
+                <span class="text-xs text-neutral-500 dark:text-neutral-400">
+                  {#if $currentFilePath}
+                    Save to {$currentFilePath.split(/[\\/]/).pop()}
+                  {:else}
+                    Save to new file
+                  {/if}
+                </span>
+              </div>
+            </button>
+
+            <!-- Save As option -->
+            <button
+              on:click={() => {
+                saveFileAs();
+                saveDropdownOpen = false;
+              }}
+              class="flex items-center gap-3 w-full text-left px-4 py-2 text-sm text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700"
+              role="menuitem"
+              title="Save as new file"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke-width="2"
+                stroke="currentColor"
+                class="size-4"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M17 16v2a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h2m3-4H9a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-1m-1 4l-3 3m0 0l-3-3m3 3V3"
+                />
+              </svg>
+              <div class="flex flex-col">
+                <span class="font-medium">Save As</span>
+                <span class="text-xs text-neutral-500 dark:text-neutral-400">
+                  Save to a new file
+                </span>
+              </div>
+            </button>
+          </div>
+        {/if}
+      </div>
+
       <input
         id="file-input"
         type="file"
@@ -345,7 +482,7 @@
       />
       <label
         for="file-input"
-        title="Load trajectory from a file"
+        title="Load trajectory from a .pp file"
         class="cursor-pointer"
       >
         <svg

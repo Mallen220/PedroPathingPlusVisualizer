@@ -567,6 +567,10 @@
     two.update();
   })();
 
+  function saveFileAs() {
+    downloadTrajectory(startPoint, lines, shapes);
+  }
+
   function animate(timestamp: number) {
     if (!startTime) {
       startTime = timestamp;
@@ -685,14 +689,107 @@
     downloadTrajectory(startPoint, lines, shapes);
   }
 
-  function loadFile(evt: Event) {
-    loadTrajectoryFromFile(evt, (data) => {
-      startPoint = data.startPoint;
-      lines = data.lines;
-      if (data.shapes) {
-        shapes = data.shapes;
-      }
-    });
+  async function loadFile(evt: Event) {
+    const elem = evt.target as HTMLInputElement;
+    const file = elem.files?.[0];
+
+    if (!file) return;
+
+    // Check if file is a .pp file
+    if (!file.name.endsWith(".pp")) {
+      alert("Please select a .pp file");
+      // Reset the file input
+      elem.value = "";
+      return;
+    }
+
+    // If we're in Electron environment and have a current directory, copy the file
+    if (electronAPI && $currentFilePath) {
+      await loadFileWithCopy(file);
+    } else {
+      // Use the original load function for web or when no directory is set
+      loadTrajectoryFromFile(evt, (data) => {
+        startPoint = data.startPoint;
+        lines = data.lines;
+        if (data.shapes) {
+          shapes = data.shapes;
+        }
+      });
+    }
+
+    // Reset the file input
+    elem.value = "";
+  }
+
+  // New function to handle file copying in Electron
+  async function loadFileWithCopy(file: File) {
+    try {
+      // Read the file content
+      const reader = new FileReader();
+
+      reader.onload = async (e) => {
+        try {
+          const content = e.target?.result as string;
+          const data = JSON.parse(content);
+
+          // Get the current directory from the current file path
+          const currentDir = $currentFilePath
+            ? $currentFilePath.substring(0, $currentFilePath.lastIndexOf("/"))
+            : await electronAPI.getDirectory();
+
+          // Create the destination path
+          const destPath = currentDir + "/" + file.name;
+
+          // Check if file already exists in the directory
+          const exists = await electronAPI.fileExists(destPath);
+
+          if (exists) {
+            // Ask for confirmation to overwrite
+            const overwrite = confirm(
+              `File "${file.name}" already exists in the current directory. Overwrite?`,
+            );
+            if (!overwrite) {
+              // User cancelled - just load without copying
+              loadData(data);
+              return;
+            }
+          }
+
+          // Copy the file to the current directory
+          await electronAPI.writeFile(destPath, content);
+
+          // Load the data into the app
+          loadData(data);
+
+          // Update the current file path to the newly loaded file
+          currentFilePath.set(destPath);
+
+          console.log(`File copied to: ${destPath}`);
+        } catch (error) {
+          console.error("Error processing file:", error);
+          alert("Error loading file: " + error.message);
+        }
+      };
+
+      reader.onerror = () => {
+        alert("Error reading file");
+      };
+
+      reader.readAsText(file);
+    } catch (error) {
+      console.error("Error in loadFileWithCopy:", error);
+      alert("Error loading file: " + error.message);
+    }
+  }
+
+  // Helper function to load data into app state
+  function loadData(data: any) {
+    startPoint = data.startPoint;
+    lines = data.lines;
+    if (data.shapes) {
+      shapes = data.shapes;
+    }
+    isUnsaved.set(false);
   }
 
   function loadRobot(evt: Event) {
@@ -760,10 +857,12 @@
   bind:settings
   bind:robotWidth
   bind:robotHeight
-  {saveFile}
+  {saveProject}
+  {saveFileAs}
   {loadFile}
   {loadRobot}
 />
+<!--   {saveFile} -->
 <div
   class="w-screen h-screen pt-20 p-2 flex flex-row justify-center items-center gap-2"
 >
