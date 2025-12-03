@@ -92,7 +92,7 @@
   let loopAnimation = true;
   let animationController: ReturnType<typeof createAnimationController>;
   $: timePrediction = calculatePathTime(startPoint, lines, settings);
-  $: animationDuration = getAnimationDuration(timePrediction.totalTime);
+  $: animationDuration = getAnimationDuration(timePrediction.totalTime / 1000);
 
   /**
    * Converter for X axis from inches to pixels.

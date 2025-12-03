@@ -1,108 +1,132 @@
-import type { Point, Line, FPASettings } from "../types";
+// src/utils/timeCalculator.ts
+import type { Point, Line, FPASettings, TimePrediction } from "../types";
 import { getCurvePoint } from "./math";
 
 /**
- * Calculate the length of a bezier curve segment
+ * Format time in seconds to a human-readable string
  */
-export function calculateSegmentLength(
-  startPoint: Point,
-  controlPoints: Point[],
-  endPoint: Point,
-  samples: number = 100,
-): number {
-  if (controlPoints.length === 0) {
-    // Straight line - simple distance calculation
-    return Math.sqrt(
-      Math.pow(endPoint.x - startPoint.x, 2) +
-        Math.pow(endPoint.y - startPoint.y, 2),
-    );
+export function formatTime(totalSeconds: number): string {
+  if (totalSeconds <= 0) return "0.000s";
+
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+
+  if (minutes > 0) {
+    return `${minutes}:${seconds.toFixed(3).padStart(6, "0")}s`;
   }
 
-  // For curves, sample multiple points and sum the distances
-  let totalLength = 0;
-  let prevPoint = startPoint;
+  return `${seconds.toFixed(3)}s`;
+}
+
+/**
+ * Calculate the length of a curve by sampling points
+ */
+function calculateCurveLength(
+  start: Point,
+  controlPoints: Point[],
+  end: Point,
+  samples: number = 100,
+): number {
+  let length = 0;
+  let prevPoint = start;
 
   for (let i = 1; i <= samples; i++) {
     const t = i / samples;
-    const currentPoint = getCurvePoint(t, [
-      startPoint,
-      ...controlPoints,
-      endPoint,
-    ]);
-
-    const segmentLength = Math.sqrt(
-      Math.pow(currentPoint.x - prevPoint.x, 2) +
-        Math.pow(currentPoint.y - prevPoint.y, 2),
-    );
-
-    totalLength += segmentLength;
-    prevPoint = currentPoint;
+    const point = getCurvePoint(t, [start, ...controlPoints, end]);
+    const dx = point.x - prevPoint.x;
+    const dy = point.y - prevPoint.y;
+    length += Math.sqrt(dx * dx + dy * dy);
+    prevPoint = point;
   }
 
-  return totalLength;
+  return length;
 }
 
 /**
- * Calculate time to traverse a path segment based on velocity settings
+ * Calculate time for a motion profile (trapezoidal or triangular)
  */
-export function calculateSegmentTime(
-  segmentLength: number,
-  settings: FPASettings,
-  isCurve: boolean = false,
+function calculateMotionProfileTime(
+  distance: number,
+  maxVel: number,
+  maxAcc: number,
+  maxDec?: number,
 ): number {
-  if (segmentLength === 0) return 0;
+  const deceleration = maxDec || maxAcc;
 
-  // Use the average of x and y velocities for more accurate prediction
-  const averageVelocity = (settings.xVelocity + settings.yVelocity) / 2;
+  // Calculate acceleration and deceleration distances
+  const accDist = (maxVel * maxVel) / (2 * maxAcc);
+  const decDist = (maxVel * maxVel) / (2 * deceleration);
 
-  // For curves, apply a reduction factor since robots typically slow down
-  const curveFactor = isCurve ? 0.7 : 1.0;
+  // Check if we can reach max velocity (trapezoidal profile)
+  if (distance >= accDist + decDist) {
+    const accTime = maxVel / maxAcc;
+    const decTime = maxVel / deceleration;
+    const constDist = distance - accDist - decDist;
+    const constTime = constDist / maxVel;
 
-  // Consider angular velocity impact - if there's significant turning, it slows down overall speed
-  const turningFactor = settings.aVelocity > Math.PI ? 0.9 : 1.0;
+    return accTime + constTime + decTime;
+  } else {
+    // Triangular profile
+    const vPeak = Math.sqrt(
+      (2 * distance * maxAcc * deceleration) / (maxAcc + deceleration),
+    );
+    const accTime = vPeak / maxAcc;
+    const decTime = vPeak / deceleration;
 
-  // Base time calculation
-  const effectiveVelocity = averageVelocity * curveFactor * turningFactor;
-  const baseTime = segmentLength / effectiveVelocity;
-
-  // Add acceleration/deceleration factor (more significant for shorter segments)
-  const accelerationTime = Math.min(0.3, baseTime * 0.2); // Cap acceleration time
-
-  return baseTime + accelerationTime;
+    return accTime + decTime;
+  }
 }
 
 /**
- * Calculate total path time and individual segment times
+ * Calculate path time with motion profile (more accurate)
  */
 export function calculatePathTime(
   startPoint: Point,
   lines: Line[],
   settings: FPASettings,
-): { totalTime: number; segmentTimes: number[]; totalDistance: number } {
-  if (!lines.length) {
-    return { totalTime: 0, segmentTimes: [], totalDistance: 0 };
-  }
+): TimePrediction {
+  // Check if new motion profile fields exist, otherwise use old method
+  const useMotionProfile =
+    settings.maxVelocity !== undefined &&
+    settings.maxAcceleration !== undefined;
 
+  const segmentLengths: number[] = [];
   const segmentTimes: number[] = [];
-  let totalDistance = 0;
 
-  // Calculate time for each segment
-  lines.forEach((line, index) => {
-    const segmentStart = index === 0 ? startPoint : lines[index - 1].endPoint;
-    const isCurve = line.controlPoints.length > 0;
-
-    const segmentLength = calculateSegmentLength(
-      segmentStart,
+  // Calculate length of each segment
+  lines.forEach((line, idx) => {
+    const start = idx === 0 ? startPoint : lines[idx - 1].endPoint;
+    const length = calculateCurveLength(
+      start,
       line.controlPoints,
       line.endPoint,
     );
-    const segmentTime = calculateSegmentTime(segmentLength, settings, isCurve);
-
-    segmentTimes.push(segmentTime);
-    totalDistance += segmentLength;
+    segmentLengths.push(length);
   });
 
+  if (useMotionProfile) {
+    // Use motion profile calculation
+    const { maxVelocity, maxAcceleration, maxDeceleration } = settings;
+    segmentLengths.forEach((length) => {
+      const segmentTime = calculateMotionProfileTime(
+        length,
+        maxVelocity!,
+        maxAcceleration!,
+        maxDeceleration,
+      );
+      segmentTimes.push(segmentTime);
+    });
+  } else {
+    // Fallback to simple velocity-based calculation
+    const avgVelocity = (settings.xVelocity + settings.yVelocity) / 2;
+    segmentLengths.forEach((length) => {
+      const segmentTime = length / avgVelocity;
+      segmentTimes.push(segmentTime);
+    });
+  }
+
   const totalTime = segmentTimes.reduce((sum, time) => sum + time, 0);
+  const totalDistance = segmentLengths.reduce((sum, length) => sum + length, 0);
 
   return {
     totalTime,
@@ -112,23 +136,11 @@ export function calculatePathTime(
 }
 
 /**
- * Format time for display (seconds with 2 decimal places)
+ * Calculate animation duration (with optional speed factor)
  */
-export function formatTime(seconds: number): string {
-  if (seconds < 60) {
-    return `${seconds.toFixed(2)}s`;
-  } else {
-    const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = seconds % 60;
-    return `${minutes}m ${remainingSeconds.toFixed(0)}s`;
-  }
-}
-
-/**
- * Calculate the optimal animation duration based on predicted time
- * This ensures the animation matches the real-world timing
- */
-export function getAnimationDuration(predictedTime: number): number {
-  // The animation should take exactly the predicted time to complete
-  return Math.max(0.1, predictedTime); // Ensure minimum duration
+export function getAnimationDuration(
+  totalTime: number,
+  speedFactor: number = 1.0,
+): number {
+  return (totalTime * 1000) / speedFactor;
 }
