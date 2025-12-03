@@ -4,6 +4,30 @@ interface BasePoint {
   locked?: boolean;
 }
 
+export type TimelineEventType = "travel" | "wait";
+
+export interface TimelineEvent {
+  type: TimelineEventType;
+  duration: number;
+  startTime: number;
+  endTime: number;
+
+  // For 'travel' events
+  lineIndex?: number;
+
+  // For 'wait/rotate' events
+  startHeading?: number;
+  targetHeading?: number;
+  atPoint?: BasePoint;
+}
+
+interface TimePrediction {
+  totalTime: number;
+  segmentTimes: number[];
+  totalDistance: number;
+  timeline: TimelineEvent[];
+}
+
 type Point = BasePoint &
   (
     | {
@@ -75,12 +99,6 @@ interface FileInfo {
   path: string;
   size: number;
   modified: Date;
-}
-
-interface TimePrediction {
-  totalTime: number;
-  segmentTimes: number[];
-  totalDistance: number;
 }
 
 interface EventMarker {

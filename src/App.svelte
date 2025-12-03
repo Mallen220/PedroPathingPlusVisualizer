@@ -13,6 +13,7 @@
   import { createAnimationController } from "./utils/animation";
   import { calculatePathTime, getAnimationDuration } from "./utils";
 
+  import { calculateRobotState } from "./utils";
   import {
     easeInOutQuad,
     getCurvePoint,
@@ -109,6 +110,27 @@
     .scaleLinear()
     .domain([0, FIELD_SIZE])
     .range([height || FIELD_SIZE, 0]);
+
+  $: {
+    // UPDATED: Calculate robot state using the Timeline
+    if (timePrediction && timePrediction.timeline && lines.length > 0) {
+      const state = calculateRobotState(
+        percent,
+        timePrediction.timeline,
+        lines,
+        startPoint,
+        x,
+        y,
+      );
+
+      robotXY = { x: state.x, y: state.y };
+      robotHeading = state.heading;
+    } else {
+      // Fallback for initialization
+      robotXY = { x: x(startPoint.x), y: y(startPoint.y) };
+      robotHeading = 0;
+    }
+  }
 
   $: points = (() => {
     let _points = [];
@@ -446,54 +468,27 @@
   });
 
   $: {
-    let totalLineProgress =
-      (lines.length * Math.min(percent, 99.999999999)) / 100;
-    let currentLineIdx = Math.min(
-      Math.trunc(totalLineProgress),
-      lines.length - 1,
-    );
-    let currentLine = lines[currentLineIdx];
+    // This handles both 'travel' (movement) and 'wait' (stationary rotation) events.
+    if (timePrediction && timePrediction.timeline && lines.length > 0) {
+      const state = calculateRobotState(
+        percent,
+        timePrediction.timeline,
+        lines,
+        startPoint,
+        x,
+        y,
+      );
 
-    let linePercent = easeInOutQuad(
-      totalLineProgress - Math.floor(totalLineProgress),
-    );
-    let _startPoint =
-      currentLineIdx === 0 ? startPoint : lines[currentLineIdx - 1].endPoint;
-    let robotInchesXY = getCurvePoint(linePercent, [
-      _startPoint,
-      ...currentLine.controlPoints,
-      currentLine.endPoint,
-    ]);
-    robotXY = { x: x(robotInchesXY.x), y: y(robotInchesXY.y) };
-
-    switch (currentLine.endPoint.heading) {
-      case "linear":
-        robotHeading = -shortestRotation(
-          currentLine.endPoint.startDeg,
-          currentLine.endPoint.endDeg,
-          linePercent,
-        );
-        break;
-      case "constant":
-        robotHeading = -currentLine.endPoint.degrees;
-        break;
-      case "tangential":
-        const nextPointInches = getCurvePoint(
-          linePercent + (currentLine.endPoint.reverse ? -0.01 : 0.01),
-          [_startPoint, ...currentLine.controlPoints, currentLine.endPoint],
-        );
-        const nextPoint = { x: x(nextPointInches.x), y: y(nextPointInches.y) };
-
-        const dx = nextPoint.x - robotXY.x;
-        const dy = nextPoint.y - robotXY.y;
-
-        if (dx !== 0 || dy !== 0) {
-          const angle = Math.atan2(dy, dx);
-
-          robotHeading = radiansToDegrees(angle);
-        }
-
-        break;
+      robotXY = { x: state.x, y: state.y };
+      robotHeading = state.heading;
+    } else {
+      // Fallback for initialization or empty state
+      robotXY = { x: x(startPoint.x), y: y(startPoint.y) };
+      // Calculate initial heading based on start point settings
+      if (startPoint.heading === "linear") robotHeading = -startPoint.startDeg;
+      else if (startPoint.heading === "constant")
+        robotHeading = -startPoint.degrees;
+      else robotHeading = 0;
     }
   }
 
