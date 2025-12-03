@@ -4,7 +4,7 @@ import {
   shortestRotation,
   radiansToDegrees,
 } from "./math";
-import type { Point, Line } from "../types";
+import type { Point, Line, TimelineEvent } from "../types";
 import type { ScaleLinear } from "d3";
 
 export interface RobotState {
@@ -24,73 +24,113 @@ type AnimationState = {
 };
 
 /**
- * Calculate the robot position and heading at a given percentage along the path
+ * Calculate the robot position and heading based on the Timeline
  */
 export function calculateRobotState(
   percent: number,
+  timeline: TimelineEvent[],
   lines: Line[],
   startPoint: Point,
   xScale: ScaleLinear<number, number>,
   yScale: ScaleLinear<number, number>,
 ): RobotState {
-  const totalLineProgress =
-    (lines.length * Math.min(percent, 99.999999999)) / 100;
-  const currentLineIdx = Math.min(
-    Math.trunc(totalLineProgress),
-    lines.length - 1,
-  );
-  const currentLine = lines[currentLineIdx];
-
-  const linePercent = easeInOutQuad(
-    totalLineProgress - Math.floor(totalLineProgress),
-  );
-  const _startPoint =
-    currentLineIdx === 0 ? startPoint : lines[currentLineIdx - 1].endPoint;
-  const robotInchesXY = getCurvePoint(linePercent, [
-    _startPoint,
-    ...currentLine.controlPoints,
-    currentLine.endPoint,
-  ]);
-
-  const robotXY = { x: xScale(robotInchesXY.x), y: yScale(robotInchesXY.y) };
-  let robotHeading = 0;
-
-  switch (currentLine.endPoint.heading) {
-    case "linear":
-      robotHeading = -shortestRotation(
-        currentLine.endPoint.startDeg,
-        currentLine.endPoint.endDeg,
-        linePercent,
-      );
-      break;
-    case "constant":
-      robotHeading = -currentLine.endPoint.degrees;
-      break;
-    case "tangential":
-      const nextPointInches = getCurvePoint(
-        linePercent + (currentLine.endPoint.reverse ? -0.01 : 0.01),
-        [_startPoint, ...currentLine.controlPoints, currentLine.endPoint],
-      );
-      const nextPoint = {
-        x: xScale(nextPointInches.x),
-        y: yScale(nextPointInches.y),
-      };
-
-      const dx = nextPoint.x - robotXY.x;
-      const dy = nextPoint.y - robotXY.y;
-
-      if (dx !== 0 || dy !== 0) {
-        const angle = Math.atan2(dy, dx);
-        robotHeading = radiansToDegrees(angle);
-      }
-      break;
+  if (!timeline || timeline.length === 0) {
+    return { x: xScale(startPoint.x), y: yScale(startPoint.y), heading: 0 };
   }
 
-  return {
-    x: robotXY.x,
-    y: robotXY.y,
-    heading: robotHeading,
-  };
+  // Calculate current time in seconds based on percent (0-100)
+  const totalDuration = timeline[timeline.length - 1].endTime;
+  const currentSeconds = (percent / 100) * totalDuration;
+
+  // Find the active event for this time
+  const activeEvent =
+    timeline.find(
+      (e) => currentSeconds >= e.startTime && currentSeconds <= e.endTime,
+    ) || timeline[timeline.length - 1];
+
+  if (activeEvent.type === "wait") {
+    // --- STATIONARY ROTATION ---
+    const point = activeEvent.atPoint!;
+
+    // Calculate progress (0.0 to 1.0) within this specific wait event
+    const eventProgress =
+      (currentSeconds - activeEvent.startTime) / activeEvent.duration;
+    const clampedProgress = Math.max(0, Math.min(1, eventProgress));
+
+    // Interpolate heading smoothly
+    const currentHeading = shortestRotation(
+      activeEvent.startHeading!,
+      activeEvent.targetHeading!,
+      clampedProgress,
+    );
+
+    // Note: We use negative heading for visualizer (SVG/CSS rotation is CW, Math is usually CCW)
+    return {
+      x: xScale(point.x),
+      y: yScale(point.y),
+      heading: -currentHeading,
+    };
+  } else {
+    // --- MOVEMENT TRAVEL ---
+    const lineIdx = activeEvent.lineIndex!;
+    const currentLine = lines[lineIdx];
+    const prevPoint = lineIdx === 0 ? startPoint : lines[lineIdx - 1].endPoint;
+
+    // Calculate progress (0.0 to 1.0) within this specific travel event
+    const timeProgress =
+      (currentSeconds - activeEvent.startTime) / activeEvent.duration;
+    // Apply Easing only to the movement
+    const linePercent = easeInOutQuad(Math.max(0, Math.min(1, timeProgress)));
+
+    // Calculate Position
+    const robotInchesXY = getCurvePoint(linePercent, [
+      prevPoint,
+      ...currentLine.controlPoints,
+      currentLine.endPoint,
+    ]);
+
+    const robotXY = { x: xScale(robotInchesXY.x), y: yScale(robotInchesXY.y) };
+    let robotHeading = 0;
+
+    // Calculate Heading based on Line Type
+    switch (currentLine.endPoint.heading) {
+      case "linear":
+        robotHeading = -shortestRotation(
+          currentLine.endPoint.startDeg,
+          currentLine.endPoint.endDeg,
+          linePercent,
+        );
+        break;
+      case "constant":
+        robotHeading = -currentLine.endPoint.degrees;
+        break;
+      case "tangential":
+        const nextPointInches = getCurvePoint(
+          linePercent + (currentLine.endPoint.reverse ? -0.01 : 0.01),
+          [prevPoint, ...currentLine.controlPoints, currentLine.endPoint],
+        );
+        const nextPoint = {
+          x: xScale(nextPointInches.x),
+          y: yScale(nextPointInches.y),
+        };
+        const dx = nextPoint.x - robotXY.x;
+        const dy = nextPoint.y - robotXY.y;
+
+        if (dx !== 0 || dy !== 0) {
+          // atan2 returns angle in pixels (Y is down), so -90 is Up.
+          // This matches the -heading logic used elsewhere.
+          const angle = Math.atan2(dy, dx);
+          robotHeading = radiansToDegrees(angle);
+        }
+        break;
+    }
+
+    return {
+      x: robotXY.x,
+      y: robotXY.y,
+      heading: robotHeading,
+    };
+  }
 }
 
 /**
