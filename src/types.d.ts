@@ -57,7 +57,9 @@ interface FPASettings {
   rWidth: number;
   rHeight: number;
   safetyMargin: number;
-  
+  maxVelocity: number; // inches/sec
+  maxAcceleration: number; // inches/sec²
+  maxDeceleration?: number; // inches/sec²
 }
 
 interface Shape {
