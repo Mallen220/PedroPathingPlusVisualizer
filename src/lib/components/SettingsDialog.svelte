@@ -94,6 +94,50 @@
           </div>
 
           <div class="flex flex-row justify-between items-center w-full">
+            <div class="font-light">Max Velocity (in/s):</div>
+            <input
+              class="px-3 py-2 rounded-md bg-neutral-100 dark:bg-neutral-950 dark:border-neutral-700 border focus:outline-none focus:ring-2 focus:ring-blue-500 w-24 text-base"
+              step="1"
+              type="number"
+              min="0"
+              bind:value={settings.maxVelocity}
+            />
+          </div>
+
+          <div class="flex flex-row justify-between items-center w-full">
+            <div class="font-light">Max Acceleration (in/s²):</div>
+            <input
+              class="px-3 py-2 rounded-md bg-neutral-100 dark:bg-neutral-950 dark:border-neutral-700 border focus:outline-none focus:ring-2 focus:ring-blue-500 w-24 text-base"
+              step="1"
+              type="number"
+              min="0"
+              bind:value={settings.maxAcceleration}
+            />
+          </div>
+
+          <div class="flex flex-row justify-between items-center w-full">
+            <div class="font-light">Max Deceleration (in/s²):</div>
+            <input
+              class="px-3 py-2 rounded-md bg-neutral-100 dark:bg-neutral-950 dark:border-neutral-700 border focus:outline-none focus:ring-2 focus:ring-blue-500 w-24 text-base"
+              step="1"
+              type="number"
+              min="0"
+              bind:value={settings.maxDeceleration}
+              on:input={(e) => {
+                const value = parseFloat(e.target.value);
+                if (!isNaN(value)) {
+                  settings.maxDeceleration = value;
+                }
+              }}
+              on:focus={() => {
+                if (settings.maxDeceleration === undefined) {
+                  settings.maxDeceleration = settings.maxAcceleration;
+                }
+              }}
+            />
+          </div>
+
+          <div class="flex flex-row justify-between items-center w-full">
             <div class="font-light">Friction Coefficient:</div>
             <input
               class="px-3 py-2 rounded-md bg-neutral-100 dark:bg-neutral-950 dark:border-neutral-700 border focus:outline-none focus:ring-2 focus:ring-blue-500 w-24 text-base"
@@ -104,6 +148,7 @@
             />
           </div>
 
+          <!-- Safety Margin Field -->
           <div class="flex flex-row justify-between items-center w-full">
             <div class="font-light">Safety Margin (in):</div>
             <input
