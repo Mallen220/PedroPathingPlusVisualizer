@@ -1,3 +1,7 @@
+## 1.1.6 (2025-12-03)
+
+- Attempting to add new executables
+
 ## 1.1.5 (2025-12-01)
 
 - Added Icon and better install steps. Warning if attempting an unsafe manual install.

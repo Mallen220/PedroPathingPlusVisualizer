@@ -46,14 +46,17 @@ async function runCommandStream(command, args, label) {
           );
         }
       } else {
-        console.log(`   ${text.trim()}`);
+        console.log(`    ${text.trim()}`);
       }
     });
 
     child.stderr.on("data", (data) => {
       const text = data.toString();
       error += text;
-      console.log(`   ⚠ ${text.trim()}`);
+      // Filter out non-critical warnings
+      if (!text.includes("warning") && !text.includes("Warning")) {
+        console.log(`   ⚠ ${text.trim()}`);
+      }
     });
 
     child.on("close", (code) => {
@@ -111,51 +114,68 @@ async function checkGitHubAuth() {
   }
 }
 
-async function createGitHubRelease(version, dmgPath) {
+async function createGitHubRelease(version, artifactPaths) {
   const tag = `v${version}`;
   const title = `Pedro Pathing Visualizer ${version}`;
+  
 
   // Try to get changelog if it exists
-  let notes = `## 🚀 Quick Install
+  let notes = `## 🚀 Multi-Platform Release
 
-To update/install, simply run this one command in your terminal:
-
-\`\`\`bash
-curl -fsSL https://raw.githubusercontent.com/Mallen220/PedroPathingVisualizer/main/install.sh | bash
-\`\`\`
-
-Enter your password when prompted (for clearing old versions and fixing permissions).
+This release includes installers for macOS, Windows, and Linux!
 
 ## 📦 Installation Options
 
-### **Option 1: One-Line Install (Recommended)**
+### **For All Platforms:**
+Choose the installer for your operating system below and follow the platform-specific instructions.
+
+### **Platform-Specific Instructions:**
+
+To update/install on macOS or Linux, run:
+
 \`\`\`bash
 curl -fsSL https://raw.githubusercontent.com/Mallen220/PedroPathingVisualizer/main/install.sh | bash
 \`\`\`
-Enter your password when prompted. This script will:
-1. Download the latest DMG
-2. Clear any old versions
-3. Mount the DMG
-4. Copy the app to your Applications folder
-5. Fix permissions
 
-### **Option 2: Manual Download**
-1. Download the DMG below
-2. Clear Mac decontamination quarantine:
-\`\`\`bash
-sudo xattr -rd com.apple.quarantine "/path/to/Pedro Pathing Visualizer.app"
-\`\`\`
-(Replace \`/path/to/\` with the actual path to the downloaded app)
-3. Double-click to mount it
-4. Drag to Applications folder
-5. On first run: Right-click → Open, then click "Open" if prompted. This bypasses macOS security for apps from unidentified developers.
+#### **macOS**
 
-## 🔧 First Run Fix
-If you get "App is damaged", run this one-time fix:
+**Use the one-line installer:**
 \`\`\`bash
-sudo xattr -rd com.apple.quarantine "/Applications/Pedro Pathing Visualizer.app"
+curl -fsSL https://raw.githubusercontent.com/Mallen220/PedroPathingVisualizer/main/install.sh | bash
 \`\`\`
 
+Then enter the password when prompted to allow installation.
+
+**Or manually:**
+1. Download the \`.dmg\` file
+2. Double-click to mount it
+3. Drag to Applications folder
+4. On first run: Right-click → Open, then click "Open" if prompted
+
+#### **Windows**
+1. Download the \`.exe\` installer
+2. Double-click to run
+3. Follow the installation wizard
+4. Launch from Start Menu or Desktop shortcut
+
+#### **Linux (Ubuntu/Debian)**
+1. Download the \`.AppImage\` or \`.deb\` file
+2. For AppImage: Make executable and run:
+\`\`\`bash
+chmod +x Pedro*.AppImage
+./Pedro*.AppImage
+\`\`\`
+3. For DEB package: Install with:
+\`\`\`bash
+sudo dpkg -i Pedro*.deb
+\`\`\`
+
+## 🔧 Troubleshooting
+- **macOS "App is damaged"**: Run \`sudo xattr -rd com.apple.quarantine "/Applications/Pedro Pathing Visualizer.app"\`
+- **Linux AppImage won't run**: Ensure it's executable: \`chmod +x *.AppImage\`
+- **Windows security warning**: Click "More info" then "Run anyway" for first launch
+
+## 📝 Release Notes
 `;
 
   try {
@@ -167,39 +187,41 @@ sudo xattr -rd com.apple.quarantine "/Applications/Pedro Pathing Visualizer.app"
       new RegExp(`## ${version}[\\s\\S]*?(?=## |$)`),
     );
     if (versionSection) {
-      notes += `\n## 📝 What's New in ${version}\n\n${versionSection[0].replace(`## ${version}`, "")}`;
+      notes += `\n${versionSection[0].replace(`## ${version}`, "")}`;
     } else {
-      notes += `\n## 📝 What's New\n\n- Bug fixes and improvements`;
+      notes += `\n- Bug fixes and improvements`;
     }
   } catch (error) {
-    notes += `\n## 📝 What's New\n\n- Bug fixes and improvements`;
+    notes += `\n- Bug fixes and improvements`;
   }
 
   console.log(`\n📦 Creating GitHub release ${tag}...`);
-  console.log(`📁 DMG: ${dmgPath}`);
-  console.log(`📝 Notes length: ${notes.length} characters`);
+  console.log(`📁 Artifacts to upload: ${artifactPaths.length}`);
 
   // Create a temporary file for the release notes
   const notesFile = path.join(__dirname, `../release-notes-${version}.md`);
   await fs.writeFile(notesFile, notes);
 
   try {
+    // Construct arguments for gh release create
+    const args = [
+      "release",
+      "create",
+      tag,
+      ...artifactPaths,
+      "--title",
+      title,
+      "--notes-file",
+      notesFile,
+      "--draft",
+      "--target",
+      "main",
+    ];
+
     await runCommandStream(
       "gh",
-      [
-        "release",
-        "create",
-        tag,
-        dmgPath,
-        "--title",
-        title,
-        "--notes-file",
-        notesFile,
-        "--draft",
-        "--target",
-        "main",
-      ],
-      "Creating GitHub draft release",
+      args,
+      "Creating GitHub draft release with artifacts",
     );
 
     console.log("\n✨ Draft release created!");
@@ -255,34 +277,42 @@ async function main() {
     console.log("========================");
     await runCommand("npm run build", "Building with Vite");
 
-    // 5. Create DMG
-    console.log("\n📦 Step 2: Creating DMG...");
+    // 5. Create Artifacts
+    console.log("\n📦 Step 2: Packaging for All Platforms...");
     console.log("========================");
-    await runCommand("npm run dist:unsigned", "Packaging for macOS");
+    // Changed from dist:unsigned (mac only) to dist:all (mac, win, linux)
+    // Note: This may require specific env setup on the build machine for cross-compilation
+    await runCommand("npm run dist:all", "Packaging for macOS, Windows, and Linux");
 
-    // 6. Find DMG
-    console.log("\n🔍 Step 3: Finding DMG...");
+    // 6. Find Artifacts
+    console.log("\n🔍 Step 3: Finding Artifacts...");
     console.log("========================");
     const releaseDir = path.join(__dirname, "../release");
     const files = await fs.readdir(releaseDir);
-    const dmgFile = files.find(
-      (f) => f.includes(version) && f.endsWith(".dmg"),
+    
+    // Look for dmg, exe, AppImage, deb
+    const artifactFiles = files.filter(
+      (f) => 
+        (f.endsWith(".dmg") || 
+         f.endsWith(".exe") || 
+         f.endsWith(".AppImage") || 
+         f.endsWith(".deb")) &&
+        f.includes(version) &&
+        !f.includes("blockmap") // Exclude electron-builder internal files
     );
 
-    if (!dmgFile) {
-      throw new Error(`No DMG found for version ${version} in release/ folder`);
+    if (artifactFiles.length === 0) {
+      throw new Error(`No artifacts found for version ${version} in release/ folder`);
     }
 
-    const dmgPath = path.join(releaseDir, dmgFile);
-    const stats = await fs.stat(dmgPath);
-    const sizeMB = (stats.size / (1024 * 1024)).toFixed(1);
+    const artifactPaths = artifactFiles.map(f => path.join(releaseDir, f));
 
-    console.log(`✅ Found: ${dmgFile} (${sizeMB} MB)`);
+    console.log(`✅ Found ${artifactFiles.length} artifacts:`);
+    artifactFiles.forEach(f => console.log(`   - ${f}`));
 
     // 7. Create git tag
     console.log("\n🏷️  Step 4: Creating git tag...");
     console.log("============================");
-
     const tagExists = await (async () => {
       try {
         await execAsync(`git rev-parse v${version}`);
@@ -317,9 +347,10 @@ async function main() {
     const createRelease = await ask(
       `Create GitHub draft release for v${version}? (y/N): `,
     );
+
     if (createRelease.toLowerCase().startsWith("y")) {
-      console.log("\n📤 This may take a few minutes for the DMG upload...");
-      await createGitHubRelease(version, dmgPath);
+      console.log("\n📤 Uploading artifacts...");
+      await createGitHubRelease(version, artifactPaths);
 
       console.log("\n✅ Release draft created!");
       console.log("\n📋 Next steps:");
@@ -329,17 +360,9 @@ async function main() {
       );
       console.log("2. Edit release notes if needed");
       console.log('3. Click "Publish release"');
-      console.log("4. Homebrew cask will auto-update via workflow");
     } else {
       console.log("Skipping GitHub release creation.");
-      console.log(`\n📁 DMG is ready at: ${dmgPath}`);
-      console.log("\nTo manually create release:");
-      console.log(
-        "1. Go to: https://github.com/Mallen220/PedroPathingVisualizer/releases/new",
-      );
-      console.log(`2. Tag: v${version}`);
-      console.log(`3. Title: Pedro Pathing Visualizer ${version}`);
-      console.log(`4. Attach: ${dmgFile}`);
+      console.log(`\n📁 Artifacts are ready in: ${releaseDir}`);
     }
 
     console.log("\n🎉 Release process complete!");
@@ -347,8 +370,7 @@ async function main() {
     console.error("\n❌ Release failed:", error.message);
     console.log("\n💡 Debug tips:");
     console.log("1. Check GitHub authentication: gh auth status");
-    console.log("2. Try creating release manually");
-    console.log("3. Check DMG exists in release/ folder");
+    console.log("2. Ensure cross-compilation dependencies are installed if building for other OSs");
   } finally {
     rl.close();
   }

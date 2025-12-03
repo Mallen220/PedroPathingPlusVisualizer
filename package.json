@@ -1,9 +1,10 @@
 {
   "name": "pedro-pathing-visualizer",
   "private": true,
-  "version": "1.1.5",
+  "version": "1.1.6",
   "main": "electron/main.js",
-  "author": "Matthew Allen",
+  "author": "Matthew Allen <allenmc220@gmail.com>",
+  "email": "allenmc220@gmail.com",
   "license": "MIT",
   "description": "A better alternative to pedro pathing visualizer",
   "type": "module",
@@ -17,7 +18,7 @@
     "start": "npm run build && electron .",
     "dist": "npm run build && electron-builder --mac --arm64 --publish=never",
     "dist:unsigned": "npm run build && CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder --mac --arm64 --publish=never",
-    "dist:all": "npm run build && CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder --mac --arm64 --x64 --publish=never",
+    "dist:all": "npm run build && CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder --mac --win --linux --publish=never",
     "dist:publish": "node scripts/publish.js",
     "format": "prettier --write ."
   },
@@ -93,6 +94,24 @@
         "width": 540,
         "height": 380
       }
+    },
+    "win": {
+      "target": "nsis",
+      "icon": "build/icon.png"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true
+    },
+    "linux": {
+      "target": [
+        "AppImage",
+        "deb"
+      ],
+      "icon": "build/icon.png",
+      "category": "Development",
+      "maintainer": "Matthew Allen <allenmc220@gmail.com>"
     },
     "publish": {
       "provider": "github",
