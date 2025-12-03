@@ -52,6 +52,7 @@ export function getDefaultLines(): Line[] {
       controlPoints: [],
       color: getRandomColor(),
       eventMarkers: [],
+      locked: false,
     },
   ];
 }

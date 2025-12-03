@@ -295,6 +295,15 @@
       lineElem.linewidth = x(LINE_WIDTH);
       lineElem.noFill();
 
+      // Add a dashed line for locked paths
+      if (line.locked) {
+        lineElem.dashes = [x(2), x(2)];
+        lineElem.opacity = 0.7;
+      } else {
+        lineElem.dashes = [];
+        lineElem.opacity = 1;
+      }
+
       _path.push(lineElem);
     });
 
@@ -629,6 +638,13 @@
     two.renderer.domElement.addEventListener("mousemove", (evt: MouseEvent) => {
       const elem = document.elementFromPoint(evt.clientX, evt.clientY);
       if (isDown && currentElem) {
+        const line = Number(currentElem.split("-")[1]) - 1;
+
+        // Skip dragging if the line is locked
+        if (line >= 0 && lines[line]?.locked) {
+          return;
+        }
+
         const { x: xPos, y: yPos } = getMousePos(evt, two.renderer.domElement);
 
         if (currentElem.startsWith("obstacle-")) {
@@ -808,6 +824,7 @@
         } as Point,
         controlPoints: [],
         color: getRandomColor(),
+        locked: false,
       },
     ];
   }

@@ -117,7 +117,6 @@ async function checkGitHubAuth() {
 async function createGitHubRelease(version, artifactPaths) {
   const tag = `v${version}`;
   const title = `Pedro Pathing Visualizer ${version}`;
-  
 
   // Try to get changelog if it exists
   let notes = `## 🚀 Quick Update
@@ -245,33 +244,38 @@ async function main() {
     console.log("========================");
     // Changed from dist:unsigned (mac only) to dist:all (mac, win, linux)
     // Note: This may require specific env setup on the build machine for cross-compilation
-    await runCommand("npm run dist:all", "Packaging for macOS, Windows, and Linux");
+    await runCommand(
+      "npm run dist:all",
+      "Packaging for macOS, Windows, and Linux",
+    );
 
     // 6. Find Artifacts
     console.log("\n🔍 Step 3: Finding Artifacts...");
     console.log("========================");
     const releaseDir = path.join(__dirname, "../release");
     const files = await fs.readdir(releaseDir);
-    
+
     // Look for dmg, exe, AppImage, deb
     const artifactFiles = files.filter(
-      (f) => 
-        (f.endsWith(".dmg") || 
-         f.endsWith(".exe") || 
-         f.endsWith(".AppImage") || 
-         f.endsWith(".deb")) &&
+      (f) =>
+        (f.endsWith(".dmg") ||
+          f.endsWith(".exe") ||
+          f.endsWith(".AppImage") ||
+          f.endsWith(".deb")) &&
         f.includes(version) &&
-        !f.includes("blockmap") // Exclude electron-builder internal files
+        !f.includes("blockmap"), // Exclude electron-builder internal files
     );
 
     if (artifactFiles.length === 0) {
-      throw new Error(`No artifacts found for version ${version} in release/ folder`);
+      throw new Error(
+        `No artifacts found for version ${version} in release/ folder`,
+      );
     }
 
-    const artifactPaths = artifactFiles.map(f => path.join(releaseDir, f));
+    const artifactPaths = artifactFiles.map((f) => path.join(releaseDir, f));
 
     console.log(`✅ Found ${artifactFiles.length} artifacts:`);
-    artifactFiles.forEach(f => console.log(`   - ${f}`));
+    artifactFiles.forEach((f) => console.log(`   - ${f}`));
 
     // 7. Create git tag
     console.log("\n🏷️  Step 4: Creating git tag...");
@@ -333,7 +337,9 @@ async function main() {
     console.error("\n❌ Release failed:", error.message);
     console.log("\n💡 Debug tips:");
     console.log("1. Check GitHub authentication: gh auth status");
-    console.log("2. Ensure cross-compilation dependencies are installed if building for other OSs");
+    console.log(
+      "2. Ensure cross-compilation dependencies are installed if building for other OSs",
+    );
   } finally {
     rl.close();
   }

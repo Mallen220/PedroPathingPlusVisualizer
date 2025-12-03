@@ -448,6 +448,7 @@
               bind:value={line.name}
               placeholder="Path {idx + 1}"
               class="pl-1.5 rounded-md bg-neutral-100 dark:bg-neutral-950 dark:border-neutral-700 border-[0.5px] focus:outline-none text-sm font-semibold"
+              disabled={line.locked}
             />
             <div
               class="relative size-5 rounded-full overflow-hidden shadow-sm border border-neutral-300 dark:border-neutral-600 shrink-0"
@@ -460,6 +461,48 @@
                 title="Change Path Color"
               />
             </div>
+
+            <!-- Lock/Unlock Button -->
+            <button
+              title={line.locked ? "Unlock Path" : "Lock Path"}
+              on:click|stopPropagation={() => {
+                line.locked = !line.locked;
+                lines = [...lines]; // Force reactivity
+              }}
+              class="p-1 rounded hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
+            >
+              {#if line.locked}
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke-width={2}
+                  stroke="currentColor"
+                  class="size-5 stroke-yellow-500"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z"
+                  />
+                </svg>
+              {:else}
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke-width={2}
+                  stroke="currentColor"
+                  class="size-5 stroke-gray-400"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M13.5 10.5V6.75a4.5 4.5 0 1 1 9 0v3.75M3.75 21.75h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H3.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z"
+                  />
+                </svg>
+              {/if}
+            </button>
           </div>
 
           <div class="flex flex-row justify-end items-center gap-1">
@@ -529,6 +572,7 @@
                 min="0"
                 max="144"
                 bind:value={line.endPoint.x}
+                disabled={line.locked}
               />
               <div class="font-extralight">Y:</div>
               <input
@@ -538,6 +582,7 @@
                 max="144"
                 type="number"
                 bind:value={line.endPoint.y}
+                disabled={line.locked}
               />
 
               <select
@@ -547,6 +592,7 @@
 With constant heading, the robot maintains the same heading throughout the line. 
 With linear heading, heading changes linearly between given start and end angles. 
 With tangential heading, the heading follows the direction of the line."
+                disabled={line.locked}
               >
                 <option value="constant">Constant</option>
                 <option value="linear">Linear</option>
@@ -562,6 +608,7 @@ With tangential heading, the heading follows the direction of the line."
                   max="180"
                   bind:value={line.endPoint.startDeg}
                   title="The heading the robot starts this line at (in degrees)"
+                  disabled={line.locked}
                 />
                 <input
                   class="pl-1.5 rounded-md bg-neutral-100 dark:bg-neutral-950 dark:border-neutral-700 border-[0.5px] focus:outline-none w-14"
@@ -571,6 +618,7 @@ With tangential heading, the heading follows the direction of the line."
                   max="180"
                   bind:value={line.endPoint.endDeg}
                   title="The heading the robot ends this line at (in degrees)"
+                  disabled={line.locked}
                 />
               {:else if line.endPoint.heading === "constant"}
                 <input
@@ -581,6 +629,7 @@ With tangential heading, the heading follows the direction of the line."
                   max="180"
                   bind:value={line.endPoint.degrees}
                   title="The constant heading the robot maintains throughout this line (in degrees)"
+                  disabled={line.locked}
                 />
               {:else if line.endPoint.heading === "tangential"}
                 <p class="text-sm font-extralight">Reverse:</p>
@@ -588,6 +637,7 @@ With tangential heading, the heading follows the direction of the line."
                   type="checkbox"
                   bind:checked={line.endPoint.reverse}
                   title="Reverse the direction the robot faces along the tangential path"
+                  disabled={line.locked}
                 />
               {/if}
             </div>
@@ -630,6 +680,7 @@ With tangential heading, the heading follows the direction of the line."
                   on:click={() => addEventMarker(idx)}
                   class="text-sm text-purple-500 hover:text-purple-600 flex items-center gap-1 px-2 py-1"
                   title="Add Event Marker"
+                  disabled={line.locked}
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -662,6 +713,7 @@ With tangential heading, the heading follows the direction of the line."
                             bind:value={event.name}
                             class="pl-1.5 rounded-md bg-white dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-600 focus:outline-none focus:ring-1 focus:ring-purple-500 text-sm w-32"
                             placeholder="Event name"
+                            disabled={line.locked}
                             on:change={() => {
                               // Update the array to trigger reactivity
                               line.eventMarkers = [...line.eventMarkers];
@@ -674,6 +726,7 @@ With tangential heading, the heading follows the direction of the line."
                           on:click={() => removeEventMarker(idx, eventIdx)}
                           class="text-red-500 hover:text-red-600"
                           title="Remove Event Marker"
+                          disabled={line.locked}
                         >
                           <svg
                             xmlns="http://www.w3.org/2000/svg"
@@ -705,6 +758,7 @@ With tangential heading, the heading follows the direction of the line."
                           step="0.01"
                           value={event.position}
                           class="flex-1 slider"
+                          disabled={line.locked}
                           on:input={(e) => {
                             const value = parseFloat(e.target.value);
                             if (!isNaN(value)) {
@@ -716,6 +770,7 @@ With tangential heading, the heading follows the direction of the line."
                         <input
                           type="number"
                           value={event.position}
+                          disabled={line.locked}
                           min="0"
                           max="1"
                           step="0.01"
@@ -806,6 +861,7 @@ With tangential heading, the heading follows the direction of the line."
                 }}
                 class="text-sm text-blue-500 hover:text-blue-600 flex items-center gap-1 px-2 py-1"
                 title="Add Control Point"
+                disabled={line.locked}
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -849,6 +905,7 @@ With tangential heading, the heading follows the direction of the line."
                         }}
                         class="text-red-500 hover:text-red-600"
                         title="Remove Control Point"
+                        disabled={line.locked}
                       >
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
@@ -884,6 +941,7 @@ With tangential heading, the heading follows the direction of the line."
                           // Update the array to trigger reactivity
                           line.controlPoints = [...line.controlPoints];
                         }}
+                        disabled={line.locked}
                       />
                       <span
                         class="text-xs text-neutral-600 dark:text-neutral-400"
@@ -900,6 +958,7 @@ With tangential heading, the heading follows the direction of the line."
                           // Update the array to trigger reactivity
                           line.controlPoints = [...line.controlPoints];
                         }}
+                        disabled={line.locked}
                       />
                     </div>
 

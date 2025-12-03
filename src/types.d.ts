@@ -36,6 +36,7 @@ interface Line {
   color: string;
   name?: string;
   eventMarkers?: EventMarker[];
+  locked?: boolean;
 }
 
 interface FPALine {
