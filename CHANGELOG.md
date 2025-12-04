@@ -1,3 +1,7 @@
+## 1.1.8 (2025-12-04)
+
+- Added persistent settings memory. Backend cleanup. FPA Settings renamed to just settins. Security improvements. 
+
 ## 1.1.7 (2025-12-03)
 
 - Added lock function to paths and start point. Improved header labels. Better FPA settings. Better time calculations and no header jumping during autos.
