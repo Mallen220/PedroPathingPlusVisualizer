@@ -1,6 +1,7 @@
 <script lang="ts">
   import { cubicInOut } from "svelte/easing";
   import { fade, fly } from "svelte/transition";
+  import { resetSettings } from "../../utils/settingsPersistence";
 
   export let isOpen = false;
   export let settings: Settings;
@@ -11,6 +12,20 @@
   function handleAngularVelocityInput(e: Event) {
     const target = e.target as HTMLInputElement;
     settings.aVelocity = parseFloat(target.value) * Math.PI;
+  }
+
+  async function handleReset() {
+    if (
+      confirm(
+        "Are you sure you want to reset all settings to defaults? This cannot be undone.",
+      )
+    ) {
+      const defaultSettings = await resetSettings();
+      // Update the bound settings object
+      Object.keys(defaultSettings).forEach((key) => {
+        settings[key] = defaultSettings[key];
+      });
+    }
   }
 </script>
 
@@ -172,6 +187,39 @@
               <option value={5}>High</option>
             </select>
           </div> -->
+        </div>
+
+        <div
+          class="flex justify-between items-center w-full pt-4 border-t border-neutral-200 dark:border-neutral-700"
+        >
+          <button
+            on:click={handleReset}
+            class="px-4 py-2 text-sm bg-red-500 hover:bg-red-600 text-white rounded-md transition-colors flex items-center gap-2"
+            title="Reset all settings to default values"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke-width={2}
+              stroke="currentColor"
+              class="size-4"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99"
+              />
+            </svg>
+            Reset to Defaults
+          </button>
+
+          <button
+            on:click={() => (isOpen = false)}
+            class="px-4 py-2 text-sm bg-blue-500 hover:bg-blue-600 text-white rounded-md transition-colors"
+          >
+            Close
+          </button>
         </div>
       </div>
     </div>

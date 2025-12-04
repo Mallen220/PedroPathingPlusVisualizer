@@ -145,6 +145,10 @@ ipcMain.handle("file:get-directory", async () => {
   }
 });
 
+ipcMain.handle("app:get-app-data-path", () => {
+  return app.getPath("userData");
+});
+
 ipcMain.handle("file:set-directory", async () => {
   const result = await dialog.showOpenDialog(mainWindow, {
     properties: ["openDirectory"],
