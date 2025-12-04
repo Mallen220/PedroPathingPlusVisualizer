@@ -1,6 +1,5 @@
 <script lang="ts">
   import * as d3 from "d3";
-  import { onMount, tick } from "svelte";
   import { currentFilePath, isUnsaved } from "./stores";
   import Two from "two.js";
   import type { Path } from "two.js/src/path";
@@ -38,6 +37,9 @@
     getDefaultLines,
     getDefaultShapes,
   } from "./config";
+  import { loadSettings, saveSettings } from "./utils/settingsPersistence";
+  import { onMount, tick } from "svelte";
+  import { debounce } from "lodash";
 
   // Electron API type (defined in preload.js, attached to window)
   interface ElectronAPI {
@@ -413,6 +415,28 @@
       isLoaded = true;
     }, 500);
   });
+
+  onMount(async () => {
+    // Load saved settings
+    const savedSettings = await loadSettings();
+    settings = { ...savedSettings };
+
+    // Update robot dimensions from loaded settings
+    robotWidth = settings.rWidth;
+    robotHeight = settings.rHeight;
+  });
+
+  // Debounced save function
+  const debouncedSaveSettings = debounce(async (settingsToSave: Settings) => {
+    await saveSettings(settingsToSave);
+  }, 1000); // Save after 1 second of inactivity
+
+  // Watch for settings changes and save
+  $: {
+    if (settings) {
+      debouncedSaveSettings(settings);
+    }
+  }
 
   // Initialize animation controller
   onMount(() => {

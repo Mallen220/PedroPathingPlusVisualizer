@@ -2,6 +2,7 @@ const { contextBridge, ipcRenderer } = require("electron");
 
 contextBridge.exposeInMainWorld("electronAPI", {
   // File system operations
+  getAppDataPath: () => ipcRenderer.invoke("app:get-app-data-path"),
   getDirectory: () => ipcRenderer.invoke("file:get-directory"),
   setDirectory: () => ipcRenderer.invoke("file:set-directory"),
   listFiles: (directory) => ipcRenderer.invoke("file:list", directory),
