@@ -59,7 +59,7 @@ const startServer = async () => {
 
 const createWindow = () => {
   mainWindow = new BrowserWindow({
-    width: 1320,
+    width: 1360,
     height: 800,
     title: "Pedro Pathing Visualizer",
     webPreferences: {

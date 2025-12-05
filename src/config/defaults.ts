@@ -15,6 +15,15 @@ export const LINE_WIDTH = 0.57;
 export const FIELD_SIZE = 144;
 
 /**
+ * Available field maps
+ */
+export const AVAILABLE_FIELD_MAPS = [
+  { value: "decode.webp", label: "DECODE Field (2025-2026)" },
+  { value: "intothedeep.webp", label: "Into The Deep Field (2024-2025)" },
+  { value: "centerstage.webp", label: "Centerstage (2023-2024)" },
+];
+
+/**
  * Default settings
  */
 export const DEFAULT_SETTINGS: Settings = {
@@ -28,6 +37,7 @@ export const DEFAULT_SETTINGS: Settings = {
   maxVelocity: 40,
   maxAcceleration: 30,
   maxDeceleration: 30,
+  fieldMap: "decode.webp",
 };
 
 /**

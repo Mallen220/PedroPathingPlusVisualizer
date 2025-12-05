@@ -913,9 +913,16 @@
       class="h-full aspect-square rounded-lg shadow-md bg-neutral-50 dark:bg-neutral-900 relative overflow-clip"
     >
       <img
-        src="/fields/decode.webp"
+        src={settings.fieldMap
+          ? `/fields/${settings.fieldMap}`
+          : "/fields/decode.webp"}
         alt="Field"
         class="absolute top-0 left-0 w-full h-full rounded-lg z-10 pointer-events-none"
+        style="background: transparent;"
+        on:error={(e) => {
+          console.error("Failed to load field map:", settings.fieldMap);
+          e.target.src = "/fields/decode.webp"; // Fallback
+        }}
       />
       <MathTools {x} {y} {twoElement} {robotXY} {robotHeading} />
       <img

@@ -75,6 +75,7 @@ interface Settings {
   maxVelocity: number; // inches/sec
   maxAcceleration: number; // inches/sec²
   maxDeceleration?: number; // inches/sec²
+  fieldMap: string;
 }
 
 function getDefaultSettings(): Settings {

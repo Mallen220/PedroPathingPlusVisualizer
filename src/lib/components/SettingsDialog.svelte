@@ -2,6 +2,7 @@
   import { cubicInOut } from "svelte/easing";
   import { fade, fly } from "svelte/transition";
   import { resetSettings } from "../../utils/settingsPersistence";
+  import { AVAILABLE_FIELD_MAPS } from "../../config/defaults";
 
   export let isOpen = false;
   export let settings: Settings;
@@ -174,6 +175,19 @@
               max="24"
               bind:value={settings.safetyMargin}
             />
+          </div>
+
+          <!-- Field Map Selection -->
+          <div class="flex flex-row justify-between items-center w-full">
+            <div class="font-light">Field Map:</div>
+            <select
+              class="px-3 py-2 rounded-md bg-neutral-100 dark:bg-neutral-950 dark:border-neutral-700 border focus:outline-none focus:ring-2 focus:ring-blue-500 w-48 text-base"
+              bind:value={settings.fieldMap}
+            >
+              {#each AVAILABLE_FIELD_MAPS as field}
+                <option value={field.value}>{field.label}</option>
+              {/each}
+            </select>
           </div>
 
           <!-- <div class="flex flex-row justify-between items-center w-full">
