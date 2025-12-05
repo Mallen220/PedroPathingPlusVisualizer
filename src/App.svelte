@@ -926,9 +926,13 @@
       />
       <MathTools {x} {y} {twoElement} {robotXY} {robotHeading} />
       <img
-        src={"/robot.png"}
+        src={settings.robotImage || "/robot.png"}
         alt="Robot"
         style={`position: absolute; top: ${robotXY.y}px; left: ${robotXY.x}px; transform: translate(-50%, -50%) rotate(${robotHeading}deg); z-index: 20; width: ${x(robotWidth)}px; height: ${x(robotHeight)}px;`}
+        on:error={(e) => {
+          console.error("Failed to load robot image:", settings.robotImage);
+          e.target.src = "/robot.png"; // Fallback to default
+        }}
       />
     </div>
   </div>

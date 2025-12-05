@@ -54,6 +54,22 @@
     if (max !== undefined) num = Math.min(max, num);
     settings[property] = num;
   }
+
+  // Helper function to convert file to base64
+  function imageToBase64(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        if (typeof reader.result === "string") {
+          resolve(reader.result);
+        } else {
+          reject(new Error("Failed to convert image"));
+        }
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  }
 </script>
 
 {#if isOpen}
@@ -253,6 +269,188 @@
                     handleNumberInput(e.target.value, "safetyMargin", 0, 24)}
                   class="w-full px-3 py-2 rounded-md border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
+              </div>
+
+              <!-- Robot Image Upload -->
+              <div>
+                <label
+                  class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1"
+                >
+                  Robot Image
+                  <div class="text-xs text-neutral-500 dark:text-neutral-400">
+                    Upload a custom image for your robot
+                  </div>
+                </label>
+                <div
+                  class="flex flex-col items-center gap-3 p-4 border border-neutral-300 dark:border-neutral-700 rounded-md bg-neutral-50 dark:bg-neutral-800/50"
+                >
+                  <!-- Current robot image preview -->
+                  <div
+                    class="relative w-20 h-20 border-2 border-neutral-300 dark:border-neutral-600 rounded-md overflow-hidden bg-white dark:bg-neutral-900"
+                  >
+                    <img
+                      src={settings.robotImage || "/robot.png"}
+                      alt="Robot Preview"
+                      class="w-full h-full object-contain"
+                      on:error={(e) => {
+                        console.error(
+                          "Failed to load robot image:",
+                          settings.robotImage,
+                        );
+                        e.target.src = "/robot.png"; // Fallback
+                      }}
+                    />
+                    {#if settings.robotImage && settings.robotImage !== "/robot.png"}
+                      <button
+                        on:click={() => {
+                          settings.robotImage = "/robot.png";
+                          settings = { ...settings }; // Force reactivity
+                        }}
+                        class="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors"
+                        title="Remove custom image"
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          class="size-3"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="3"
+                        >
+                          <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            d="M6 18L18 6M6 6l12 12"
+                          />
+                        </svg>
+                      </button>
+                    {/if}
+                  </div>
+
+                  <!-- Image info -->
+                  <div
+                    class="text-center text-xs text-neutral-600 dark:text-neutral-400"
+                  >
+                    {#if settings.robotImage && settings.robotImage !== "/robot.png"}
+                      <p class="font-medium">
+                        {#if settings.robotImage === "/JefferyThePotato.png"}
+                          <span class="inline-flex items-center gap-1">
+                            <span>🥔</span>
+                            <span>Jeffery the Potato Active!</span>
+                            <span>🥔</span>
+                          </span>
+                        {:else}
+                          Custom Image Loaded
+                        {/if}
+                      </p>
+                      <p
+                        class="truncate max-w-[160px]"
+                        title={settings.robotImage.substring(0, 100)}
+                      >
+                        {#if settings.robotImage === "/JefferyThePotato.png"}
+                          Best. Robot. Ever. 🥔
+                        {:else}
+                          {settings.robotImage.substring(0, 30)}...
+                        {/if}
+                      </p>
+                    {:else}
+                      <p>Using default robot image</p>
+                    {/if}
+                  </div>
+
+                  <!-- Upload button -->
+                  <div class="flex flex-col gap-2 w-full">
+                    <input
+                      id="robot-image-input"
+                      type="file"
+                      accept="image/*"
+                      class="hidden"
+                      on:change={async (e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          try {
+                            const base64 = await imageToBase64(file);
+                            settings.robotImage = base64;
+                            settings = { ...settings }; // Force reactivity
+
+                            // Show success message
+                            const successMsg = document.createElement("div");
+                            successMsg.className =
+                              "fixed bottom-4 right-4 bg-green-500 text-white px-4 py-2 rounded-md shadow-lg";
+                            successMsg.textContent = "Robot image updated!";
+                            document.body.appendChild(successMsg);
+                            setTimeout(() => successMsg.remove(), 3000);
+                          } catch (error) {
+                            alert("Error loading image: " + error.message);
+                          }
+                        }
+                      }}
+                    />
+                    <button
+                      on:click={() =>
+                        document.getElementById("robot-image-input").click()}
+                      class="px-4 py-2 text-sm bg-blue-500 hover:bg-blue-600 text-white rounded-md transition-colors flex items-center justify-center gap-2"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        class="size-4"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                        />
+                      </svg>
+                      Upload Robot Image
+                    </button>
+
+                    <button
+                      on:click={() => {
+                        settings.robotImage = "/robot.png";
+                        settings = { ...settings };
+                      }}
+                      class="px-4 py-2 text-sm bg-neutral-500 hover:bg-neutral-600 text-white rounded-md transition-colors"
+                      disabled={!settings.robotImage ||
+                        settings.robotImage === "/robot.png"}
+                    >
+                      Use Default Image
+                    </button>
+
+                    <button
+                      on:click={() => {
+                        settings.robotImage = "/JefferyThePotato.png";
+                        settings = { ...settings };
+                      }}
+                      class="potato-tooltip px-4 py-2 text-sm bg-amber-700 hover:bg-amber-800 text-white rounded-md transition-colors flex items-center justify-center gap-2 group relative overflow-hidden"
+                      style="background-image: linear-gradient(45deg, #a16207 25%, #ca8a04 25%, #ca8a04 50%, #a16207 50%, #a16207 75%, #ca8a04 75%, #ca8a04 100%); background-size: 20px 20px;"
+                      title="Transform your robot into Jeffery the Potato!"
+                    >
+                      <!-- Potato emoji with animation -->
+                      <span
+                        class="text-lg group-hover:scale-110 transition-transform duration-300"
+                        >🥔</span
+                      >
+                      <span class="font-semibold">Use Potato Robot</span>
+                      <span class="text-lg opacity-80">🥔</span>
+
+                      <!-- Fun hover effect -->
+                      <div
+                        class="absolute inset-0 bg-gradient-to-r from-transparent via-yellow-200/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700"
+                      ></div>
+                    </button>
+                  </div>
+
+                  <div
+                    class="text-xs text-neutral-500 dark:text-neutral-400 text-center mt-1"
+                  >
+                    <p>Supported: PNG, JPG, GIF</p>
+                    <p>Recommended: &lt; 1MB, transparent background</p>
+                  </div>
+                </div>
               </div>
             </div>
           {/if}
@@ -636,3 +834,37 @@
     </div>
   </div>
 {/if}
+
+<style>
+  .potato-tooltip {
+    position: relative;
+  }
+
+  .potato-tooltip::after {
+    content: "🥔 P O T A T O   P O W E R 🥔";
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%) translateY(-10px);
+    background: linear-gradient(to right, #a16207, #ca8a04, #a16207);
+    color: white;
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 10px;
+    font-weight: bold;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition:
+      opacity 0.3s,
+      transform 0.3s;
+    z-index: 1000;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    border: 2px solid #92400e;
+  }
+
+  .potato-tooltip:hover::after {
+    opacity: 1;
+    transform: translateX(-50%) translateY(-5px);
+  }
+</style>

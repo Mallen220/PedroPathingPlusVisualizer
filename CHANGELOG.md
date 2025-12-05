@@ -1,6 +1,6 @@
 ## 1.1.9 (2025-12-05)
 
-- Rehauled the settings menu. Selectable field option. See app verison in settings. Better navbar protractor placement. 
+- Rehauled the settings menu. Selectable field option. See app verison in settings. Better navbar protractor placement.
 
 ## 1.1.8 (2025-12-04)
 

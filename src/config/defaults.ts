@@ -38,6 +38,7 @@ export const DEFAULT_SETTINGS: Settings = {
   maxAcceleration: 30,
   maxDeceleration: 30,
   fieldMap: "decode.webp",
+  robotImage: "/robot.png",
 };
 
 /**

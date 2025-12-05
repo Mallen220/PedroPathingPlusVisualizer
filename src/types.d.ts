@@ -76,6 +76,7 @@ interface Settings {
   maxAcceleration: number; // inches/sec²
   maxDeceleration?: number; // inches/sec²
   fieldMap: string;
+  robotImage?: string;
 }
 
 function getDefaultSettings(): Settings {
