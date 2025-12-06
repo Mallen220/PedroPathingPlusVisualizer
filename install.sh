@@ -58,7 +58,7 @@ install_mac() {
     DOWNLOAD_URL=$(get_download_url "\.dmg")
 
     if [ -z "$DOWNLOAD_URL" ]; then
-        print_error "No DMG found in latest release."
+        print_error "No DMG found in latest release or app is running. Please close the app and try again."
         exit 1
     fi
 
