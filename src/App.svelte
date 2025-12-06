@@ -911,21 +911,49 @@
       bind:clientWidth={width}
       bind:clientHeight={height}
       class="h-full aspect-square rounded-lg shadow-md bg-neutral-50 dark:bg-neutral-900 relative overflow-clip"
+      role="application"
       style="
     user-select: none;
     -webkit-user-select: none;
     -moz-user-select: none;
     -ms-user-select: none;
+    -webkit-touch-callout: none;
+    -webkit-tap-highlight-color: transparent;
     user-drag: none;
     -webkit-user-drag: none;
+    -khtml-user-drag: none;
+    -moz-user-drag: none;
+    -ms-user-drag: none;
+    -o-user-drag: none;
   "
+      on:contextmenu={(e) => e.preventDefault()}
+      on:dragstart={(e) => e.preventDefault()}
+      on:selectstart={(e) => e.preventDefault()}
+      on:mousedown={(e) => {
+        // Prevent selection on mouse down
+        if (e.shiftKey || e.ctrlKey || e.metaKey) {
+          e.preventDefault();
+          e.stopPropagation();
+        }
+      }}
+      on:keydown={(e) => {
+        // Prevent Ctrl+A, Ctrl+C, Ctrl+X in the field area
+        if (
+          (e.ctrlKey || e.metaKey) &&
+          (e.key === "a" || e.key === "c" || e.key === "x")
+        ) {
+          e.preventDefault();
+          e.stopPropagation();
+        }
+      }}
+      tabindex="-1"
     >
       <img
         src={settings.fieldMap
           ? `/fields/${settings.fieldMap}`
           : "/fields/decode.webp"}
         alt="Field"
-        class="absolute top-0 left-0 w-full h-full rounded-lg z-10 pointer-events-none"
+        class="absolute top-0 left-0 w-full h-full rounded-lg z-10"
         style="
     background: transparent; 
     pointer-events: none; 
@@ -933,12 +961,21 @@
     -webkit-user-select: none;
     -moz-user-select: none;
     -ms-user-select: none;
+    -webkit-touch-callout: none;
+    -webkit-tap-highlight-color: transparent;
+    user-drag: none;
+    -webkit-user-drag: none;
+    -moz-user-drag: none;
+    -ms-user-drag: none;
+    -o-user-drag: none;
   "
         draggable="false"
         on:error={(e) => {
           console.error("Failed to load field map:", settings.fieldMap);
           e.target.src = "/fields/decode.webp"; // Fallback
         }}
+        on:dragstart={(e) => e.preventDefault()}
+        on:selectstart={(e) => e.preventDefault()}
       />
       <MathTools {x} {y} {twoElement} {robotXY} {robotHeading} />
       <img
