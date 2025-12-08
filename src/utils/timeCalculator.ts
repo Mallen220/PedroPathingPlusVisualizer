@@ -55,6 +55,7 @@ function calculateMotionProfileTime(
     const decTime = maxVel / deceleration;
     const constDist = distance - accDist - decDist;
     const constTime = constDist / maxVel;
+
     return accTime + constTime + decTime;
   } else {
     const vPeak = Math.sqrt(
@@ -83,7 +84,9 @@ export function calculatePathTime(
   let currentTime = 0;
   let currentHeading = 0;
 
-  // Initialize heading
+  // Initialize heading based on start point settings
+  // Note: This initialization is technically overridden by the idx===0 check below
+  // to ensure no initial turning, but kept for fallback logic.
   if (startPoint.heading === "linear") currentHeading = startPoint.startDeg;
   else if (startPoint.heading === "constant")
     currentHeading = startPoint.degrees;
@@ -109,12 +112,20 @@ export function calculatePathTime(
     // --- ROTATION CHECK ---
     const requiredStartHeading = getLineStartHeading(line, prevPoint);
 
+    // FORCE INITIAL HEADING:
+    // If this is the first segment, assume the robot is placed on the field
+    // facing the correct direction. Override currentHeading to match required.
+    if (idx === 0) {
+      currentHeading = requiredStartHeading;
+    }
+
     // CRITICAL FIX: Use getAngularDifference for the shortest path magnitude
     const diff = Math.abs(
       getAngularDifference(currentHeading, requiredStartHeading),
     );
 
     // If difference is significant, add a Wait event
+    // (This will now never happen on idx === 0)
     if (diff > 0.1) {
       // Time = radians / (radians/sec)
       const diffRad = diff * (Math.PI / 180);
