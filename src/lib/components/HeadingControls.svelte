@@ -30,8 +30,7 @@ With tangential heading, the heading follows the direction of the line."
       title="The heading the robot starts this line at (in degrees)"
       disabled={locked}
     />
-    <span class="text-xs text-neutral-600 dark:text-neutral-400 ml-1"
-      >End:</span
+    <span class="text-xs text-neutral-600 dark:text-neutral-400 ml-1">End:</span
     >
     <input
       class="pl-1.5 rounded-md bg-neutral-100 dark:bg-neutral-950 dark:border-neutral-700 border-[0.5px] focus:outline-none w-14"

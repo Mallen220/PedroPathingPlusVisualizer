@@ -89,7 +89,10 @@
   <div
     class="flex flex-col justify-start items-start w-full rounded-lg bg-neutral-50 dark:bg-neutral-900 shadow-md p-4 overflow-y-scroll overflow-x-hidden h-full gap-6"
   >
-    <ObstaclesSection bind:shapes bind:collapsedObstacles={collapsedSections.obstacles} />
+    <ObstaclesSection
+      bind:shapes
+      bind:collapsedObstacles={collapsedSections.obstacles}
+    />
 
     <RobotPositionDisplay {robotXY} {robotHeading} {x} {y} />
 

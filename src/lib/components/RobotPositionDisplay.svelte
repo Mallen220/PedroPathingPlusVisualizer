@@ -14,9 +14,7 @@
     <div class="w-16">{y.invert(robotXY.y).toFixed(3)}</div>
     <div class="font-extralight">Heading:</div>
     <div>
-      {robotHeading.toFixed(0) === "-0"
-        ? "0"
-        : -robotHeading.toFixed(0)}&deg;
+      {robotHeading.toFixed(0) === "-0" ? "0" : -robotHeading.toFixed(0)}&deg;
     </div>
   </div>
 </div>

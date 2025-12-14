@@ -185,13 +185,11 @@
       </div>
     </div>
 
-    {#if !collapsed}
-      <EventMarkersSection
-        bind:line
-        lineIdx={idx}
-        bind:collapsed={collapsedEventMarkers}
-      />
-    {/if}
+    <EventMarkersSection
+      bind:line
+      lineIdx={idx}
+      bind:collapsed={collapsedEventMarkers}
+    />
 
     <ControlPointsSection
       bind:line
