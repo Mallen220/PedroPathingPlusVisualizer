@@ -158,6 +158,7 @@
               type="number"
               min="0"
               max="144"
+              step={$snapToGrid && $showGrid ? $gridSize : 0.1}
               title={snapToGridTitle}
               class="pl-1.5 rounded-md bg-neutral-100 dark:bg-neutral-950 dark:border-neutral-700 border-[0.5px] focus:outline-none w-24 text-sm"
             />
