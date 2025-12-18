@@ -1,4 +1,12 @@
-import type { Point, BasePoint, Line, Settings, TimePrediction, TimelineEvent, SequenceItem } from "../types";
+import type {
+  Point,
+  BasePoint,
+  Line,
+  Settings,
+  TimePrediction,
+  TimelineEvent,
+  SequenceItem,
+} from "../types";
 import {
   getCurvePoint,
   getLineStartHeading,

@@ -73,7 +73,10 @@
   function resetPath() {
     startPoint = getDefaultStartPoint();
     lines = getDefaultLines();
-    sequence = lines.map((ln) => ({ kind: "path", lineId: ln.id || `line-${Math.random().toString(36).slice(2)}` }));
+    sequence = lines.map((ln) => ({
+      kind: "path",
+      lineId: ln.id || `line-${Math.random().toString(36).slice(2)}`,
+    }));
     shapes = getDefaultShapes();
   }
 
@@ -148,7 +151,12 @@
   />
 {/if}
 
-<ExportCodeDialog bind:this={exportDialog} bind:startPoint bind:lines bind:sequence />
+<ExportCodeDialog
+  bind:this={exportDialog}
+  bind:startPoint
+  bind:lines
+  bind:sequence
+/>
 
 <SettingsDialog bind:isOpen={settingsOpen} bind:settings />
 

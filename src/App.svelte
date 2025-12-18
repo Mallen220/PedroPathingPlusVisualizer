@@ -1,5 +1,12 @@
 <script lang="ts">
-  import type { Line, BasePoint, Settings, Point, SequenceItem, Shape } from "./types";
+  import type {
+    Line,
+    BasePoint,
+    Settings,
+    Point,
+    SequenceItem,
+    Shape,
+  } from "./types";
   import * as d3 from "d3";
   import {
     snapToGrid,
@@ -91,7 +98,10 @@
   let settings: Settings = { ...DEFAULT_SETTINGS };
   let startPoint: Point = getDefaultStartPoint();
   let lines: Line[] = normalizeLines(getDefaultLines());
-  let sequence: SequenceItem[] = lines.map((ln) => ({ kind: "path", lineId: ln.id! }));
+  let sequence: SequenceItem[] = lines.map((ln) => ({
+    kind: "path",
+    lineId: ln.id!,
+  }));
   let shapes: Shape[] = getDefaultShapes();
   $: {
     // Ensure arrays are reactive when items are added/removed
@@ -822,9 +832,13 @@
       loadTrajectoryFromFile(evt, (data) => {
         startPoint = data.startPoint;
         lines = normalizeLines(data.lines || []);
-        sequence = (data.sequence && data.sequence.length
-          ? data.sequence
-          : (data.lines || []).map((ln) => ({ kind: "path", lineId: ln.id || `line-${Math.random().toString(36).slice(2)}` }))
+        sequence = (
+          data.sequence && data.sequence.length
+            ? data.sequence
+            : (data.lines || []).map((ln) => ({
+                kind: "path",
+                lineId: ln.id || `line-${Math.random().toString(36).slice(2)}`,
+              }))
         ) as SequenceItem[];
         if (data.shapes) {
           shapes = data.shapes;
@@ -893,9 +907,13 @@
   function loadData(data: any) {
     startPoint = data.startPoint;
     lines = normalizeLines(data.lines || []);
-    sequence = (data.sequence && data.sequence.length
-      ? data.sequence
-      : (data.lines || []).map((ln) => ({ kind: "path", lineId: ln.id || `line-${Math.random().toString(36).slice(2)}` }))
+    sequence = (
+      data.sequence && data.sequence.length
+        ? data.sequence
+        : (data.lines || []).map((ln) => ({
+            kind: "path",
+            lineId: ln.id || `line-${Math.random().toString(36).slice(2)}`,
+          }))
     ) as SequenceItem[];
     if (data.shapes) {
       shapes = data.shapes;
@@ -927,7 +945,10 @@
         waitAfterName: "",
       },
     ];
-    sequence = [...sequence, { kind: "path", lineId: lines[lines.length - 1].id! }];
+    sequence = [
+      ...sequence,
+      { kind: "path", lineId: lines[lines.length - 1].id! },
+    ];
   }
 
   function addControlPoint() {
