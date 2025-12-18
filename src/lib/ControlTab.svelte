@@ -1,4 +1,5 @@
 <script lang="ts">
+  import type { Point, Line, BasePoint, Settings, Shape, SequenceItem } from "../types";
   import _ from "lodash";
   import { getRandomColor } from "../utils";
   import ObstaclesSection from "./components/ObstaclesSection.svelte";
@@ -39,29 +40,37 @@
   const makeId = () => `${Date.now().toString(36)}-${Math.random().toString(36).slice(2,8)}`;
   function getWait(i: any) { return i as any; }
 
-  function insertLineAfter(seqIndex) {
+  function insertLineAfter(seqIndex: number) {
     const seqItem = sequence[seqIndex];
     if (!seqItem || seqItem.kind !== "path") return;
     const lineIndex = lines.findIndex((l) => l.id === seqItem.lineId);
     const currentLine = lines[lineIndex];
 
     // Calculate a new point offset from the current line's end point
-    const newPoint = {
-      x: _.random(36, 108),
-      y: _.random(36, 108),
-      heading: currentLine.endPoint.heading,
-      // Copy heading properties based on type
-      ...(currentLine.endPoint.heading === "linear" && {
+    let newPoint: Point;
+    if (currentLine.endPoint.heading === "linear") {
+      newPoint = {
+        x: _.random(36, 108),
+        y: _.random(36, 108),
+        heading: "linear",
         startDeg: currentLine.endPoint.startDeg,
         endDeg: currentLine.endPoint.endDeg,
-      }),
-      ...(currentLine.endPoint.heading === "constant" && {
+      };
+    } else if (currentLine.endPoint.heading === "constant") {
+      newPoint = {
+        x: _.random(36, 108),
+        y: _.random(36, 108),
+        heading: "constant",
         degrees: currentLine.endPoint.degrees,
-      }),
-      ...(currentLine.endPoint.heading === "tangential" && {
+      };
+    } else {
+      newPoint = {
+        x: _.random(36, 108),
+        y: _.random(36, 108),
+        heading: "tangential",
         reverse: currentLine.endPoint.reverse,
-      }),
-    };
+      };
+    }
 
     // Create a new line that starts where the current line ends
     const newLine = {
@@ -83,7 +92,7 @@
     lines = newLines;
 
     const newSeq = [...sequence];
-    newSeq.splice(seqIndex + 1, 0, { kind: "path", lineId: newLine.id });
+    newSeq.splice(seqIndex + 1, 0, { kind: "path", lineId: newLine.id! });
     sequence = newSeq;
 
     collapsedSections.lines.splice(lineIndex + 1, 0, false);
@@ -123,14 +132,20 @@
       waitAfterName: "",
     };
     lines = [...lines, newLine];
-    sequence = [...sequence, { kind: "path", lineId: newLine.id }];
+    sequence = [...sequence, { kind: "path", lineId: newLine.id! }];
     collapsedSections.lines.push(false);
     collapsedSections.controlPoints.push(true);
   }
 
   function addWait() {
-    const wait = { kind: "wait", id: makeId(), name: "Wait", durationMs: 0 } as SequenceWaitItem;
+    const wait = { kind: "wait", id: makeId(), name: "Wait", durationMs: 0 } as SequenceItem;
     sequence = [...sequence, wait];
+  }
+
+  function insertWaitAfter(seqIndex: number) {
+    const newSeq = [...sequence];
+    newSeq.splice(seqIndex + 1, 0, { kind: "wait", id: makeId(), name: "Wait", durationMs: 0 });
+    sequence = newSeq;
   }
 </script>
 
@@ -160,6 +175,7 @@
             bind:collapsedControlPoints={collapsedSections.controlPoints[lines.findIndex((l) => l.id === ln.id)]}
             onRemove={() => removeLine(lines.findIndex((l) => l.id === ln.id))}
             onInsertAfter={() => insertLineAfter(sIdx)}
+              onAddWaitAfter={() => insertWaitAfter(sIdx)}
           />
         {/each}
       {:else}

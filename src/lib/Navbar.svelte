@@ -1,4 +1,5 @@
 <script lang="ts">
+  import type { Point, Line, Shape, Settings, SequenceItem } from "../types";
   import { onMount, onDestroy } from "svelte";
   import {
     showRuler,
@@ -49,20 +50,11 @@
   $: timePrediction = calculatePathTime(startPoint, lines, settings, sequence);
 
   onMount(() => {
-    const unsubscribeDarkMode = darkMode.subscribe((val) => {
-      if (val === "light") {
-        document.documentElement.classList.remove("dark");
-      } else {
-        document.documentElement.classList.add("dark");
-      }
-    });
-
     const unsubscribeGridSize = gridSize.subscribe((value) => {
       selectedGridSize = value;
     });
 
     return () => {
-      unsubscribeDarkMode();
       unsubscribeGridSize();
     };
   });
@@ -156,7 +148,7 @@
   />
 {/if}
 
-<ExportCodeDialog bind:this={exportDialog} bind:startPoint bind:lines />
+<ExportCodeDialog bind:this={exportDialog} bind:startPoint bind:lines bind:sequence />
 
 <SettingsDialog bind:isOpen={settingsOpen} bind:settings />
 

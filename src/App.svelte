@@ -1,4 +1,5 @@
 <script lang="ts">
+  import type { Line, BasePoint, Settings, Point, SequenceItem, Shape } from "./types";
   import * as d3 from "d3";
   import {
     snapToGrid,

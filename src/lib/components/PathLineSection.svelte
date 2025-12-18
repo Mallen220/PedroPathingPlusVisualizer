@@ -1,4 +1,5 @@
 <script lang="ts">
+  import type { Line } from "../../types";
   import { snapToGrid, showGrid, gridSize } from "../../stores";
   import EventMarkersSection from "./EventMarkersSection.svelte";
   import ControlPointsSection from "./ControlPointsSection.svelte";
@@ -12,6 +13,7 @@
   export let collapsedControlPoints: boolean;
   export let onRemove: () => void;
   export let onInsertAfter: () => void;
+  export let onAddWaitAfter: () => void;
 
   $: snapToGridTitle =
     $snapToGrid && $showGrid ? `Snapping to ${$gridSize} grid` : "No snapping";
@@ -129,6 +131,13 @@
             stroke-linejoin="round"
             d="M12 4.5v15m7.5-7.5h-15"
           />
+        </svg>
+      </button>
+
+      <!-- Add Wait After Button -->
+      <button title="Add Wait After" on:click={onAddWaitAfter} class="text-amber-500 hover:text-amber-600">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width={2} class="size-5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6l4 2" />
         </svg>
       </button>
 

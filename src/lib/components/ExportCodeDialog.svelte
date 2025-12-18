@@ -1,4 +1,5 @@
 <script lang="ts">
+  import type { Point, Line, SequenceItem } from "../../types";
   import { copy } from "svelte-copy";
   import Highlight from "svelte-highlight";
   import { java } from "svelte-highlight/languages";
@@ -16,6 +17,7 @@
   export let isOpen = false;
   export let startPoint: Point;
   export let lines: Line[];
+  export let sequence: SequenceItem[];
 
   let exportFullCode = false;
   let exportFormat: "java" | "points" | "sequential" = "java";
@@ -60,6 +62,7 @@
           startPoint,
           lines,
           sequentialClassName,
+          sequence,
         );
         currentLanguage = java;
       }
@@ -80,6 +83,7 @@
           startPoint,
           lines,
           sequentialClassName,
+          sequence,
         );
       } catch (error) {
         console.error("Refresh failed:", error);
