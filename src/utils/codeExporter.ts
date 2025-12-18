@@ -1,6 +1,6 @@
 import prettier from "prettier";
 import prettierJavaPlugin from "prettier-plugin-java";
-import type { Point, Line, BasePoint } from "../types";
+import type { Point, Line, BasePoint, SequenceItem } from "../types";
 import { getCurvePoint } from "./math";
 
 /**
@@ -242,6 +242,7 @@ export async function generateSequentialCommandCode(
   startPoint: Point,
   lines: Line[],
   fileName: string | null = null,
+  sequence?: SequenceItem[],
 ): Promise<string> {
   // Determine class name from file name or use default
   let className = "AutoPath";
@@ -299,9 +300,9 @@ export async function generateSequentialCommandCode(
       const startPoseName =
         idx === 0
           ? "startPoint"
-          : lines[idx - 1].name
-            ? lines[idx - 1].name.replace(/[^a-zA-Z0-9]/g, "")
-            : `point${idx}`;
+          : (lines[idx - 1]?.name
+              ? lines[idx - 1]!.name!.replace(/[^a-zA-Z0-9]/g, "")
+              : `point${idx}`);
       const endPoseName = lines[idx].name
         ? lines[idx].name.replace(/[^a-zA-Z0-9]/g, "")
         : `point${idx + 1}`;
@@ -313,19 +314,34 @@ export async function generateSequentialCommandCode(
   // Generate ProgressTracker field
   const progressTrackerField = `  private final ProgressTracker progressTracker;`;
 
-  // Generate addCommands calls with event handling
+  // Generate addCommands calls with event handling; iterate sequence if provided
   const commands: string[] = [];
 
-  lines.forEach((line, idx) => {
+  const defaultSequence: SequenceItem[] = lines.map((ln, idx) => ({ kind: "path", lineId: ln.id || `line-${idx + 1}` }));
+  const seq = sequence && sequence.length ? sequence : defaultSequence;
+
+  seq.forEach((item, idx) => {
+    if (item.kind === "wait") {
+      commands.push(`        new WaitCommand(${(item as any).durationMs})`);
+      return;
+    }
+    const lineIdx = lines.findIndex((l) => l.id === (item as any).lineId);
+    if (lineIdx < 0) {
+      return; // skip if sequence references a missing line
+    }
+    const line = lines[lineIdx];
+    if (!line) {
+      return;
+    }
     const startPoseName =
-      idx === 0
+      lineIdx === 0
         ? "startPoint"
-        : lines[idx - 1].name
-          ? lines[idx - 1].name.replace(/[^a-zA-Z0-9]/g, "")
-          : `point${idx}`;
+        : (lines[lineIdx - 1]?.name
+            ? lines[lineIdx - 1]!.name!.replace(/[^a-zA-Z0-9]/g, "")
+            : `point${lineIdx}`);
     const endPoseName = line.name
       ? line.name.replace(/[^a-zA-Z0-9]/g, "")
-      : `point${idx + 1}`;
+      : `point${lineIdx + 1}`;
     const pathName = `${startPoseName}TO${endPoseName}`;
     const pathDisplayName = `${startPoseName}TO${endPoseName}`;
 
@@ -381,9 +397,9 @@ export async function generateSequentialCommandCode(
       const startPoseName =
         idx === 0
           ? "startPoint"
-          : lines[idx - 1].name
-            ? lines[idx - 1].name.replace(/[^a-zA-Z0-9]/g, "")
-            : `point${idx}`;
+          : (lines[idx - 1]?.name
+              ? lines[idx - 1]!.name!.replace(/[^a-zA-Z0-9]/g, "")
+              : `point${idx}`);
       const endPoseName = line.name
         ? line.name.replace(/[^a-zA-Z0-9]/g, "")
         : `point${idx + 1}`;
@@ -439,6 +455,7 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
 import com.seattlesolvers.solverslib.command.ParallelRaceGroup;
 import com.seattlesolvers.solverslib.command.WaitUntilCommand;
+import com.seattlesolvers.solverslib.command.WaitCommand;
 import com.seattlesolvers.solverslib.command.InstantCommand;
 import com.seattlesolvers.solverslib.pedroCommand.FollowPathCommand;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
