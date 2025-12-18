@@ -1,5 +1,12 @@
 <script lang="ts">
-  import type { Point, Line, BasePoint, Settings, Shape, SequenceItem } from "../types";
+  import type {
+    Point,
+    Line,
+    BasePoint,
+    Settings,
+    Shape,
+    SequenceItem,
+  } from "../types";
   import _ from "lodash";
   import { getRandomColor } from "../utils";
   import ObstaclesSection from "./components/ObstaclesSection.svelte";
@@ -37,8 +44,11 @@
     controlPoints: lines.map(() => true), // Start with control points collapsed
   };
 
-  const makeId = () => `${Date.now().toString(36)}-${Math.random().toString(36).slice(2,8)}`;
-  function getWait(i: any) { return i as any; }
+  const makeId = () =>
+    `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+  function getWait(i: any) {
+    return i as any;
+  }
 
   function insertLineAfter(seqIndex: number) {
     const seqItem = sequence[seqIndex];
@@ -110,7 +120,9 @@
     lines.splice(idx, 1);
     lines = _lns;
     if (removedId) {
-      sequence = sequence.filter((s) => s.kind === "wait" || s.lineId !== removedId);
+      sequence = sequence.filter(
+        (s) => s.kind === "wait" || s.lineId !== removedId,
+      );
     }
   }
 
@@ -138,14 +150,62 @@
   }
 
   function addWait() {
-    const wait = { kind: "wait", id: makeId(), name: "Wait", durationMs: 0 } as SequenceItem;
+    const wait = {
+      kind: "wait",
+      id: makeId(),
+      name: "Wait",
+      durationMs: 0,
+    } as SequenceItem;
     sequence = [...sequence, wait];
   }
 
   function insertWaitAfter(seqIndex: number) {
     const newSeq = [...sequence];
-    newSeq.splice(seqIndex + 1, 0, { kind: "wait", id: makeId(), name: "Wait", durationMs: 0 });
+    newSeq.splice(seqIndex + 1, 0, {
+      kind: "wait",
+      id: makeId(),
+      name: "Wait",
+      durationMs: 0,
+    });
     sequence = newSeq;
+  }
+
+  function insertPathAfter(seqIndex: number) {
+    // Create a new line with default settings
+    const newLine: Line = {
+      id: makeId(),
+      name: `Path ${lines.length + 1}`,
+      endPoint: {
+        x: _.random(36, 108),
+        y: _.random(36, 108),
+        heading: "tangential",
+        reverse: false,
+      },
+      controlPoints: [],
+      color: getRandomColor(),
+      eventMarkers: [],
+      waitBeforeMs: 0,
+      waitAfterMs: 0,
+      waitBeforeName: "",
+      waitAfterName: "",
+    };
+
+    // Add the new line to the lines array
+    lines = [...lines, newLine];
+
+    // Insert the new path in the sequence after the wait
+    const newSeq = [...sequence];
+    newSeq.splice(seqIndex + 1, 0, { kind: "path", lineId: newLine.id! });
+    sequence = newSeq;
+
+    // Add UI state for the new line
+    collapsedSections.lines.push(false);
+    collapsedSections.controlPoints.push(true);
+    collapsedEventMarkers.push(false);
+
+    // Force reactivity
+    collapsedSections = { ...collapsedSections };
+    collapsedEventMarkers = [...collapsedEventMarkers];
   }
 </script>
 
@@ -164,18 +224,26 @@
 
     <!-- Unified sequence render: paths and waits -->
     {#each sequence as item, sIdx}
-      {#if item.kind === 'path'}
+      {#if item.kind === "path"}
         {#each lines.filter((l) => l.id === item.lineId) as ln (ln.id)}
           <PathLineSection
             bind:line={ln}
             idx={lines.findIndex((l) => l.id === ln.id)}
             bind:lines
-            bind:collapsed={collapsedSections.lines[lines.findIndex((l) => l.id === ln.id)]}
-            bind:collapsedEventMarkers={collapsedEventMarkers[lines.findIndex((l) => l.id === ln.id)]}
-            bind:collapsedControlPoints={collapsedSections.controlPoints[lines.findIndex((l) => l.id === ln.id)]}
+            bind:collapsed={
+              collapsedSections.lines[lines.findIndex((l) => l.id === ln.id)]
+            }
+            bind:collapsedEventMarkers={
+              collapsedEventMarkers[lines.findIndex((l) => l.id === ln.id)]
+            }
+            bind:collapsedControlPoints={
+              collapsedSections.controlPoints[
+                lines.findIndex((l) => l.id === ln.id)
+              ]
+            }
             onRemove={() => removeLine(lines.findIndex((l) => l.id === ln.id))}
             onInsertAfter={() => insertLineAfter(sIdx)}
-              onAddWaitAfter={() => insertWaitAfter(sIdx)}
+            onAddWaitAfter={() => insertWaitAfter(sIdx)}
           />
         {/each}
       {:else}
@@ -198,39 +266,63 @@
           }}
           onInsertAfter={() => {
             const newSeq = [...sequence];
-            newSeq.splice(sIdx + 1, 0, { kind: 'wait', id: makeId(), name: 'Wait', durationMs: 0 });
+            newSeq.splice(sIdx + 1, 0, {
+              kind: "wait",
+              id: makeId(),
+              name: "Wait",
+              durationMs: 0,
+            });
             sequence = newSeq;
           }}
+          onAddPathAfter={() => insertPathAfter(sIdx)}
         />
       {/if}
     {/each}
 
     <!-- Add Line Button -->
     <div class="flex flex-row items-center gap-4">
-    <button on:click={addLine} class="font-semibold text-green-500 text-sm flex flex-row justify-start items-center gap-1">
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        fill="none"
-        viewBox="0 0 24 24"
-        stroke-width={2}
-        stroke="currentColor"
-        class="size-5"
+      <button
+        on:click={addLine}
+        class="font-semibold text-green-500 text-sm flex flex-row justify-start items-center gap-1"
       >
-        <path
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          d="M12 4.5v15m7.5-7.5h-15"
-        />
-      </svg>
-      <p>Add Line</p>
-    </button>
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke-width={2}
+          stroke="currentColor"
+          class="size-5"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            d="M12 4.5v15m7.5-7.5h-15"
+          />
+        </svg>
+        <p>Add Line</p>
+      </button>
 
-    <button on:click={addWait} class="font-semibold text-amber-500 text-sm flex flex-row justify-start items-center gap-1">
-      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="size-5">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6l4 2" />
-      </svg>
-      <p>Add Wait</p>
-    </button>
+      <button
+        on:click={addWait}
+        class="font-semibold text-amber-500 text-sm flex flex-row justify-start items-center gap-1"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          class="size-5"
+        >
+          <circle cx="12" cy="12" r="9" />
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            d="M12 7v5l3 2"
+          />
+        </svg>
+        <p>Add Wait</p>
+      </button>
     </div>
   </div>
 

@@ -135,9 +135,25 @@
       </button>
 
       <!-- Add Wait After Button -->
-      <button title="Add Wait After" on:click={onAddWaitAfter} class="text-amber-500 hover:text-amber-600">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width={2} class="size-5">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6l4 2" />
+      <button
+        title="Add Wait After"
+        on:click={onAddWaitAfter}
+        class="text-orange-500 hover:text-orange-600"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          class="size-5"
+        >
+          <circle cx="12" cy="12" r="9" />
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            d="M12 7v5l3 2"
+          />
         </svg>
       </button>
 
@@ -160,8 +176,6 @@
       {/if}
     </div>
   </div>
-
-  
 
   {#if !collapsed}
     <div class={`h-[0.75px] w-full`} style={`background: ${line.color}`} />

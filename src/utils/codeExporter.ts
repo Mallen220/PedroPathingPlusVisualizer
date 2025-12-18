@@ -300,9 +300,9 @@ export async function generateSequentialCommandCode(
       const startPoseName =
         idx === 0
           ? "startPoint"
-          : (lines[idx - 1]?.name
-              ? lines[idx - 1]!.name!.replace(/[^a-zA-Z0-9]/g, "")
-              : `point${idx}`);
+          : lines[idx - 1]?.name
+            ? lines[idx - 1]!.name!.replace(/[^a-zA-Z0-9]/g, "")
+            : `point${idx}`;
       const endPoseName = lines[idx].name
         ? lines[idx].name.replace(/[^a-zA-Z0-9]/g, "")
         : `point${idx + 1}`;
@@ -317,7 +317,10 @@ export async function generateSequentialCommandCode(
   // Generate addCommands calls with event handling; iterate sequence if provided
   const commands: string[] = [];
 
-  const defaultSequence: SequenceItem[] = lines.map((ln, idx) => ({ kind: "path", lineId: ln.id || `line-${idx + 1}` }));
+  const defaultSequence: SequenceItem[] = lines.map((ln, idx) => ({
+    kind: "path",
+    lineId: ln.id || `line-${idx + 1}`,
+  }));
   const seq = sequence && sequence.length ? sequence : defaultSequence;
 
   seq.forEach((item, idx) => {
@@ -336,9 +339,9 @@ export async function generateSequentialCommandCode(
     const startPoseName =
       lineIdx === 0
         ? "startPoint"
-        : (lines[lineIdx - 1]?.name
-            ? lines[lineIdx - 1]!.name!.replace(/[^a-zA-Z0-9]/g, "")
-            : `point${lineIdx}`);
+        : lines[lineIdx - 1]?.name
+          ? lines[lineIdx - 1]!.name!.replace(/[^a-zA-Z0-9]/g, "")
+          : `point${lineIdx}`;
     const endPoseName = line.name
       ? line.name.replace(/[^a-zA-Z0-9]/g, "")
       : `point${lineIdx + 1}`;
@@ -397,9 +400,9 @@ export async function generateSequentialCommandCode(
       const startPoseName =
         idx === 0
           ? "startPoint"
-          : (lines[idx - 1]?.name
-              ? lines[idx - 1]!.name!.replace(/[^a-zA-Z0-9]/g, "")
-              : `point${idx}`);
+          : lines[idx - 1]?.name
+            ? lines[idx - 1]!.name!.replace(/[^a-zA-Z0-9]/g, "")
+            : `point${idx}`;
       const endPoseName = line.name
         ? line.name.replace(/[^a-zA-Z0-9]/g, "")
         : `point${idx + 1}`;
