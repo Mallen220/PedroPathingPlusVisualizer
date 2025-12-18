@@ -64,6 +64,7 @@ type Point = BasePoint &
 type ControlPoint = BasePoint;
 
 interface Line {
+  id?: string;
   endPoint: Point;
   controlPoints: ControlPoint[];
   color: string;
@@ -77,6 +78,20 @@ interface Line {
   waitBeforeName?: string;
   waitAfterName?: string;
 }
+
+type SequencePathItem = {
+  kind: "path";
+  lineId: string;
+};
+
+type SequenceWaitItem = {
+  kind: "wait";
+  id: string;
+  name: string;
+  durationMs: number;
+};
+
+type SequenceItem = SequencePathItem | SequenceWaitItem;
 
 interface Settings {
   xVelocity: number;

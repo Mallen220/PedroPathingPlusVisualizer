@@ -6,6 +6,7 @@
   import StartingPointSection from "./components/StartingPointSection.svelte";
   import PathLineSection from "./components/PathLineSection.svelte";
   import PlaybackControls from "./components/PlaybackControls.svelte";
+  import WaitRow from "./components/WaitRow.svelte";
 
   export let percent: number;
   export let playing: boolean;
@@ -13,6 +14,7 @@
   export let pause: () => any;
   export let startPoint: Point;
   export let lines: Line[];
+  export let sequence: SequenceItem[];
   export let robotWidth: number = 16;
   export let robotHeight: number = 16;
   export let robotXY: BasePoint;
@@ -34,8 +36,14 @@
     controlPoints: lines.map(() => true), // Start with control points collapsed
   };
 
-  function insertLineAfter(index) {
-    const currentLine = lines[index];
+  const makeId = () => `${Date.now().toString(36)}-${Math.random().toString(36).slice(2,8)}`;
+  function getWait(i: any) { return i as any; }
+
+  function insertLineAfter(seqIndex) {
+    const seqItem = sequence[seqIndex];
+    if (!seqItem || seqItem.kind !== "path") return;
+    const lineIndex = lines.findIndex((l) => l.id === seqItem.lineId);
+    const currentLine = lines[lineIndex];
 
     // Calculate a new point offset from the current line's end point
     const newPoint = {
@@ -57,6 +65,7 @@
 
     // Create a new line that starts where the current line ends
     const newLine = {
+      id: makeId(),
       endPoint: newPoint,
       controlPoints: [],
       color: getRandomColor(),
@@ -68,14 +77,18 @@
       waitAfterName: "",
     };
 
-    // Insert the new line after the current one
+    // Insert the new line after the current one and a sequence item after current seq index
     const newLines = [...lines];
-    newLines.splice(index + 1, 0, newLine);
+    newLines.splice(lineIndex + 1, 0, newLine);
     lines = newLines;
 
-    collapsedSections.lines.splice(index + 1, 0, false);
-    collapsedSections.controlPoints.splice(index + 1, 0, true);
-    collapsedEventMarkers.splice(index + 1, 0, false);
+    const newSeq = [...sequence];
+    newSeq.splice(seqIndex + 1, 0, { kind: "path", lineId: newLine.id });
+    sequence = newSeq;
+
+    collapsedSections.lines.splice(lineIndex + 1, 0, false);
+    collapsedSections.controlPoints.splice(lineIndex + 1, 0, true);
+    collapsedEventMarkers.splice(lineIndex + 1, 0, false);
 
     // Force reactivity
     collapsedSections = { ...collapsedSections };
@@ -83,9 +96,41 @@
   }
 
   function removeLine(idx: number) {
+    const removedId = lines[idx]?.id;
     let _lns = lines;
     lines.splice(idx, 1);
     lines = _lns;
+    if (removedId) {
+      sequence = sequence.filter((s) => s.kind === "wait" || s.lineId !== removedId);
+    }
+  }
+
+  function addLine() {
+    const newLine: Line = {
+      id: makeId(),
+      name: `Path ${lines.length + 1}`,
+      endPoint: {
+        x: _.random(0, 144),
+        y: _.random(0, 144),
+        heading: "tangential",
+        reverse: false,
+      },
+      controlPoints: [],
+      color: getRandomColor(),
+      waitBeforeMs: 0,
+      waitAfterMs: 0,
+      waitBeforeName: "",
+      waitAfterName: "",
+    };
+    lines = [...lines, newLine];
+    sequence = [...sequence, { kind: "path", lineId: newLine.id }];
+    collapsedSections.lines.push(false);
+    collapsedSections.controlPoints.push(true);
+  }
+
+  function addWait() {
+    const wait = { kind: "wait", id: makeId(), name: "Wait", durationMs: 0 } as SequenceWaitItem;
+    sequence = [...sequence, wait];
   }
 </script>
 
@@ -102,47 +147,51 @@
 
     <StartingPointSection bind:startPoint />
 
-    <!-- Collapsible Path Lines -->
-    {#each lines as line, idx}
-      <PathLineSection
-        bind:line
-        {idx}
-        bind:lines
-        bind:collapsed={collapsedSections.lines[idx]}
-        bind:collapsedEventMarkers={collapsedEventMarkers[idx]}
-        bind:collapsedControlPoints={collapsedSections.controlPoints[idx]}
-        onRemove={() => removeLine(idx)}
-        onInsertAfter={() => insertLineAfter(idx)}
-      />
+    <!-- Unified sequence render: paths and waits -->
+    {#each sequence as item, sIdx}
+      {#if item.kind === 'path'}
+        {#each lines.filter((l) => l.id === item.lineId) as ln (ln.id)}
+          <PathLineSection
+            bind:line={ln}
+            idx={lines.findIndex((l) => l.id === ln.id)}
+            bind:lines
+            bind:collapsed={collapsedSections.lines[lines.findIndex((l) => l.id === ln.id)]}
+            bind:collapsedEventMarkers={collapsedEventMarkers[lines.findIndex((l) => l.id === ln.id)]}
+            bind:collapsedControlPoints={collapsedSections.controlPoints[lines.findIndex((l) => l.id === ln.id)]}
+            onRemove={() => removeLine(lines.findIndex((l) => l.id === ln.id))}
+            onInsertAfter={() => insertLineAfter(sIdx)}
+          />
+        {/each}
+      {:else}
+        <WaitRow
+          name={getWait(item).name}
+          durationMs={getWait(item).durationMs}
+          onChange={(newName, newDuration) => {
+            const newSeq = [...sequence];
+            newSeq[sIdx] = {
+              ...getWait(item),
+              name: newName,
+              durationMs: Math.max(0, Number(newDuration) || 0),
+            };
+            sequence = newSeq;
+          }}
+          onRemove={() => {
+            const newSeq = [...sequence];
+            newSeq.splice(sIdx, 1);
+            sequence = newSeq;
+          }}
+          onInsertAfter={() => {
+            const newSeq = [...sequence];
+            newSeq.splice(sIdx + 1, 0, { kind: 'wait', id: makeId(), name: 'Wait', durationMs: 0 });
+            sequence = newSeq;
+          }}
+        />
+      {/if}
     {/each}
 
     <!-- Add Line Button -->
-    <button
-      on:click={() => {
-        lines = [
-          ...lines,
-          {
-            name: `Path ${lines.length + 1}`,
-            endPoint: {
-              x: _.random(0, 144),
-              y: _.random(0, 144),
-              heading: "tangential",
-              reverse: false,
-            },
-            controlPoints: [],
-            color: getRandomColor(),
-            waitBeforeMs: 0,
-            waitAfterMs: 0,
-            waitBeforeName: "",
-            waitAfterName: "",
-          },
-        ];
-        // Add new collapsed state for the new line
-        collapsedSections.lines.push(false);
-        collapsedSections.controlPoints.push(true);
-      }}
-      class="font-semibold text-green-500 text-sm flex flex-row justify-start items-center gap-1"
-    >
+    <div class="flex flex-row items-center gap-4">
+    <button on:click={addLine} class="font-semibold text-green-500 text-sm flex flex-row justify-start items-center gap-1">
       <svg
         xmlns="http://www.w3.org/2000/svg"
         fill="none"
@@ -159,6 +208,14 @@
       </svg>
       <p>Add Line</p>
     </button>
+
+    <button on:click={addWait} class="font-semibold text-amber-500 text-sm flex flex-row justify-start items-center gap-1">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="size-5">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6l4 2" />
+      </svg>
+      <p>Add Wait</p>
+    </button>
+    </div>
   </div>
 
   <PlaybackControls

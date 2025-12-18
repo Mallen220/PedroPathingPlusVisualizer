@@ -1,9 +1,11 @@
 import type {
   Point,
+  BasePoint,
   Line,
   Settings,
   TimePrediction,
   TimelineEvent,
+  SequenceItem,
 } from "../types";
 import {
   getCurvePoint,
@@ -16,13 +18,13 @@ import {
  * Calculate the length of a curve by sampling points
  */
 function calculateCurveLength(
-  start: Point,
-  controlPoints: Point[],
-  end: Point,
+  start: BasePoint,
+  controlPoints: BasePoint[],
+  end: BasePoint,
   samples: number = 100,
 ): number {
   let length = 0;
-  let prevPoint = start;
+  let prevPoint: BasePoint = start;
 
   for (let i = 1; i <= samples; i++) {
     const t = i / samples;
@@ -72,6 +74,7 @@ export function calculatePathTime(
   startPoint: Point,
   lines: Line[],
   settings: Settings,
+  sequence?: SequenceItem[],
 ): TimePrediction {
   const msToSeconds = (value?: number | string) => {
     const numeric = Number(value);
@@ -112,50 +115,51 @@ export function calculatePathTime(
     }
   }
 
-  lines.forEach((line, idx) => {
-    const prevPoint = idx === 0 ? startPoint : lines[idx - 1].endPoint;
+  // Create map and default sequence
+  const lineById = new Map<string, Line>();
+  lines.forEach((ln) => {
+    if (!ln.id) ln.id = `line-${Math.random().toString(36).slice(2)}`;
+    lineById.set(ln.id, ln);
+  });
 
-    const waitBeforeSeconds = msToSeconds(line.waitBeforeMs);
-    if (waitBeforeSeconds > 0) {
-      timeline.push({
-        type: "wait",
-        name:
-          line.waitBeforeName ||
-          `Wait before ${line.name || `Path ${idx + 1}`}`,
-        waitPosition: "before",
-        duration: waitBeforeSeconds,
-        startTime: currentTime,
-        endTime: currentTime + waitBeforeSeconds,
-        startHeading: currentHeading,
-        targetHeading: currentHeading,
-        atPoint: prevPoint,
-      });
+  const seq: SequenceItem[] =
+    sequence && sequence.length
+      ? sequence
+      : lines.map((ln) => ({ kind: "path", lineId: ln.id! }));
 
-      currentTime += waitBeforeSeconds;
+  let lastPoint: Point = startPoint;
+
+  seq.forEach((item, idx) => {
+    if (item.kind === "wait") {
+      const waitSeconds = msToSeconds(item.durationMs);
+      if (waitSeconds > 0) {
+        timeline.push({
+          type: "wait",
+          name: item.name,
+          duration: waitSeconds,
+          startTime: currentTime,
+          endTime: currentTime + waitSeconds,
+          startHeading: currentHeading,
+          targetHeading: currentHeading,
+          atPoint: lastPoint,
+        });
+        currentTime += waitSeconds;
+      }
+      return;
     }
+
+    const line = lineById.get(item.lineId)!;
+    const prevPoint = lastPoint;
 
     // --- ROTATION CHECK ---
     const requiredStartHeading = getLineStartHeading(line, prevPoint);
-
-    // FORCE INITIAL HEADING:
-    // If this is the first segment, assume the robot is placed on the field
-    // facing the correct direction. Override currentHeading to match required.
-    if (idx === 0) {
-      currentHeading = requiredStartHeading;
-    }
-
-    // CRITICAL FIX: Use getAngularDifference for the shortest path magnitude
+    if (idx === 0) currentHeading = requiredStartHeading;
     const diff = Math.abs(
       getAngularDifference(currentHeading, requiredStartHeading),
     );
-
-    // If difference is significant, add a Wait event
-    // (This will now never happen on idx === 0)
     if (diff > 0.1) {
-      // Time = radians / (radians/sec)
       const diffRad = diff * (Math.PI / 180);
       const rotTime = diffRad / settings.aVelocity;
-
       timeline.push({
         type: "wait",
         duration: rotTime,
@@ -165,19 +169,17 @@ export function calculatePathTime(
         targetHeading: requiredStartHeading,
         atPoint: prevPoint,
       });
-
       currentTime += rotTime;
       currentHeading = requiredStartHeading;
     }
 
-    // --- TRAVEL CALCULATION ---
+    // --- TRAVEL ---
     const length = calculateCurveLength(
       prevPoint,
-      line.controlPoints,
-      line.endPoint,
+      line.controlPoints as any,
+      line.endPoint as any,
     );
     segmentLengths.push(length);
-
     let segmentTime = 0;
     if (useMotionProfile) {
       segmentTime = calculateMotionProfileTime(
@@ -190,37 +192,18 @@ export function calculatePathTime(
       const avgVelocity = (settings.xVelocity + settings.yVelocity) / 2;
       segmentTime = length / avgVelocity;
     }
-
     segmentTimes.push(segmentTime);
-
+    const lineIndex = lines.findIndex((l) => l.id === line.id);
     timeline.push({
       type: "travel",
       duration: segmentTime,
       startTime: currentTime,
       endTime: currentTime + segmentTime,
-      lineIndex: idx,
+      lineIndex,
     });
-
     currentTime += segmentTime;
-
     currentHeading = getLineEndHeading(line, prevPoint);
-
-    const waitAfterSeconds = msToSeconds(line.waitAfterMs);
-    if (waitAfterSeconds > 0) {
-      timeline.push({
-        type: "wait",
-        name: line.waitAfterName || `Wait after ${line.name || `Path ${idx + 1}`}`,
-        waitPosition: "after",
-        duration: waitAfterSeconds,
-        startTime: currentTime,
-        endTime: currentTime + waitAfterSeconds,
-        startHeading: currentHeading,
-        targetHeading: currentHeading,
-        atPoint: line.endPoint,
-      });
-
-      currentTime += waitAfterSeconds;
-    }
+    lastPoint = line.endPoint as Point;
   });
 
   const totalTime = currentTime;

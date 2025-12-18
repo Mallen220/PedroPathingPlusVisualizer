@@ -1,4 +1,4 @@
-import type { Point, Line, Shape } from "../types";
+import type { Point, Line, Shape, SequenceItem } from "../types";
 
 /**
  * File save/load utilities for the visualizer
@@ -9,6 +9,7 @@ export interface SaveData {
   lines: Line[];
   shapes?: Shape[];
   settings?: any;
+  sequence?: SequenceItem[];
 }
 
 /**
@@ -18,8 +19,9 @@ export function downloadTrajectory(
   startPoint: Point,
   lines: Line[],
   shapes: Shape[],
+  sequence?: SequenceItem[],
 ): void {
-  const jsonString = JSON.stringify({ startPoint, lines, shapes });
+  const jsonString = JSON.stringify({ startPoint, lines, shapes, sequence });
   const blob = new Blob([jsonString], { type: "application/json" });
   const linkObj = document.createElement("a");
   const url = URL.createObjectURL(blob);

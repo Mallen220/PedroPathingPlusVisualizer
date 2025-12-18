@@ -56,6 +56,7 @@
   function normalizeLines(input: Line[]): Line[] {
     return (input || []).map((line) => ({
       ...line,
+      id: line.id || `line-${Math.random().toString(36).slice(2)}`,
       waitBeforeMs: Math.max(
         0,
         Number(line.waitBeforeMs ?? line.waitBefore?.durationMs ?? 0),
@@ -89,6 +90,7 @@
   let settings: Settings = { ...DEFAULT_SETTINGS };
   let startPoint: Point = getDefaultStartPoint();
   let lines: Line[] = normalizeLines(getDefaultLines());
+  let sequence: SequenceItem[] = lines.map((ln) => ({ kind: "path", lineId: ln.id! }));
   let shapes: Shape[] = getDefaultShapes();
   $: {
     // Ensure arrays are reactive when items are added/removed
@@ -109,7 +111,7 @@
   // Animation controller
   let loopAnimation = true;
   let animationController: ReturnType<typeof createAnimationController>;
-  $: timePrediction = calculatePathTime(startPoint, lines, settings);
+  $: timePrediction = calculatePathTime(startPoint, lines, settings, sequence);
   $: animationDuration = getAnimationDuration(timePrediction.totalTime / 1000);
   /**
    * Converter for X axis from inches to pixels.
@@ -472,6 +474,7 @@
         const jsonString = JSON.stringify({
           startPoint,
           lines,
+          sequence,
           shapes,
           settings,
         });
@@ -594,7 +597,7 @@
     two.update();
   })();
   function saveFileAs() {
-    downloadTrajectory(startPoint, lines, shapes);
+    downloadTrajectory(startPoint, lines, shapes, sequence);
   }
 
   function animate(timestamp: number) {
@@ -793,7 +796,7 @@
     }
   });
   function saveFile() {
-    downloadTrajectory(startPoint, lines, shapes);
+    downloadTrajectory(startPoint, lines, shapes, sequence);
   }
 
   async function loadFile(evt: Event) {
@@ -818,6 +821,10 @@
       loadTrajectoryFromFile(evt, (data) => {
         startPoint = data.startPoint;
         lines = normalizeLines(data.lines || []);
+        sequence = (data.sequence && data.sequence.length
+          ? data.sequence
+          : (data.lines || []).map((ln) => ({ kind: "path", lineId: ln.id || `line-${Math.random().toString(36).slice(2)}` }))
+        ) as SequenceItem[];
         if (data.shapes) {
           shapes = data.shapes;
         }
@@ -885,6 +892,10 @@
   function loadData(data: any) {
     startPoint = data.startPoint;
     lines = normalizeLines(data.lines || []);
+    sequence = (data.sequence && data.sequence.length
+      ? data.sequence
+      : (data.lines || []).map((ln) => ({ kind: "path", lineId: ln.id || `line-${Math.random().toString(36).slice(2)}` }))
+    ) as SequenceItem[];
     if (data.shapes) {
       shapes = data.shapes;
     }
@@ -899,6 +910,7 @@
     lines = [
       ...lines,
       {
+        id: `line-${Math.random().toString(36).slice(2)}`,
         endPoint: {
           x: _.random(36, 108),
           y: _.random(36, 108),
@@ -914,6 +926,7 @@
         waitAfterName: "",
       },
     ];
+    sequence = [...sequence, { kind: "path", lineId: lines[lines.length - 1].id! }];
   }
 
   function addControlPoint() {
@@ -999,6 +1012,7 @@
   bind:lines
   bind:startPoint
   bind:shapes
+  bind:sequence
   bind:settings
   bind:robotWidth
   bind:robotHeight
@@ -1106,6 +1120,7 @@ pointer-events: none;`}
     {pause}
     bind:startPoint
     bind:lines
+    bind:sequence
     bind:robotWidth
     bind:robotHeight
     bind:settings

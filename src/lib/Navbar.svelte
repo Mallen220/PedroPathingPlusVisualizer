@@ -26,6 +26,7 @@
   export let startPoint: Point;
   export let lines: Line[];
   export let shapes: Shape[];
+  export let sequence: SequenceItem[];
   export let robotWidth: number;
   export let robotHeight: number;
   export let settings: Settings;
@@ -45,7 +46,7 @@
   let selectedGridSize = 12;
   const gridSizeOptions = [1, 3, 6, 12, 24];
 
-  $: timePrediction = calculatePathTime(startPoint, lines, settings);
+  $: timePrediction = calculatePathTime(startPoint, lines, settings, sequence);
 
   onMount(() => {
     const unsubscribeDarkMode = darkMode.subscribe((val) => {
@@ -80,6 +81,7 @@
   function resetPath() {
     startPoint = getDefaultStartPoint();
     lines = getDefaultLines();
+    sequence = lines.map((ln) => ({ kind: "path", lineId: ln.id || `line-${Math.random().toString(36).slice(2)}` }));
     shapes = getDefaultShapes();
   }
 
