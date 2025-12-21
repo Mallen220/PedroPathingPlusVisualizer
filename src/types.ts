@@ -73,6 +73,7 @@ export type SequenceWaitItem = {
   id: string;
   name: string;
   durationMs: number;
+  locked?: boolean;
 };
 
 export type SequenceItem = SequencePathItem | SequenceWaitItem;

@@ -175,6 +175,7 @@
       id: makeId(),
       name: "Wait",
       durationMs: 0,
+      locked: false,
     } as SequenceItem;
     sequence = [...sequence, wait];
   }
@@ -185,6 +186,7 @@
       id: makeId(),
       name: "Wait",
       durationMs: 0,
+      locked: false,
     } as SequenceItem;
     sequence = [wait, ...sequence];
   }
@@ -225,6 +227,7 @@
       id: makeId(),
       name: "Wait",
       durationMs: 0,
+      locked: false,
     });
     sequence = newSeq;
   }
@@ -307,18 +310,23 @@
     const targetIndex = seqIndex + delta;
     if (targetIndex < 0 || targetIndex >= sequence.length) return;
 
-    // Prevent moving if either the source or target is a locked path
+    // Prevent moving if either the source or target is a locked path or a locked wait
     const isLockedSequenceItem = (index: number) => {
       const it = sequence[index];
       if (!it) return false;
-      if (it.kind !== "path") return false;
-      const ln = lines.find((l) => l.id === it.lineId);
-      return ln?.locked ?? false;
+      if (it.kind === "path") {
+        const ln = lines.find((l) => l.id === it.lineId);
+        return ln?.locked ?? false;
+      }
+      // wait
+      if (it.kind === "wait") {
+        return (it as any).locked ?? false;
+      }
+      return false;
     };
 
-    if (isLockedSequenceItem(seqIndex) || isLockedSequenceItem(targetIndex)) {
+    if (isLockedSequenceItem(seqIndex) || isLockedSequenceItem(targetIndex))
       return;
-    }
 
     const newSeq = [...sequence];
     const [item] = newSeq.splice(seqIndex, 1);
@@ -378,6 +386,16 @@
           <WaitRow
             name={getWait(item).name}
             durationMs={getWait(item).durationMs}
+            locked={getWait(item).locked ?? false}
+            onToggleLock={() => {
+              const newSeq = [...sequence];
+              newSeq[sIdx] = {
+                ...getWait(item),
+                locked: !(getWait(item).locked ?? false),
+              };
+              sequence = newSeq;
+              recordChange?.();
+            }}
             onChange={(newName, newDuration) => {
               const newSeq = [...sequence];
               newSeq[sIdx] = {
@@ -399,6 +417,7 @@
                 id: makeId(),
                 name: "Wait",
                 durationMs: 0,
+                locked: false,
               });
               sequence = newSeq;
             }}
