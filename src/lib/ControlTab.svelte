@@ -307,6 +307,19 @@
     const targetIndex = seqIndex + delta;
     if (targetIndex < 0 || targetIndex >= sequence.length) return;
 
+    // Prevent moving if either the source or target is a locked path
+    const isLockedSequenceItem = (index: number) => {
+      const it = sequence[index];
+      if (!it) return false;
+      if (it.kind !== "path") return false;
+      const ln = lines.find((l) => l.id === it.lineId);
+      return ln?.locked ?? false;
+    };
+
+    if (isLockedSequenceItem(seqIndex) || isLockedSequenceItem(targetIndex)) {
+      return;
+    }
+
     const newSeq = [...sequence];
     const [item] = newSeq.splice(seqIndex, 1);
     newSeq.splice(targetIndex, 0, item);
