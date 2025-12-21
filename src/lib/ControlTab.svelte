@@ -139,6 +139,9 @@
         (s) => s.kind === "wait" || s.lineId !== removedId,
       );
     }
+    collapsedSections.lines.splice(idx, 1);
+    collapsedSections.controlPoints.splice(idx, 1);
+    collapsedEventMarkers.splice(idx, 1);
     recordChange();
   }
 
@@ -174,6 +177,45 @@
       durationMs: 0,
     } as SequenceItem;
     sequence = [...sequence, wait];
+  }
+
+  function addWaitAtStart() {
+    const wait = {
+      kind: "wait",
+      id: makeId(),
+      name: "Wait",
+      durationMs: 0,
+    } as SequenceItem;
+    sequence = [wait, ...sequence];
+  }
+
+  function addPathAtStart() {
+    const newLine: Line = {
+      id: makeId(),
+      name: `Path ${lines.length + 1}`,
+      endPoint: {
+        x: _.random(0, 144),
+        y: _.random(0, 144),
+        heading: "tangential",
+        reverse: false,
+      },
+      controlPoints: [],
+      color: getRandomColor(),
+      eventMarkers: [],
+      waitBeforeMs: 0,
+      waitAfterMs: 0,
+      waitBeforeName: "",
+      waitAfterName: "",
+    };
+    lines = [newLine, ...lines];
+    sequence = [{ kind: "path", lineId: newLine.id! }, ...sequence];
+    collapsedSections.lines = [false, ...collapsedSections.lines];
+    collapsedSections.controlPoints = [
+      true,
+      ...collapsedSections.controlPoints,
+    ];
+    collapsedEventMarkers = [false, ...collapsedEventMarkers];
+    recordChange();
   }
 
   function insertWaitAfter(seqIndex: number) {
@@ -238,7 +280,7 @@
 
     <RobotPositionDisplay {robotXY} {robotHeading} {x} {y} />
 
-    <StartingPointSection bind:startPoint />
+    <StartingPointSection bind:startPoint {addPathAtStart} {addWaitAtStart} />
 
     <!-- Unified sequence render: paths and waits -->
     {#each sequence as item, sIdx}
@@ -318,7 +360,7 @@
             d="M12 4.5v15m7.5-7.5h-15"
           />
         </svg>
-        <p>Add Line</p>
+        <p>Add Path</p>
       </button>
 
       <button
