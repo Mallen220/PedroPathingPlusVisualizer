@@ -1,6 +1,8 @@
 <script lang="ts">
   export let name: string;
   export let durationMs: number;
+  export let locked: boolean = false;
+  export let onToggleLock: () => void;
   export let onChange: (newName: string, newDuration: number) => void;
   export let onRemove: () => void;
   export let onInsertAfter: () => void;
@@ -12,13 +14,13 @@
 
   function handleNameChange(e: Event) {
     const target = e.currentTarget as HTMLInputElement;
-    onChange(target?.value ?? "", durationMs);
+    if (!locked) onChange(target?.value ?? "", durationMs);
   }
 
   function handleDurationChange(e: Event) {
     const target = e.currentTarget as HTMLInputElement;
     const v = Number(target?.value ?? 0);
-    onChange(name, Math.max(0, Number.isFinite(v) ? v : 0));
+    if (!locked) onChange(name, Math.max(0, Number.isFinite(v) ? v : 0));
   }
 </script>
 
@@ -36,6 +38,7 @@
       placeholder="Name"
       bind:value={name}
       on:change={handleNameChange}
+      disabled={locked}
     />
     <input
       class="pl-1.5 rounded-md bg-neutral-50 dark:bg-neutral-950 dark:border-neutral-700 border-[0.5px] focus:outline-none w-28"
@@ -44,16 +47,61 @@
       step="50"
       bind:value={durationMs}
       on:change={handleDurationChange}
+      disabled={locked}
     />
     <span>ms</span>
   </div>
+
   <div class="flex items-center gap-2">
-    <div class="flex flex-col gap-0.5 mr-1">
+    <!-- Lock/Unlock Button -->
+    <button
+      title={locked ? "Unlock Wait" : "Lock Wait"}
+      on:click|stopPropagation={() => {
+        if (onToggleLock) onToggleLock();
+      }}
+      class="p-1 rounded hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
+    >
+      {#if locked}
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke-width={2}
+          stroke="currentColor"
+          class="size-5 stroke-yellow-500"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z"
+          />
+        </svg>
+      {:else}
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke-width={2}
+          stroke="currentColor"
+          class="size-5 stroke-gray-400"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            d="M13.5 10.5V6.75a4.5 4.5 0 1 1 9 0v3.75M3.75 21.75h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H3.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z"
+          />
+        </svg>
+      {/if}
+    </button>
+
+    <div class="flex flex-row gap-0.5 mr-1">
       <button
         title="Move up"
-        on:click={onMoveUp}
+        on:click={() => {
+          if (!locked && onMoveUp) onMoveUp();
+        }}
         class="p-1 rounded-full text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 bg-neutral-100/70 dark:bg-neutral-900/70 border border-neutral-200/70 dark:border-neutral-700/70 disabled:opacity-40 disabled:cursor-not-allowed"
-        disabled={!canMoveUp}
+        disabled={!canMoveUp || locked}
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -72,9 +120,11 @@
       </button>
       <button
         title="Move down"
-        on:click={onMoveDown}
+        on:click={() => {
+          if (!locked && onMoveDown) onMoveDown();
+        }}
         class="p-1 rounded-full text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 bg-neutral-100/70 dark:bg-neutral-900/70 border border-neutral-200/70 dark:border-neutral-700/70 disabled:opacity-40 disabled:cursor-not-allowed"
-        disabled={!canMoveDown}
+        disabled={!canMoveDown || locked}
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -92,9 +142,12 @@
         </svg>
       </button>
     </div>
+
     <button
       title="Add path after"
-      on:click={onAddPathAfter}
+      on:click={() => {
+        if (!locked && onAddPathAfter) onAddPathAfter();
+      }}
       class="text-green-500 hover:text-green-600"
     >
       <svg
@@ -115,7 +168,9 @@
 
     <button
       title="Add wait after"
-      on:click={onInsertAfter}
+      on:click={() => {
+        if (!locked && onInsertAfter) onInsertAfter();
+      }}
       class="text-amber-500 hover:text-amber-600"
     >
       <svg
@@ -133,7 +188,9 @@
 
     <button
       title="Remove"
-      on:click={onRemove}
+      on:click={() => {
+        if (!locked && onRemove) onRemove();
+      }}
       class="text-red-500 hover:text-red-600"
     >
       <svg
