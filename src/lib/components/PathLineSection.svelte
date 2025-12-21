@@ -127,10 +127,12 @@
 
       <div class="flex flex-row gap-0.5 ml-1">
         <button
-          title="Move up"
-          on:click|stopPropagation={onMoveUp}
+          title={line.locked ? "Path locked" : "Move up"}
+          on:click|stopPropagation={() => {
+            if (!line.locked && onMoveUp) onMoveUp();
+          }}
           class="p-1 rounded-full text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 bg-neutral-100/70 dark:bg-neutral-900/70 border border-neutral-200/70 dark:border-neutral-700/70 disabled:opacity-40 disabled:cursor-not-allowed"
-          disabled={!canMoveUp}
+          disabled={!canMoveUp || line.locked}
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -148,10 +150,12 @@
           </svg>
         </button>
         <button
-          title="Move down"
-          on:click|stopPropagation={onMoveDown}
+          title={line.locked ? "Path locked" : "Move down"}
+          on:click|stopPropagation={() => {
+            if (!line.locked && onMoveDown) onMoveDown();
+          }}
           class="p-1 rounded-full text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 bg-neutral-100/70 dark:bg-neutral-900/70 border border-neutral-200/70 dark:border-neutral-700/70 disabled:opacity-40 disabled:cursor-not-allowed"
-          disabled={!canMoveDown}
+          disabled={!canMoveDown || line.locked}
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
