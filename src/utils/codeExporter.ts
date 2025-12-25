@@ -334,9 +334,10 @@ export async function generateSequentialCommandCode(
   const ParallelRaceClass = isNextFTC
     ? "ParallelRaceGroup"
     : "ParallelRaceGroup";
-  const WaitCmdClass = isNextFTC ? "DelayCommand" : "WaitCommand";
+  const WaitCmdClass = isNextFTC ? "Delay" : "WaitCommand";
   const InstantCmdClass = "InstantCommand";
-  const WaitUntilCmdClass = "WaitUntilCommand"; // Assuming NextFTC has similar or user maps it
+  const WaitUntilCmdClass = isNextFTC ? "WaitUntil" : "WaitUntilCommand"; // Assuming NextFTC has similar or user maps it
+  const FollowPathCmdClass = isNextFTC ? "FollowPath" : "FollowPathCommand";
 
   // Generate addCommands calls with event handling; iterate sequence if provided
   const commands: string[] = [];
@@ -357,8 +358,15 @@ export async function generateSequentialCommandCode(
         ? [...waitItem.eventMarkers]
         : [];
 
+      // Determine wait value and formatting
+      // NextFTC Delay uses seconds, SolversLib WaitCommand uses ms (or whatever SolversLib expects, assumed ms)
+      const getWaitValue = (ms: number) =>
+        isNextFTC ? (ms / 1000.0).toFixed(3) : ms.toFixed(0);
+
       if (markers.length === 0) {
-        commands.push(`                new ${WaitCmdClass}(${waitDuration})`);
+        commands.push(
+          `                new ${WaitCmdClass}(${getWaitValue(waitDuration)})`,
+        );
         return;
       }
 
@@ -375,16 +383,18 @@ export async function generateSequentialCommandCode(
         scheduled = targetMs;
 
         markerCommandParts.push(
-          `new ${WaitCmdClass}(${delta.toFixed(0)}), new ${InstantCmdClass}(() -> progressTracker.executeEvent("${marker.name}"))`,
+          `new ${WaitCmdClass}(${getWaitValue(delta)}), new ${InstantCmdClass}(() -> progressTracker.executeEvent("${marker.name}"))`,
         );
       });
 
       const remaining = Math.max(0, waitDuration - scheduled);
-      markerCommandParts.push(`new ${WaitCmdClass}(${remaining.toFixed(0)})`);
+      markerCommandParts.push(
+        `new ${WaitCmdClass}(${getWaitValue(remaining)})`,
+      );
 
       commands.push(
         `                new ${ParallelRaceClass}(
-                    new ${WaitCmdClass}(${waitDuration}),
+                    new ${WaitCmdClass}(${getWaitValue(waitDuration)}),
                     new ${SequentialGroupClass}(${markerCommandParts.join(",")})
                 )`,
       );
@@ -412,6 +422,11 @@ export async function generateSequentialCommandCode(
     const pathName = `${startPoseName}TO${endPoseName}`;
     const pathDisplayName = `${startPoseName}TO${endPoseName}`;
 
+    // Construct FollowPath instantiation
+    const followPathInstance = isNextFTC
+      ? `new ${FollowPathCmdClass}(${pathName})`
+      : `new ${FollowPathCmdClass}(follower, ${pathName})`;
+
     if (line.eventMarkers && line.eventMarkers.length > 0) {
       // Path has event markers
 
@@ -425,7 +440,9 @@ export async function generateSequentialCommandCode(
 
       // Add event registrations
       line.eventMarkers.forEach((event) => {
-        commands[commands.length - 1] += `
+        commands[
+          commands.length - 1
+        ] += `
                         progressTracker.registerEvent("${event.name}", ${event.position.toFixed(3)});`;
       });
 
@@ -434,7 +451,7 @@ export async function generateSequentialCommandCode(
 
       // Second: ParallelRaceGroup for following path with event handling
       commands.push(`                new ${ParallelRaceClass}(
-                    new FollowPathCommand(follower, ${pathName}),
+                    ${followPathInstance},
                     new ${SequentialGroupClass}(`);
 
       // Add WaitUntilCommand for each event
@@ -458,7 +475,7 @@ export async function generateSequentialCommandCode(
                         progressTracker.setCurrentChain(${pathName});
                         progressTracker.setCurrentPathName("${pathDisplayName}");
                     }),
-                new FollowPathCommand(follower, ${pathName})`,
+                ${followPathInstance}`,
       );
     }
   });
@@ -519,10 +536,10 @@ export async function generateSequentialCommandCode(
     imports = `
 import dev.nextftc.core.command.groups.SequentialGroup;
 import dev.nextftc.core.command.groups.ParallelRaceGroup;
-import dev.nextftc.core.command.DelayCommand;
-import dev.nextftc.core.command.WaitUntilCommand;
+import dev.nextftc.core.command.Delay;
+import dev.nextftc.core.command.WaitUntil;
 import dev.nextftc.core.command.InstantCommand;
-import dev.nextftc.pedro.FollowPathCommand; // Assumed NextFTC Pedro wrapper
+import dev.nextftc.extensions.pedro.command.FollowPath;
 `;
   } else {
     imports = `
