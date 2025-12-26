@@ -16,3 +16,6 @@ export const selectedLineId = writable<string | null>(null);
 
 // Trigger counter for toggling collapse/expand all (increment to trigger)
 export const toggleCollapseAllTrigger = writable(0);
+
+// Currently selected point id in field rendering, format: 'point-<line+1>-<idx>' or 'point-0-0' for start
+export const selectedPointId = writable<string | null>(null);

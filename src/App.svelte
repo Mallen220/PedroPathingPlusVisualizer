@@ -1501,19 +1501,31 @@
         if (currentElem.startsWith("point-")) {
           const parts = currentElem.split("-");
           const lineNum = Number(parts[1]);
+          const pointIdx = Number(parts[2]);
           if (!isNaN(lineNum) && lineNum > 0) {
             const lineIndex = lineNum - 1;
             const line = lines[lineIndex];
-            if (line) selectedLineId.set(line.id);
+            if (line) {
+              selectedLineId.set(line.id);
+              selectedPointId.set(currentElem);
+            }
           } else {
-            // starting point or invalid -> clear selection
-            selectedLineId.set(null);
+            // starting point or invalid -> clear selection or select start
+            if (currentElem === "point-0-0") {
+              selectedLineId.set(null);
+              selectedPointId.set(currentElem);
+            } else {
+              selectedLineId.set(null);
+              selectedPointId.set(null);
+            }
           }
         } else if (currentElem.startsWith("obstacle-")) {
           selectedLineId.set(null);
+          selectedPointId.set(null);
         }
       } else {
         selectedLineId.set(null);
+        selectedPointId.set(null);
       }
 
       // Calculate drag offset when clicking to prevent snapping center to mouse
@@ -1840,10 +1852,30 @@
       lines.find((l) => l.id === targetId) || lines[lines.length - 1];
     if (!targetLine) return;
 
+    console.log(
+      "[addControlPoint] selectedLine:",
+      $selectedLineId,
+      "targetId:",
+      targetId,
+      "targetLineId:",
+      targetLine.id,
+      "lineIndex:",
+      lines.findIndex((l) => l.id === targetLine.id),
+      "lines.length:",
+      lines.length,
+    );
+
     targetLine.controlPoints.push({
       x: _.random(36, 108),
       y: _.random(36, 108),
     });
+
+    console.log(
+      "[addControlPoint] after push controlCount:",
+      targetLine.controlPoints.length,
+      "controlPoints:",
+      targetLine.controlPoints.map((p) => ({ x: p.x, y: p.y })),
+    );
 
     // Force reactivity
     lines = [...lines];

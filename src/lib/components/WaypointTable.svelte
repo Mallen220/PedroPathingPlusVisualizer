@@ -1,6 +1,12 @@
 <script lang="ts">
   import type { Point, Line, ControlPoint, SequenceItem } from "../../types";
-  import { snapToGrid, showGrid, gridSize } from "../../stores";
+  import {
+    snapToGrid,
+    showGrid,
+    gridSize,
+    selectedLineId,
+    selectedPointId,
+  } from "../../stores";
 
   export let startPoint: Point;
   export let lines: Line[];
@@ -95,6 +101,33 @@
       recordChange();
     }
   }
+
+  // Debug helper to log mapping between line, index and control points when rows render
+  function debugPointRow(
+    line: Line,
+    cp: ControlPoint | Point | undefined,
+    j?: number,
+  ) {
+    try {
+      const lineIdx = lines.findIndex((l) => l === line);
+      const cpIndex = cp
+        ? [line.endPoint, ...line.controlPoints].findIndex((p) => p === cp)
+        : -1;
+      const pointId = cp
+        ? `point-${lineIdx + 1}-${cpIndex}`
+        : `point-${lineIdx + 1}-0`;
+      console.debug("[WaypointTable] render row", {
+        lineId: line.id,
+        lineIdx,
+        cpIndex,
+        pointId,
+        seqCount: sequence.length,
+      });
+    } catch (e) {
+      console.debug("[WaypointTable] debugPointRow error", e);
+    }
+    return "";
+  }
 </script>
 
 <div class="w-full flex flex-col gap-4 text-sm p-1">
@@ -163,7 +196,14 @@
       </thead>
       <tbody class="divide-y divide-neutral-100 dark:divide-neutral-800">
         <!-- Start Point -->
-        <tr class="hover:bg-neutral-50 dark:hover:bg-neutral-800/50">
+        <tr
+          class="hover:bg-neutral-50 dark:hover:bg-neutral-800/50"
+          class:selected={$selectedPointId === "point-0-0"}
+          on:click={() => {
+            selectedLineId.set(null);
+            selectedPointId.set("point-0-0");
+          }}
+        >
           <td
             class="px-3 py-2 font-medium text-neutral-800 dark:text-neutral-200"
           >
@@ -199,48 +239,17 @@
         <!-- Sequence Items -->
         {#each sequence as item, seqIdx}
           {#if item.kind === "path"}
-            {@const line = getLine(item.lineId)}
-            {#if line}
-              {@const lineIdx = getLineIndex(item.lineId)}
-              <!-- Control Points -->
-              {#each line.controlPoints as cp, j}
-                <tr class="hover:bg-neutral-50 dark:hover:bg-neutral-800/50">
-                  <td
-                    class="px-3 py-2 pl-8 text-neutral-500 dark:text-neutral-400 text-xs"
-                  >
-                    ↳ Control {j + 1}
-                  </td>
-                  <td class="px-3 py-2">
-                    <input
-                      type="number"
-                      class="w-20 px-2 py-1 rounded border border-neutral-300 dark:border-neutral-600 bg-neutral-50 dark:bg-neutral-900/50 focus:ring-2 focus:ring-blue-500 focus:outline-none text-xs"
-                      step={stepSize}
-                      value={cp.x}
-                      on:input={(e) => handleInput(e, cp, "x")}
-                      disabled={line.locked}
-                    />
-                  </td>
-                  <td class="px-3 py-2">
-                    <input
-                      type="number"
-                      class="w-20 px-2 py-1 rounded border border-neutral-300 dark:border-neutral-600 bg-neutral-50 dark:bg-neutral-900/50 focus:ring-2 focus:ring-blue-500 focus:outline-none text-xs"
-                      step={stepSize}
-                      value={cp.y}
-                      on:input={(e) => handleInput(e, cp, "y")}
-                      disabled={line.locked}
-                    />
-                  </td>
-                  <td class="px-3 py-2 text-center">
-                    {#if line.locked}
-                      <span title="Locked" class="text-xs">🔒</span>
-                    {/if}
-                  </td>
-                </tr>
-              {/each}
-
+            {#each lines.filter((l) => l.id === item.lineId) as line (line.id)}
+              {@const lineIdx = lines.findIndex((l) => l === line)}
               <!-- End Point -->
+              {@html debugPointRow(line, undefined)}
+              {@const endPointId = `point-${lineIdx + 1}-0`}
               <tr
-                class="hover:bg-neutral-50 dark:hover:bg-neutral-800/50 font-medium"
+                class={`hover:bg-neutral-50 dark:hover:bg-neutral-800/50 font-medium ${$selectedLineId === line.id ? "bg-green-50 dark:bg-green-900/20" : ""} ${$selectedPointId === endPointId ? "bg-green-100 dark:bg-green-800/40" : ""}`}
+                on:click={() => {
+                  selectedLineId.set(line.id);
+                  selectedPointId.set(endPointId);
+                }}
               >
                 <td class="px-3 py-2">
                   <input
@@ -274,12 +283,99 @@
                   />
                 </td>
                 <td class="px-3 py-2 text-center">
-                  {#if line.locked}
-                    <span title="Locked">🔒</span>
-                  {/if}
+                  <button
+                    title={line.locked ? "Unlock Path" : "Lock Path"}
+                    on:click|stopPropagation={() => {
+                      line.locked = !line.locked;
+                      lines = [...lines];
+                      if (recordChange) recordChange();
+                    }}
+                    class="p-1 rounded hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
+                    aria-pressed={line.locked}
+                  >
+                    {#if line.locked}
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke-width="2"
+                        stroke="currentColor"
+                        class="size-5 stroke-yellow-500"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z"
+                        />
+                      </svg>
+                    {:else}
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke-width="2"
+                        stroke="currentColor"
+                        class="size-5 stroke-gray-400"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          d="M13.5 10.5V6.75a4.5 4.5 0 1 1 9 0v3.75M3.75 21.75h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H3.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z"
+                        />
+                      </svg>
+                    {/if}
+                  </button>
                 </td>
               </tr>
-            {/if}
+
+              <!-- Control Points -->
+              {#each line.controlPoints as cp, j}
+                {@html debugPointRow(line, cp, j)}
+                {@const cpIndex = [
+                  line.endPoint,
+                  ...line.controlPoints,
+                ].findIndex((p) => p === cp)}
+                {@const pointId = `point-${lineIdx + 1}-${cpIndex}`}
+                <tr
+                  class={`hover:bg-neutral-50 dark:hover:bg-neutral-800/50 ${$selectedLineId === line.id ? "bg-green-50 dark:bg-green-900/20" : ""} ${$selectedPointId === pointId ? "bg-green-100 dark:bg-green-800/40" : ""}`}
+                  on:click={() => {
+                    selectedLineId.set(line.id);
+                    selectedPointId.set(pointId);
+                  }}
+                >
+                  <td
+                    class="px-3 py-2 pl-8 text-neutral-500 dark:text-neutral-400 text-xs"
+                  >
+                    ↳ Control {j + 1}
+                  </td>
+                  <td class="px-3 py-2">
+                    <input
+                      type="number"
+                      class="w-20 px-2 py-1 rounded border border-neutral-300 dark:border-neutral-600 bg-neutral-50 dark:bg-neutral-900/50 focus:ring-2 focus:ring-blue-500 focus:outline-none text-xs"
+                      step={stepSize}
+                      value={cp.x}
+                      on:input={(e) => handleInput(e, cp, "x")}
+                      disabled={line.locked}
+                    />
+                  </td>
+                  <td class="px-3 py-2">
+                    <input
+                      type="number"
+                      class="w-20 px-2 py-1 rounded border border-neutral-300 dark:border-neutral-600 bg-neutral-50 dark:bg-neutral-900/50 focus:ring-2 focus:ring-blue-500 focus:outline-none text-xs"
+                      step={stepSize}
+                      value={cp.y}
+                      on:input={(e) => handleInput(e, cp, "y")}
+                      disabled={line.locked}
+                    />
+                  </td>
+                  <td class="px-3 py-2 text-center">
+                    {#if line.locked}
+                      <span title="Locked">🔒</span>
+                    {/if}
+                  </td>
+                </tr>
+              {/each}
+            {/each}
           {:else if item.kind === "wait"}
             <!-- Wait Item -->
             <tr
