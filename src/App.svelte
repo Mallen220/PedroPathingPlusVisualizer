@@ -23,6 +23,7 @@
   import ControlTab from "./lib/ControlTab.svelte";
   import Navbar from "./lib/Navbar.svelte";
   import MathTools from "./lib/MathTools.svelte";
+  import FieldCoordinates from "./lib/components/FieldCoordinates.svelte";
   import _ from "lodash";
   import hotkeys from "hotkeys-js";
   import { createAnimationController } from "./utils/animation";
@@ -101,6 +102,7 @@
   // Canvas state
   let two: Two;
   let twoElement: HTMLDivElement;
+  let wrapperDiv: HTMLDivElement;
   let width = 0;
   let height = 0;
   // Robot state
@@ -124,6 +126,11 @@
   }));
   let shapes: Shape[] = getDefaultShapes();
   let previewOptimizedLines: Line[] | null = null;
+
+  let currentMouseX = 0;
+  let currentMouseY = 0;
+  let isMouseOverField = false;
+  let isObstructingHUD = false;
 
   const history = createHistory();
   const { canUndoStore, canRedoStore } = history;
@@ -1292,7 +1299,41 @@
     let isDown = false;
     let dragOffset = { x: 0, y: 0 }; // Store offset to prevent snapping to center
 
+    two.renderer.domElement.addEventListener("mouseleave", () => {
+      isMouseOverField = false;
+    });
+
     two.renderer.domElement.addEventListener("mousemove", (evt: MouseEvent) => {
+      const rect = two.renderer.domElement.getBoundingClientRect();
+      const transformed = getTransformedCoordinates(
+        evt.clientX,
+        evt.clientY,
+        rect,
+        settings.fieldRotation || 0,
+      );
+      const xPos = transformed.x;
+      const yPos = transformed.y;
+      const rawInchXForDisplay = x.invert(xPos);
+      const rawInchYForDisplay = y.invert(yPos);
+
+      // Update coordinates display
+      currentMouseX = Math.max(0, Math.min(FIELD_SIZE, rawInchXForDisplay));
+      currentMouseY = Math.max(0, Math.min(FIELD_SIZE, rawInchYForDisplay));
+      isMouseOverField = true;
+
+      // Determine if mouse is visually obstructing the HUD (bottom-left corner)
+      if (wrapperDiv) {
+        const wrapperRect = wrapperDiv.getBoundingClientRect();
+        const visualX = evt.clientX - wrapperRect.left;
+        const visualY = evt.clientY - wrapperRect.top;
+        const w = wrapperRect.width;
+        const h = wrapperRect.height;
+
+        // Check if mouse is in the bottom-left region
+        // Define a safe zone: Left 35% and Bottom 20%
+        isObstructingHUD = visualX < w * 0.35 && visualY > h * 0.8;
+      }
+
       const elem = document.elementFromPoint(evt.clientX, evt.clientY);
 
       if (isDown && currentElem) {
@@ -1302,17 +1343,6 @@
         if (line >= 0 && lines[line]?.locked) {
           return;
         }
-
-        // Use simple bounding rect math to match D3 scales which are bound to clientWidth/Height
-        const rect = two.renderer.domElement.getBoundingClientRect();
-        const transformed = getTransformedCoordinates(
-          evt.clientX,
-          evt.clientY,
-          rect,
-          settings.fieldRotation || 0,
-        );
-        const xPos = transformed.x;
-        const yPos = transformed.y;
 
         // Get current store values for reactivity
         const currentGridSize = $gridSize;
@@ -1785,13 +1815,14 @@
   class="w-screen h-screen pt-20 p-2 flex flex-row justify-center items-center gap-2"
 >
   <div class="flex h-full justify-center items-center">
-    <div
-      bind:this={twoElement}
-      bind:clientWidth={width}
-      bind:clientHeight={height}
-      class="h-full aspect-square rounded-lg shadow-md bg-neutral-50 dark:bg-neutral-900 relative overflow-clip"
-      role="application"
-      style="
+    <div class="relative h-full aspect-square" bind:this={wrapperDiv}>
+      <div
+        bind:this={twoElement}
+        bind:clientWidth={width}
+        bind:clientHeight={height}
+        class="w-full h-full rounded-lg shadow-md bg-neutral-50 dark:bg-neutral-900 relative overflow-clip"
+        role="application"
+        style="
     user-select: none;
     -webkit-user-select: none;
     -moz-user-select: none;
@@ -1805,20 +1836,20 @@
     -ms-user-drag: none;
     -o-user-drag: none;
   "
-      on:contextmenu={(e) => e.preventDefault()}
-      on:dragstart={(e) => e.preventDefault()}
-      on:selectstart={(e) => e.preventDefault()}
-      tabindex="-1"
-      style:transform={`rotate(${settings.fieldRotation || 0}deg)`}
-      style:transition="transform 0.3s ease-in-out"
-    >
-      <img
-        src={settings.fieldMap
-          ? `/fields/${settings.fieldMap}`
-          : "/fields/decode.webp"}
-        alt="Field"
-        class="absolute top-0 left-0 w-full h-full rounded-lg z-10"
-        style="
+        on:contextmenu={(e) => e.preventDefault()}
+        on:dragstart={(e) => e.preventDefault()}
+        on:selectstart={(e) => e.preventDefault()}
+        tabindex="-1"
+        style:transform={`rotate(${settings.fieldRotation || 0}deg)`}
+        style:transition="transform 0.3s ease-in-out"
+      >
+        <img
+          src={settings.fieldMap
+            ? `/fields/${settings.fieldMap}`
+            : "/fields/decode.webp"}
+          alt="Field"
+          class="absolute top-0 left-0 w-full h-full rounded-lg z-10"
+          style="
     background: transparent; 
     pointer-events: none; 
     user-select: none; 
@@ -1833,28 +1864,35 @@
     -ms-user-drag: none;
     -o-user-drag: none;
   "
-        draggable="false"
-        on:error={(e) => {
-          console.error("Failed to load field map:", settings.fieldMap);
-          e.target.src = "/fields/decode.webp"; // Fallback
-        }}
-        on:dragstart={(e) => e.preventDefault()}
-        on:selectstart={(e) => e.preventDefault()}
-      />
-      <MathTools {x} {y} {twoElement} {robotXY} {robotHeading} />
-      <img
-        src={settings.robotImage || "/robot.png"}
-        alt="Robot"
-        style={`position: absolute; top: ${robotXY.y}px;
+          draggable="false"
+          on:error={(e) => {
+            console.error("Failed to load field map:", settings.fieldMap);
+            e.target.src = "/fields/decode.webp"; // Fallback
+          }}
+          on:dragstart={(e) => e.preventDefault()}
+          on:selectstart={(e) => e.preventDefault()}
+        />
+        <MathTools {x} {y} {twoElement} {robotXY} {robotHeading} />
+        <img
+          src={settings.robotImage || "/robot.png"}
+          alt="Robot"
+          style={`position: absolute; top: ${robotXY.y}px;
 left: ${robotXY.x}px; transform: translate(-50%, -50%) rotate(${robotHeading}deg); z-index: 20; width: ${x(robotWidth)}px; height: ${x(robotHeight)}px;user-select: none; -webkit-user-select: none; -moz-user-select: none;-ms-user-select: none;
 pointer-events: none;`}
-        draggable="false"
-        on:error={(e) => {
-          console.error("Failed to load robot image:", settings.robotImage);
-          e.target.src = "/robot.png"; // Fallback to default
-        }}
-        on:dragstart={(e) => e.preventDefault()}
-        on:selectstart={(e) => e.preventDefault()}
+          draggable="false"
+          on:error={(e) => {
+            console.error("Failed to load robot image:", settings.robotImage);
+            e.target.src = "/robot.png"; // Fallback to default
+          }}
+          on:dragstart={(e) => e.preventDefault()}
+          on:selectstart={(e) => e.preventDefault()}
+        />
+      </div>
+      <FieldCoordinates
+        x={currentMouseX}
+        y={currentMouseY}
+        visible={isMouseOverField}
+        isObstructed={isObstructingHUD}
       />
     </div>
   </div>
