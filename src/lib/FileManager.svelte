@@ -48,8 +48,8 @@
   export let sequence: SequenceItem[];
   export let settings: Settings;
 
-  type SortOption = "recent" | "name" | "date";
-  let sortMode: SortOption = "recent";
+  type SortOption = "name" | "date";
+  let sortMode: SortOption = "name";
   let currentDirectory = "";
   let files: FileInfo[] = [];
   let loading = false;
@@ -158,17 +158,6 @@
 
   async function refreshDirectory() {
     errorMessage = "";
-    if (sortMode === "recent") {
-      const recentPaths = settings?.recentFiles || [];
-      files = recentPaths.map((filePath) => ({
-        name: path.basename(filePath),
-        path: filePath,
-        size: 0, // Unknown size without checking file system
-        modified: new Date(), // Unknown modification time
-      }));
-      // Keep recent order (which is preserved from settings.recentFiles array)
-      return;
-    }
 
     try {
       // Get directory stats
@@ -323,24 +312,6 @@
     }
 
     try {
-      // Check if file exists (especially for recent files)
-      if (sortMode === "recent") {
-        const exists = await electronAPI.fileExists(file.path);
-        if (!exists) {
-          if (
-            confirm(
-              `File not found: ${file.path}\nDo you want to remove it from recent files?`,
-            )
-          ) {
-            settings.recentFiles = settings.recentFiles?.filter(
-              (p) => p !== file.path,
-            );
-            settings = { ...settings }; // Trigger reactivity
-          }
-          return;
-        }
-      }
-
       const content = await electronAPI.readFile(file.path);
       const data = JSON.parse(content);
 
@@ -361,16 +332,6 @@
       isUnsaved.set(false);
 
       selectedFile = file;
-
-      // Update recent files list (move to top) if in recent mode
-      if (sortMode === "recent" && settings.recentFiles) {
-        const idx = settings.recentFiles.indexOf(file.path);
-        if (idx !== -1) {
-          settings.recentFiles.splice(idx, 1);
-          settings.recentFiles.unshift(file.path);
-          settings = { ...settings };
-        }
-      }
 
       showToast(`Loaded: ${file.name}`, "success");
     } catch (error) {
@@ -830,18 +791,12 @@
       <!-- View/Sort Toggle -->
       <div class="mb-4">
         <div class="flex items-center justify-between mb-2">
-          <span class="text-sm font-medium text-neutral-600 dark:text-neutral-400">Sort by:</span>
+          <span
+            class="text-sm font-medium text-neutral-600 dark:text-neutral-400"
+            >Sort by:</span
+          >
         </div>
         <div class="flex bg-neutral-100 dark:bg-neutral-800 p-1 rounded-md">
-          <button
-            on:click={() => (sortMode = "recent")}
-            class="flex-1 py-1.5 text-xs font-medium rounded transition-all {sortMode ===
-            'recent'
-              ? 'bg-white dark:bg-neutral-700 shadow-sm text-blue-600 dark:text-blue-400'
-              : 'text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200'}"
-          >
-            Recent
-          </button>
           <button
             on:click={() => (sortMode = "name")}
             class="flex-1 py-1.5 text-xs font-medium rounded transition-all {sortMode ===
@@ -858,30 +813,28 @@
               ? 'bg-white dark:bg-neutral-700 shadow-sm text-blue-600 dark:text-blue-400'
               : 'text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200'}"
           >
-            Date
+            Recent
           </button>
         </div>
       </div>
 
-      <!-- Directory Info (Only when not in Recent sort mode) -->
-      {#if sortMode !== "recent"}
-        <div class="mb-4">
-          <div class="text-sm text-neutral-600 dark:text-neutral-400 mb-2">
-            <div class="font-medium mb-1">Current Directory:</div>
-            <div
-              class="font-mono text-xs bg-neutral-100 dark:bg-neutral-800 p-2 rounded overflow-x-auto whitespace-nowrap"
-              title={currentDirectory}
-            >
-              {currentDirectory.includes("/GitHub/")
-                ? "..." + currentDirectory.split("/GitHub/")[1]
-                : currentDirectory}
-            </div>
+      <!-- Directory Info -->
+      <div class="mb-4">
+        <div class="text-sm text-neutral-600 dark:text-neutral-400 mb-2">
+          <div class="font-medium mb-1">Current Directory:</div>
+          <div
+            class="font-mono text-xs bg-neutral-100 dark:bg-neutral-800 p-2 rounded overflow-x-auto whitespace-nowrap"
+            title={currentDirectory}
+          >
+            {currentDirectory.includes("/GitHub/")
+              ? "..." + currentDirectory.split("/GitHub/")[1]
+              : currentDirectory}
           </div>
         </div>
-      {/if}
+      </div>
 
-      <!-- Error Message (Only show if not in recent mode, or if it's not a directory error) -->
-      {#if errorMessage && (sortMode !== "recent" || !errorMessage.includes("directory"))}
+      <!-- Error Message -->
+      {#if errorMessage}
         <div
           class="mb-3 p-2 bg-red-100 dark:bg-red-900/30 border border-red-300 dark:border-red-700 rounded text-sm text-red-700 dark:text-red-300"
         >
@@ -889,13 +842,65 @@
         </div>
       {/if}
 
-      {#if sortMode !== "recent"}
+      <button
+        on:click={changeDirectory}
+        class="w-full px-3 py-2 text-sm bg-blue-500 hover:bg-blue-600 text-white rounded-md transition-colors flex items-center justify-center gap-2"
+      >
+        <svg
+          xmlns="http://www.w3.org2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke-width={2}
+          stroke="currentColor"
+          class="size-4"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            d="M3.75 9.776c.112-.017.227-.026.344-.026h15.812c.117 0 .232.009.344.026m-16.5 0a2.25 2.25 0 0 0-1.883 2.542l.857 6a2.25 2.25 0 0 0 2.227 1.932H19.05a2.25 2.25 0 0 0 2.227-1.932l.857-6a2.25 2.25 0 0 0-1.883-2.542m-16.5 0V6A2.25 2.25 0 0 1 6 3.75h3.879a1.5 1.5 0 0 1 1.06.44l2.122 2.12a1.5 1.5 0 0 0 1.06.44H18A2.25 2.25 0 0 1 20.25 9v.776"
+          />
+        </svg>
+        Change Directory
+      </button>
+    </div>
+
+    <!-- New File Section -->
+    <div
+      class="flex-shrink-0 p-4 border-b border-neutral-200 dark:border-neutral-700"
+    >
+      {#if creatingNewFile}
+        <div class="space-y-2">
+          <input
+            bind:value={newFileName}
+            placeholder="Enter file name (e.g., my_path.pp)..."
+            class="w-full px-3 py-2 text-sm border border-neutral-300 dark:border-neutral-600 rounded-md bg-white dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            on:keydown={(e) => e.key === "Enter" && createNewFile()}
+          />
+          <div class="flex gap-2">
+            <button
+              on:click={createNewFile}
+              class="flex-1 px-3 py-2 text-sm bg-green-500 hover:bg-green-600 text-white rounded-md transition-colors"
+            >
+              Create
+            </button>
+            <button
+              on:click={() => {
+                creatingNewFile = false;
+                newFileName = "";
+              }}
+              class="flex-1 px-3 py-2 text-sm bg-neutral-500 hover:bg-neutral-600 text-white rounded-md transition-colors"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      {:else}
         <button
-          on:click={changeDirectory}
-          class="w-full px-3 py-2 text-sm bg-blue-500 hover:bg-blue-600 text-white rounded-md transition-colors flex items-center justify-center gap-2"
+          on:click={() => (creatingNewFile = true)}
+          class="w-full px-3 py-2 text-sm bg-green-500 hover:bg-green-600 text-white rounded-md transition-colors flex items-center justify-center gap-2"
         >
           <svg
-            xmlns="http://www.w3.org2000/svg"
+            xmlns="http://www.w3.org/2000/svg"
             fill="none"
             viewBox="0 0 24 24"
             stroke-width={2}
@@ -905,69 +910,13 @@
             <path
               stroke-linecap="round"
               stroke-linejoin="round"
-              d="M3.75 9.776c.112-.017.227-.026.344-.026h15.812c.117 0 .232.009.344.026m-16.5 0a2.25 2.25 0 0 0-1.883 2.542l.857 6a2.25 2.25 0 0 0 2.227 1.932H19.05a2.25 2.25 0 0 0 2.227-1.932l.857-6a2.25 2.25 0 0 0-1.883-2.542m-16.5 0V6A2.25 2.25 0 0 1 6 3.75h3.879a1.5 1.5 0 0 1 1.06.44l2.122 2.12a1.5 1.5 0 0 0 1.06.44H18A2.25 2.25 0 0 1 20.25 9v.776"
+              d="M12 4.5v15m7.5-7.5h-15"
             />
           </svg>
-          Change Directory
+          New Path File
         </button>
       {/if}
     </div>
-
-    <!-- New File Section (Only in Directory Mode) -->
-    {#if sortMode !== "recent"}
-      <div
-        class="flex-shrink-0 p-4 border-b border-neutral-200 dark:border-neutral-700"
-      >
-        {#if creatingNewFile}
-          <div class="space-y-2">
-            <input
-              bind:value={newFileName}
-              placeholder="Enter file name (e.g., my_path.pp)..."
-              class="w-full px-3 py-2 text-sm border border-neutral-300 dark:border-neutral-600 rounded-md bg-white dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              on:keydown={(e) => e.key === "Enter" && createNewFile()}
-            />
-            <div class="flex gap-2">
-              <button
-                on:click={createNewFile}
-                class="flex-1 px-3 py-2 text-sm bg-green-500 hover:bg-green-600 text-white rounded-md transition-colors"
-              >
-                Create
-              </button>
-              <button
-                on:click={() => {
-                  creatingNewFile = false;
-                  newFileName = "";
-                }}
-                class="flex-1 px-3 py-2 text-sm bg-neutral-500 hover:bg-neutral-600 text-white rounded-md transition-colors"
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        {:else}
-          <button
-            on:click={() => (creatingNewFile = true)}
-            class="w-full px-3 py-2 text-sm bg-green-500 hover:bg-green-600 text-white rounded-md transition-colors flex items-center justify-center gap-2"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke-width={2}
-              stroke="currentColor"
-              class="size-4"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                d="M12 4.5v15m7.5-7.5h-15"
-              />
-            </svg>
-            New Path File
-          </button>
-        {/if}
-      </div>
-    {/if}
 
     <!-- File List -->
     <div class="flex-1 overflow-hidden">

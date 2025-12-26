@@ -178,6 +178,10 @@
 
   function recordChange() {
     history.record(getAppState());
+    // Mark as unsaved when a change is recorded
+    if (isLoaded) {
+      isUnsaved.set(true);
+    }
   }
 
   function undoAction() {
@@ -188,7 +192,13 @@
       shapes = prev.shapes;
       sequence = prev.sequence;
       settings = prev.settings;
-      isUnsaved.set(true);
+      // Check if we're back to the saved state
+      const currentState = getCurrentState();
+      if (currentState === lastSavedState) {
+        isUnsaved.set(false);
+      } else {
+        isUnsaved.set(true);
+      }
       two && two.update();
     }
   }
@@ -201,7 +211,13 @@
       shapes = next.shapes;
       sequence = next.sequence;
       settings = next.settings;
-      isUnsaved.set(true);
+      // Check if we're back to the saved state
+      const currentState = getCurrentState();
+      if (currentState === lastSavedState) {
+        isUnsaved.set(false);
+      } else {
+        isUnsaved.set(true);
+      }
       two && two.update();
     }
   }
@@ -775,11 +791,17 @@
   })();
 
   let isLoaded = false;
-  // Reactively trigger when any saveable data changes
-  $: {
-    if (isLoaded && (lines || shapes || startPoint || settings)) {
-      isUnsaved.set(true);
-    }
+  let lastSavedState: string = "";
+
+  // Function to get current state as JSON
+  function getCurrentState(): string {
+    return JSON.stringify({
+      startPoint,
+      lines,
+      shapes,
+      sequence,
+      settings,
+    });
   }
 
   // Allow the app to stabilize before tracking changes
@@ -872,7 +894,9 @@
             `File not found: ${path}\nDo you want to remove it from recent files?`,
           )
         ) {
-          settings.recentFiles = settings.recentFiles?.filter((p) => p !== path);
+          settings.recentFiles = settings.recentFiles?.filter(
+            (p) => p !== path,
+          );
           settings = { ...settings };
         }
         return;
@@ -901,6 +925,7 @@
           settings,
         });
         await electronAPI.writeFile($currentFilePath, jsonString);
+        lastSavedState = getCurrentState();
         isUnsaved.set(false);
         addToRecentFiles($currentFilePath);
         console.log("Saved to", $currentFilePath);
@@ -1702,6 +1727,7 @@
     // Load shapes with defaults
     shapes = data.shapes || [];
 
+    lastSavedState = getCurrentState();
     isUnsaved.set(false);
     recordChange();
   }
