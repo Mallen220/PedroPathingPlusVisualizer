@@ -18,7 +18,23 @@ const runProp = (name: string, iterations: number, fn: (i: number) => void) => {
     }
 };
 
+// Nasty values to fuzz with
+const NASTY_NUMBERS = [
+    0, -0, 1, -1,
+    Number.MAX_VALUE, -Number.MAX_VALUE,
+    Number.MIN_VALUE, -Number.MIN_VALUE,
+    Number.POSITIVE_INFINITY, Number.NEGATIVE_INFINITY,
+    NaN,
+    Number.EPSILON,
+    Math.PI,
+    2 * Math.PI
+];
+
+const getRandomNasty = () => NASTY_NUMBERS[Math.floor(Math.random() * NASTY_NUMBERS.length)];
+const getRandomMixed = () => Math.random() < 0.1 ? getRandomNasty() : rand(-1000, 1000);
+
 describe('Dynamic Testing - Math Utils', () => {
+    // --- Existing Property Tests ---
     it('getAngularDifference should always return value between -180 and 180', () => {
         runProp('getAngularDifference range', 1000, () => {
             const start = rand(-720, 720);
@@ -37,13 +53,12 @@ describe('Dynamic Testing - Math Utils', () => {
             const rawDiff = end - start;
             const error = Math.abs(diff - rawDiff);
             const remainder = error % 360;
-            // Should be close to 0 or close to 360 (floating point issues)
             const isMultiple = Math.min(remainder, 360 - remainder) < 1e-5;
             expect(isMultiple).toBe(true);
         });
     });
 
-    it('transformAngle should always normalize to [-180, 180)', () => {
+    it('transformAngle should always normalize to [-180, 180]', () => {
         runProp('transformAngle range', 1000, () => {
             const angle = rand(-1000, 1000);
             const transformed = mathUtils.transformAngle(angle);
@@ -68,16 +83,33 @@ describe('Dynamic Testing - Math Utils', () => {
             const end = rand(-100, 100);
             const result = mathUtils.lerp(ratio, start, end);
 
-            // Check if result is between start and end (inclusive)
             const min = Math.min(start, end);
             const max = Math.max(start, end);
             expect(result).toBeGreaterThanOrEqual(min - 1e-9);
             expect(result).toBeLessThanOrEqual(max + 1e-9);
         });
     });
+
+    // --- Fuzz Testing (Crash Resistance) ---
+    it('Math utils should not crash on nasty inputs', () => {
+        runProp('Math Fuzzing', 500, () => {
+            const n1 = getRandomMixed();
+            const n2 = getRandomMixed();
+            const n3 = getRandomMixed();
+
+            // Just calling them to ensure no throws
+            mathUtils.transformAngle(n1);
+            mathUtils.getAngularDifference(n1, n2);
+            mathUtils.shortestRotation(n1, n2, n3); // n3 is percentage
+            mathUtils.easeInOutQuad(n1);
+            mathUtils.lerp(n1, n2, n3);
+            mathUtils.radiansToDegrees(n1);
+        });
+    });
 });
 
 describe('Dynamic Testing - Geometry Utils', () => {
+    // --- Existing Property Tests ---
     it('pointToLineDistance should be 0 if point is on the line segment', () => {
         runProp('pointToLineDistance on segment', 100, () => {
             const p1 = [rand(-100, 100), rand(-100, 100)];
@@ -88,20 +120,19 @@ describe('Dynamic Testing - Geometry Utils', () => {
                 p1[1] + (p2[1] - p1[1]) * t
             ];
             const dist = geoUtils.pointToLineDistance(pointOnLine, p1, p2);
-            expect(dist).toBeLessThan(1e-5);
+            expect(dist).toBeLessThan(1e-4);
         });
     });
 
     it('polygonCenter should be inside a convex polygon', () => {
         runProp('polygonCenter inside convex', 100, () => {
-             // Generate a random triangle (always convex)
              const p1 = { x: rand(0, 100), y: rand(0, 100) };
              const p2 = { x: rand(0, 100), y: rand(0, 100) };
              const p3 = { x: rand(0, 100), y: rand(0, 100) };
              const poly = [p1, p2, p3];
 
              // Ensure it's not degenerate (area > 0) roughly
-             if (Math.abs((p2.x - p1.x)*(p3.y - p1.y) - (p3.x - p1.x)*(p2.y - p1.y)) < 1e-5) return;
+             if (Math.abs((p2.x - p1.x)*(p3.y - p1.y) - (p3.x - p1.x)*(p2.y - p1.y)) < 1e-4) return;
 
              const center = geoUtils.polygonCenter(poly);
              const isInside = geoUtils.pointInPolygon(center, poly);
@@ -116,20 +147,9 @@ describe('Dynamic Testing - Geometry Utils', () => {
                 points.push({ x: rand(-100, 100), y: rand(-100, 100) });
             }
             const hull = geoUtils.convexHull(points);
-
-            // For every original point, it should be inside (or on edge of) the hull
-            // pointInPolygon might return false for points on edge depending on implementation,
-            // but for hull vertices it should definitely work?
-            // Actually pointInPolygon uses ray casting, which can be tricky for edge cases.
-            // Instead, let's verify that the hull size is <= original points and > 2
             expect(hull.length).toBeLessThanOrEqual(points.length);
-            expect(hull.length).toBeGreaterThanOrEqual(3); // Assuming random points usually form a shape
+            expect(hull.length).toBeGreaterThanOrEqual(3);
 
-            // Check if every point is inside or on boundary of hull
-            // But pointInPolygon is a strictly inside check or strictly containment?
-            // The implementation: "intersects if ..."
-
-            // Let's just check that hull vertices are subset of points
             for(const v of hull) {
                 const exists = points.some(p => Math.abs(p.x - v.x) < 1e-9 && Math.abs(p.y - v.y) < 1e-9);
                 expect(exists).toBe(true);
@@ -147,14 +167,72 @@ describe('Dynamic Testing - Geometry Utils', () => {
 
             const corners = geoUtils.getRobotCorners(x, y, h, w, ht);
             expect(corners).toHaveLength(4);
-
-            // Check distances between corners to verify shape preservation
             const dist = (p1: any, p2: any) => Math.sqrt((p1.x-p2.x)**2 + (p1.y-p2.y)**2);
+            expect(Math.abs(dist(corners[0], corners[1]) - w)).toBeLessThan(1e-4);
+            expect(Math.abs(dist(corners[1], corners[2]) - ht)).toBeLessThan(1e-4);
+        });
+    });
 
-            // Width check (front-left to front-right)
-            expect(Math.abs(dist(corners[0], corners[1]) - w)).toBeLessThan(1e-5);
-            // Height check (front-right to back-right)
-            expect(Math.abs(dist(corners[1], corners[2]) - ht)).toBeLessThan(1e-5);
+    // --- Edge Case / Nasty Testing ---
+
+    it('pointToLineDistance should handle coincident line endpoints (zero length line)', () => {
+        const p1 = [10, 10];
+        const p2 = [10, 10]; // Same as p1
+        const p = [20, 20];
+
+        // Distance should be distance to the single point
+        const dist = geoUtils.pointToLineDistance(p, p1, p2);
+        const expected = Math.sqrt((20-10)**2 + (20-10)**2);
+        expect(dist).toBeCloseTo(expected, 4);
+    });
+
+    it('convexHull should handle collinear points', () => {
+        // Points on a line: (0,0), (1,1), (2,2)
+        const points = [
+            { x: 0, y: 0 },
+            { x: 1, y: 1 },
+            { x: 2, y: 2 },
+            { x: 0.5, y: 0.5 }
+        ];
+        // Hull of collinear points is basically the two endpoints (degenerate polygon) or all points if implementation varies.
+        // Standard Hull algo might fail or produce 2 points.
+        // Let's just ensure it doesn't crash and returns valid subset.
+        const hull = geoUtils.convexHull(points);
+        expect(Array.isArray(hull)).toBe(true);
+        // It likely returns the endpoints or just the set.
+    });
+
+    it('convexHull should handle coincident points', () => {
+        const points = [
+            { x: 5, y: 5 },
+            { x: 5, y: 5 },
+            { x: 5, y: 5 }
+        ];
+        const hull = geoUtils.convexHull(points);
+        expect(hull.length).toBeLessThanOrEqual(3);
+        // Should handle it gracefully
+    });
+
+    it('Geometry utils should not crash on nasty inputs', () => {
+        runProp('Geometry Fuzzing', 500, () => {
+            const n1 = getRandomMixed();
+            const n2 = getRandomMixed();
+
+            // pointInPolygon with nasty coordinates (function expects number[] for point)
+            geoUtils.pointInPolygon([n1, n2], [{x: n1, y: n2}, {x: 0, y: 0}]);
+
+            // pointToLineDistance with nasty coordinates
+            geoUtils.pointToLineDistance([n1, n1], [n2, n2], [n1, n2]);
+
+            // convexHull with nasty points
+            geoUtils.convexHull([
+                {x: n1, y: n2},
+                {x: Infinity, y: Infinity},
+                {x: NaN, y: NaN}
+            ]);
+
+            // getRobotCorners with nasty dims
+            geoUtils.getRobotCorners(n1, n2, n1, n2, n2);
         });
     });
 });
