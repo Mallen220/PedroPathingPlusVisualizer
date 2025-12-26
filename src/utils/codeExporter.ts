@@ -561,10 +561,11 @@ import com.pedropathing.paths.PathChain;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 ${imports}
 import org.firstinspires.ftc.robotcore.external.Telemetry;
-import org.firstinspires.ftc.teamcode.Utils.Pathing.ProgressTracker;
+import com.pedropathingplus.PedroPathReader;
+import com.pedropathingplus.pathing.ProgressTracker;
+import com.pedropathingplus.pathing.NamedCommands;
 import java.io.IOException;
 import org.firstinspires.ftc.teamcode.Subsystems.Drivetrain;
-import org.firstinspires.ftc.teamcode.Utils.PedroPathReader;
 
 public class ${className} extends ${SequentialGroupClass} {
 
