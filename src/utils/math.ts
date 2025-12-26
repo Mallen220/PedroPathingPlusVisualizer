@@ -33,7 +33,8 @@ export function getMousePos(evt: MouseEvent, canvas: any) {
 }
 
 export function transformAngle(angle: number) {
-  return ((angle + 180) % 360) - 180;
+  const normalized = (angle % 360 + 360) % 360; // Normalize to [0, 360)
+  return normalized > 180 ? normalized - 360 : normalized;
 }
 
 /**
@@ -41,8 +42,8 @@ export function transformAngle(angle: number) {
  * Returns a value between -180 and 180.
  */
 export function getAngularDifference(start: number, end: number): number {
-  const normalizedStart = (start + 360) % 360;
-  const normalizedEnd = (end + 360) % 360;
+  const normalizedStart = (start % 360 + 360) % 360;
+  const normalizedEnd = (end % 360 + 360) % 360;
   let diff = normalizedEnd - normalizedStart;
 
   if (diff > 180) diff -= 360;
