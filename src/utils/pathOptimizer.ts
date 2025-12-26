@@ -103,6 +103,8 @@ export class PathOptimizer {
       });
     }
 
+    let lastYieldTime = performance.now();
+
     // Run generations
     for (let gen = 0; gen < this.generations; gen++) {
       // Sort by time (lowest first)
@@ -115,8 +117,14 @@ export class PathOptimizer {
         bestLines: population[0].lines,
       });
 
-      // Allow UI to update
-      await new Promise((resolve) => setTimeout(resolve, 0));
+      // Allow UI to update - throttle to keep UI responsive without killing performance
+      // Yield every 15ms or so (approx 60fps) to let the main thread breathe,
+      // instead of every generation which is too aggressive.
+      const now = performance.now();
+      if (now - lastYieldTime > 15) {
+        await new Promise((resolve) => setTimeout(resolve, 0));
+        lastYieldTime = performance.now();
+      }
 
       // Create next generation
       const nextGen: { lines: Line[]; time: number }[] = [];
