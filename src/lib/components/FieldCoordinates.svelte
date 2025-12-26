@@ -2,8 +2,9 @@
   export let x: number;
   export let y: number;
   export let visible: boolean = true;
+  export let isObstructed: boolean = false;
 
-  $: positionClass = x < 48 && y < 24 ? "top-2 right-2" : "bottom-2 left-2";
+  $: positionClass = isObstructed ? "top-2 right-2" : "bottom-2 left-2";
 </script>
 
 {#if visible}
