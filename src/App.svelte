@@ -102,6 +102,7 @@
   // Canvas state
   let two: Two;
   let twoElement: HTMLDivElement;
+  let wrapperDiv: HTMLDivElement;
   let width = 0;
   let height = 0;
   // Robot state
@@ -129,6 +130,7 @@
   let currentMouseX = 0;
   let currentMouseY = 0;
   let isMouseOverField = false;
+  let isObstructingHUD = false;
 
   const history = createHistory();
   const { canUndoStore, canRedoStore } = history;
@@ -1319,6 +1321,19 @@
       currentMouseY = Math.max(0, Math.min(FIELD_SIZE, rawInchYForDisplay));
       isMouseOverField = true;
 
+      // Determine if mouse is visually obstructing the HUD (bottom-left corner)
+      if (wrapperDiv) {
+        const wrapperRect = wrapperDiv.getBoundingClientRect();
+        const visualX = evt.clientX - wrapperRect.left;
+        const visualY = evt.clientY - wrapperRect.top;
+        const w = wrapperRect.width;
+        const h = wrapperRect.height;
+
+        // Check if mouse is in the bottom-left region
+        // Define a safe zone: Left 35% and Bottom 20%
+        isObstructingHUD = visualX < w * 0.35 && visualY > h * 0.8;
+      }
+
       const elem = document.elementFromPoint(evt.clientX, evt.clientY);
 
       if (isDown && currentElem) {
@@ -1800,7 +1815,7 @@
   class="w-screen h-screen pt-20 p-2 flex flex-row justify-center items-center gap-2"
 >
   <div class="flex h-full justify-center items-center">
-    <div class="relative h-full aspect-square">
+    <div class="relative h-full aspect-square" bind:this={wrapperDiv}>
       <div
         bind:this={twoElement}
         bind:clientWidth={width}
@@ -1877,6 +1892,7 @@ pointer-events: none;`}
         x={currentMouseX}
         y={currentMouseY}
         visible={isMouseOverField}
+        isObstructed={isObstructingHUD}
       />
     </div>
   </div>
