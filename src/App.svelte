@@ -1002,6 +1002,7 @@
       bind("saveFileAs", () => saveFileAs());
       bind("exportGif", () => exportGif());
       bind("addNewLine", () => addNewLine());
+      bind("addWait", () => addWait());
       bind("addControlPoint", () => {
         addControlPoint();
       });
@@ -1793,15 +1794,37 @@
     recordChange();
   }
 
+  function addWait() {
+    const wait = {
+      kind: "wait",
+      id: `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`,
+      name: "Wait",
+      durationMs: 1000,
+      locked: false,
+    } as SequenceItem;
+    sequence = [...sequence, wait];
+    recordChange();
+  }
+
+  import { selectedLineId } from "./stores";
+
   function addControlPoint() {
-    if (lines.length > 0) {
-      const lastLine = lines[lines.length - 1];
-      lastLine.controlPoints.push({
-        x: _.random(36, 108),
-        y: _.random(36, 108),
-      });
-      recordChange();
-    }
+    if (lines.length === 0) return;
+
+    // Prefer the selected line if available, otherwise fallback to the last line
+    const targetId = $selectedLineId || lines[lines.length - 1].id;
+    const targetLine =
+      lines.find((l) => l.id === targetId) || lines[lines.length - 1];
+    if (!targetLine) return;
+
+    targetLine.controlPoints.push({
+      x: _.random(36, 108),
+      y: _.random(36, 108),
+    });
+
+    // Force reactivity
+    lines = [...lines];
+    recordChange();
   }
 
   function removeControlPoint() {

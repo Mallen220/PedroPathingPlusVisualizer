@@ -19,6 +19,7 @@
   import OptimizationDialog from "./components/OptimizationDialog.svelte";
   import WaypointTable from "./components/WaypointTable.svelte";
   import { calculatePathTime } from "../utils";
+  import { selectedLineId } from "../stores";
 
   export let percent: number;
   export let playing: boolean;
@@ -176,6 +177,8 @@
       sequence = sequence.filter(
         (s) => s.kind === "wait" || s.lineId !== removedId,
       );
+      // Clear selection if the removed line was selected
+      if ($selectedLineId === removedId) selectedLineId.set(null);
     }
     collapsedSections.lines.splice(idx, 1);
     collapsedSections.controlPoints.splice(idx, 1);
@@ -204,6 +207,8 @@
     sequence = [...sequence, { kind: "path", lineId: newLine.id! }];
     collapsedSections.lines.push(false);
     collapsedSections.controlPoints.push(true);
+    // Select the newly created line
+    selectedLineId.set(newLine.id!);
     recordChange();
   }
 
@@ -255,6 +260,8 @@
       ...collapsedSections.controlPoints,
     ];
     collapsedEventMarkers = [false, ...collapsedEventMarkers];
+    // Select the new starting path
+    selectedLineId.set(newLine.id!);
     recordChange();
   }
 
