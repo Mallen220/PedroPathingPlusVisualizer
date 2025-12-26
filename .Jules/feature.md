@@ -1,9 +1,6 @@
-# Project Journal - Critical Learnings
+# Feature Journal
 
-This journal is not a changelog. Only add entries when you discover insights that will meaningfully improve future feature work.
+## 2024-05-22 - Initial Setup
 
-Format:
-
-YYYY-MM-DD - [Title]
-Learning: [Insight]
-Action: [How to apply next time]
+**Learning:** The project uses `.pp` files to store path data.
+**Action:** When implementing features that modify data, ensure backward compatibility or migration for existing `.pp` files.
