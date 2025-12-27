@@ -24,11 +24,14 @@
   let logs: string[] = [];
   let optimizedLines: Line[] | null = null;
   let showPreview = true;
+  // True if optimizer finished but best candidate still has collision penalty
+  let optimizationFailed = false;
 
   async function startOptimization() {
     isRunning = true;
     progress = 0;
     logs = [];
+    optimizationFailed = false;
 
     const optimizer = new PathOptimizer(
       startPoint,
@@ -40,22 +43,38 @@
 
     logs = [...logs, "Initializing population..."];
 
-    optimizedLines = await optimizer.optimize((result: OptimizationResult) => {
-      progress = result.generation;
-      currentBestTime = result.bestTime;
-      // Log every 10 generations to avoid clutter
-      if (result.generation % 10 === 0 || result.generation === 1) {
-        // If time is > 1000, it means it's still validating/colliding
-        const timeDisplay = result.bestTime > 1000 ? "Validating..." : formatTime(result.bestTime);
-        logs = [
-          ...logs,
-          `Gen ${result.generation}: Best Time ${timeDisplay}`,
-        ];
-        // Auto-scroll logs
-        const logContainer = document.getElementById("opt-logs");
-        if (logContainer) logContainer.scrollTop = logContainer.scrollHeight;
-      }
-    });
+    const optimizationResult = await optimizer.optimize(
+      (result: OptimizationResult) => {
+        progress = result.generation;
+        currentBestTime = result.bestTime;
+        // Log every 10 generations to avoid clutter
+        if (result.generation % 10 === 0 || result.generation === 1) {
+          // If time is > 1000, it means it's still validating/colliding
+          const timeDisplay =
+            result.bestTime > 1000
+              ? "Validating..."
+              : formatTime(result.bestTime);
+          logs = [
+            ...logs,
+            `Gen ${result.generation}: Best Time ${timeDisplay}`,
+          ];
+          // Auto-scroll logs
+          const logContainer = document.getElementById("opt-logs");
+          if (logContainer) logContainer.scrollTop = logContainer.scrollHeight;
+        }
+      },
+    );
+
+    optimizedLines = optimizationResult.lines;
+    const finalBestTime = optimizationResult.bestTime;
+    // If bestTime is still in penalty range (>=10000), treat as failure to find collision-free path
+    optimizationFailed = finalBestTime >= 10000;
+    if (optimizationFailed) {
+      logs = [
+        ...logs,
+        "Warning: No collision-free path was found. You can help the optimizer by creating an initial path that avoids obstacles before running optimization.",
+      ];
+    }
 
     logs = [...logs, "Optimization Complete!"];
     isRunning = false;
@@ -67,6 +86,7 @@
   }
 
   function handleApply() {
+    if (optimizationFailed) return; // Do not allow applying a path if optimizer couldn't find a collision-free candidate
     if (optimizedLines) {
       onApply(optimizedLines);
       isOpen = false;
@@ -125,7 +145,10 @@
   <p class="text-sm text-neutral-600 dark:text-neutral-400">
     The optimizer uses a genetic algorithm to adjust control points to minimize
     total travel time. Locking paths and adjusting settings can help guide the
-    optimization process.
+    optimization process. Additionally, obstacles on the field will be
+    considered to avoid collisions. You can help the optimization process by
+    creating an initial path that avoids obstacles. Make sure to review the
+    optimized path before applying it.
   </p>
 
   <div
@@ -133,7 +156,15 @@
   >
     <span class="text-sm font-medium">Current Best Time:</span>
     <span class="text-lg font-bold text-blue-600 dark:text-blue-400">
-      {currentBestTime > 1000 ? "Validating..." : (currentBestTime > 0 ? formatTime(currentBestTime) : "--")}
+      {#if optimizationFailed}
+        No valid path
+      {:else}
+        {currentBestTime > 1000
+          ? "Validating..."
+          : currentBestTime > 0
+            ? formatTime(currentBestTime)
+            : "--"}
+      {/if}
     </span>
   </div>
 
@@ -156,6 +187,16 @@
       <div>{log}</div>
     {/each}
   </div>
+
+  {#if optimizationFailed}
+    <div
+      class="mt-2 rounded-md bg-yellow-50 border-l-4 border-yellow-400 p-3 text-sm text-yellow-800"
+    >
+      ⚠️ <strong>No valid path found.</strong> The optimizer finished but the best
+      candidates still collide with obstacles. Try creating an initial path that avoids
+      obstacles to guide the optimizer.
+    </div>
+  {/if}
 
   {#if isRunning}
     <button
@@ -195,6 +236,10 @@
       <button
         on:click={handleApply}
         class="flex-1 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md text-sm font-medium transition-colors"
+        disabled={optimizationFailed}
+        title={optimizationFailed
+          ? "Cannot apply: optimizer did not find a collision-free path"
+          : ""}
       >
         Apply New Path
       </button>

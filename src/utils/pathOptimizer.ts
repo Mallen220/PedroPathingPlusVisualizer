@@ -78,15 +78,18 @@ export class PathOptimizer {
       // Structural Mutation: Add/Remove Control Points
       // Only do this with low probability to maintain stability, unless colliding
       if (Math.random() < structuralMutationChance) {
-        if (line.controlPoints.length < 3 && Math.random() < 0.6) { // Allow up to 3 points
+        if (line.controlPoints.length < 3 && Math.random() < 0.6) {
+          // Allow up to 3 points
           // Add a control point at the midpoint of start/end
           const midX = (prevPoint.x + line.endPoint.x) / 2;
           const midY = (prevPoint.y + line.endPoint.y) / 2;
 
           // Add massive jitter if colliding
           const jitterMult = isColliding ? 4 : 2;
-          const jitterX = (Math.random() - 0.5) * adaptiveMutationStrength * jitterMult;
-          const jitterY = (Math.random() - 0.5) * adaptiveMutationStrength * jitterMult;
+          const jitterX =
+            (Math.random() - 0.5) * adaptiveMutationStrength * jitterMult;
+          const jitterY =
+            (Math.random() - 0.5) * adaptiveMutationStrength * jitterMult;
 
           const newCP: ControlPoint = {
             x: Math.max(0, Math.min(FIELD_SIZE, midX + jitterX)),
@@ -245,24 +248,24 @@ export class PathOptimizer {
     const step = FIELD_SIZE / gridSize;
 
     // Iterate through grid points
-    for (let x = step/2; x < FIELD_SIZE; x += step) {
-        for (let y = step/2; y < FIELD_SIZE; y += step) {
-             const seedLines = _.cloneDeep(this.originalLines);
-             let modified = false;
-             seedLines.forEach(line => {
-                 if (!line.locked && line.controlPoints.length < 1) {
-                     line.controlPoints.push({ x, y });
-                     modified = true;
-                 }
-             });
+    for (let x = step / 2; x < FIELD_SIZE; x += step) {
+      for (let y = step / 2; y < FIELD_SIZE; y += step) {
+        const seedLines = _.cloneDeep(this.originalLines);
+        let modified = false;
+        seedLines.forEach((line) => {
+          if (!line.locked && line.controlPoints.length < 1) {
+            line.controlPoints.push({ x, y });
+            modified = true;
+          }
+        });
 
-             if (modified) {
-                 const fitness = this.calculateFitness(seedLines);
-                 if (fitness < 10000) {
-                     validSeeds.push({ lines: seedLines, time: fitness });
-                 }
-             }
+        if (modified) {
+          const fitness = this.calculateFitness(seedLines);
+          if (fitness < 10000) {
+            validSeeds.push({ lines: seedLines, time: fitness });
+          }
         }
+      }
     }
 
     return validSeeds;
@@ -270,7 +273,7 @@ export class PathOptimizer {
 
   public async optimize(
     onUpdate: (result: OptimizationResult) => void,
-  ): Promise<Line[]> {
+  ): Promise<{ lines: Line[]; bestTime: number }> {
     // Initialize population
     let population: { lines: Line[]; time: number }[] = [];
 
@@ -284,7 +287,7 @@ export class PathOptimizer {
     const validSeeds = this.findValidPathSeeds();
     // Add valid seeds to population
     if (validSeeds.length > 0) {
-        population.push(...validSeeds);
+      population.push(...validSeeds);
     }
 
     // Smart Initialization: Seed with variants that have extra control points
@@ -379,8 +382,8 @@ export class PathOptimizer {
       population = nextGen;
     }
 
-    // Return best path
+    // Return best path and best time
     population.sort((a, b) => a.time - b.time);
-    return population[0].lines;
+    return { lines: population[0].lines, bestTime: population[0].time };
   }
 }
