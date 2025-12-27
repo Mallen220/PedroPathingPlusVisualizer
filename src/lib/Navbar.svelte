@@ -23,6 +23,7 @@
   import ExportCodeDialog from "./components/ExportCodeDialog.svelte";
   import { calculatePathTime, formatTime } from "../utils";
   import { showShortcuts } from "../stores";
+  import MirrorIcon from "./components/icons/MirrorIcon.svelte";
 
   export let loadFile: (evt: any) => any;
 
@@ -129,6 +130,77 @@
       resetPath();
       if (recordChange) recordChange();
     }
+  }
+
+  function mirrorPath() {
+    // 144 inches is standard field size
+    const FIELD_WIDTH = 144;
+    const center = FIELD_WIDTH / 2;
+
+    // Helper to flip an angle horizontally
+    // 0 is right, 90 is up, 180 is left, -90 is down
+    // Mirroring across Y axis:
+    // 0 -> 180
+    // 90 -> 90
+    // 180 -> 0
+    // 45 -> 135
+    // -45 -> -135 (or 225)
+    // Formula: 180 - angle.
+    // We need to normalize to -180 to 180 or 0 to 360 depending on usage.
+    // The codebase seems to use various conventions, but let's stick to simple reflection.
+
+    const flipAngle = (deg: number | undefined) => {
+      if (typeof deg !== "number") return 0;
+      let newDeg = 180 - deg;
+      // Normalize to -180 to 180 range for consistency, though not strictly required if math handles it
+      while (newDeg > 180) newDeg -= 360;
+      while (newDeg <= -180) newDeg += 360;
+      return newDeg;
+    };
+
+    // Mirror Start Point
+    startPoint.x = FIELD_WIDTH - startPoint.x;
+    if (startPoint.heading === "constant") {
+      startPoint.degrees = flipAngle(startPoint.degrees);
+    } else if (startPoint.heading === "linear") {
+      startPoint.startDeg = flipAngle(startPoint.startDeg);
+      startPoint.endDeg = flipAngle(startPoint.endDeg);
+    }
+    // Tangential doesn't have explicit degrees stored usually, it follows the path.
+    // If the path geometry flips, the tangent flips automatically.
+
+    // Mirror Lines
+    lines.forEach((line) => {
+      // Mirror End Point
+      line.endPoint.x = FIELD_WIDTH - line.endPoint.x;
+
+      // Mirror Heading
+      if (line.endPoint.heading === "constant") {
+        line.endPoint.degrees = flipAngle(line.endPoint.degrees);
+      } else if (line.endPoint.heading === "linear") {
+        line.endPoint.startDeg = flipAngle(line.endPoint.startDeg);
+        line.endPoint.endDeg = flipAngle(line.endPoint.endDeg);
+      }
+
+      // Mirror Control Points
+      line.controlPoints.forEach((cp) => {
+        cp.x = FIELD_WIDTH - cp.x;
+      });
+    });
+
+    // Mirror Obstacles
+    shapes.forEach((shape) => {
+      shape.vertices.forEach((v) => {
+        v.x = FIELD_WIDTH - v.x;
+      });
+    });
+
+    // Trigger reactivity
+    startPoint = startPoint;
+    lines = lines;
+    shapes = shapes;
+
+    if (recordChange) recordChange();
   }
 
   $: if (settings) {
@@ -720,6 +792,16 @@
     ></div>
 
     <div class="flex items-center gap-3">
+      <!-- Mirror path -->
+      <button
+        title="Mirror path horizontally"
+        aria-label="Mirror path horizontally"
+        on:click={mirrorPath}
+        class="text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white transition-colors"
+      >
+        <MirrorIcon />
+      </button>
+
       <!-- Delete/Reset path -->
       <button
         title="Delete/Reset path"
