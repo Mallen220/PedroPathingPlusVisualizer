@@ -187,10 +187,10 @@
 <SettingsDialog bind:isOpen={settingsOpen} bind:settings />
 <KeyboardShortcutsDialog bind:isOpen={shortcutsOpen} bind:settings />
 <div
-  class="absolute top-0 left-0 w-full bg-neutral-50 dark:bg-neutral-900 shadow-md flex flex-row justify-between items-center px-6 py-4 border-b-[0.75px] border-[#b300e6]"
+  class="fixed top-0 left-0 w-full z-50 bg-neutral-50 dark:bg-neutral-900 shadow-md flex flex-row justify-between items-center px-4 md:px-6 py-4 border-b-[0.75px] border-[#b300e6]"
 >
   <!-- Title -->
-  <div class="font-semibold flex flex-col justify-start items-start">
+  <div class="font-semibold flex flex-col justify-start items-start flex-shrink-0 mr-2">
     <div class="flex flex-row items-center gap-2">
       <!-- File manager button -->
       <button
@@ -214,11 +214,12 @@
         </svg>
       </button>
 
-      <span>Pedro Pathing Visualizer</span>
+      <span class="hidden md:inline">Pedro Pathing Visualizer</span>
+      <span class="md:hidden">Pedro Pathing</span>
       {#if $currentFilePath}
         <span class="text-neutral-400 font-light text-sm mx-2">/</span>
         <span
-          class="text-sm font-normal text-neutral-600 dark:text-neutral-300"
+          class="text-sm font-normal text-neutral-600 dark:text-neutral-300 truncate max-w-[100px] md:max-w-xs"
         >
           {$currentFilePath.split(/[\\/]/).pop()}
           {#if $isUnsaved}
@@ -232,10 +233,10 @@
   </div>
 
   <!-- Actions -->
-  <div class="flex flex-row justify-end items-center gap-4">
-    <div class="flex items-center gap-3">
+  <div class="flex flex-row justify-end items-center gap-4 overflow-x-auto no-scrollbar pr-2">
+    <div class="flex items-center gap-3 flex-shrink-0">
       <!-- time estimate -->
-      <div class="flex items-center gap-2 text-sm">
+      <div class="hidden md:flex items-center gap-2 text-sm">
         <div class="text-neutral-600 dark:text-neutral-300">
           Est: {formatTime(timePrediction.totalTime)}
         </div>
