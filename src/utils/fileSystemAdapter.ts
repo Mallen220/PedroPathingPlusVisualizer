@@ -1,7 +1,4 @@
-import type {
-  FileInfo,
-  DirectorySettings,
-} from "../types";
+import type { FileInfo, DirectorySettings } from "../types";
 
 export interface FileSystemAPI {
   // Core file ops
@@ -290,12 +287,31 @@ let instance: FileSystemAPI | null = null;
 export function getFileSystem(): FileSystemAPI {
   if (instance) return instance;
 
-  if ((window as any).electronAPI) {
-    console.log("Using Electron File System Adapter");
+  const override = (window as any).__PEDRO_MODE_OVERRIDE as
+    | "auto"
+    | "app"
+    | "browser"
+    | undefined;
+  const isElectronAvailable = !!(window as any).electronAPI;
+
+  if (
+    override === "app" ||
+    ((override === undefined || override === "auto") && isElectronAvailable)
+  ) {
+    console.log(
+      "Using Electron File System Adapter (mode override: " +
+        (override ?? "auto") +
+        ")",
+    );
     instance = new ElectronAdapter();
   } else {
-    console.log("Using Network File System Adapter");
+    console.log(
+      "Using Network File System Adapter (mode override: " +
+        (override ?? "auto") +
+        ")",
+    );
     instance = new NetworkAdapter();
   }
+
   return instance;
 }

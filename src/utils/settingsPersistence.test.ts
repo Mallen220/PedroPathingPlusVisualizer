@@ -47,9 +47,7 @@ describe("Settings Persistence", () => {
       lastUpdated: "2023-01-01",
     };
 
-    mockFileSystem.readFile.mockResolvedValue(
-      JSON.stringify(storedSettings),
-    );
+    mockFileSystem.readFile.mockResolvedValue(JSON.stringify(storedSettings));
 
     const settings = await loadSettings();
 

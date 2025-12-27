@@ -10,6 +10,7 @@
     currentFilePath,
     isUnsaved,
     snapToGrid,
+    runningMode,
   } from "../stores";
   import { getRandomColor } from "../utils";
   import {
@@ -164,6 +165,27 @@
     document.removeEventListener("click", handleClickOutside);
     document.removeEventListener("keydown", handleKeyDown);
   });
+
+  // Detect if we're running inside Electron and expose a toggle handler
+  let inElectron = false;
+  onMount(() => {
+    inElectron = !!(window as any).electronAPI;
+  });
+
+  function toggleAppBrowser() {
+    if (inElectron) {
+      runningMode.set("browser");
+      // Force a reload so the override takes effect immediately
+      location.reload();
+    } else {
+      runningMode.set("app");
+      // Open releases so users can download the app
+      window.open(
+        "https://github.com/Mallen220/PedroPathingVisualizer/releases",
+        "_blank",
+      );
+    }
+  }
 </script>
 
 {#if fileManagerOpen}
@@ -761,6 +783,20 @@
           ></path>
         </svg>
       </a>
+
+      <!-- App/Browser toggle -->
+      <button
+        title="Switch to App or Browser mode"
+        aria-label="Switch to App or Browser mode"
+        on:click={toggleAppBrowser}
+        class="px-2 py-1 rounded hover:bg-neutral-200 dark:hover:bg-neutral-800 transition-colors"
+      >
+        {#if inElectron}
+          <span title="Switch to Browser">Open in Browser</span>
+        {:else}
+          <span title="Open in App">Open in App</span>
+        {/if}
+      </button>
 
       <!-- Settings button -->
       <button

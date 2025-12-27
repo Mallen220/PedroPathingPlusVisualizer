@@ -19,3 +19,13 @@ export const toggleCollapseAllTrigger = writable(0);
 
 // Currently selected point id in field rendering, format: 'point-<line+1>-<idx>' or 'point-0-0' for start
 export const selectedPointId = writable<string | null>(null);
+
+// Running mode override: 'auto' (default), 'app' (force Electron mode), or 'browser' (force browser network mode).
+export const runningMode = writable<"auto" | "app" | "browser">("auto");
+
+// Keep a global window override in sync so non-Svelte modules can read it synchronously.
+if (typeof window !== "undefined") {
+  runningMode.subscribe((value) => {
+    (window as any).__PEDRO_MODE_OVERRIDE = value;
+  });
+}

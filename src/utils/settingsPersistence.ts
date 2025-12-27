@@ -84,7 +84,9 @@ export async function loadSettings(): Promise<Settings> {
       // However, if we want to keep independent browser settings (if server is not reachable?),
       // we might keep localStorage fallback.
       // But fileSystemAdapter handles network.
-      console.log("Settings file does not exist, checking localStorage/defaults");
+      console.log(
+        "Settings file does not exist, checking localStorage/defaults",
+      );
     } else {
       const fileContent = await fs.readFile(filePath);
       const stored: StoredSettings = JSON.parse(fileContent);

@@ -1810,7 +1810,11 @@
     recordChange();
   }
 
-  import { selectedLineId, selectedPointId, toggleCollapseAllTrigger } from "./stores";
+  import {
+    selectedLineId,
+    selectedPointId,
+    toggleCollapseAllTrigger,
+  } from "./stores";
 
   function addControlPoint() {
     if (lines.length === 0) return;
