@@ -1982,7 +1982,7 @@
 <div
   class="w-screen h-screen pt-20 p-2 flex flex-col lg:flex-row justify-center items-center gap-2 overflow-hidden bg-neutral-200 dark:bg-neutral-950"
 >
-  <div class="flex-1 flex justify-center items-center min-h-0 min-w-0 w-full lg:h-full relative">
+  <div class="flex-1 flex justify-center items-center min-h-[30vh] lg:min-h-0 min-w-0 w-full lg:h-full relative">
     <div class="relative max-w-full max-h-full aspect-square" bind:this={wrapperDiv}>
       <div
         bind:this={twoElement}
