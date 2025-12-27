@@ -109,6 +109,79 @@
   let wrapperDiv: HTMLDivElement;
   let width = 0;
   let height = 0;
+  let innerWidth = 0;
+  let innerHeight = 0;
+
+  // Layout State
+  let showSidebar = true;
+  let mainContentHeight = 0;
+  let mainContentWidth = 0;
+
+  // Initial field width constraint (pixel value)
+  let userFieldLimit: number | null = null;
+
+  // Drag State
+  let isResizing = false;
+
+  $: isLargeScreen = innerWidth >= 1024; // lg breakpoint
+
+  // Initialize defaults once content is loaded
+  $: if (userFieldLimit === null && mainContentWidth > 0 && isLargeScreen) {
+    userFieldLimit = mainContentWidth * 0.55; // Default to ~55% width
+  }
+
+  // Minimum sidebar width in pixels
+  const MIN_SIDEBAR_WIDTH = 320;
+  const MIN_FIELD_PANE_WIDTH = 300;
+
+  // --- Split Pane Logic ---
+
+  // 1. Calculate the width of the Left Pane (Field Container)
+  $: leftPaneWidth = (() => {
+    if (!isLargeScreen) return mainContentWidth; // Full width on mobile
+    if (!showSidebar) return mainContentWidth; // Full width if sidebar hidden
+
+    let targetWidth = userFieldLimit ?? mainContentWidth * 0.55;
+
+    // Clamp values
+    const maxWidth = mainContentWidth - MIN_SIDEBAR_WIDTH;
+    const minWidth = MIN_FIELD_PANE_WIDTH;
+
+    if (maxWidth < minWidth) return mainContentWidth * 0.5;
+
+    return Math.max(minWidth, Math.min(targetWidth, maxWidth));
+  })();
+
+  // 2. Calculate the size of the actual Field Square
+  $: fieldDrawSize = (() => {
+    if (!isLargeScreen) {
+      // Mobile
+      return Math.min(innerWidth - 32, (innerHeight - 80) * 0.6);
+    }
+
+    // Desktop
+    const availableW = leftPaneWidth - 16;
+    const availableH = mainContentHeight - 16;
+
+    return Math.max(100, Math.min(availableW, availableH));
+  })();
+
+  function startResize(e: MouseEvent) {
+    if (!isLargeScreen || !showSidebar) return;
+    isResizing = true;
+    e.preventDefault();
+  }
+
+  function handleResize(e: MouseEvent) {
+    if (!isResizing) return;
+    let newWidth = e.clientX;
+    userFieldLimit = newWidth;
+  }
+
+  function stopResize() {
+    isResizing = false;
+  }
+
   // Robot state
   $: robotWidth = settings?.rWidth || DEFAULT_ROBOT_WIDTH;
   $: robotHeight = settings?.rHeight || DEFAULT_ROBOT_HEIGHT;
@@ -248,6 +321,9 @@
   pointGroup.id = "point-group";
   let shapeGroup = new Two.Group();
   shapeGroup.id = "shape-group";
+  // Event markers group (rendered above points)
+  let eventGroup = new Two.Group();
+  eventGroup.id = "event-group";
   // Coordinate converters
   let x: d3.ScaleLinear<number, number, number>;
 
@@ -802,6 +878,111 @@
 
     return _previewPaths;
   })();
+
+  // Event markers
+  $: eventMarkerElements = (() => {
+    let markers: Two.Group[] = [];
+
+    lines.forEach((line, idx) => {
+      if (
+        !line ||
+        !line.endPoint ||
+        !line.eventMarkers ||
+        line.eventMarkers.length === 0
+      )
+        return;
+      const _startPoint =
+        idx === 0 ? startPoint : lines[idx - 1]?.endPoint || null;
+      if (!_startPoint) return;
+
+      line.eventMarkers.forEach((ev, evIdx) => {
+        const t = Math.max(0, Math.min(1, ev.position ?? 0.5));
+        let pos = { x: 0, y: 0 } as { x: number; y: number };
+
+        if (line.controlPoints.length > 0) {
+          const cps = [_startPoint, ...line.controlPoints, line.endPoint];
+          const pt = getCurvePoint(t, cps);
+          pos.x = pt.x;
+          pos.y = pt.y;
+        } else {
+          // Linear interpolation for straight lines
+          pos.x = _startPoint.x + (line.endPoint.x - _startPoint.x) * t;
+          pos.y = _startPoint.y + (line.endPoint.y - _startPoint.y) * t;
+        }
+
+        const px = x(pos.x);
+        const py = y(pos.y);
+
+        let grp = new Two.Group();
+        grp.id = `event-${idx}-${evIdx}`;
+
+        let circle = new Two.Circle(px, py, x(1.8));
+        // Make events purple by default
+        circle.fill = "#a78bfa"; // purple
+        circle.noStroke();
+
+        // let label = new Two.Text(prettyName, px + x(2), py - x(1.5));
+        // label.size = x(1.8);
+        // label.family = "ui-sans-serif, system-ui, sans-serif";
+        // label.fill = "#8b5cf6"; // darker purple
+        // label.noStroke();
+
+        grp.add(circle);
+        markers.push(grp);
+      });
+    });
+
+    return markers;
+  })();
+
+  // Attach Two.js elements to the scene so they are visible
+  $: if (two) {
+    // Clear previous children from groups
+    while (shapeGroup.children.length)
+      shapeGroup.remove(shapeGroup.children[0]);
+    while (lineGroup.children.length) lineGroup.remove(lineGroup.children[0]);
+    while (pointGroup.children.length)
+      pointGroup.remove(pointGroup.children[0]);
+
+    // Add shapes and overlays (back-to-front)
+    if (Array.isArray(shapeElements)) {
+      shapeElements.forEach((el) => shapeGroup.add(el));
+    }
+    if (ghostPathElement) shapeGroup.add(ghostPathElement);
+    onionLayerElements.forEach((el) => shapeGroup.add(el));
+
+    // Add main lines and preview lines
+    path.forEach((el) => lineGroup.add(el));
+    previewPathElements.forEach((el) => lineGroup.add(el));
+
+    // Add points (start point, end points, control points, obstacles)
+    points.forEach((el) => pointGroup.add(el));
+
+    // Add event markers above points
+    while (eventGroup.children.length)
+      eventGroup.remove(eventGroup.children[0]);
+    eventMarkerElements.forEach((el) => eventGroup.add(el));
+
+    // Re-add groups to the renderer in desired z-order (shapes -> lines -> points -> events)
+    try {
+      two.remove(shapeGroup);
+    } catch (e) {}
+    two.add(shapeGroup);
+    try {
+      two.remove(lineGroup);
+    } catch (e) {}
+    two.add(lineGroup);
+    try {
+      two.remove(pointGroup);
+    } catch (e) {}
+    two.add(pointGroup);
+    try {
+      two.remove(eventGroup);
+    } catch (e) {}
+    two.add(eventGroup);
+
+    two.update();
+  }
 
   let isLoaded = false;
   let lastSavedState: string = "";
@@ -1384,6 +1565,18 @@
       fitted: true,
       type: Two.Types.svg,
     }).appendTo(twoElement);
+
+    // Ensure the Two.js SVG renderer sits above the field image but below the robot
+    if ((two.renderer as any)?.domElement) {
+      const svgEl = (two.renderer as any).domElement as HTMLElement;
+      svgEl.style.position = "absolute";
+      svgEl.style.top = "0";
+      svgEl.style.left = "0";
+      svgEl.style.width = "100%";
+      svgEl.style.height = "100%";
+      // Field image uses z-index 10, robot uses 20 -> place SVG at 15
+      svgEl.style.zIndex = "15";
+    }
 
     updateRobotImageDisplay();
 
@@ -2024,62 +2217,71 @@
       console.warn("File input not found.");
     }
   }
-
-  // Auto-export for CI/testing: if the app is loaded with URL hash #export-gif-test, automatically run GIF export once mounted
-  onMount(() => {
-    if (
-      typeof window !== "undefined" &&
-      window.location &&
-      window.location.hash === "#export-gif-test"
-    ) {
-      // Delay slightly to allow initial rendering and Two.js to initialize
-      setTimeout(async () => {
-        try {
-          await exportGif();
-          console.log("Auto GIF export attempted");
-        } catch (err) {
-          console.error("Auto GIF export failed:", err);
-        }
-      }, 1500);
-    }
-  });
 </script>
 
-<Navbar
-  bind:lines
-  bind:startPoint
-  bind:shapes
-  bind:sequence
-  bind:settings
-  bind:robotWidth
-  bind:robotHeight
-  {saveProject}
-  {saveFileAs}
-  {loadFile}
-  {loadRobot}
-  {exportGif}
-  {undoAction}
-  {redoAction}
-  {recordChange}
-  {canUndo}
-  {canRedo}
-  onPreviewOptimizedLines={(newLines) => {
-    previewOptimizedLines = newLines;
-  }}
+<svelte:window
+  bind:innerWidth
+  bind:innerHeight
+  on:mouseup={stopResize}
+  on:mousemove={handleResize}
 />
-<!--   {saveFile} -->
+
 <div
-  class="w-screen h-screen pt-20 p-2 flex flex-row justify-center items-center gap-2"
+  class="h-screen w-full flex flex-col overflow-hidden bg-neutral-200 dark:bg-neutral-950"
 >
-  <div class="flex h-full justify-center items-center">
-    <div class="relative h-full aspect-square" bind:this={wrapperDiv}>
+  <!-- Navbar (flex-none) -->
+  <div class="flex-none z-50">
+    <Navbar
+      bind:lines
+      bind:startPoint
+      bind:shapes
+      bind:sequence
+      bind:settings
+      bind:robotWidth
+      bind:robotHeight
+      bind:showSidebar
+      {saveProject}
+      {saveFileAs}
+      {loadFile}
+      {exportGif}
+      {undoAction}
+      {redoAction}
+      {recordChange}
+      {canUndo}
+      {canRedo}
+      onPreviewOptimizedLines={(newLines) => {
+        previewOptimizedLines = newLines;
+      }}
+    />
+  </div>
+
+  <!-- Main Content (flex-1) -->
+  <div
+    class="flex-1 min-h-0 flex flex-col lg:flex-row items-stretch lg:overflow-hidden relative p-2 gap-2"
+    bind:clientHeight={mainContentHeight}
+    bind:clientWidth={mainContentWidth}
+  >
+    <!-- Field Container (Left Pane) -->
+    <div
+      class="flex-none flex justify-center items-center relative transition-all duration-75 ease-linear"
+      style={`
+        width: ${isLargeScreen && showSidebar ? leftPaneWidth + "px" : "100%"};
+        height: ${isLargeScreen ? "100%" : "auto"};
+        min-height: ${!isLargeScreen ? "60vh" : "0"};
+      `}
+    >
       <div
-        bind:this={twoElement}
-        bind:clientWidth={width}
-        bind:clientHeight={height}
-        class="w-full h-full rounded-lg shadow-md bg-neutral-50 dark:bg-neutral-900 relative overflow-clip"
-        role="application"
-        style="
+        class="relative aspect-square"
+        style={`width: ${fieldDrawSize}px; height: ${fieldDrawSize}px;`}
+        bind:this={wrapperDiv}
+      >
+        <div
+          bind:this={twoElement}
+          bind:clientWidth={width}
+          bind:clientHeight={height}
+          class="w-full h-full rounded-lg shadow-md bg-neutral-50 dark:bg-neutral-900 relative overflow-clip"
+          role="application"
+          style="
     user-select: none;
     -webkit-user-select: none;
     -moz-user-select: none;
@@ -2093,20 +2295,20 @@
     -ms-user-drag: none;
     -o-user-drag: none;
   "
-        on:contextmenu={(e) => e.preventDefault()}
-        on:dragstart={(e) => e.preventDefault()}
-        on:selectstart={(e) => e.preventDefault()}
-        tabindex="-1"
-        style:transform={`rotate(${settings.fieldRotation || 0}deg)`}
-        style:transition="transform 0.3s ease-in-out"
-      >
-        <img
-          src={settings.fieldMap
-            ? `/fields/${settings.fieldMap}`
-            : "/fields/decode.webp"}
-          alt="Field"
-          class="absolute top-0 left-0 w-full h-full rounded-lg z-10"
-          style="
+          on:contextmenu={(e) => e.preventDefault()}
+          on:dragstart={(e) => e.preventDefault()}
+          on:selectstart={(e) => e.preventDefault()}
+          tabindex="-1"
+          style:transform={`rotate(${settings.fieldRotation || 0}deg)`}
+          style:transition="transform 0.3s ease-in-out"
+        >
+          <img
+            src={settings.fieldMap
+              ? `/fields/${settings.fieldMap}`
+              : "/fields/decode.webp"}
+            alt="Field"
+            class="absolute top-0 left-0 w-full h-full rounded-lg z-10"
+            style="
     background: transparent; 
     pointer-events: none; 
     user-select: none; 
@@ -2121,61 +2323,85 @@
     -ms-user-drag: none;
     -o-user-drag: none;
   "
-          draggable="false"
-          on:error={(e) => {
-            console.error("Failed to load field map:", settings.fieldMap);
-            e.target.src = "/fields/decode.webp"; // Fallback
-          }}
-          on:dragstart={(e) => e.preventDefault()}
-          on:selectstart={(e) => e.preventDefault()}
-        />
-        <MathTools {x} {y} {twoElement} {robotXY} {robotHeading} />
-        <img
-          src={settings.robotImage || "/robot.png"}
-          alt="Robot"
-          style={`position: absolute; top: ${robotXY.y}px;
+            draggable="false"
+            on:error={(e) => {
+              console.error("Failed to load field map:", settings.fieldMap);
+              e.target.src = "/fields/decode.webp"; // Fallback
+            }}
+            on:dragstart={(e) => e.preventDefault()}
+            on:selectstart={(e) => e.preventDefault()}
+          />
+          <MathTools {x} {y} {twoElement} {robotXY} {robotHeading} />
+          <img
+            src={settings.robotImage || "/robot.png"}
+            alt="Robot"
+            style={`position: absolute; top: ${robotXY.y}px;
 left: ${robotXY.x}px; transform: translate(-50%, -50%) rotate(${robotHeading}deg); z-index: 20; width: ${x(robotWidth)}px; height: ${x(robotHeight)}px;user-select: none; -webkit-user-select: none; -moz-user-select: none;-ms-user-select: none;
 pointer-events: none;`}
-          draggable="false"
-          on:error={(e) => {
-            console.error("Failed to load robot image:", settings.robotImage);
-            e.target.src = "/robot.png"; // Fallback to default
-          }}
-          on:dragstart={(e) => e.preventDefault()}
-          on:selectstart={(e) => e.preventDefault()}
+            draggable="false"
+            on:error={(e) => {
+              console.error("Failed to load robot image:", settings.robotImage);
+              e.target.src = "/robot.png"; // Fallback to default
+            }}
+            on:dragstart={(e) => e.preventDefault()}
+            on:selectstart={(e) => e.preventDefault()}
+          />
+        </div>
+        <FieldCoordinates
+          x={currentMouseX}
+          y={currentMouseY}
+          visible={isMouseOverField}
+          isObstructed={isObstructingHUD}
         />
       </div>
-      <FieldCoordinates
-        x={currentMouseX}
-        y={currentMouseY}
-        visible={isMouseOverField}
-        isObstructed={isObstructingHUD}
+    </div>
+
+    <!-- Resizer Handle (Desktop only) -->
+    {#if isLargeScreen && showSidebar}
+      <div
+        class="w-2 cursor-col-resize flex justify-center items-center hover:bg-purple-500/50 active:bg-purple-600 transition-colors rounded-sm select-none z-40"
+        on:mousedown={startResize}
+        role="separator"
+        aria-label="Resize Sidebar"
+        tabindex="0"
+      >
+        <div
+          class="w-[2px] h-8 bg-neutral-400 dark:bg-neutral-600 rounded-full"
+        ></div>
+      </div>
+    {/if}
+
+    <!-- Control Tab (Right Pane) -->
+    <div
+      class="flex-1 h-auto lg:h-full min-h-0 min-w-0 transition-all duration-300 ease-in-out"
+      class:lg:w-0={!showSidebar && isLargeScreen}
+      class:hidden={!showSidebar && isLargeScreen}
+      class:overflow-hidden={!showSidebar && isLargeScreen}
+    >
+      <ControlTab
+        bind:playing
+        {play}
+        {pause}
+        bind:startPoint
+        bind:lines
+        bind:sequence
+        bind:robotWidth
+        bind:robotHeight
+        bind:settings
+        bind:percent
+        bind:robotXY
+        bind:robotHeading
+        bind:shapes
+        {x}
+        {y}
+        {handleSeek}
+        bind:loopAnimation
+        {resetAnimation}
+        {recordChange}
+        onPreviewChange={(newLines) => {
+          previewOptimizedLines = newLines;
+        }}
       />
     </div>
   </div>
-  <ControlTab
-    bind:playing
-    {play}
-    {pause}
-    bind:startPoint
-    bind:lines
-    bind:sequence
-    bind:robotWidth
-    bind:robotHeight
-    bind:settings
-    bind:percent
-    bind:robotXY
-    bind:robotHeading
-    bind:shapes
-    {x}
-    {y}
-    {animationDuration}
-    {handleSeek}
-    bind:loopAnimation
-    {resetAnimation}
-    {recordChange}
-    onPreviewChange={(newLines) => {
-      previewOptimizedLines = newLines;
-    }}
-  />
 </div>
