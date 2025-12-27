@@ -45,9 +45,11 @@
       currentBestTime = result.bestTime;
       // Log every 10 generations to avoid clutter
       if (result.generation % 10 === 0 || result.generation === 1) {
+        // If time is > 1000, it means it's still validating/colliding
+        const timeDisplay = result.bestTime > 1000 ? "Validating..." : formatTime(result.bestTime);
         logs = [
           ...logs,
-          `Gen ${result.generation}: Best Time ${formatTime(result.bestTime)}`,
+          `Gen ${result.generation}: Best Time ${timeDisplay}`,
         ];
         // Auto-scroll logs
         const logContainer = document.getElementById("opt-logs");
@@ -131,9 +133,7 @@
   >
     <span class="text-sm font-medium">Current Best Time:</span>
     <span class="text-lg font-bold text-blue-600 dark:text-blue-400">
-      {currentBestTime > 0 && currentBestTime !== Infinity
-        ? formatTime(currentBestTime)
-        : "--"}
+      {currentBestTime > 1000 ? "Validating..." : (currentBestTime > 0 ? formatTime(currentBestTime) : "--")}
     </span>
   </div>
 

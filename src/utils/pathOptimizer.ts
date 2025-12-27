@@ -119,16 +119,18 @@ export class PathOptimizer {
     return newLines;
   }
 
-  private checkCollision(timeline: TimelineEvent[], lines: Line[]): boolean {
-    if (!this.shapes || this.shapes.length === 0) return false;
+  // Returns number of collision checks that failed
+  private getCollisionCount(timeline: TimelineEvent[], lines: Line[]): number {
+    if (!this.shapes || this.shapes.length === 0) return 0;
 
     // Filter out shapes with fewer than 3 vertices
     const activeShapes = this.shapes.filter((s) => s.vertices.length >= 3);
-    if (activeShapes.length === 0) return false;
+    if (activeShapes.length === 0) return 0;
 
     const totalTime = timeline[timeline.length - 1].endTime;
     const step = 0.2; // Check every 0.2 seconds for performance
     const identityScale: any = (x: number) => x;
+    let collisions = 0;
 
     for (let t = 0; t <= totalTime; t += step) {
       const percent = (t / totalTime) * 100;
@@ -149,19 +151,29 @@ export class PathOptimizer {
         this.settings.rHeight,
       );
 
+      let isColliding = false;
       for (const shape of activeShapes) {
         // Check if any robot corner is in shape
         for (const corner of corners) {
-          if (pointInPolygon([corner.x, corner.y], shape.vertices)) return true;
+          if (pointInPolygon([corner.x, corner.y], shape.vertices)) {
+            isColliding = true;
+            break;
+          }
         }
+        if (isColliding) break;
 
-        // Also check if any shape vertex is inside the robot (for cases where obstacle is smaller than robot)
+        // Also check if any shape vertex is inside the robot
         for (const v of shape.vertices) {
-          if (pointInPolygon([v.x, v.y], corners)) return true;
+          if (pointInPolygon([v.x, v.y], corners)) {
+            isColliding = true;
+            break;
+          }
         }
+        if (isColliding) break;
       }
+      if (isColliding) collisions++;
     }
-    return false;
+    return collisions;
   }
 
   private calculateFitness(lines: Line[]): number {
@@ -172,9 +184,13 @@ export class PathOptimizer {
       this.sequence,
     );
 
-    // Penalize collisions heavily
-    if (this.checkCollision(result.timeline, lines)) {
-      return Infinity;
+    const collisionCount = this.getCollisionCount(result.timeline, lines);
+
+    if (collisionCount > 0) {
+      // Return a large penalty plus the collision count to prioritize fewer collisions
+      // Base penalty 10,000 ensures it's much larger than any realistic path time
+      // We assume max path time < 100s usually.
+      return 10000 + collisionCount;
     }
 
     return result.totalTime;
@@ -236,11 +252,6 @@ export class PathOptimizer {
         0,
         Math.floor(this.populationSize * 0.5),
       );
-
-      // If all parents have infinite time (all colliding), we might be stuck.
-      // In that case, we should probably allow high mutations or keep trying.
-      // But genetic algorithm usually finds a way if at least one valid path exists.
-      // If parentPool is empty or all invalid, we continue mutating anyway.
 
       while (nextGen.length < this.populationSize) {
         let parent = parentPool[0]; // Default to best
