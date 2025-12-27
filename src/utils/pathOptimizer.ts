@@ -7,6 +7,7 @@ import type {
   Settings,
   Shape,
   TimelineEvent,
+  ControlPoint,
 } from "../types";
 import { calculatePathTime } from "./timeCalculator";
 import { FIELD_SIZE } from "../config";
@@ -62,6 +63,32 @@ export class PathOptimizer {
       if (line.locked) {
         prevPoint = line.endPoint;
         return;
+      }
+
+      // Structural Mutation: Add/Remove Control Points
+      // Only do this with low probability to maintain stability
+      if (Math.random() < 0.05) { // 5% chance per line
+        if (line.controlPoints.length < 2 && Math.random() < 0.5) {
+            // Add a control point at the midpoint of start/end
+            const midX = (prevPoint.x + line.endPoint.x) / 2;
+            const midY = (prevPoint.y + line.endPoint.y) / 2;
+            // Add jitter
+            const jitterX = (Math.random() - 0.5) * this.mutationStrength * 2;
+            const jitterY = (Math.random() - 0.5) * this.mutationStrength * 2;
+
+            const newCP: ControlPoint = {
+                x: Math.max(0, Math.min(FIELD_SIZE, midX + jitterX)),
+                y: Math.max(0, Math.min(FIELD_SIZE, midY + jitterY))
+            };
+
+            // Insert in middle
+            const insertIdx = Math.floor(line.controlPoints.length / 2);
+            line.controlPoints.splice(insertIdx, 0, newCP);
+        } else if (line.controlPoints.length > 0 && Math.random() < 0.3) {
+            // Remove a random control point
+            const removeIdx = Math.floor(Math.random() * line.controlPoints.length);
+            line.controlPoints.splice(removeIdx, 1);
+        }
       }
 
       // Mutate control points
@@ -208,8 +235,42 @@ export class PathOptimizer {
       time: this.calculateFitness(this.originalLines),
     });
 
+    // Smart Initialization: Seed with variants that have extra control points
+    // pushed in different directions to help find a path around obstacles
+    if (this.shapes && this.shapes.length > 0) {
+        for (let i = 0; i < Math.min(10, this.populationSize / 2); i++) {
+            const seedLines = _.cloneDeep(this.originalLines);
+            let prevPoint = this.startPoint;
+
+            seedLines.forEach(line => {
+                if (!line.locked && line.controlPoints.length < 2) {
+                    // Inject a control point
+                    const midX = (prevPoint.x + line.endPoint.x) / 2;
+                    const midY = (prevPoint.y + line.endPoint.y) / 2;
+
+                    // Push massively in a random direction (up to 24 inches)
+                    // This creates diverse topologies (left, right, up, down)
+                    const pushX = (Math.random() - 0.5) * 48;
+                    const pushY = (Math.random() - 0.5) * 48;
+
+                    const newCP: ControlPoint = {
+                        x: Math.max(0, Math.min(FIELD_SIZE, midX + pushX)),
+                        y: Math.max(0, Math.min(FIELD_SIZE, midY + pushY))
+                    };
+                    line.controlPoints.push(newCP);
+                }
+                prevPoint = line.endPoint;
+            });
+
+            population.push({
+                lines: seedLines,
+                time: this.calculateFitness(seedLines)
+            });
+        }
+    }
+
     // Fill rest of population
-    for (let i = 1; i < this.populationSize; i++) {
+    while (population.length < this.populationSize) {
       const mutated = this.mutate(this.originalLines);
       population.push({
         lines: mutated,
