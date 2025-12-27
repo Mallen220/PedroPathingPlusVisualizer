@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { calculatePathTime, formatTime } from "./timeCalculator";
-import type { Point, Line, Settings, SequenceItem } from "../types";
+import { calculatePathTime, formatTime, calculateCurveLength } from "./timeCalculator";
+import type { Point, Line, Settings, SequenceItem, BasePoint } from "../types";
 
 describe("Time Calculator", () => {
   const defaultSettings: Settings = {
@@ -143,5 +143,35 @@ describe("Time Calculator", () => {
 
     expect(rotationEvents.length).toBeGreaterThan(0);
     expect(rotationEvents[0].duration).toBeCloseTo(1.0, 1);
+  });
+});
+
+describe("calculateCurveLength", () => {
+  it("calculates length of a straight line", () => {
+    const start: BasePoint = { x: 0, y: 0 };
+    const end: BasePoint = { x: 10, y: 0 };
+    const length = calculateCurveLength(start, [], end);
+    expect(length).toBeCloseTo(10, 1);
+  });
+
+  it("calculates length of a simple curve", () => {
+    const start: BasePoint = { x: 0, y: 0 };
+    const cp: BasePoint = { x: 10, y: 0 };
+    const end: BasePoint = { x: 10, y: 10 };
+
+    const length = calculateCurveLength(start, [cp], end);
+    expect(length).toBeGreaterThan(14.14);
+    expect(length).toBeLessThan(20);
+  });
+
+  it("calculates length of a cubic curve", () => {
+    const start: BasePoint = { x: 0, y: 0 };
+    const cp1: BasePoint = { x: 10, y: 0 };
+    const cp2: BasePoint = { x: 10, y: 10 };
+    const end: BasePoint = { x: 0, y: 10 };
+
+    const length = calculateCurveLength(start, [cp1, cp2], end);
+    expect(length).toBeGreaterThan(10);
+    expect(length).toBeLessThan(30);
   });
 });

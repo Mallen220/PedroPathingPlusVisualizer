@@ -1,5 +1,11 @@
 <script lang="ts">
-  import type { Point, Line, ControlPoint, SequenceItem } from "../../types";
+  import type {
+    Point,
+    Line,
+    ControlPoint,
+    SequenceItem,
+    BasePoint,
+  } from "../../types";
   import {
     snapToGrid,
     showGrid,
@@ -7,6 +13,7 @@
     selectedLineId,
     selectedPointId,
   } from "../../stores";
+  import { calculateCurveLength } from "../../utils/timeCalculator";
 
   export let startPoint: Point;
   export let lines: Line[];
@@ -228,6 +235,26 @@
 
     handleDragEnd();
   }
+
+  function getStartPointForLine(seqIdx: number): BasePoint {
+    // Find last path item before this index
+    for (let i = seqIdx - 1; i >= 0; i--) {
+      const item = sequence[i];
+      if (item.kind === "path") {
+        const line = lines.find((l) => l.id === item.lineId);
+        if (line) return line.endPoint;
+      }
+    }
+    return startPoint;
+  }
+
+  // Reactive wrapper to recalculate length when dependencies change
+  // We make it a function that depends on lines/sequence updates
+  function getPathLength(line: Line, seqIdx: number): string {
+    const start = getStartPointForLine(seqIdx);
+    const len = calculateCurveLength(start, line.controlPoints, line.endPoint);
+    return len.toFixed(1);
+  }
 </script>
 
 <div class="w-full flex flex-col gap-4 text-sm p-1">
@@ -294,6 +321,7 @@
             >X (in) / Dur (ms)</th
           >
           <th class="px-3 py-2 border-b dark:border-neutral-700">Y (in)</th>
+          <th class="px-3 py-2 border-b dark:border-neutral-700">Len (in)</th>
           <th class="px-3 py-2 border-b dark:border-neutral-700 w-10"></th>
         </tr>
       </thead>
@@ -343,6 +371,7 @@
               disabled={startPoint.locked}
             />
           </td>
+          <td class="px-3 py-2 text-neutral-400 text-xs italic"> - </td>
           <td class="px-3 py-2 text-center">
             {#if startPoint.locked}
               <span title="Locked">🔒</span>
@@ -423,6 +452,11 @@
                     on:input={(e) => handleInput(e, line.endPoint, "y")}
                     disabled={line.locked}
                   />
+                </td>
+                <td
+                  class="px-3 py-2 text-xs font-mono text-neutral-600 dark:text-neutral-400"
+                >
+                  {getPathLength(line, seqIdx)}
                 </td>
                 <td class="px-3 py-2 text-center">
                   <button
@@ -515,6 +549,7 @@
                       disabled={line.locked}
                     />
                   </td>
+                  <td class="px-3 py-2 text-neutral-400 text-xs italic"> - </td>
                   <td class="px-3 py-2 text-center">
                     {#if line.locked}
                       <span title="Locked">🔒</span>
@@ -582,6 +617,7 @@
                   disabled={item.locked}
                 />
               </td>
+              <td class="px-3 py-2 text-neutral-400 text-xs italic"> - </td>
               <td class="px-3 py-2 text-neutral-400 text-xs italic"> - </td>
               <td class="px-3 py-2 text-center">
                 {#if item.locked}

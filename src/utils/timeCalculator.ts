@@ -17,7 +17,7 @@ import {
 /**
  * Calculate the length of a curve by sampling points
  */
-function calculateCurveLength(
+export function calculateCurveLength(
   start: BasePoint,
   controlPoints: BasePoint[],
   end: BasePoint,
