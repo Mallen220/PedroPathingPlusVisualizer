@@ -525,7 +525,7 @@
               disabled={startPoint.locked}
             />
           </td>
-          <td class="px-3 py-2 text-right flex items-center justify-end gap-1">
+          <td class="px-3 py-2 flex items-center justify-between gap-1">
             {#if startPoint.locked}
               <span
                 title="Locked"
@@ -604,7 +604,6 @@
                       on:input={(e) => handleInput(e, line.endPoint, "x")}
                       disabled={line.locked}
                     />
-                    <span class="text-xs text-neutral-400">/</span>
                     <span class="text-xs text-neutral-500"
                       >{line.waitBeforeName || line.waitBeforeMs || ""}</span
                     >
@@ -620,9 +619,8 @@
                     disabled={line.locked}
                   />
                 </td>
-                <td
-                  class="px-3 py-2 text-right flex items-center justify-end gap-1"
-                >
+                <td class="px-3 py-2 flex items-center justify-between gap-1">
+                  <!-- Left slot: lock/unlock button always visible -->
                   <button
                     title={line.locked ? "Unlock Path" : "Lock Path"}
                     on:click|stopPropagation={() => {
@@ -666,7 +664,8 @@
                     {/if}
                   </button>
 
-                  {#if !line.locked && lines.length > 1}
+                  <!-- Right slot: delete or placeholder -->
+                  {#if lines.length > 1 && !line.locked}
                     <button
                       on:click|stopPropagation={() => deleteLine(line.id)}
                       title="Delete path"
@@ -674,6 +673,8 @@
                     >
                       <TrashIcon className="size-4" strokeWidth={2} />
                     </button>
+                  {:else}
+                    <span class="h-6 w-6" aria-hidden="true"></span>
                   {/if}
                 </td>
               </tr>
@@ -723,9 +724,7 @@
                       disabled={line.locked}
                     />
                   </td>
-                  <td
-                    class="px-3 py-2 text-right flex items-center justify-end gap-1"
-                  >
+                  <td class="px-3 py-2 flex items-center justify-between gap-1">
                     {#if line.locked}
                       <span
                         title="Locked"
@@ -809,12 +808,55 @@
                 />
               </td>
               <td class="px-3 py-2 text-neutral-400 text-xs italic"> - </td>
-              <td class="px-3 py-2 text-right flex items-center justify-end gap-1">
-                {#if item.locked}
-                  <span title="Locked" class="inline-flex items-center justify-center h-6 w-6 text-neutral-400">🔒</span>
-                  <span class="h-6 w-6" aria-hidden="true"></span>
-                {:else}
-                  <span class="h-6 w-6" aria-hidden="true"></span>
+              <td
+                class="px-3 py-2 text-left flex items-center justify-start gap-1"
+              >
+                <!-- Lock toggle for wait -->
+                <button
+                  on:click|stopPropagation={() => {
+                    sequence[seqIndex].locked = !sequence[seqIndex].locked;
+                    sequence = [...sequence];
+                    if (recordChange) recordChange();
+                  }}
+                  title={item.locked ? "Unlock wait" : "Lock wait"}
+                  class="inline-flex items-center justify-center h-6 w-6 p-0.5 rounded hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
+                  aria-pressed={item.locked}
+                >
+                  {#if item.locked}
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke-width="2"
+                      stroke="currentColor"
+                      class="size-5 stroke-yellow-500"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z"
+                      />
+                    </svg>
+                  {:else}
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke-width="2"
+                      stroke="currentColor"
+                      class="size-5 stroke-gray-400"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        d="M13.5 10.5V6.75a4.5 4.5 0 1 1 9 0v3.75M3.75 21.75h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H3.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z"
+                      />
+                    </svg>
+                  {/if}
+                </button>
+
+                <!-- Delete slot (hidden when locked) -->
+                {#if !item.locked}
                   <button
                     on:click|stopPropagation={() => deleteWait(seqIndex)}
                     title="Delete wait"
@@ -822,6 +864,8 @@
                   >
                     <TrashIcon className="size-4" strokeWidth={2} />
                   </button>
+                {:else}
+                  <span class="h-6 w-6" aria-hidden="true"></span>
                 {/if}
               </td>
             </tr>
