@@ -46,11 +46,12 @@
   onMount(() => {
     if (!container) return;
 
-    // Use "as any" to bypass strict checks if Two types are causing namespace issues
+    // Initialize Two.js
+    // We disable autostart to control rendering manually via two.update()
     two = new Two({
       width: width || 800,
       height: height || 800,
-      autostart: true,
+      autostart: false,
       type: Two.Types.svg
     }).appendTo(container);
 
@@ -64,15 +65,21 @@
     two.add(pointGroup);
     two.add(eventGroup);
 
+    // Initial update
+    two.update();
+
     return () => {
         // cleanup if needed
     };
   });
 
+  // Handle resizing
   $: if (two && (width !== two.width || height !== two.height)) {
-    two.width = width;
-    two.height = height;
-    two.update();
+    if (width > 0 && height > 0) {
+        two.width = width;
+        two.height = height;
+        two.update();
+    }
   }
 
   // --- Element Generation ---
@@ -109,7 +116,7 @@
           pointElem.fill = line.color;
           pointElem.noStroke();
 
-          // Removed style argument to fix type error, setting properties individually
+          // Text label for control point index
           let pointText = new Two.Text(
             `${idx1}`,
             x(point.x),
@@ -178,14 +185,14 @@
   // 2. Lines (Path)
   $: pathElements = (() => {
     if (!x || !y) return [];
-    let _path: any[] = []; // Use any[] to avoid strict Two namespace issues
+    let _path: any[] = [];
 
     lines.forEach((line, idx) => {
         if (!line || !line.endPoint) return;
 
         // Find start point for this segment
         let _startPoint = idx === 0 ? startPoint : lines[idx - 1]?.endPoint || null;
-        if (!_startPoint) return; // Should not happen if data is consistent
+        if (!_startPoint) return;
 
         let lineElem: any;
 
@@ -240,6 +247,13 @@
         lineElem.stroke = line.color;
         lineElem.linewidth = x(LINE_WIDTH);
         lineElem.noFill();
+        if (line.locked) {
+            lineElem.dashes = [x(2), x(2)];
+            lineElem.opacity = 0.7;
+        } else {
+            lineElem.dashes = [];
+            lineElem.opacity = 1;
+        }
 
         _path.push(lineElem);
     });
@@ -490,6 +504,6 @@
   bind:this={container}
   bind:clientWidth={width}
   bind:clientHeight={height}
-  class="w-full h-full absolute top-0 left-0 z-15 pointer-events-none"
+  class="w-full h-full absolute top-0 left-0 z-15"
   style="z-index: 15;"
 ></div>
