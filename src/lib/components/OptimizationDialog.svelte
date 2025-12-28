@@ -102,7 +102,18 @@
   export function handleApply() {
     if (optimizationFailed) return; // Do not allow applying a path if optimizer couldn't find a collision-free candidate
     if (optimizedLines) {
-      onApply(optimizedLines);
+      // Capture and apply optimized lines
+      const result = optimizedLines;
+      onApply(result);
+
+      // Reset optimizer UI state so subsequent opens show 'Start Optimization'
+      logs = [];
+      progress = 0;
+      optimizedLines = null;
+      showPreview = false;
+      optimizationFailed = false;
+      if (onPreviewChange) onPreviewChange(null);
+
       isOpen = false;
       if (onClose) onClose();
     }
