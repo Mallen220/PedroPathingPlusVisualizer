@@ -16,9 +16,11 @@
   import PlaybackControls from "./components/PlaybackControls.svelte";
   import WaitRow from "./components/WaitRow.svelte";
   import WaitMarkersSection from "./components/WaitMarkersSection.svelte";
+  import OptimizationDialog from "./components/OptimizationDialog.svelte";
   import WaypointTable from "./components/WaypointTable.svelte";
   import { calculatePathTime } from "../utils";
   import { selectedLineId, selectedPointId } from "../stores";
+  import { tick } from "svelte";
 
   export let percent: number;
   export let playing: boolean;
@@ -48,42 +50,164 @@
   let optimizationOpen = false;
   let waypointTableRef: any = null;
 
-  export function openAndStartOptimization() {
+  // Field panel optimizer reference and bound runtime state
+  let optDialogRef: any = null;
+  let optIsRunning: boolean = false;
+  let optOptimizedLines: Line[] | null = null;
+  let optFailed: boolean = false;
+
+  export async function openAndStartOptimization() {
+    // Prefer table dialog when table is active
+    if (
+      activeTab === "table" &&
+      waypointTableRef &&
+      waypointTableRef.openAndStartOptimization
+    ) {
+      return waypointTableRef.openAndStartOptimization();
+    }
+
+    // If we're on the field tab, open the field dialog and start it
+    if (activeTab === "field") {
+      // Defensive: wrap in try/catch so any runtime error doesn't crash the app
+      try {
+        optimizationOpen = true;
+        await tick();
+        if (optDialogRef && optDialogRef.startOptimization)
+          await optDialogRef.startOptimization();
+      } catch (e) {
+        console.error("Error opening/starting field optimizer:", e);
+        optimizationOpen = false;
+      }
+      return;
+    }
+
+    // Fallback: try table dialog
     if (waypointTableRef && waypointTableRef.openAndStartOptimization) {
       return waypointTableRef.openAndStartOptimization();
     }
+
     optimizationOpen = true;
-    return;
   }
 
   export function stopOptimization() {
-    if (waypointTableRef && waypointTableRef.stopOptimization) {
+    if (
+      activeTab === "table" &&
+      waypointTableRef &&
+      waypointTableRef.stopOptimization
+    ) {
       waypointTableRef.stopOptimization();
+      return;
     }
+    if (
+      activeTab === "field" &&
+      optDialogRef &&
+      optDialogRef.stopOptimization
+    ) {
+      try {
+        optDialogRef.stopOptimization();
+      } catch (e) {
+        console.error("Error stopping field optimizer:", e);
+      }
+      return;
+    }
+
+    // fallback
+    if (waypointTableRef && waypointTableRef.stopOptimization)
+      waypointTableRef.stopOptimization();
   }
 
   export function applyOptimization() {
-    if (waypointTableRef && waypointTableRef.applyOptimization) {
+    if (
+      activeTab === "table" &&
+      waypointTableRef &&
+      waypointTableRef.applyOptimization
+    ) {
       waypointTableRef.applyOptimization();
+      return;
     }
+    if (activeTab === "field" && optDialogRef && optDialogRef.handleApply) {
+      try {
+        optDialogRef.handleApply();
+      } catch (e) {
+        console.error("Error applying field optimizer result:", e);
+      }
+      return;
+    }
+
+    if (waypointTableRef && waypointTableRef.applyOptimization)
+      waypointTableRef.applyOptimization();
   }
 
   export function discardOptimization() {
-    if (waypointTableRef && waypointTableRef.discardOptimization) {
+    if (
+      activeTab === "table" &&
+      waypointTableRef &&
+      waypointTableRef.discardOptimization
+    ) {
       waypointTableRef.discardOptimization();
+      return;
     }
+    if (activeTab === "field" && optDialogRef && optDialogRef.handleClose) {
+      try {
+        optDialogRef.handleClose();
+      } catch (e) {
+        console.error("Error discarding/closing field optimizer:", e);
+      }
+      return;
+    }
+
+    if (waypointTableRef && waypointTableRef.discardOptimization)
+      waypointTableRef.discardOptimization();
   }
 
   export function retryOptimization() {
-    if (waypointTableRef && waypointTableRef.retryOptimization) {
+    if (
+      activeTab === "table" &&
+      waypointTableRef &&
+      waypointTableRef.retryOptimization
+    ) {
       waypointTableRef.retryOptimization();
+      return;
     }
+    if (
+      activeTab === "field" &&
+      optDialogRef &&
+      optDialogRef.startOptimization
+    ) {
+      try {
+        optDialogRef.startOptimization();
+      } catch (e) {
+        console.error("Error retrying field optimizer:", e);
+      }
+      return;
+    }
+
+    if (waypointTableRef && waypointTableRef.retryOptimization)
+      waypointTableRef.retryOptimization();
   }
 
   export function getOptimizationStatus() {
+    if (
+      activeTab === "table" &&
+      waypointTableRef &&
+      waypointTableRef.getOptimizationStatus
+    ) {
+      return waypointTableRef.getOptimizationStatus();
+    }
+    if (activeTab === "field") {
+      return {
+        isOpen: optimizationOpen,
+        isRunning: optIsRunning,
+        optimizedLines: optOptimizedLines,
+        optimizationFailed: optFailed,
+      };
+    }
+
+    // fallback to table status
     if (waypointTableRef && waypointTableRef.getOptimizationStatus) {
       return waypointTableRef.getOptimizationStatus();
     }
+
     return {
       isOpen: optimizationOpen,
       isRunning: false,
@@ -605,6 +729,29 @@
         {y}
         onToggleOptimization={() => (optimizationOpen = !optimizationOpen)}
       />
+
+      {#if optimizationOpen}
+        <div
+          class="w-full border border-neutral-200 dark:border-neutral-700 rounded-lg bg-neutral-100 dark:bg-neutral-800 p-4"
+        >
+          <OptimizationDialog
+            bind:this={optDialogRef}
+            bind:isRunning={optIsRunning}
+            bind:optimizedLines={optOptimizedLines}
+            bind:optimizationFailed={optFailed}
+            isOpen={true}
+            useModal={false}
+            {startPoint}
+            {lines}
+            {settings}
+            {sequence}
+            {shapes}
+            onApply={handleOptimizationApply}
+            {onPreviewChange}
+            onClose={() => (optimizationOpen = false)}
+          />
+        </div>
+      {/if}
 
       <ObstaclesSection
         bind:shapes
