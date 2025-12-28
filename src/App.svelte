@@ -1199,6 +1199,22 @@
     handleSeek(percent);
   }
 
+  function cycleGridSize() {
+    const options = [1, 3, 6, 12, 24];
+    const current = $gridSize || options[0];
+    const idx = options.indexOf(current);
+    const next = options[(idx + 1) % options.length];
+    gridSize.set(next);
+  }
+
+  function cycleGridSizeReverse() {
+    const options = [1, 3, 6, 12, 24];
+    const current = $gridSize || options[0];
+    const idx = options.indexOf(current);
+    const prev = options[(idx - 1 + options.length) % options.length];
+    gridSize.set(prev);
+  }
+
   // Hotkey management
   function getKey(action: string): string {
     const bindings = settings?.keyBindings || DEFAULT_KEY_BINDINGS;
@@ -1264,6 +1280,8 @@
       });
 
       bind("toggleGrid", () => showGrid.update((v) => !v));
+      bind("cycleGridSize", () => cycleGridSize());
+      bind("cycleGridSizeReverse", () => cycleGridSizeReverse());
       bind("toggleSnap", () => snapToGrid.update((v) => !v));
       bind("toggleProtractor", () => showProtractor.update((v) => !v));
       bind("toggleCollapseAll", () =>
@@ -2136,7 +2154,8 @@
 
   function addEventMarker() {
     // Determine target line: selected line or last line
-    const targetId = $selectedLineId || (lines.length > 0 ? lines[lines.length - 1].id : null);
+    const targetId =
+      $selectedLineId || (lines.length > 0 ? lines[lines.length - 1].id : null);
     const targetLine = targetId ? lines.find((l) => l.id === targetId) : null;
 
     if (targetLine) {
@@ -2159,16 +2178,30 @@
     const currentSel = $selectedPointId;
     if (!currentSel) return;
 
-    // Determine move amount
-    // If snap is on, use grid size (or 1 unit if small?)
-    // If snap off, use 1 inch.
-    // Or we can assume 1 inch is fine, or larger if shift is held? But shift logic is inside handler.
-    // We'll just use 1 inch steps for keyboard movement for precision.
-    const step = 1;
+    // Default move amount when not snapping
+    const defaultStep = 1;
+    const snapMode = $snapToGrid && $showGrid;
+    const gridStep = $gridSize || 1;
+
+    // Helper to compute next grid-aligned coordinate in a direction
+    const eps = 1e-8;
+    const nextGridCoord = (current: number, direction: number) => {
+      if (direction > 0) {
+        // move right/up -> next gridline above current
+        return Math.min(
+          FIELD_SIZE,
+          Math.ceil((current + eps) / gridStep) * gridStep,
+        );
+      } else if (direction < 0) {
+        // move left/down -> previous gridline below current
+        return Math.max(0, Math.floor((current - eps) / gridStep) * gridStep);
+      }
+      return current;
+    };
 
     // dx/dy are directions (-1, 0, 1).
-    const moveX = dx * step;
-    const moveY = dy * step;
+    const moveX = dx * defaultStep;
+    const moveY = dy * defaultStep;
 
     if (currentSel.startsWith("point-")) {
       const parts = currentSel.split("-");
@@ -2178,8 +2211,29 @@
       // Handle Start Point
       if (lineNum === 0 && ptIdx === 0) {
         if (!startPoint.locked) {
-          startPoint.x = Math.max(0, Math.min(FIELD_SIZE, startPoint.x + moveX));
-          startPoint.y = Math.max(0, Math.min(FIELD_SIZE, startPoint.y + moveY));
+          if (snapMode) {
+            // Snap on grid in the requested direction
+            if (dx !== 0) startPoint.x = nextGridCoord(startPoint.x, dx);
+            if (dy !== 0) startPoint.y = nextGridCoord(startPoint.y, dy);
+          } else {
+            startPoint.x = Math.max(
+              0,
+              Math.min(FIELD_SIZE, startPoint.x + moveX),
+            );
+            startPoint.y = Math.max(
+              0,
+              Math.min(FIELD_SIZE, startPoint.y + moveY),
+            );
+          }
+
+          // Ensure values are within bounds and rounded sensibly
+          startPoint.x = Number(
+            Math.max(0, Math.min(FIELD_SIZE, startPoint.x)).toFixed(3),
+          );
+          startPoint.y = Number(
+            Math.max(0, Math.min(FIELD_SIZE, startPoint.y)).toFixed(3),
+          );
+
           startPoint = startPoint; // Trigger reactivity
           recordChange();
         }
@@ -2193,8 +2247,29 @@
         if (ptIdx === 0) {
           // End Point
           if (line.endPoint) {
-            line.endPoint.x = Math.max(0, Math.min(FIELD_SIZE, line.endPoint.x + moveX));
-            line.endPoint.y = Math.max(0, Math.min(FIELD_SIZE, line.endPoint.y + moveY));
+            if (snapMode) {
+              if (dx !== 0)
+                line.endPoint.x = nextGridCoord(line.endPoint.x, dx);
+              if (dy !== 0)
+                line.endPoint.y = nextGridCoord(line.endPoint.y, dy);
+            } else {
+              line.endPoint.x = Math.max(
+                0,
+                Math.min(FIELD_SIZE, line.endPoint.x + moveX),
+              );
+              line.endPoint.y = Math.max(
+                0,
+                Math.min(FIELD_SIZE, line.endPoint.y + moveY),
+              );
+            }
+
+            line.endPoint.x = Number(
+              Math.max(0, Math.min(FIELD_SIZE, line.endPoint.x)).toFixed(3),
+            );
+            line.endPoint.y = Number(
+              Math.max(0, Math.min(FIELD_SIZE, line.endPoint.y)).toFixed(3),
+            );
+
             lines = lines; // Trigger reactivity
             recordChange();
           }
@@ -2202,10 +2277,43 @@
           // Control Point (ptIdx 1..N)
           const cpIndex = ptIdx - 1;
           if (line.controlPoints[cpIndex]) {
-             line.controlPoints[cpIndex].x = Math.max(0, Math.min(FIELD_SIZE, line.controlPoints[cpIndex].x + moveX));
-             line.controlPoints[cpIndex].y = Math.max(0, Math.min(FIELD_SIZE, line.controlPoints[cpIndex].y + moveY));
-             lines = lines; // Trigger reactivity
-             recordChange();
+            if (snapMode) {
+              if (dx !== 0)
+                line.controlPoints[cpIndex].x = nextGridCoord(
+                  line.controlPoints[cpIndex].x,
+                  dx,
+                );
+              if (dy !== 0)
+                line.controlPoints[cpIndex].y = nextGridCoord(
+                  line.controlPoints[cpIndex].y,
+                  dy,
+                );
+            } else {
+              line.controlPoints[cpIndex].x = Math.max(
+                0,
+                Math.min(FIELD_SIZE, line.controlPoints[cpIndex].x + moveX),
+              );
+              line.controlPoints[cpIndex].y = Math.max(
+                0,
+                Math.min(FIELD_SIZE, line.controlPoints[cpIndex].y + moveY),
+              );
+            }
+
+            line.controlPoints[cpIndex].x = Number(
+              Math.max(
+                0,
+                Math.min(FIELD_SIZE, line.controlPoints[cpIndex].x),
+              ).toFixed(3),
+            );
+            line.controlPoints[cpIndex].y = Number(
+              Math.max(
+                0,
+                Math.min(FIELD_SIZE, line.controlPoints[cpIndex].y),
+              ).toFixed(3),
+            );
+
+            lines = lines; // Trigger reactivity
+            recordChange();
           }
         }
       }
@@ -2214,10 +2322,18 @@
       const shapeIdx = Number(parts[1]);
       const vertexIdx = Number(parts[2]);
       if (shapes[shapeIdx] && shapes[shapeIdx].vertices[vertexIdx]) {
-         shapes[shapeIdx].vertices[vertexIdx].x = Math.max(0, Math.min(FIELD_SIZE, shapes[shapeIdx].vertices[vertexIdx].x + moveX));
-         shapes[shapeIdx].vertices[vertexIdx].y = Math.max(0, Math.min(FIELD_SIZE, shapes[shapeIdx].vertices[vertexIdx].y + moveY));
-         shapes = shapes; // Trigger reactivity
-         recordChange();
+        const v = shapes[shapeIdx].vertices[vertexIdx];
+        if (snapMode) {
+          if (dx !== 0) v.x = nextGridCoord(v.x, dx);
+          if (dy !== 0) v.y = nextGridCoord(v.y, dy);
+        } else {
+          v.x = Math.max(0, Math.min(FIELD_SIZE, v.x + moveX));
+          v.y = Math.max(0, Math.min(FIELD_SIZE, v.y + moveY));
+        }
+        v.x = Number(Math.max(0, Math.min(FIELD_SIZE, v.x)).toFixed(3));
+        v.y = Number(Math.max(0, Math.min(FIELD_SIZE, v.y)).toFixed(3));
+        shapes = shapes; // Trigger reactivity
+        recordChange();
       }
     } else if (currentSel.startsWith("event-")) {
       // event-<lineIdx>-<evIdx>
@@ -2227,16 +2343,16 @@
       const line = lines[lineIdx];
 
       if (line && line.eventMarkers && line.eventMarkers[evIdx]) {
-         // Move event along path position (0-1)
-         // Map dx to a small increment.
-         // e.g. dx=1 (right) -> +0.01
-         // dy (up/down) -> also adjust or maybe bigger steps?
-         const delta = (dx + dy) * 0.01;
-         let newPos = line.eventMarkers[evIdx].position + delta;
-         newPos = Math.max(0, Math.min(1, newPos));
-         line.eventMarkers[evIdx].position = newPos;
-         lines = lines; // Trigger reactivity
-         recordChange();
+        // Move event along path position (0-1)
+        // Map dx to a small increment.
+        // e.g. dx=1 (right) -> +0.01
+        // dy (up/down) -> also adjust or maybe bigger steps?
+        const delta = (dx + dy) * 0.01;
+        let newPos = line.eventMarkers[evIdx].position + delta;
+        newPos = Math.max(0, Math.min(1, newPos));
+        line.eventMarkers[evIdx].position = newPos;
+        lines = lines; // Trigger reactivity
+        recordChange();
       }
     }
   }
@@ -2261,19 +2377,19 @@
 
     sequence.forEach((item, seqIdx) => {
       if (item.kind === "path") {
-        const lineIdx = lines.findIndex(l => l.id === item.lineId);
+        const lineIdx = lines.findIndex((l) => l.id === item.lineId);
         if (lineIdx !== -1) {
-           const line = lines[lineIdx];
-           // Add Control Points first? Or Start?
-           // Visual path: Start -> CP1 -> CP2 -> End.
-           // Start is usually the end of previous.
-           // We only select the points belonging to THIS line object: ControlPoints and EndPoint.
-           // Control Points come before EndPoint in the curve definition, but user might view EndPoint as the main target.
-           // Let's follow drawing order: CPs then EndPoint.
-           line.controlPoints.forEach((_, cpIdx) => {
-             items.push(`point-${lineIdx + 1}-${cpIdx + 1}`);
-           });
-           items.push(`point-${lineIdx + 1}-0`); // EndPoint is index 0 in our ID scheme from field rendering
+          const line = lines[lineIdx];
+          // Add Control Points first? Or Start?
+          // Visual path: Start -> CP1 -> CP2 -> End.
+          // Start is usually the end of previous.
+          // We only select the points belonging to THIS line object: ControlPoints and EndPoint.
+          // Control Points come before EndPoint in the curve definition, but user might view EndPoint as the main target.
+          // Let's follow drawing order: CPs then EndPoint.
+          line.controlPoints.forEach((_, cpIdx) => {
+            items.push(`point-${lineIdx + 1}-${cpIdx + 1}`);
+          });
+          items.push(`point-${lineIdx + 1}-0`); // EndPoint is index 0 in our ID scheme from field rendering
         }
       } else if (item.kind === "wait") {
         items.push(`wait-${item.id}`);
@@ -2291,9 +2407,9 @@
 
     // Obstacles? Maybe after everything?
     shapes.forEach((_, sIdx) => {
-        shapes[sIdx].vertices.forEach((_, vIdx) => {
-            items.push(`obstacle-${sIdx}-${vIdx}`);
-        });
+      shapes[sIdx].vertices.forEach((_, vIdx) => {
+        items.push(`obstacle-${sIdx}-${vIdx}`);
+      });
     });
 
     return items;
@@ -2322,22 +2438,22 @@
 
     // Update selectedLineId if applicable
     if (newId.startsWith("point-")) {
-       const parts = newId.split("-");
-       const lineNum = Number(parts[1]);
-       if (lineNum > 0) {
-         const lineId = lines[lineNum - 1].id;
-         selectedLineId.set(lineId || null);
-       } else {
-         selectedLineId.set(null);
-       }
+      const parts = newId.split("-");
+      const lineNum = Number(parts[1]);
+      if (lineNum > 0) {
+        const lineId = lines[lineNum - 1].id;
+        selectedLineId.set(lineId || null);
+      } else {
+        selectedLineId.set(null);
+      }
     } else if (newId.startsWith("wait-")) {
-       // Clear line selection so Wait is focused in sidebar?
-       selectedLineId.set(null);
-       // We might want a way to indicate selection in sidebar.
-       // selectedPointId is used by WaypointTable to highlight rows?
-       // We'll need to check WaypointTable later.
+      // Clear line selection so Wait is focused in sidebar?
+      selectedLineId.set(null);
+      // We might want a way to indicate selection in sidebar.
+      // selectedPointId is used by WaypointTable to highlight rows?
+      // We'll need to check WaypointTable later.
     } else {
-       selectedLineId.set(null);
+      selectedLineId.set(null);
     }
   }
 
@@ -2349,7 +2465,7 @@
     // Check if it is a wait
     if (current.startsWith("wait-")) {
       const waitId = current.substring(5);
-      const item = sequence.find(s => s.kind === "wait" && s.id === waitId);
+      const item = sequence.find((s) => s.kind === "wait" && s.id === waitId);
       if (item && item.kind === "wait") {
         // Modify duration
         const change = delta * 100; // 100ms steps?
