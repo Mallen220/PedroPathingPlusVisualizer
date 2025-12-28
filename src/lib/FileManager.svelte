@@ -164,6 +164,17 @@
   async function refreshDirectory() {
     errorMessage = "";
 
+    // If directory not set yet, avoid calling main process with empty path
+    if (!currentDirectory || currentDirectory.trim() === "") {
+      files = [];
+      directoryStats = {
+        totalFiles: 0,
+        totalSize: 0,
+        lastModified: new Date(0),
+      };
+      return;
+    }
+
     try {
       // Get directory stats
       const stats = await electronAPI.getDirectoryStats(currentDirectory);
@@ -211,7 +222,8 @@
 
   // React to sort mode or directory changes
   $: {
-    if (currentDirectory || sortMode) {
+    // Only refresh when we have a valid directory path (prevents calling file:list/get-directory-stats with "")
+    if (currentDirectory && currentDirectory.trim() !== "") {
       refreshDirectory();
     }
   }
