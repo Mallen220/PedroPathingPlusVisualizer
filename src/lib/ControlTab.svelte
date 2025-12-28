@@ -16,7 +16,6 @@
   import PlaybackControls from "./components/PlaybackControls.svelte";
   import WaitRow from "./components/WaitRow.svelte";
   import WaitMarkersSection from "./components/WaitMarkersSection.svelte";
-  import OptimizationDialog from "./components/OptimizationDialog.svelte";
   import WaypointTable from "./components/WaypointTable.svelte";
   import { calculatePathTime } from "../utils";
   import { selectedLineId, selectedPointId } from "../stores";
@@ -47,6 +46,52 @@
   export let onPreviewChange: ((lines: Line[] | null) => void) | null = null;
 
   let optimizationOpen = false;
+  let waypointTableRef: any = null;
+
+  export function openAndStartOptimization() {
+    if (waypointTableRef && waypointTableRef.openAndStartOptimization) {
+      return waypointTableRef.openAndStartOptimization();
+    }
+    optimizationOpen = true;
+    return;
+  }
+
+  export function stopOptimization() {
+    if (waypointTableRef && waypointTableRef.stopOptimization) {
+      waypointTableRef.stopOptimization();
+    }
+  }
+
+  export function applyOptimization() {
+    if (waypointTableRef && waypointTableRef.applyOptimization) {
+      waypointTableRef.applyOptimization();
+    }
+  }
+
+  export function discardOptimization() {
+    if (waypointTableRef && waypointTableRef.discardOptimization) {
+      waypointTableRef.discardOptimization();
+    }
+  }
+
+  export function retryOptimization() {
+    if (waypointTableRef && waypointTableRef.retryOptimization) {
+      waypointTableRef.retryOptimization();
+    }
+  }
+
+  export function getOptimizationStatus() {
+    if (waypointTableRef && waypointTableRef.getOptimizationStatus) {
+      return waypointTableRef.getOptimizationStatus();
+    }
+    return {
+      isOpen: optimizationOpen,
+      isRunning: false,
+      optimizedLines: null,
+      optimizationFailed: false,
+    };
+  }
+
   export let activeTab: "path" | "field" | "table" = "path";
 
   // Reference exported but unused props to silence Svelte unused-export warnings
@@ -537,6 +582,7 @@
   >
     {#if activeTab === "table"}
       <WaypointTable
+        bind:this={waypointTableRef}
         bind:startPoint
         bind:lines
         bind:sequence
@@ -559,25 +605,6 @@
         {y}
         onToggleOptimization={() => (optimizationOpen = !optimizationOpen)}
       />
-
-      {#if optimizationOpen}
-        <div
-          class="w-full border border-neutral-200 dark:border-neutral-700 rounded-lg bg-neutral-100 dark:bg-neutral-800 p-4"
-        >
-          <OptimizationDialog
-            isOpen={true}
-            useModal={false}
-            {startPoint}
-            {lines}
-            {settings}
-            {sequence}
-            {shapes}
-            onApply={handleOptimizationApply}
-            {onPreviewChange}
-            onClose={() => (optimizationOpen = false)}
-          />
-        </div>
-      {/if}
 
       <ObstaclesSection
         bind:shapes

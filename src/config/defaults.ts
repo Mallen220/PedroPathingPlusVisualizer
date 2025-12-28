@@ -245,6 +245,36 @@ export const DEFAULT_KEY_BINDINGS: KeyBinding[] = [
     action: "selectTabTable",
   },
   {
+    id: "optimize-start",
+    key: "ctrl+shift+o",
+    description: "Open optimization panel and start optimization",
+    action: "optimizeStart",
+  },
+  {
+    id: "optimize-stop",
+    key: "ctrl+.",
+    description: "Stop running optimization",
+    action: "optimizeStop",
+  },
+  {
+    id: "optimize-apply",
+    key: "ctrl+enter",
+    description: "Apply optimized path",
+    action: "optimizeApply",
+  },
+  {
+    id: "optimize-discard",
+    key: "ctrl+backspace",
+    description: "Discard optimization results",
+    action: "optimizeDiscard",
+  },
+  {
+    id: "optimize-retry",
+    key: "ctrl+shift+r",
+    description: "Retry optimization",
+    action: "optimizeRetry",
+  },
+  {
     id: "cycle-tabs-next",
     key: "ctrl+tab",
     description: "Cycle tabs forward",

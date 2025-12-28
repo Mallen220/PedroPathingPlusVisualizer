@@ -117,6 +117,8 @@
   let showSidebar = true;
   // Active tab for ControlTab (path | field | table)
   let activeControlTab: "path" | "field" | "table" = "path";
+  // Reference to ControlTab component instance so we can programmatically control optimization
+  let controlTabRef: any = null;
   let mainContentHeight = 0;
   let mainContentWidth = 0;
   let mainContentDiv: HTMLDivElement;
@@ -1330,6 +1332,59 @@
 
       bind("toggleSidebar", () => {
         showSidebar = !showSidebar;
+      });
+
+      // Optimization hotkeys
+      bind("optimizeStart", () => {
+        if (isUIElementFocused()) return;
+        // If user is in Paths tab, switch to Table tab per request
+        if (activeControlTab === "path") activeControlTab = "table";
+        // Ensure we have a ControlTab reference and open & start optimization
+        if (controlTabRef && controlTabRef.openAndStartOptimization) {
+          controlTabRef.openAndStartOptimization();
+        }
+      });
+
+      bind("optimizeStop", () => {
+        if (isUIElementFocused()) return;
+        if (controlTabRef && controlTabRef.getOptimizationStatus) {
+          const status = controlTabRef.getOptimizationStatus();
+          if (status.isRunning) controlTabRef.stopOptimization();
+        }
+      });
+
+      bind("optimizeApply", () => {
+        if (isUIElementFocused()) return;
+        if (controlTabRef && controlTabRef.getOptimizationStatus) {
+          const status = controlTabRef.getOptimizationStatus();
+          if (status.optimizedLines && !status.optimizationFailed) {
+            controlTabRef.applyOptimization();
+          }
+        }
+      });
+
+      bind("optimizeDiscard", () => {
+        if (isUIElementFocused()) return;
+        if (controlTabRef && controlTabRef.getOptimizationStatus) {
+          const status = controlTabRef.getOptimizationStatus();
+          if (status.optimizedLines || status.optimizationFailed) {
+            controlTabRef.discardOptimization();
+          }
+        }
+      });
+
+      bind("optimizeRetry", () => {
+        if (isUIElementFocused()) return;
+        if (controlTabRef && controlTabRef.getOptimizationStatus) {
+          const status = controlTabRef.getOptimizationStatus();
+          // Allow retry when finished or when failed
+          if (
+            !status.isRunning &&
+            (status.optimizedLines || status.optimizationFailed)
+          ) {
+            controlTabRef.retryOptimization();
+          }
+        }
       });
 
       bind("selectTabPaths", () => (activeControlTab = "path"));
@@ -3114,6 +3169,7 @@ pointer-events: none;`}
       class:overflow-hidden={!showSidebar}
     >
       <ControlTab
+        bind:this={controlTabRef}
         bind:playing
         {play}
         {pause}
