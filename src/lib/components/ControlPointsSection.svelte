@@ -119,41 +119,45 @@
           </div>
 
           <!-- Control Point Position Inputs -->
-          <div class="flex items-center gap-2">
-            <span class="text-xs text-neutral-600 dark:text-neutral-400"
-              >X:</span
-            >
-            <input
-              bind:value={point.x}
-              type="number"
-              min="0"
-              max="144"
-              step={$snapToGrid && $showGrid ? $gridSize : 0.1}
-              class="w-20 px-2 py-1 text-xs rounded-md bg-white dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-600 focus:outline-none focus:ring-1 focus:ring-blue-500"
-              on:change={() => {
-                // Update the array to trigger reactivity
-                line.controlPoints = [...line.controlPoints];
-              }}
-              disabled={line.locked}
-              title={snapToGridTitle}
-            />
-            <span class="text-xs text-neutral-600 dark:text-neutral-400"
-              >Y:</span
-            >
-            <input
-              bind:value={point.y}
-              type="number"
-              min="0"
-              max="144"
-              step={$snapToGrid && $showGrid ? $gridSize : 0.1}
-              class="w-20 px-2 py-1 text-xs rounded-md bg-white dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-600 focus:outline-none focus:ring-1 focus:ring-blue-500"
-              on:change={() => {
-                // Update the array to trigger reactivity
-                line.controlPoints = [...line.controlPoints];
-              }}
-              disabled={line.locked}
-              title={snapToGridTitle}
-            />
+          <div class="flex flex-wrap items-center gap-2">
+            <div class="flex items-center gap-2">
+              <span class="text-xs text-neutral-600 dark:text-neutral-400"
+                >X:</span
+              >
+              <input
+                bind:value={point.x}
+                type="number"
+                min="0"
+                max="144"
+                step={$snapToGrid && $showGrid ? $gridSize : 0.1}
+                class="w-16 sm:w-20 px-2 py-1 text-xs rounded-md bg-white dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-600 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                on:change={() => {
+                  // Update the array to trigger reactivity
+                  line.controlPoints = [...line.controlPoints];
+                }}
+                disabled={line.locked}
+                title={snapToGridTitle}
+              />
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="text-xs text-neutral-600 dark:text-neutral-400"
+                >Y:</span
+              >
+              <input
+                bind:value={point.y}
+                type="number"
+                min="0"
+                max="144"
+                step={$snapToGrid && $showGrid ? $gridSize : 0.1}
+                class="w-16 sm:w-20 px-2 py-1 text-xs rounded-md bg-white dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-600 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                on:change={() => {
+                  // Update the array to trigger reactivity
+                  line.controlPoints = [...line.controlPoints];
+                }}
+                disabled={line.locked}
+                title={snapToGridTitle}
+              />
+            </div>
           </div>
 
           <div class="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
