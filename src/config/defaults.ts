@@ -29,15 +29,21 @@ export const AVAILABLE_FIELD_MAPS = [
 export const DEFAULT_KEY_BINDINGS: KeyBinding[] = [
   {
     id: "add-path",
-    key: "w",
+    key: "p",
     description: "Add new path",
     action: "addNewLine",
   },
   {
     id: "add-wait",
-    key: "q",
+    key: "w",
     description: "Add wait",
     action: "addWait",
+  },
+  {
+    id: "add-event-marker",
+    key: "e",
+    description: "Add event marker",
+    action: "addEventMarker",
   },
   {
     id: "add-control-point",
@@ -90,15 +96,63 @@ export const DEFAULT_KEY_BINDINGS: KeyBinding[] = [
   },
   {
     id: "step-back",
-    key: "left",
+    key: ",",
     description: "Step animation backward",
     action: "stepBackward",
   },
   {
     id: "step-forward",
-    key: "right",
+    key: ".",
     description: "Step animation forward",
     action: "stepForward",
+  },
+  {
+    id: "move-point-up",
+    key: "up",
+    description: "Move selected point up",
+    action: "movePointUp",
+  },
+  {
+    id: "move-point-down",
+    key: "down",
+    description: "Move selected point down",
+    action: "movePointDown",
+  },
+  {
+    id: "move-point-left",
+    key: "left",
+    description: "Move selected point left",
+    action: "movePointLeft",
+  },
+  {
+    id: "move-point-right",
+    key: "right",
+    description: "Move selected point right",
+    action: "movePointRight",
+  },
+  {
+    id: "select-next",
+    key: "tab",
+    description: "Select next item",
+    action: "selectNext",
+  },
+  {
+    id: "select-prev",
+    key: "shift+tab",
+    description: "Select previous item",
+    action: "selectPrev",
+  },
+  {
+    id: "increase-val",
+    key: "=",
+    description: "Increase value (e.g. wait time)",
+    action: "increaseValue",
+  },
+  {
+    id: "decrease-val",
+    key: "-",
+    description: "Decrease value (e.g. wait time)",
+    action: "decreaseValue",
   },
   {
     id: "toggle-onion",
@@ -120,7 +174,7 @@ export const DEFAULT_KEY_BINDINGS: KeyBinding[] = [
   },
   {
     id: "toggle-protractor",
-    key: "p",
+    key: "shift+p",
     description: "Toggle protractor",
     action: "toggleProtractor",
   },

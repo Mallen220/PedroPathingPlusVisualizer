@@ -1233,6 +1233,7 @@
       bind("exportGif", () => exportGif());
       bind("addNewLine", () => addNewLine());
       bind("addWait", () => addWait());
+      bind("addEventMarker", () => addEventMarker());
       bind("addControlPoint", () => {
         addControlPoint();
       });
@@ -1245,6 +1246,17 @@
       bind("resetAnimation", () => resetAnimation());
       bind("stepForward", () => stepForward());
       bind("stepBackward", () => stepBackward());
+
+      bind("movePointUp", () => movePoint(0, 1));
+      bind("movePointDown", () => movePoint(0, -1));
+      bind("movePointLeft", () => movePoint(-1, 0));
+      bind("movePointRight", () => movePoint(1, 0));
+
+      bind("selectNext", () => cycleSelection(1));
+      bind("selectPrev", () => cycleSelection(-1));
+
+      bind("increaseValue", () => modifyValue(1));
+      bind("decreaseValue", () => modifyValue(-1));
 
       bind("toggleOnion", () => {
         settings.showOnionLayers = !settings.showOnionLayers;
@@ -2098,30 +2110,10 @@
       lines.find((l) => l.id === targetId) || lines[lines.length - 1];
     if (!targetLine) return;
 
-    console.log(
-      "[addControlPoint] selectedLine:",
-      $selectedLineId,
-      "targetId:",
-      targetId,
-      "targetLineId:",
-      targetLine.id,
-      "lineIndex:",
-      lines.findIndex((l) => l.id === targetLine.id),
-      "lines.length:",
-      lines.length,
-    );
-
     targetLine.controlPoints.push({
       x: _.random(36, 108),
       y: _.random(36, 108),
     });
-
-    console.log(
-      "[addControlPoint] after push controlCount:",
-      targetLine.controlPoints.length,
-      "controlPoints:",
-      targetLine.controlPoints.map((p) => ({ x: p.x, y: p.y })),
-    );
 
     // Force reactivity
     lines = [...lines];
@@ -2130,9 +2122,239 @@
 
   function removeControlPoint() {
     if (lines.length > 0) {
-      const lastLine = lines[lines.length - 1];
-      if (lastLine.controlPoints.length > 0) {
-        lastLine.controlPoints.pop();
+      // Prefer selected line
+      const targetId = $selectedLineId || lines[lines.length - 1].id;
+      const targetLine =
+        lines.find((l) => l.id === targetId) || lines[lines.length - 1];
+
+      if (targetLine && targetLine.controlPoints.length > 0) {
+        targetLine.controlPoints.pop();
+        recordChange();
+      }
+    }
+  }
+
+  function addEventMarker() {
+    // Determine target line: selected line or last line
+    const targetId = $selectedLineId || (lines.length > 0 ? lines[lines.length - 1].id : null);
+    const targetLine = targetId ? lines.find((l) => l.id === targetId) : null;
+
+    if (targetLine) {
+      if (!targetLine.eventMarkers) targetLine.eventMarkers = [];
+      targetLine.eventMarkers = [
+        ...targetLine.eventMarkers,
+        {
+          id: `event-${Date.now()}`,
+          name: "Event",
+          position: 0.5, // Default to middle
+        },
+      ];
+      lines = [...lines];
+      recordChange();
+    }
+  }
+
+  function movePoint(dx: number, dy: number) {
+    if (isUIElementFocused()) return;
+    const currentSel = $selectedPointId;
+    if (!currentSel) return;
+
+    // Determine move amount
+    // If snap is on, use grid size (or 1 unit if small?)
+    // If snap off, use 1 inch.
+    // Or we can assume 1 inch is fine, or larger if shift is held? But shift logic is inside handler.
+    // We'll just use 1 inch steps for keyboard movement for precision.
+    const step = 1;
+
+    // dx/dy are directions (-1, 0, 1).
+    const moveX = dx * step;
+    const moveY = dy * step;
+
+    if (currentSel.startsWith("point-")) {
+      const parts = currentSel.split("-");
+      const lineNum = Number(parts[1]); // 0 for start, 1+ for lines
+      const ptIdx = Number(parts[2]);
+
+      // Handle Start Point
+      if (lineNum === 0 && ptIdx === 0) {
+        if (!startPoint.locked) {
+          startPoint.x = Math.max(0, Math.min(FIELD_SIZE, startPoint.x + moveX));
+          startPoint.y = Math.max(0, Math.min(FIELD_SIZE, startPoint.y + moveY));
+          startPoint = startPoint; // Trigger reactivity
+          recordChange();
+        }
+        return;
+      }
+
+      // Handle Line Points
+      const lineIndex = lineNum - 1;
+      const line = lines[lineIndex];
+      if (line && !line.locked) {
+        if (ptIdx === 0) {
+          // End Point
+          if (line.endPoint) {
+            line.endPoint.x = Math.max(0, Math.min(FIELD_SIZE, line.endPoint.x + moveX));
+            line.endPoint.y = Math.max(0, Math.min(FIELD_SIZE, line.endPoint.y + moveY));
+            lines = lines; // Trigger reactivity
+            recordChange();
+          }
+        } else {
+          // Control Point (ptIdx 1..N)
+          const cpIndex = ptIdx - 1;
+          if (line.controlPoints[cpIndex]) {
+             line.controlPoints[cpIndex].x = Math.max(0, Math.min(FIELD_SIZE, line.controlPoints[cpIndex].x + moveX));
+             line.controlPoints[cpIndex].y = Math.max(0, Math.min(FIELD_SIZE, line.controlPoints[cpIndex].y + moveY));
+             lines = lines; // Trigger reactivity
+             recordChange();
+          }
+        }
+      }
+    } else if (currentSel.startsWith("obstacle-")) {
+      const parts = currentSel.split("-");
+      const shapeIdx = Number(parts[1]);
+      const vertexIdx = Number(parts[2]);
+      if (shapes[shapeIdx] && shapes[shapeIdx].vertices[vertexIdx]) {
+         shapes[shapeIdx].vertices[vertexIdx].x = Math.max(0, Math.min(FIELD_SIZE, shapes[shapeIdx].vertices[vertexIdx].x + moveX));
+         shapes[shapeIdx].vertices[vertexIdx].y = Math.max(0, Math.min(FIELD_SIZE, shapes[shapeIdx].vertices[vertexIdx].y + moveY));
+         shapes = shapes; // Trigger reactivity
+         recordChange();
+      }
+    } else if (currentSel.startsWith("event-")) {
+      // event-<lineIdx>-<evIdx>
+      const parts = currentSel.split("-");
+      const lineIdx = Number(parts[1]);
+      const evIdx = Number(parts[2]);
+      const line = lines[lineIdx];
+
+      if (line && line.eventMarkers && line.eventMarkers[evIdx]) {
+         // Move event along path position (0-1)
+         // Map dx to a small increment.
+         // e.g. dx=1 (right) -> +0.01
+         // dy (up/down) -> also adjust or maybe bigger steps?
+         const delta = (dx + dy) * 0.01;
+         let newPos = line.eventMarkers[evIdx].position + delta;
+         newPos = Math.max(0, Math.min(1, newPos));
+         line.eventMarkers[evIdx].position = newPos;
+         lines = lines; // Trigger reactivity
+         recordChange();
+      }
+    }
+  }
+
+  function getSelectableItems() {
+    const items: string[] = [];
+
+    // Start Point
+    items.push("point-0-0");
+
+    // Sequence Items
+    // We traverse sequence to be logical with the order of execution
+    // But for visual selection, we usually select points.
+    // If a sequence item is a Path, we add its points.
+    // If a sequence item is a Wait, we add a "wait-<id>" item.
+
+    // NOTE: The lines array is the source of truth for geometry indices.
+    // The sequence array points to line IDs.
+    // To match visual order (Line 1, Line 2...), we might just iterate lines?
+    // But if we want to select Waits, we need the sequence.
+    // Let's use sequence order.
+
+    sequence.forEach((item, seqIdx) => {
+      if (item.kind === "path") {
+        const lineIdx = lines.findIndex(l => l.id === item.lineId);
+        if (lineIdx !== -1) {
+           const line = lines[lineIdx];
+           // Add Control Points first? Or Start?
+           // Visual path: Start -> CP1 -> CP2 -> End.
+           // Start is usually the end of previous.
+           // We only select the points belonging to THIS line object: ControlPoints and EndPoint.
+           // Control Points come before EndPoint in the curve definition, but user might view EndPoint as the main target.
+           // Let's follow drawing order: CPs then EndPoint.
+           line.controlPoints.forEach((_, cpIdx) => {
+             items.push(`point-${lineIdx + 1}-${cpIdx + 1}`);
+           });
+           items.push(`point-${lineIdx + 1}-0`); // EndPoint is index 0 in our ID scheme from field rendering
+        }
+      } else if (item.kind === "wait") {
+        items.push(`wait-${item.id}`);
+      }
+    });
+
+    // Event Markers
+    lines.forEach((line, lineIdx) => {
+      if (line.eventMarkers) {
+        line.eventMarkers.forEach((_, evIdx) => {
+          items.push(`event-${lineIdx}-${evIdx}`);
+        });
+      }
+    });
+
+    // Obstacles? Maybe after everything?
+    shapes.forEach((_, sIdx) => {
+        shapes[sIdx].vertices.forEach((_, vIdx) => {
+            items.push(`obstacle-${sIdx}-${vIdx}`);
+        });
+    });
+
+    return items;
+  }
+
+  function cycleSelection(dir: number) {
+    if (isUIElementFocused()) return;
+    const items = getSelectableItems();
+    if (items.length === 0) return;
+
+    let current = $selectedPointId;
+
+    // If selection is a wait but stored differently, handle that?
+    // We will use selectedPointId to store "wait-ID" as well for now,
+    // assuming other components handle it gracefully or ignore it.
+
+    let idx = items.indexOf(current || "");
+    if (idx === -1) {
+      idx = 0;
+    } else {
+      idx = (idx + dir + items.length) % items.length;
+    }
+
+    const newId = items[idx];
+    selectedPointId.set(newId);
+
+    // Update selectedLineId if applicable
+    if (newId.startsWith("point-")) {
+       const parts = newId.split("-");
+       const lineNum = Number(parts[1]);
+       if (lineNum > 0) {
+         const lineId = lines[lineNum - 1].id;
+         selectedLineId.set(lineId || null);
+       } else {
+         selectedLineId.set(null);
+       }
+    } else if (newId.startsWith("wait-")) {
+       // Clear line selection so Wait is focused in sidebar?
+       selectedLineId.set(null);
+       // We might want a way to indicate selection in sidebar.
+       // selectedPointId is used by WaypointTable to highlight rows?
+       // We'll need to check WaypointTable later.
+    } else {
+       selectedLineId.set(null);
+    }
+  }
+
+  function modifyValue(delta: number) {
+    if (isUIElementFocused()) return;
+    const current = $selectedPointId;
+    if (!current) return;
+
+    // Check if it is a wait
+    if (current.startsWith("wait-")) {
+      const waitId = current.substring(5);
+      const item = sequence.find(s => s.kind === "wait" && s.id === waitId);
+      if (item && item.kind === "wait") {
+        // Modify duration
+        const change = delta * 100; // 100ms steps?
+        item.durationMs = Math.max(0, item.durationMs + change);
+        sequence = [...sequence]; // Trigger reactivity
         recordChange();
       }
     }
@@ -2299,8 +2521,8 @@
       {recordChange}
       {canUndo}
       {canRedo}
-      onPreviewOptimizedLines={(newLines) => {
-        previewOptimizedLines = newLines;
+      on:previewOptimizedLines={(e) => {
+        previewOptimizedLines = e.detail;
       }}
     />
   </div>
