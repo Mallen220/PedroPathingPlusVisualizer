@@ -253,7 +253,43 @@ async function main() {
     console.log("\n🔍 Step 3: Finding Artifacts...");
     console.log("========================");
     const releaseDir = path.join(__dirname, "../release");
-    const files = await fs.readdir(releaseDir);
+    let files = await fs.readdir(releaseDir);
+
+    // Normalize artifact filenames to a consistent pattern used by installer scripts
+    // Rules:
+    // - Replace sequences of whitespace with '-' in dmg, AppImage, and exe filenames
+    // - For Windows .exe names containing 'Setup' ensure they follow 'Pedro-Pathing-Visualizer-Setup-<version>.exe'
+    for (const fname of files) {
+      const lower = fname.toLowerCase();
+      if (/(\.dmg$|\.appimage$|\.exe$)/i.test(fname) && fname.match(/\s/)) {
+        let newName = fname.replace(/\s+/g, "-");
+
+        // Windows specific: make 'Setup' filename consistent
+        if (newName.toLowerCase().includes("setup") && newName.toLowerCase().includes(version)) {
+          // Prefer: Pedro-Pathing-Visualizer-Setup-<version>.exe
+          const ext = path.extname(newName);
+          newName = `Pedro-Pathing-Visualizer-Setup-${version}${ext}`;
+        }
+
+        const oldPath = path.join(releaseDir, fname);
+        const newPath = path.join(releaseDir, newName);
+        try {
+          // Only rename if target does not already exist
+          try {
+            await fs.access(newPath);
+            console.log(`⚠ Target name ${newName} already exists, skipping rename of ${fname}`);
+          } catch (e) {
+            await fs.rename(oldPath, newPath);
+            console.log(`🔁 Renamed ${fname} -> ${newName}`);
+          }
+        } catch (err) {
+          console.warn(`Failed to rename ${fname}: ${err.message}`);
+        }
+      }
+    }
+
+    // Refresh file list after any renames
+    files = await fs.readdir(releaseDir);
 
     // Look for dmg, exe, AppImage, deb, tar.gz
     const artifactFiles = files.filter(
