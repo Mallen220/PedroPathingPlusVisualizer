@@ -13,7 +13,7 @@
     showSettings,
     exportDialogState,
   } from "../stores";
-  import { getRandomColor } from "../utils";
+  import { getRandomColor, reversePath } from "../utils";
   import {
     getDefaultStartPoint,
     getDefaultLines,
@@ -51,6 +51,7 @@
   let fileManagerOpen = false;
   let shortcutsOpen = false;
   let exportMenuOpen = false;
+  let toolsMenuOpen = false;
   let exportDialog: ExportCodeDialog;
 
   let saveDropdownOpen = false;
@@ -103,6 +104,21 @@
   function handleExport(format: "java" | "points" | "sequential") {
     exportMenuOpen = false;
     exportDialogState.set({ isOpen: true, format });
+  }
+
+  function handleReversePath() {
+    if (
+      confirm(
+        "Are you sure you want to reverse the entire path? This will reorder all points and segments.",
+      )
+    ) {
+      const result = reversePath(startPoint, lines, sequence);
+      startPoint = result.startPoint;
+      lines = result.lines;
+      sequence = result.sequence;
+      recordChange();
+      toolsMenuOpen = false;
+    }
   }
 
   function resetPath() {
@@ -158,12 +174,22 @@
     ) {
       saveDropdownOpen = false;
     }
+    // Handle clicks outside Tools menu
+    if (
+      toolsMenuOpen &&
+      !(event.target as HTMLElement).closest(".tools-menu-container")
+    ) {
+      toolsMenuOpen = false;
+    }
   }
 
   // Handle Escape key to close dropdown
   function handleKeyDown(event: KeyboardEvent) {
     if (saveDropdownOpen && event.key === "Escape") {
       saveDropdownOpen = false;
+    }
+    if (toolsMenuOpen && event.key === "Escape") {
+      toolsMenuOpen = false;
     }
   }
 
@@ -309,6 +335,61 @@
       class="h-6 border-l border-neutral-300 dark:border-neutral-700 mx-4"
       aria-hidden="true"
     ></div>
+
+    <!-- Tools Menu -->
+    <div class="relative tools-menu-container">
+      <button
+        title="Tools"
+        aria-label="Open Tools Menu"
+        aria-expanded={toolsMenuOpen}
+        on:click={() => (toolsMenuOpen = !toolsMenuOpen)}
+        class="flex items-center gap-1 hover:bg-neutral-200 dark:hover:bg-neutral-800 px-2 py-1 rounded transition-colors"
+      >
+        <span class="font-medium text-sm">Tools</span>
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke-width="2"
+          stroke="currentColor"
+          class="size-4 transition-transform"
+          class:rotate-180={toolsMenuOpen}
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            d="m19.5 8.25-7.5 7.5-7.5-7.5"
+          />
+        </svg>
+      </button>
+
+      {#if toolsMenuOpen}
+        <div
+          class="absolute right-0 mt-2 w-48 bg-white dark:bg-neutral-800 rounded-md shadow-lg py-1 z-50 border border-neutral-200 dark:border-neutral-700"
+        >
+          <button
+            on:click={handleReversePath}
+            class="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke-width="1.5"
+              stroke="currentColor"
+              class="size-4"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M7.5 21 3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5"
+              />
+            </svg>
+            <span>Reverse Path</span>
+          </button>
+        </div>
+      {/if}
+    </div>
 
     <!-- Sidebar toggle -->
     <div class="flex items-center">
