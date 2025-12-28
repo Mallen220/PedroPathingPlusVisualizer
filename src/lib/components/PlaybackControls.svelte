@@ -7,7 +7,7 @@
   export let loopAnimation: boolean;
   export let markers: { percent: number; color: string; name: string }[] = [];
   export let playbackSpeed: number = 1.0;
-  export let changePlaybackSpeedBy: (delta: number) => void;
+  // export let changePlaybackSpeedBy: (delta: number) => void;
   export let resetPlaybackSpeed: () => void;
   export let setPlaybackSpeed: (factor: number, autoPlay?: boolean) => void;
 </script>
