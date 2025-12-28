@@ -46,8 +46,10 @@
     }
   }}
 >
-  <div class="flex flex-row w-full justify-between items-center">
-    <div class="flex flex-row items-center gap-2">
+  <div
+    class="flex flex-row w-full justify-between items-center flex-wrap gap-y-2"
+  >
+    <div class="flex flex-row items-center gap-2 flex-wrap">
       <button
         on:click={toggleCollapsed}
         class="flex items-center gap-2 font-semibold hover:bg-neutral-200 dark:hover:bg-neutral-800 px-2 py-1 rounded transition-colors"
@@ -75,7 +77,7 @@
       <input
         bind:value={line.name}
         placeholder="Path {idx + 1}"
-        class="pl-1.5 rounded-md bg-neutral-100 dark:bg-neutral-950 dark:border-neutral-700 border-[0.5px] focus:outline-none text-sm font-semibold"
+        class="pl-1.5 rounded-md bg-neutral-100 dark:bg-neutral-950 dark:border-neutral-700 border-[0.5px] focus:outline-none text-sm font-semibold min-w-[100px]"
         disabled={line.locked}
         on:input={() => {
           // Force parent reactivity so other components (like exporters)
@@ -192,7 +194,7 @@
       </div>
     </div>
 
-    <div class="flex flex-row justify-end items-center gap-1">
+    <div class="flex flex-row justify-end items-center gap-1 ml-auto">
       <!-- Add Point After Button -->
 
       <button
@@ -263,29 +265,31 @@
 
     <div class="flex flex-col justify-start items-start w-full">
       <div class="font-light">Point Position:</div>
-      <div class="flex flex-row justify-start items-center gap-2">
-        <div class="font-extralight">X:</div>
-        <input
-          class="pl-1.5 rounded-md bg-neutral-100 dark:bg-neutral-950 dark:border-neutral-700 border-[0.5px] focus:outline-none w-28"
-          step={$snapToGrid && $showGrid ? $gridSize : 0.1}
-          type="number"
-          min="0"
-          max="144"
-          bind:value={line.endPoint.x}
-          disabled={line.locked}
-          title={snapToGridTitle}
-        />
-        <div class="font-extralight">Y:</div>
-        <input
-          class="pl-1.5 rounded-md bg-neutral-100 dark:bg-neutral-950 dark:border-neutral-700 border-[0.5px] focus:outline-none w-28"
-          step={$snapToGrid && $showGrid ? $gridSize : 0.1}
-          min="0"
-          max="144"
-          type="number"
-          bind:value={line.endPoint.y}
-          disabled={line.locked}
-          title={snapToGridTitle}
-        />
+      <div class="flex flex-wrap justify-start items-center gap-x-4 gap-y-2">
+        <div class="flex items-center gap-2">
+          <div class="font-extralight">X:</div>
+          <input
+            class="pl-1.5 rounded-md bg-neutral-100 dark:bg-neutral-950 dark:border-neutral-700 border-[0.5px] focus:outline-none w-20 sm:w-28"
+            step={$snapToGrid && $showGrid ? $gridSize : 0.1}
+            type="number"
+            min="0"
+            max="144"
+            bind:value={line.endPoint.x}
+            disabled={line.locked}
+            title={snapToGridTitle}
+          />
+          <div class="font-extralight">Y:</div>
+          <input
+            class="pl-1.5 rounded-md bg-neutral-100 dark:bg-neutral-950 dark:border-neutral-700 border-[0.5px] focus:outline-none w-20 sm:w-28"
+            step={$snapToGrid && $showGrid ? $gridSize : 0.1}
+            min="0"
+            max="144"
+            type="number"
+            bind:value={line.endPoint.y}
+            disabled={line.locked}
+            title={snapToGridTitle}
+          />
+        </div>
 
         <HeadingControls
           endPoint={line.endPoint}

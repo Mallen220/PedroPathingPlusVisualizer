@@ -83,12 +83,12 @@
         <div
           class="flex flex-col p-2 border border-purple-300 dark:border-purple-700 rounded-md bg-purple-50 dark:bg-purple-900/20"
         >
-          <div class="flex items-center justify-between mb-2">
-            <div class="flex items-center gap-2">
-              <div class="w-3 h-3 rounded-full bg-purple-500"></div>
+          <div class="flex items-center justify-between mb-2 flex-wrap gap-2">
+            <div class="flex items-center gap-2 flex-1 min-w-[150px]">
+              <div class="w-3 h-3 rounded-full bg-purple-500 shrink-0"></div>
               <input
                 bind:value={event.name}
-                class="pl-1.5 rounded-md bg-white dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-600 focus:outline-none focus:ring-1 focus:ring-purple-500 text-sm w-32"
+                class="pl-1.5 rounded-md bg-white dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-600 focus:outline-none focus:ring-1 focus:ring-purple-500 text-sm w-full min-w-[100px]"
                 placeholder="Event name"
                 disabled={line.locked}
                 on:change={() => {
@@ -101,7 +101,7 @@
 
             <button
               on:click={() => removeEventMarker(eventIdx)}
-              class="text-red-500 hover:text-red-600"
+              class="text-red-500 hover:text-red-600 ml-auto"
               title="Remove Event Marker"
               disabled={line.locked}
             >
@@ -123,65 +123,67 @@
           </div>
 
           <!-- Position Slider and text -->
-          <div class="flex items-center gap-2">
+          <div class="flex items-center gap-2 flex-wrap w-full">
             <span class="text-xs text-neutral-600 dark:text-neutral-400"
               >Position:</span
             >
-            <input
-              type="range"
-              min="0"
-              max="1"
-              step="0.01"
-              value={event.position}
-              class="flex-1 slider"
-              disabled={line.locked}
-              on:input={(e) => {
-                const value = parseFloat(e.target.value);
-                if (!isNaN(value)) {
-                  event.position = value;
-                  line.eventMarkers = [...line.eventMarkers];
-                }
-              }}
-            />
-            <input
-              type="number"
-              value={event.position}
-              disabled={line.locked}
-              min="0"
-              max="1"
-              step="0.01"
-              class="w-16 px-2 py-1 text-xs rounded-md bg-white dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-600 focus:outline-none focus:ring-1 focus:ring-purple-500"
-              on:input={(e) => {
-                // Don't update immediately, just show the typed value
-                // We'll validate on blur or Enter
-              }}
-              on:blur={(e) => {
-                const value = parseFloat(e.target.value);
-                if (isNaN(value) || value < 0 || value > 1) {
-                  // Invalid - revert to current value
-                  e.target.value = event.position;
-                  return;
-                }
-                // Valid - update
-                event.position = value;
-                line.eventMarkers = [...line.eventMarkers];
-              }}
-              on:keydown={(e) => {
-                if (e.key === "Enter") {
+            <div class="flex flex-1 items-center gap-2 min-w-[200px]">
+              <input
+                type="range"
+                min="0"
+                max="1"
+                step="0.01"
+                value={event.position}
+                class="flex-1 slider"
+                disabled={line.locked}
+                on:input={(e) => {
+                  const value = parseFloat(e.target.value);
+                  if (!isNaN(value)) {
+                    event.position = value;
+                    line.eventMarkers = [...line.eventMarkers];
+                  }
+                }}
+              />
+              <input
+                type="number"
+                value={event.position}
+                disabled={line.locked}
+                min="0"
+                max="1"
+                step="0.01"
+                class="w-16 px-2 py-1 text-xs rounded-md bg-white dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-600 focus:outline-none focus:ring-1 focus:ring-purple-500"
+                on:input={(e) => {
+                  // Don't update immediately, just show the typed value
+                  // We'll validate on blur or Enter
+                }}
+                on:blur={(e) => {
                   const value = parseFloat(e.target.value);
                   if (isNaN(value) || value < 0 || value > 1) {
-                    // Invalid - revert
+                    // Invalid - revert to current value
                     e.target.value = event.position;
-                    e.preventDefault();
                     return;
                   }
                   // Valid - update
                   event.position = value;
                   line.eventMarkers = [...line.eventMarkers];
-                  e.target.blur(); // Trigger blur to update
-                }
-              }}
-            />
+                }}
+                on:keydown={(e) => {
+                  if (e.key === "Enter") {
+                    const value = parseFloat(e.target.value);
+                    if (isNaN(value) || value < 0 || value > 1) {
+                      // Invalid - revert
+                      e.target.value = event.position;
+                      e.preventDefault();
+                      return;
+                    }
+                    // Valid - update
+                    event.position = value;
+                    line.eventMarkers = [...line.eventMarkers];
+                    e.target.blur(); // Trigger blur to update
+                  }
+                }}
+              />
+            </div>
           </div>
 
           <div class="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
