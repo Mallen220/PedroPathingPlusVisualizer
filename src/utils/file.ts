@@ -21,7 +21,11 @@ export function downloadTrajectory(
   shapes: Shape[],
   sequence?: SequenceItem[],
 ): void {
-  const jsonString = JSON.stringify({ startPoint, lines, shapes, sequence });
+  const jsonString = JSON.stringify(
+    { startPoint, lines, shapes, sequence },
+    null,
+    2,
+  );
   const blob = new Blob([jsonString], { type: "application/json" });
   const linkObj = document.createElement("a");
   const url = URL.createObjectURL(blob);

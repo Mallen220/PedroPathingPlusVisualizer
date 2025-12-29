@@ -7,10 +7,8 @@ import {
   sequenceStore,
   settingsStore,
   loadProjectData,
-  normalizeLines,
 } from "../lib/projectStore";
 import { loadTrajectoryFromFile, downloadTrajectory } from "./index";
-import type { ElectronAPI } from "../types";
 
 interface ExtendedElectronAPI {
   writeFile: (filePath: string, content: string) => Promise<boolean>;
@@ -77,13 +75,17 @@ export async function saveProject() {
   const path = get(currentFilePath);
   if (path && electronAPI) {
     try {
-      const jsonString = JSON.stringify({
-        startPoint: get(startPointStore),
-        lines: get(linesStore),
-        sequence: get(sequenceStore),
-        shapes: get(shapesStore),
-        settings: get(settingsStore),
-      });
+      const jsonString = JSON.stringify(
+        {
+          startPoint: get(startPointStore),
+          lines: get(linesStore),
+          sequence: get(sequenceStore),
+          shapes: get(shapesStore),
+          settings: get(settingsStore),
+        },
+        null,
+        2,
+      );
       await electronAPI.writeFile(path, jsonString);
       isUnsaved.set(false);
       addToRecentFiles(path);
