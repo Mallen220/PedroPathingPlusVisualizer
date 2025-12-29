@@ -15,81 +15,61 @@ import {
 } from "./math";
 
 /**
- * Calculates the first derivative of a quadratic Bezier curve at t
- * B(t) = (1-t)^2 P0 + 2(1-t)t P1 + t^2 P2
- * B'(t) = 2(1-t)(P1-P0) + 2t(P2-P1)
+ * Calculates the first derivative of a Bezier curve of degree N at t.
+ * The derivative of an N-degree Bezier defined by P0...Pn is an (N-1)-degree Bezier
+ * defined by Q0...Q(n-1), where Qi = n * (P(i+1) - Pi).
  */
-function getQuadraticDerivative(
+function getBezierDerivative(
   t: number,
-  p0: BasePoint,
-  p1: BasePoint,
-  p2: BasePoint,
+  points: { x: number; y: number }[],
 ): { x: number; y: number } {
-  const x = 2 * (1 - t) * (p1.x - p0.x) + 2 * t * (p2.x - p1.x);
-  const y = 2 * (1 - t) * (p1.y - p0.y) + 2 * t * (p2.y - p1.y);
-  return { x, y };
+  const n = points.length - 1;
+  if (n < 1) return { x: 0, y: 0 };
+
+  const derivativePoints = [];
+  for (let i = 0; i < n; i++) {
+    derivativePoints.push({
+      x: n * (points[i + 1].x - points[i].x),
+      y: n * (points[i + 1].y - points[i].y),
+    });
+  }
+
+  // Use the existing getCurvePoint (De Casteljau) to evaluate the derivative curve
+  return getCurvePoint(t, derivativePoints);
 }
 
 /**
- * Calculates the second derivative of a quadratic Bezier curve at t
- * B''(t) = 2(P2 - 2P1 + P0)
+ * Calculates the second derivative of a Bezier curve of degree N at t.
+ * This is the derivative of the first derivative.
  */
-function getQuadraticSecondDerivative(
+function getBezierSecondDerivative(
   t: number,
-  p0: BasePoint,
-  p1: BasePoint,
-  p2: BasePoint,
+  points: { x: number; y: number }[],
 ): { x: number; y: number } {
-  const x = 2 * (p2.x - 2 * p1.x + p0.x);
-  const y = 2 * (p2.y - 2 * p1.y + p0.y);
-  return { x, y };
-}
+  const n = points.length - 1;
+  if (n < 2) return { x: 0, y: 0 };
 
-/**
- * Calculates the first derivative of a cubic Bezier curve at t
- * B(t) = (1-t)^3 P0 + 3(1-t)^2 t P1 + 3(1-t) t^2 P2 + t^3 P3
- * B'(t) = 3(1-t)^2 (P1-P0) + 6(1-t)t (P2-P1) + 3t^2 (P3-P2)
- */
-function getCubicDerivative(
-  t: number,
-  p0: BasePoint,
-  p1: BasePoint,
-  p2: BasePoint,
-  p3: BasePoint,
-): { x: number; y: number } {
-  const mt = 1 - t;
-  const k1 = 3 * mt * mt;
-  const k2 = 6 * mt * t;
-  const k3 = 3 * t * t;
+  // Calculate first derivative control points Q
+  const qPoints = [];
+  for (let i = 0; i < n; i++) {
+    qPoints.push({
+      x: n * (points[i + 1].x - points[i].x),
+      y: n * (points[i + 1].y - points[i].y),
+    });
+  }
 
-  const x = k1 * (p1.x - p0.x) + k2 * (p2.x - p1.x) + k3 * (p3.x - p2.x);
-  const y = k1 * (p1.y - p0.y) + k2 * (p2.y - p1.y) + k3 * (p3.y - p2.y);
-  return { x, y };
-}
+  // Calculate second derivative control points R from Q
+  // R has degree n-2, derived from Q (degree n-1)
+  const m = n - 1;
+  const rPoints = [];
+  for (let i = 0; i < m; i++) {
+    rPoints.push({
+      x: m * (qPoints[i + 1].x - qPoints[i].x),
+      y: m * (qPoints[i + 1].y - qPoints[i].y),
+    });
+  }
 
-/**
- * Calculates the second derivative of a cubic Bezier curve at t
- * B''(t) = 6(1-t)(P2 - 2P1 + P0) + 6t(P3 - 2P2 + P1)
- */
-function getCubicSecondDerivative(
-  t: number,
-  p0: BasePoint,
-  p1: BasePoint,
-  p2: BasePoint,
-  p3: BasePoint,
-): { x: number; y: number } {
-  const mt = 1 - t;
-  const k1 = 6 * mt;
-  const k2 = 6 * t;
-
-  const term1x = p2.x - 2 * p1.x + p0.x;
-  const term1y = p2.y - 2 * p1.y + p0.y;
-  const term2x = p3.x - 2 * p2.x + p1.x;
-  const term2y = p3.y - 2 * p2.y + p1.y;
-
-  const x = k1 * term1x + k2 * term2x;
-  const y = k1 * term1y + k2 * term2y;
-  return { x, y };
+  return getCurvePoint(t, rPoints);
 }
 
 /**
@@ -155,13 +135,11 @@ function analyzePathSegment(
     if (isLine) {
       d1 = { x: end.x - start.x, y: end.y - start.y };
       d2 = { x: 0, y: 0 }; // Zero curvature
-    } else if (isQuadratic) {
-      d1 = getQuadraticDerivative(t, start, cps[0], end);
-      d2 = getQuadraticSecondDerivative(t, start, cps[0], end);
-    } else if (isCubic) {
-      // Use the first two control points for cubic logic
-      d1 = getCubicDerivative(t, start, cps[0], cps[1], end);
-      d2 = getCubicSecondDerivative(t, start, cps[0], cps[1], end);
+    } else {
+      // Use generic N-degree Bezier derivative logic for Quadratic, Cubic, Quartic, etc.
+      const fullPoints = [start, ...cps, end];
+      d1 = getBezierDerivative(t, fullPoints);
+      d2 = getBezierSecondDerivative(t, fullPoints);
     }
 
     // Curvature Radius
