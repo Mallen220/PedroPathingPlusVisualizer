@@ -285,13 +285,13 @@
 
         <!-- Preview Area -->
         <div
-          class="flex-1 min-h-[200px] flex items-center justify-center bg-neutral-100 dark:bg-neutral-900 rounded border border-neutral-300 dark:border-neutral-700 overflow-hidden relative"
+          class="flex-1 min-h-[200px] flex items-center justify-center bg-neutral-100 dark:bg-neutral-900 rounded border border-neutral-300 dark:border-neutral-700 overflow-hidden relative p-2"
         >
           {#if previewUrl}
             <img
               src={previewUrl}
               alt="GIF Preview"
-              class="max-w-full max-h-[400px] object-contain"
+              class="max-w-full max-h-[40vh] object-contain shadow-sm"
             />
           {:else}
             <div
