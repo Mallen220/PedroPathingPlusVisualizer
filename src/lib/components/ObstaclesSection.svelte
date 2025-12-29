@@ -105,13 +105,14 @@
             on:click={() => {
               shape.vertices = [...shape.vertices, { x: 50, y: 50 }];
             }}
+            class="p-1 rounded hover:bg-green-50 dark:hover:bg-green-900/10 transition-colors"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
               fill="none"
               viewBox="0 0 24 24"
-              stroke-width={2}
-              class="size-4 stroke-green-500"
+              stroke-width={2.5}
+              class="size-5 stroke-green-500"
             >
               <path
                 stroke-linecap="round"
