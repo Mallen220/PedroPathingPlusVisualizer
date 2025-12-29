@@ -249,34 +249,14 @@
     }
   }
 
-  function handleDragOver(e: DragEvent, index: number) {
-    if (draggingIndex === null) return;
-
-    const position = calculateDragPosition(e, e.currentTarget as HTMLElement);
-
-    // Start Point special case: cannot drop before it (index -1, top)
-    if (index === -1 && position === "top") return;
-
-    e.preventDefault(); // Necessary to allow dropping
-    e.stopPropagation();
-
-    if (dragOverIndex !== index || dragPosition !== position) {
-      dragOverIndex = index;
-      dragPosition = position;
-    }
-  }
-
-  function handleContainerDragOver(e: DragEvent) {
+  function handleWindowDragOver(e: DragEvent) {
     if (draggingIndex === null) return;
     e.preventDefault();
 
     // Use a custom selector for rows that have sequence data
     // We target tr elements that have data-seq-index
-    const target = getClosestTarget(
-      e,
-      "tr[data-seq-index]",
-      e.currentTarget as HTMLElement,
-    );
+    const target = getClosestTarget(e, "tr[data-seq-index]", document.body);
+
     if (!target) return;
 
     const index = parseInt(target.element.getAttribute("data-seq-index") || "");
@@ -291,18 +271,15 @@
     }
   }
 
-  function handleContainerDrop(e: DragEvent) {
+  function handleWindowDrop(e: DragEvent) {
+    if (draggingIndex === null) return;
     e.preventDefault();
-    if (
-      draggingIndex === null ||
-      dragOverIndex === null ||
-      dragPosition === null
-    ) {
-      handleDragEnd();
-      return;
-    }
 
-    if (draggingIndex === dragOverIndex) {
+    if (
+      dragOverIndex === null ||
+      dragPosition === null ||
+      draggingIndex === dragOverIndex
+    ) {
       handleDragEnd();
       return;
     }
@@ -421,29 +398,9 @@
     if (recordChange) recordChange();
     selectedPointId.set(null);
   }
-  function handleDrop(e: DragEvent, index: number) {
-    e.preventDefault();
-    e.stopPropagation();
-    if (draggingIndex === null || draggingIndex === index) {
-      handleDragEnd();
-      return;
-    }
-
-    if (!dragPosition) return;
-
-    const newSequence = reorderSequence(
-      sequence,
-      draggingIndex,
-      index,
-      dragPosition,
-    );
-    sequence = newSequence;
-    syncLinesToSequence(newSequence);
-    recordChange();
-
-    handleDragEnd();
-  }
 </script>
+
+<svelte:window on:dragover={handleWindowDragOver} on:drop={handleWindowDrop} />
 
 <div class="w-full flex flex-col gap-4 text-sm p-1">
   <div class="flex justify-between items-center">
@@ -516,11 +473,6 @@
     <table
       class="w-full text-left bg-white dark:bg-neutral-900 border-collapse"
     >
-      <tbody
-        class="divide-y divide-neutral-100 dark:divide-neutral-800"
-        on:dragover={handleContainerDragOver}
-        on:drop={handleContainerDrop}
-      ></tbody>
       <thead
         class="bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 font-semibold"
       >
@@ -534,11 +486,7 @@
           <th class="px-3 py-2 border-b dark:border-neutral-700 w-10"></th>
         </tr>
       </thead>
-      <tbody
-        class="divide-y divide-neutral-100 dark:divide-neutral-800"
-        on:dragover={handleContainerDragOver}
-        on:drop={handleContainerDrop}
-      >
+      <tbody class="divide-y divide-neutral-100 dark:divide-neutral-800">
         <!-- Start Point -->
         <tr
           data-seq-index="-1"
@@ -548,8 +496,6 @@
             selectedLineId.set(null);
             selectedPointId.set("point-0-0");
           }}
-          on:dragover={(e) => handleDragOver(e, -1)}
-          on:drop={(e) => handleDrop(e, -1)}
           class:border-b-2={dragOverIndex === -1 && dragPosition === "bottom"}
           class:border-blue-500={dragOverIndex === -1}
           class:dark:border-blue-400={dragOverIndex === -1}
@@ -612,8 +558,6 @@
                 data-seq-index={seqIndex}
                 draggable={!line.locked}
                 on:dragstart={(e) => handleDragStart(e, seqIndex)}
-                on:dragover={(e) => handleDragOver(e, seqIndex)}
-                on:drop={(e) => handleDrop(e, seqIndex)}
                 on:dragend={handleDragEnd}
                 class={`hover:bg-neutral-50 dark:hover:bg-neutral-800/50 font-medium ${$selectedLineId === line.id ? "bg-green-50 dark:bg-green-900/20" : ""} ${$selectedPointId === endPointId ? "bg-green-100 dark:bg-green-800/40" : ""} transition-colors duration-150`}
                 class:border-t-2={dragOverIndex === seqIndex &&
@@ -764,8 +708,6 @@
                     selectedLineId.set(line.id);
                     selectedPointId.set(pointId);
                   }}
-                  on:dragover={(e) => handleDragOver(e, seqIndex)}
-                  on:drop={(e) => handleDrop(e, seqIndex)}
                 >
                   <td class="w-8 px-2 py-2">
                     <!-- No drag handle for control points, but they are drop targets for the parent seqIdx -->
@@ -825,8 +767,6 @@
               data-seq-index={seqIndex}
               draggable={!item.locked}
               on:dragstart={(e) => handleDragStart(e, seqIndex)}
-              on:dragover={(e) => handleDragOver(e, seqIndex)}
-              on:drop={(e) => handleDrop(e, seqIndex)}
               on:dragend={handleDragEnd}
               class="hover:bg-neutral-50 dark:hover:bg-neutral-800/50 bg-amber-50 dark:bg-amber-900/20 transition-colors duration-150"
               class:border-t-2={dragOverIndex === seqIndex &&
