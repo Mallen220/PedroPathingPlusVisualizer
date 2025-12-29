@@ -56,6 +56,8 @@
   let saveDropdownOpen = false;
   let saveDropdownRef: HTMLElement;
   let saveButtonRef: HTMLElement;
+  let exportMenuRef: HTMLElement;
+  let exportButtonRef: HTMLElement;
 
   let selectedGridSize = 12;
   const gridSizeOptions = [1, 3, 6, 12, 24];
@@ -158,12 +160,25 @@
     ) {
       saveDropdownOpen = false;
     }
+
+    if (
+      exportMenuOpen &&
+      exportMenuRef &&
+      !exportMenuRef.contains(event.target as Node) &&
+      exportButtonRef &&
+      !exportButtonRef.contains(event.target as Node)
+    ) {
+      exportMenuOpen = false;
+    }
   }
 
   // Handle Escape key to close dropdown
   function handleKeyDown(event: KeyboardEvent) {
     if (saveDropdownOpen && event.key === "Escape") {
       saveDropdownOpen = false;
+    }
+    if (exportMenuOpen && event.key === "Escape") {
+      exportMenuOpen = false;
     }
   }
 
@@ -712,6 +727,7 @@
 
       <div class="relative">
         <button
+          bind:this={exportButtonRef}
           title="Export path"
           aria-label="Export path"
           aria-haspopup="true"
@@ -751,6 +767,7 @@
 
         {#if exportMenuOpen}
           <div
+            bind:this={exportMenuRef}
             class="absolute right-0 mt-2 w-48 bg-white dark:bg-neutral-800 rounded-md shadow-lg py-1 z-50 border border-neutral-200 dark:border-neutral-700"
           >
             <button
