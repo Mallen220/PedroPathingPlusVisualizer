@@ -150,10 +150,7 @@ export function getLineEndHeading(
     if (line.controlPoints && line.controlPoints.length > 0) {
       for (let i = line.controlPoints.length - 1; i >= 0; i--) {
         const cp = line.controlPoints[i];
-        const dist = Math.hypot(
-          cp.x - line.endPoint.x,
-          cp.y - line.endPoint.y,
-        );
+        const dist = Math.hypot(cp.x - line.endPoint.x, cp.y - line.endPoint.y);
         if (dist > 1e-6) {
           prevP = cp;
           break;
