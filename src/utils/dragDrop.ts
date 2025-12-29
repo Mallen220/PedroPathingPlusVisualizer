@@ -14,29 +14,24 @@ export function reorderSequence<T>(
   sequence: T[],
   fromIndex: number,
   toIndex: number,
-  position: DragPosition
+  position: DragPosition,
 ): T[] {
-  const item = sequence[fromIndex];
+  // Target index logic:
+  // If 'top', we want to insert at toIndex.
+  // If 'bottom', we want to insert at toIndex + 1.
+  let targetInsertionIndex = position === "top" ? toIndex : toIndex + 1;
+
+  // If we are moving the item 'down' (from < target), the target index
+  // will shift down by 1 when we remove the item.
+  // Note: We use < because if fromIndex == targetInsertionIndex, it's a no-op
+  // (inserting right back where it was).
+  if (fromIndex < targetInsertionIndex) {
+    targetInsertionIndex--;
+  }
+
   const newSequence = [...sequence];
+  const [item] = newSequence.splice(fromIndex, 1);
+  newSequence.splice(targetInsertionIndex, 0, item);
 
-  // Remove from old position
-  newSequence.splice(fromIndex, 1);
-
-  // Calculate new position
-  // If we removed from before the target, the target index shifts down by 1
-  let insertIndex = toIndex;
-  if (fromIndex < toIndex) {
-    insertIndex--;
-  }
-
-  if (position === "bottom") {
-    insertIndex++;
-  }
-
-  // Safety clamp
-  if (insertIndex < 0) insertIndex = 0;
-  if (insertIndex > newSequence.length) insertIndex = newSequence.length;
-
-  newSequence.splice(insertIndex, 0, item);
   return newSequence;
 }
