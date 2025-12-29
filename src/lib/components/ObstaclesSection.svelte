@@ -1,6 +1,7 @@
 <script lang="ts">
   import { createTriangle } from "../../utils";
   import { snapToGrid, showGrid, gridSize } from "../../stores";
+  import TrashIcon from "./icons/TrashIcon.svelte";
 
   export let shapes: Shape[];
   export let collapsedObstacles: boolean[];
@@ -104,13 +105,14 @@
             on:click={() => {
               shape.vertices = [...shape.vertices, { x: 50, y: 50 }];
             }}
+            class="p-1 rounded hover:bg-green-50 dark:hover:bg-green-900/10 transition-colors"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
               fill="none"
               viewBox="0 0 24 24"
-              stroke-width={2}
-              class="size-4 stroke-green-500"
+              stroke-width={2.5}
+              class="size-5 stroke-green-500"
             >
               <path
                 stroke-linecap="round"
@@ -129,20 +131,9 @@
                 collapsedObstacles.splice(shapeIdx, 1);
                 collapsedObstacles = [...collapsedObstacles];
               }}
+              class="text-red-500 hover:text-red-600"
             >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke-width={2}
-                class="size-4 stroke-red-500"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  d="M15 12H9m12 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
-                />
-              </svg>
+              <TrashIcon class_="size-4" strokeWidth={2} />
             </button>
           {/if}
         </div>
@@ -180,24 +171,13 @@
             {#if shape.vertices.length > 3}
               <button
                 title="Remove Vertex"
+                class="text-red-500 hover:text-red-600"
                 on:click={() => {
                   shape.vertices.splice(vertexIdx, 1);
                   shape.vertices = shape.vertices;
                 }}
               >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke-width={2}
-                  class="size-4 stroke-red-500"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    d="M15 12H9m12 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
-                  />
-                </svg>
+                <TrashIcon class_="size-4" strokeWidth={2} />
               </button>
             {/if}
           </div>
