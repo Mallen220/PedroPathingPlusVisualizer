@@ -379,56 +379,16 @@
     }
   }
 
-  function handleDragOver(e: DragEvent, index: number) {
-    if (draggingIndex === null) return;
-
-    // Use currentTarget to calculate position relative to the item being hovered
-    const position = calculateDragPosition(e, e.currentTarget as HTMLElement);
-    e.preventDefault();
-    e.stopPropagation(); // Stop propagation so container doesn't recalculate
-
-    if (dragOverIndex !== index || dragPosition !== position) {
-      dragOverIndex = index;
-      dragPosition = position;
-    }
-  }
-
-  function handleDrop(e: DragEvent, index: number) {
-    e.preventDefault();
-    e.stopPropagation(); // Handle drop locally
-    if (draggingIndex === null || draggingIndex === index) {
-      handleDragEnd();
-      return;
-    }
-
-    if (!dragPosition) return;
-
-    const newSequence = reorderSequence(
-      sequence,
-      draggingIndex,
-      index,
-      dragPosition,
-    );
-    sequence = newSequence;
-    syncLinesToSequence(newSequence);
-    recordChange?.();
-
-    handleDragEnd();
-  }
-
-  function handleContainerDragOver(e: DragEvent) {
-    if (draggingIndex === null) return;
+  function handleWindowDragOver(e: DragEvent) {
+    if (draggingIndex === null || activeTab !== "path") return;
     e.preventDefault();
 
-    // Find closest list item
-    const target = getClosestTarget(
-      e,
-      '[role="listitem"]',
-      e.currentTarget as HTMLElement,
-    );
+    // Use document.body to search globally for the list items
+    // Since we are in the Path tab, we look for our specific list items
+    const target = getClosestTarget(e, '[role="listitem"]', document.body);
+
     if (!target) return;
 
-    // Get the index from the data attribute we added
     const index = parseInt(target.element.getAttribute("data-index") || "-1");
     if (index === -1) return;
 
@@ -438,20 +398,15 @@
     }
   }
 
-  function handleContainerDrop(e: DragEvent) {
+  function handleWindowDrop(e: DragEvent) {
+    if (draggingIndex === null || activeTab !== "path") return;
     e.preventDefault();
-    // If we dropped on the container, use the last valid dragOverIndex/Position
-    // derived from handleContainerDragOver
-    if (
-      draggingIndex === null ||
-      dragOverIndex === null ||
-      dragPosition === null
-    ) {
-      handleDragEnd();
-      return;
-    }
 
-    if (draggingIndex === dragOverIndex) {
+    if (
+      dragOverIndex === null ||
+      dragPosition === null ||
+      draggingIndex === dragOverIndex
+    ) {
       handleDragEnd();
       return;
     }
@@ -1007,8 +962,6 @@
           class="w-full transition-all duration-200 rounded-lg"
           draggable={!isLocked}
           on:dragstart={(e) => handleDragStart(e, sIdx)}
-          on:dragover={(e) => handleDragOver(e, sIdx)}
-          on:drop={(e) => handleDrop(e, sIdx)}
           on:dragend={handleDragEnd}
           class:border-t-4={dragOverIndex === sIdx && dragPosition === "top"}
           class:border-b-4={dragOverIndex === sIdx && dragPosition === "bottom"}
@@ -1161,3 +1114,5 @@
     {setPlaybackSpeed}
   />
 </div>
+
+<svelte:window on:dragover={handleWindowDragOver} on:drop={handleWindowDrop} />
