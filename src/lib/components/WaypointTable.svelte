@@ -402,17 +402,15 @@
   let copyButtonText = "Copy Table";
 
   function copyTableToClipboard() {
-    const headers = ["Name", "X (in) / Dur (ms)", "Y (in)"];
     const rows = [];
 
     // Header
-    rows.push(headers.join("\t"));
+    rows.push("| Name | X (in) / Dur (ms) | Y (in) |");
+    rows.push("| :--- | :--- | :--- |");
 
     // Start Point
     rows.push(
-      ["Start Point", startPoint.x.toString(), startPoint.y.toString()].join(
-        "\t",
-      ),
+      `| Start Point | ${startPoint.x.toString()} | ${startPoint.y.toString()} |`,
     );
 
     // Sequence
@@ -426,21 +424,19 @@
             xVal += ` (${line.waitBeforeName || line.waitBeforeMs})`;
           }
           rows.push(
-            [line.name || `Path`, xVal, line.endPoint.y.toString()].join("\t"),
+            `| ${line.name || `Path`} | ${xVal} | ${line.endPoint.y.toString()} |`,
           );
 
           // Control Points
           line.controlPoints.forEach((cp, idx) => {
             rows.push(
-              [`↳ Control ${idx + 1}`, cp.x.toString(), cp.y.toString()].join(
-                "\t",
-              ),
+              `| ↳ Control ${idx + 1} | ${cp.x.toString()} | ${cp.y.toString()} |`,
             );
           });
         }
       } else if (item.kind === "wait") {
         rows.push(
-          [item.name || "Wait", item.durationMs.toString(), "-"].join("\t"),
+          `| ${item.name || "Wait"} | ${item.durationMs.toString()} | - |`,
         );
       }
     }
