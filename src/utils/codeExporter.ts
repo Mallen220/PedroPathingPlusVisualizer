@@ -2,10 +2,23 @@ import prettier from "prettier";
 import prettierJavaPlugin from "prettier-plugin-java";
 import type { Point, Line, BasePoint, SequenceItem } from "../types";
 import { getCurvePoint } from "./math";
+import pkg from "../../package.json";
 
 /**
  * Generate Java code from path data
  */
+
+const AUTO_GENERATED_FILE_WARNING_MESSAGE: string = `
+/* ============================================================= *
+ *           Pedro Pathing Visualizer — Auto-Generated           *
+ *                                                               *
+ *  Version: ${pkg.version}.                                              *
+ *  Copyright (c) ${new Date().getFullYear()} Matthew Allen                             *
+ *                                                               *
+ *  THIS FILE IS AUTO-GENERATED — DO NOT EDIT MANUALLY.          *
+ *  Changes will be overwritten when regenerated.                *
+ * ============================================================= */
+`;
 export async function generateJavaCode(
   startPoint: Point,
   lines: Line[],
@@ -133,9 +146,12 @@ export async function generateJavaCode(
 
   let file = "";
   if (!exportFullCode) {
-    file = pathsClass + namedCommandsSection;
+    file =
+      AUTO_GENERATED_FILE_WARNING_MESSAGE + pathsClass + namedCommandsSection;
   } else {
     file = `
+    ${AUTO_GENERATED_FILE_WARNING_MESSAGE}
+
     package org.firstinspires.ftc.teamcode;
     import com.qualcomm.robotcore.eventloop.opmode.OpMode;
     import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
@@ -551,8 +567,10 @@ import com.seattlesolvers.solverslib.pedroCommand.FollowPathCommand;
   }
 
   const sequentialCommandCode = `
-package org.firstinspires.ftc.teamcode.Commands.AutoCommands;
+${AUTO_GENERATED_FILE_WARNING_MESSAGE}
 
+package org.firstinspires.ftc.teamcode.Commands.AutoCommands;
+    
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.BezierCurve;
 import com.pedropathing.geometry.BezierLine;
