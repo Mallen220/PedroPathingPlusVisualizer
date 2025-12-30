@@ -14,6 +14,11 @@
     generateSequentialCommandCode,
     downloadTrajectory,
   } from "../../utils";
+  import {
+    TemplateEngine,
+    type TemplateData,
+  } from "../../utils/templateExporter";
+  import pkg from "../../../package.json";
   import { tick, onMount } from "svelte";
   import { loadSettings, saveSettings } from "../../utils/settingsPersistence";
 
@@ -25,7 +30,8 @@
   export const settings = undefined as Settings | undefined;
 
   let exportFullCode = false;
-  let exportFormat: "java" | "points" | "sequential" | "json" = "java";
+  let exportFormat: "java" | "points" | "sequential" | "json" | "template" =
+    "java";
   let sequentialClassName = "AutoPath";
   let targetLibrary: "SolversLib" | "NextFTC" = "SolversLib";
   const DEFAULT_PACKAGE =
@@ -38,12 +44,107 @@
   let dialogRef: HTMLDivElement;
   let scrollContainer: HTMLDivElement;
 
+  // Template State
+  let templateCode = `// #each lines as line
+// PathChain \${line.name} = follower.pathBuilder()
+//     .addPath(...)
+//     .build();
+// /each
+`;
+  let templateError: string | null = null;
+  let showTemplateEditor = true;
+  let templateMode: "full" | "body" = "full";
+
+  const AUTO_GENERATED_HEADER = `/* ============================================================= *
+ *           Pedro Pathing Visualizer — Auto-Generated           *
+ *                                                               *
+ *  Version: ${pkg.version}.                                              *
+ *  Copyright (c) ${new Date().getFullYear()} Matthew Allen                             *
+ *                                                               *
+ *  THIS FILE IS AUTO-GENERATED — DO NOT EDIT MANUALLY.          *
+ *  Changes will be overwritten when regenerated.                *
+ * ============================================================= */`;
+
+  const DEFAULT_FULL_TEMPLATE = `${AUTO_GENERATED_HEADER}
+
+package \${packageName};
+
+import com.pedropathing.follower.Follower;
+import com.pedropathing.paths.PathChain;
+import com.pedropathing.paths.PathBuilder;
+import com.pedropathing.geometry.BezierCurve;
+import com.pedropathing.geometry.BezierLine;
+import com.pedropathing.geometry.Point;
+
+public class MyCustomPath {
+    #each lines as line
+    public PathChain \${line.name};
+    /each
+
+    public void buildPaths(Follower follower) {
+        #each lines as line
+        // Building \${line.name}
+        \${line.name} = follower.pathBuilder()
+            #if line.controlPoints.length > 0
+            // Curve with \${line.controlPoints.length} control points
+            .addPath(new BezierCurve(
+                new Point(\${line.endPoint.x}, \${line.endPoint.y}),
+                #each line.controlPoints as cp
+                new Point(\${cp.x}, \${cp.y}),
+                /each
+                new Point(\${line.endPoint.x}, \${line.endPoint.y})
+            ))
+            #else
+            // Straight line
+            .addPath(new BezierLine(
+                new Point(\${line.endPoint.x}, \${line.endPoint.y})
+            ))
+            /if
+            .setConstantHeadingInterpolation(\${line.endPoint.heading})
+            .build();
+
+        /each
+    }
+}
+`;
+
+  const DEFAULT_BODY_TEMPLATE = `    #each lines as line
+    public PathChain \${line.name};
+    /each
+
+    public void buildPaths(Follower follower) {
+        #each lines as line
+        \${line.name} = follower.pathBuilder()
+            #if line.controlPoints.length > 0
+            .addPath(new BezierCurve(
+                new Point(\${line.endPoint.x}, \${line.endPoint.y}),
+                #each line.controlPoints as cp
+                new Point(\${cp.x}, \${cp.y}),
+                /each
+                new Point(\${line.endPoint.x}, \${line.endPoint.y})
+            ))
+            #else
+            .addPath(new BezierLine(
+                new Point(\${line.endPoint.x}, \${line.endPoint.y})
+            ))
+            /if
+            .setConstantHeadingInterpolation(\${line.endPoint.heading})
+            .build();
+        /each
+    }
+`;
+
   // Search State
   let showSearch = false;
   let searchQuery = "";
   let searchMatches: number[] = []; // Array of line numbers (0-indexed)
   let currentMatchIndex = -1;
   let searchInputRef: HTMLInputElement;
+
+  // Initialize defaults
+  onMount(() => {
+    templateCode = DEFAULT_FULL_TEMPLATE;
+  });
 
   // Update sequential class name when file changes
   $: if ($currentFilePath) {
@@ -88,7 +189,26 @@
     await saveSettings(settings);
   }
 
+  function toggleTemplateMode() {
+    // Only reset code if it looks like the default of the other mode to avoid data loss
+    if (templateMode === "full") {
+      // Switching to body
+      if (templateCode.trim() === DEFAULT_FULL_TEMPLATE.trim()) {
+        templateCode = DEFAULT_BODY_TEMPLATE;
+      }
+      templateMode = "body";
+    } else {
+      // Switching to full
+      if (templateCode.trim() === DEFAULT_BODY_TEMPLATE.trim()) {
+        templateCode = DEFAULT_FULL_TEMPLATE;
+      }
+      templateMode = "full";
+    }
+    refreshCode();
+  }
+
   async function refreshCode() {
+    templateError = null;
     try {
       if (exportFormat === "java") {
         exportedCode = await generateJavaCode(
@@ -103,15 +223,6 @@
         exportedCode = generatePointsArray(startPoint, lines);
         currentLanguage = plaintext;
       } else if (exportFormat === "sequential") {
-        // For sequential, we might want to append .Commands.AutoCommands if the user
-        // just provides the base package, or let them type the full thing.
-        // The default implementation in codeExporter assumed a suffix.
-        // Let's assume the user types the full package they want for the file.
-        // But the previous default was 'org.firstinspires.ftc.teamcode.Commands.AutoCommands'
-        // If the user's input is just 'org.firstinspires.ftc.teamcode', maybe we should suggest or default?
-        // For now, let's just pass what they typed, but maybe we initialize packageName differently for sequential?
-        // Actually, shared packageName is fine, but sequential often goes in a specific subpackage.
-        // Users can edit the input.
         exportedCode = await generateSequentialCommandCode(
           startPoint,
           lines,
@@ -128,22 +239,61 @@
           2,
         );
         currentLanguage = json;
+      } else if (exportFormat === "template") {
+        // Render custom template
+        const data: TemplateData = {
+          startPoint,
+          lines,
+          sequence,
+          pkg,
+          date: new Date(),
+          packageName,
+        };
+        const engine = new TemplateEngine(templateCode, data);
+        let rendered = await engine.render();
+
+        if (templateMode === "body") {
+          // Wrap in class
+          rendered = `${AUTO_GENERATED_HEADER}
+
+package ${packageName};
+
+import com.pedropathing.follower.Follower;
+import com.pedropathing.paths.PathChain;
+import com.pedropathing.paths.PathBuilder;
+import com.pedropathing.geometry.BezierCurve;
+import com.pedropathing.geometry.BezierLine;
+import com.pedropathing.geometry.Point;
+
+public class MyCustomPath {
+${rendered}
+}
+`;
+        }
+
+        exportedCode = rendered;
+        currentLanguage = java;
       }
 
       // Re-run search if active
       if (searchQuery) {
         performSearch();
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Refresh failed:", error);
-      exportedCode =
-        "// Error refreshing code. Please check the console for details.";
+      if (exportFormat === "template") {
+        templateError = error.message;
+        exportedCode = `// Error rendering template:\n// ${error.message}`;
+      } else {
+        exportedCode =
+          "// Error refreshing code. Please check the console for details.";
+      }
       currentLanguage = plaintext;
     }
   }
 
   export async function openWithFormat(
-    format: "java" | "points" | "sequential" | "json",
+    format: "java" | "points" | "sequential" | "json" | "template",
   ) {
     exportFormat = format;
     copied = false;
@@ -151,6 +301,9 @@
     searchQuery = "";
     searchMatches = [];
     currentMatchIndex = -1;
+    // For template mode, default to viewing editor first if code is empty?
+    // But we init templateCode with default.
+    showTemplateEditor = format === "template";
 
     // Initialize sequential class name if needed
     if (format === "sequential" && $currentFilePath) {
@@ -287,6 +440,7 @@
             {#if exportFormat === "java"}Export Java Code
             {:else if exportFormat === "points"}Export Points
             {:else if exportFormat === "json"}Project Data
+            {:else if exportFormat === "template"}Custom Template Export
             {:else}Sequential Command{/if}
           </h2>
           <p class="text-xs text-neutral-500 dark:text-neutral-400">
@@ -296,6 +450,8 @@
               Raw array of points for processing.
             {:else if exportFormat === "json"}
               Raw PP data for the project.
+            {:else if exportFormat === "template"}
+              Advanced: Generate code using a custom template.
             {:else}
               Command-based sequence for {targetLibrary}.
             {/if}
@@ -303,6 +459,39 @@
         </div>
 
         <div class="flex items-center gap-2">
+          <!-- Format Switcher (Tabs) -->
+          <div
+            class="hidden md:flex bg-neutral-100 dark:bg-neutral-800 p-1 rounded-lg mr-4"
+          >
+            <button
+              on:click={() => openWithFormat("java")}
+              class="px-3 py-1 text-xs font-medium rounded-md transition-all {exportFormat ===
+              'java'
+                ? 'bg-white dark:bg-neutral-700 text-blue-600 dark:text-blue-300 shadow-sm'
+                : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-200'}"
+            >
+              Java
+            </button>
+            <button
+              on:click={() => openWithFormat("sequential")}
+              class="px-3 py-1 text-xs font-medium rounded-md transition-all {exportFormat ===
+              'sequential'
+                ? 'bg-white dark:bg-neutral-700 text-blue-600 dark:text-blue-300 shadow-sm'
+                : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-200'}"
+            >
+              Sequential
+            </button>
+            <button
+              on:click={() => openWithFormat("template")}
+              class="px-3 py-1 text-xs font-medium rounded-md transition-all {exportFormat ===
+              'template'
+                ? 'bg-white dark:bg-neutral-700 text-blue-600 dark:text-blue-300 shadow-sm'
+                : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-200'}"
+            >
+              Advanced
+            </button>
+          </div>
+
           <!-- Search Toggle -->
           {#if !showSearch}
             <button
@@ -443,11 +632,11 @@
       </div>
 
       <!-- Settings Toolbar -->
-      {#if exportFormat === "sequential" || exportFormat === "java"}
+      {#if exportFormat === "sequential" || exportFormat === "java" || exportFormat === "template"}
         <div
           class="px-6 py-3 bg-neutral-50 dark:bg-neutral-800/50 border-b border-neutral-200 dark:border-neutral-800 flex flex-wrap gap-6 items-end shrink-0"
         >
-          <!-- Package Name Input -->
+          <!-- Package Name Input (Shared) -->
           <div class="flex flex-col gap-1.5 grow max-w-xl">
             <label
               for="package-name-input"
@@ -556,6 +745,84 @@
             {/if}
           {/if}
 
+          <!-- Template Controls -->
+          {#if exportFormat === "template"}
+            <div class="flex flex-col gap-1.5 ml-auto">
+              <span
+                class="text-[10px] font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400"
+              >
+                Template Mode
+              </span>
+              <div
+                class="flex p-1 bg-neutral-200 dark:bg-neutral-900 rounded-lg self-start"
+                role="tablist"
+              >
+                <button
+                  role="tab"
+                  aria-selected={templateMode === "full"}
+                  class="px-3 py-1.5 text-xs font-medium rounded-md transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 {templateMode ===
+                  'full'
+                    ? 'bg-white dark:bg-neutral-700 text-blue-600 dark:text-blue-300 shadow-sm'
+                    : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-200'}"
+                  on:click={() => {
+                    if (templateMode !== "full") toggleTemplateMode();
+                  }}
+                >
+                  Full File
+                </button>
+                <button
+                  role="tab"
+                  aria-selected={templateMode === "body"}
+                  class="px-3 py-1.5 text-xs font-medium rounded-md transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 {templateMode ===
+                  'body'
+                    ? 'bg-white dark:bg-neutral-700 text-blue-600 dark:text-blue-300 shadow-sm'
+                    : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-200'}"
+                  on:click={() => {
+                    if (templateMode !== "body") toggleTemplateMode();
+                  }}
+                >
+                  Class Body
+                </button>
+              </div>
+            </div>
+
+            <div class="flex flex-col gap-1.5">
+              <span
+                class="text-[10px] font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400"
+              >
+                View
+              </span>
+              <div
+                class="flex p-1 bg-neutral-200 dark:bg-neutral-900 rounded-lg"
+                role="tablist"
+              >
+                <button
+                  role="tab"
+                  aria-selected={showTemplateEditor}
+                  class="px-3 py-1.5 text-xs font-medium rounded-md transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 {showTemplateEditor
+                    ? 'bg-white dark:bg-neutral-700 text-blue-600 dark:text-blue-300 shadow-sm'
+                    : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-200'}"
+                  on:click={() => (showTemplateEditor = true)}
+                >
+                  Edit Template
+                </button>
+                <button
+                  role="tab"
+                  aria-selected={!showTemplateEditor}
+                  class="px-3 py-1.5 text-xs font-medium rounded-md transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 {!showTemplateEditor
+                    ? 'bg-white dark:bg-neutral-700 text-blue-600 dark:text-blue-300 shadow-sm'
+                    : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-200'}"
+                  on:click={() => {
+                    showTemplateEditor = false;
+                    refreshCode();
+                  }}
+                >
+                  Preview Code
+                </button>
+              </div>
+            </div>
+          {/if}
+
           <!-- Java Controls -->
           {#if exportFormat === "java"}
             <label
@@ -578,44 +845,78 @@
 
       <!-- Code Content -->
       <div class="relative flex-1 min-h-0 bg-[#282b2e] overflow-hidden group">
-        <div
-          bind:this={scrollContainer}
-          class="absolute inset-0 overflow-auto custom-scrollbar p-4 pb-20"
-        >
-          <!-- Highlight Layer for Search Results -->
-          <!-- We render invisible text that matches layout, but with highlighted backgrounds -->
+        {#if exportFormat === "template" && showTemplateEditor}
+          <!-- Template Editor -->
+          <textarea
+            bind:value={templateCode}
+            class="w-full h-full bg-[#282b2e] text-neutral-200 font-mono text-sm p-4 resize-none focus:outline-none"
+            spellcheck="false"
+            placeholder="Enter your custom template here..."
+          ></textarea>
+        {:else}
+          <!-- Code Preview -->
           <div
-            class="absolute top-4 left-4 right-4 bottom-20 pointer-events-none select-none font-mono text-sm leading-relaxed"
-            aria-hidden="true"
-            style="transform: translateY(1.0em);"
+            bind:this={scrollContainer}
+            class="absolute inset-0 overflow-auto custom-scrollbar p-4 pb-20"
           >
-            {#each exportedCode.split("\n") as line, i}
-              <!-- Data attribute used for scrolling to this line -->
-              <div
-                data-line-index={i}
-                class="w-full {searchMatches.includes(i)
-                  ? 'bg-yellow-500/30'
-                  : 'bg-transparent'}"
-                style="height: 1.625em;"
-              ></div>
-            {/each}
-          </div>
+            <!-- Highlight Layer for Search Results -->
+            <!-- We render invisible text that matches layout, but with highlighted backgrounds -->
+            <div
+              class="absolute top-4 left-4 right-4 bottom-20 pointer-events-none select-none font-mono text-sm leading-relaxed"
+              aria-hidden="true"
+              style="transform: translateY(1.0em);"
+            >
+              {#each exportedCode.split("\n") as line, i}
+                <!-- Data attribute used for scrolling to this line -->
+                <div
+                  data-line-index={i}
+                  class="w-full {searchMatches.includes(i)
+                    ? 'bg-yellow-500/30'
+                    : 'bg-transparent'}"
+                  style="height: 1.625em;"
+                ></div>
+              {/each}
+            </div>
 
-          <!-- Actual Code Layer -->
-          <Highlight
-            language={currentLanguage}
-            code={exportedCode}
-            class="highlight-wrapper text-sm font-mono leading-relaxed relative z-10"
-          />
-        </div>
+            <!-- Actual Code Layer -->
+            <Highlight
+              language={currentLanguage}
+              code={exportedCode}
+              class="highlight-wrapper text-sm font-mono leading-relaxed relative z-10"
+            />
+          </div>
+        {/if}
       </div>
 
       <!-- Footer -->
       <div
         class="flex items-center justify-between px-6 py-4 border-t border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 rounded-b-xl shrink-0"
       >
-        <div class="text-xs text-neutral-500 font-mono">
-          {lineCount} lines generated
+        <div class="flex items-center gap-4">
+          <div class="text-xs text-neutral-500 font-mono">
+            {#if exportFormat === "template" && showTemplateEditor}
+              Editing Template
+            {:else}
+              {lineCount} lines generated
+            {/if}
+          </div>
+          {#if templateError}
+            <div class="text-xs text-red-500 font-mono flex items-center gap-1">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+                class="size-4"
+              >
+                <path
+                  fill-rule="evenodd"
+                  d="M18 10a8 8 0 1 1-16 0 8 8 0 0 1 16 0Zm-8-5a.75.75 0 0 1 .75.75v4.5a.75.75 0 0 1-1.5 0v-4.5A.75.75 0 0 1 10 5Zm0 10a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z"
+                  clip-rule="evenodd"
+                />
+              </svg>
+              Template Error
+            </div>
+          {/if}
         </div>
         <div class="flex gap-3">
           <button
@@ -660,46 +961,48 @@
               Download as .pp
             </button>
           {/if}
-          <button
-            class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 active:bg-blue-800 rounded-lg shadow-sm transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-neutral-900"
-            use:copy={exportedCode}
-            on:svelte-copy={handleCopy}
-            disabled={copied}
-          >
-            {#if copied}
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke-width="2.5"
-                stroke="currentColor"
-                class="size-4 animate-in zoom-in duration-200"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  d="m4.5 12.75 6 6 9-13.5"
-                />
-              </svg>
-              Copied!
-            {:else}
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke-width="2"
-                stroke="currentColor"
-                class="size-4"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  d="M15.666 3.888A2.25 2.25 0 0 0 13.5 2.25h-3c-1.03 0-1.9.693-2.166 1.638m7.332 0c.055.194.084.4.084.612v0a.75.75 0 0 1-.75.75H9a.75.75 0 0 1-.75-.75v0c0-.212.03-.418.084-.612m7.332 0c.646.049 1.288.11 1.927.184 1.1.128 1.907 1.077 1.907 2.185V19.5a2.25 2.25 0 0 1-2.25 2.25H6.75A2.25 2.25 0 0 1 4.5 19.5V6.257c0-1.108.806-2.057 1.907-2.185a48.208 48.208 0 0 1 1.927-.184"
-                />
-              </svg>
-              Copy Code
-            {/if}
-          </button>
+          {#if !(exportFormat === "template" && showTemplateEditor)}
+            <button
+              class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 active:bg-blue-800 rounded-lg shadow-sm transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-neutral-900"
+              use:copy={exportedCode}
+              on:svelte-copy={handleCopy}
+              disabled={copied}
+            >
+              {#if copied}
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke-width="2.5"
+                  stroke="currentColor"
+                  class="size-4 animate-in zoom-in duration-200"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="m4.5 12.75 6 6 9-13.5"
+                  />
+                </svg>
+                Copied!
+              {:else}
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke-width="2"
+                  stroke="currentColor"
+                  class="size-4"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M15.666 3.888A2.25 2.25 0 0 0 13.5 2.25h-3c-1.03 0-1.9.693-2.166 1.638m7.332 0c.055.194.084.4.084.612v0a.75.75 0 0 1-.75.75H9a.75.75 0 0 1-.75-.75v0c0-.212.03-.418.084-.612m7.332 0c.646.049 1.288.11 1.927.184 1.1.128 1.907 1.077 1.907 2.185V19.5a2.25 2.25 0 0 1-2.25 2.25H6.75A2.25 2.25 0 0 1 4.5 19.5V6.257c0-1.108.806-2.057 1.907-2.185a48.208 48.208 0 0 1 1.927-.184"
+                  />
+                </svg>
+                Copy Code
+              {/if}
+            </button>
+          {/if}
         </div>
       </div>
     </div>
