@@ -1,6 +1,9 @@
-# Feature Journal
+# Feature Development Journal
 
-## 2024-05-22 - Initial Setup
+## 2024-05-24 - Project Initialization
+**Learning:** Initialized the journal.
+**Action:** Use this file to record critical feature development insights.
 
-**Learning:** The project uses `.pp` files to store path data.
-**Action:** When implementing features that modify data, ensure backward compatibility or migration for existing `.pp` files.
+## 2024-12-30 - WaypointTable Statistics
+**Learning:** The `WaypointTable` component lacked immediate visibility into the total path length and estimated time, requiring users to rely on the Optimization dialog or simulation.
+**Action:** Added a dedicated statistics footer to `WaypointTable` that displays `Total Length` and `Estimated Time` using `calculatePathTime`. This improves the feedback loop for path planning.

@@ -22,6 +22,7 @@
   import ObstaclesSection from "./ObstaclesSection.svelte";
   import TrashIcon from "./icons/TrashIcon.svelte";
   import ColorPicker from "./ColorPicker.svelte";
+  import { calculatePathTime, formatTime } from "../../utils/timeCalculator";
 
   export let recordChange: () => void;
   // Handler passed from parent to toggle optimization dialog
@@ -219,6 +220,11 @@
   $: debugInvalidRefs = debugSequenceIds.filter(
     (id) => id && !debugLinesIds.includes(id),
   );
+
+  $: pathStats =
+    startPoint && lines && settings
+      ? calculatePathTime(startPoint, lines, settings, sequence)
+      : null;
 
   $: {
     // Optional console logs for development convenience
@@ -560,6 +566,33 @@
         {onPreviewChange}
         onClose={() => onToggleOptimization && onToggleOptimization()}
       />
+    </div>
+  {/if}
+
+  {#if pathStats}
+    <div
+      class="flex flex-row justify-end items-center gap-6 px-4 py-2 bg-white dark:bg-neutral-900 rounded-md border border-neutral-200 dark:border-neutral-700 mb-2 shadow-sm"
+    >
+      <div class="flex flex-col items-end">
+        <span
+          class="text-[10px] text-neutral-500 uppercase tracking-wider font-semibold"
+          >Total Length</span
+        >
+        <span
+          class="text-lg font-mono font-medium text-neutral-800 dark:text-neutral-200 leading-tight"
+          >{pathStats.totalDistance.toFixed(1)} in</span
+        >
+      </div>
+      <div class="flex flex-col items-end">
+        <span
+          class="text-[10px] text-neutral-500 uppercase tracking-wider font-semibold"
+          >Estimated Time</span
+        >
+        <span
+          class="text-lg font-mono font-medium text-neutral-800 dark:text-neutral-200 leading-tight"
+          >{formatTime(pathStats.totalTime)}</span
+        >
+      </div>
     </div>
   {/if}
 
