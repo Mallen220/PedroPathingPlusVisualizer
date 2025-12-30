@@ -309,6 +309,73 @@ export const DEFAULT_SETTINGS: Settings = {
   fieldRotation: 0,
   robotImage: "/robot.png",
   javaPackageName: "org.firstinspires.ftc.teamcode.Commands.AutoCommands",
+  customTemplate: `package {{ packageName }};
+
+import com.pedropathing.follower.Follower;
+import com.pedropathing.geometry.Pose;
+import com.pedropathing.pathing.PathChain;
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+
+@Autonomous(name = "{{ className }}", group = "Autonomous")
+public class {{ className }} extends OpMode {
+
+    private Follower follower;
+    private int pathState;
+
+    {% for path in paths %}
+    private PathChain {{ path.name }};
+    {% endfor %}
+
+    @Override
+    public void init() {
+        follower = new Follower(hardwareMap);
+        follower.setStartingPose(new Pose({{ startPoint.x }}, {{ startPoint.y }}, Math.toRadians({{ startPoint.heading }})));
+
+        buildPaths();
+    }
+
+    @Override
+    public void start() {
+        pathState = 0;
+        follower.followPath({{ paths[0].name }}, true);
+    }
+
+    @Override
+    public void loop() {
+        follower.update();
+        autonomousPathUpdate();
+    }
+
+    private void autonomousPathUpdate() {
+        switch (pathState) {
+            {% for item in sequence %}
+            case {{ loop.index }}:
+                // Logic for {{ item.type }}
+                {% if item.type == "path" %}
+                if (!follower.isBusy()) {
+                    {% if item.hasNext %}
+                    follower.followPath({{ item.nextPathName }});
+                    pathState = {{ loop.index + 1 }};
+                    {% else %}
+                    requestOpModeStop();
+                    pathState = -1;
+                    {% endif %}
+                }
+                {% endif %}
+                break;
+            {% endfor %}
+        }
+    }
+
+    private void buildPaths() {
+        {% for path in paths %}
+        // Building {{ path.name }}
+        {% endfor %}
+    }
+}
+`,
+  customTemplateMode: "full",
   theme: "auto",
   showGhostPaths: false,
   showOnionLayers: false,
