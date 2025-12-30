@@ -112,7 +112,8 @@
     "nsis": {
       "oneClick": false,
       "allowToChangeInstallationDirectory": true,
-      "createDesktopShortcut": true
+      "createDesktopShortcut": true,
+      "perMachine": true
     },
     "linux": {
       "target": [
@@ -123,6 +124,16 @@
       "category": "Development",
       "maintainer": "Matthew Allen <allenmc220@gmail.com>"
     },
+    "fileAssociations": [
+      {
+        "ext": ["pp"],
+        "name": "PedroPathing Project",
+        "description": "Pedro Pathing Project File",
+        "icon": "build/icon.png",
+        "role": "Editor",
+        "rank": "Owner"
+      }
+    ],
     "publish": {
       "provider": "github",
       "owner": "Mallen220",
