@@ -370,14 +370,18 @@
     }
 
     try {
-      const content = JSON.stringify({
-        startPoint,
-        lines,
-        shapes,
-        sequence,
-        version: "1.2.1", // Add version for compatibility
-        timestamp: new Date().toISOString(),
-      });
+      const content = JSON.stringify(
+        {
+          startPoint,
+          lines,
+          shapes,
+          sequence,
+          version: "1.2.1", // Add version for compatibility
+          timestamp: new Date().toISOString(),
+        },
+        null,
+        2,
+      );
 
       await electronAPI.writeFile(selectedFile.path, content);
       await refreshDirectory();
@@ -421,14 +425,18 @@
       }
 
       const normalizedLines = normalizeLines(lines);
-      const content = JSON.stringify({
-        startPoint,
-        lines: normalizedLines,
-        shapes,
-        sequence,
-        version: "1.2.1",
-        timestamp: new Date().toISOString(),
-      });
+      const content = JSON.stringify(
+        {
+          startPoint,
+          lines: normalizedLines,
+          shapes,
+          sequence,
+          version: "1.2.1",
+          timestamp: new Date().toISOString(),
+        },
+        null,
+        2,
+      );
 
       await electronAPI.writeFile(filePath, content);
 
