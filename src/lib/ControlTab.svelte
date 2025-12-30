@@ -275,49 +275,8 @@
     (id) => !debugLinesIds.includes(id),
   );
 
-  // One-time repair flag in case sequence misses lines (keeps Paths view consistent)
-  let repairedSequenceOnce = false;
-
-  // If any sequence entries reference unknown lines or lines are missing from sequence,
-  // fix the sequence once to keep UI consistent. This removes invalid path refs and
-  // appends any real lines that are missing.
-  $: if (
-    Array.isArray(lines) &&
-    Array.isArray(sequence) &&
-    !repairedSequenceOnce
-  ) {
-    const lineIds = new Set(lines.map((l) => l.id));
-
-    // Remove sequence entries that reference non-existent lines
-    const pruned = sequence.filter(
-      (s) => s.kind !== "path" || lineIds.has((s as any).lineId),
-    );
-
-    // Find any existing lines not present in sequence (append them)
-    const presentIds = new Set(
-      pruned.filter((s) => s.kind === "path").map((s) => (s as any).lineId),
-    );
-    const missing = lines.filter((l) => !presentIds.has(l.id));
-
-    if (missing.length || pruned.length !== sequence.length) {
-      if (missing.length) {
-        console.warn(
-          "[ControlTab] appending missing sequence items:",
-          missing.map((m) => m.id),
-        );
-      }
-      if (pruned.length !== sequence.length) {
-        console.warn("[ControlTab] removing invalid sequence items");
-      }
-
-      sequence = [
-        ...pruned,
-        ...missing.map((l) => ({ kind: "path", lineId: l.id })),
-      ];
-      repairedSequenceOnce = true;
-      recordChange?.();
-    }
-  }
+  // (Repair logic removed to prevent race conditions during file loading.
+  // Data consistency is enforced by projectStore.ts on load.)
 
   // Reactive statements to update UI state when lines or shapes change from file load
   $: if (lines.length !== collapsedSections.lines.length) {
