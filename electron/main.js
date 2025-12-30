@@ -17,6 +17,46 @@ let server;
 let serverPort = 34567;
 let appUpdater;
 
+// Track if we've already cleared the default session storage/cache once
+let sessionCleared = false;
+
+// Wait for the local server to become ready (useful when creating windows rapidly)
+const waitForServerReady = async (timeoutMs = 5000) => {
+  const start = Date.now();
+  // Quick shortcut if node server object reports listening
+  if (server && server.listening) return;
+
+  while (Date.now() - start < timeoutMs) {
+    // If server object exists and is listening, we're done
+    if (server && server.listening) return;
+
+    // Try a small HTTP GET to be certain the app is serving
+    try {
+      await new Promise((resolve, reject) => {
+        const req = http.get(
+          { hostname: "127.0.0.1", port: serverPort, path: "/", timeout: 2000 },
+          (res) => {
+            // Drain the response and resolve
+            res.resume();
+            resolve(true);
+          },
+        );
+        req.on("error", reject);
+        req.on("timeout", () => {
+          req.destroy(new Error("timeout"));
+        });
+      });
+      return;
+    } catch (_) {
+      // Ignore and retry
+    }
+
+    // Small backoff
+    await new Promise((r) => setTimeout(r, 100));
+  }
+
+  throw new Error("Server did not become ready within timeout");
+};
 // Variable to store the pending file path if opened before renderer is ready
 let pendingFilePath = null;
 
@@ -33,14 +73,35 @@ if (!gotTheLock) {
   app.quit();
 } else {
   app.on("second-instance", (event, commandLine, workingDirectory) => {
-    // Someone tried to run a second instance, we should create a new window
-    createWindow();
+    // Someone tried to run a second instance. Prefer focusing an existing window
+    // to avoid racing with the local server or creating orphan windows.
+    try {
+      const focused = BrowserWindow.getFocusedWindow();
+      if (focused) {
+        if (focused.isMinimized()) focused.restore();
+        focused.focus();
+      } else if (windows.size > 0) {
+        const arr = Array.from(windows);
+        const last = arr[arr.length - 1];
+        if (last) {
+          if (last.isMinimized()) last.restore();
+          last.focus();
+        } else {
+          createWindow();
+        }
+      } else {
+        createWindow();
+      }
 
-    // Check for file arguments in the second instance command line
-    // Windows/Linux: The file path is usually the last argument or specifically passed
-    const lastArg = commandLine[commandLine.length - 1];
-    if (lastArg && lastArg.endsWith(".pp")) {
-      handleOpenedFile(lastArg);
+      // Check for file arguments in the second instance command line
+      // Windows/Linux: The file path is usually the last argument or specifically passed
+      const lastArg = commandLine[commandLine.length - 1];
+      if (lastArg && lastArg.endsWith(".pp")) {
+        handleOpenedFile(lastArg);
+      }
+    } catch (err) {
+      console.error("Error in second-instance handler:", err);
+      createWindow();
     }
   });
 
@@ -179,7 +240,7 @@ const startServer = async () => {
   await tryListenOnPortRange(serverPort, 100);
 };
 
-const createWindow = () => {
+const createWindow = async () => {
   let newWindow = new BrowserWindow({
     width: 1360,
     height: 800,
@@ -193,11 +254,41 @@ const createWindow = () => {
 
   windows.add(newWindow);
 
-  // Force clear the cache to ensure we load the latest build
-  newWindow.webContents.session.clearCache();
-  newWindow.webContents.session.clearStorageData();
+  // Only clear cache/storage once to avoid unexpected race conditions when
+  // rapidly creating new windows. Clearing on every new window can interfere
+  // with the service worker / static asset caching and cause intermittent
+  // load failures.
+  if (!sessionCleared) {
+    try {
+      await newWindow.webContents.session.clearCache();
+      await newWindow.webContents.session.clearStorageData();
+      sessionCleared = true;
+    } catch (err) {
+      console.warn("Failed to clear session data for new window:", err);
+    }
+  }
 
-  // Load the app from the local server
+  // Ensure our local server is actually ready before trying to load the UI.
+  // This prevents creating windows that immediately fail to load because the
+  // server hasn't bound yet (a common race when creating windows quickly).
+  try {
+    await waitForServerReady(5000);
+  } catch (err) {
+    console.error("Server not ready when creating window:", err);
+    try {
+      const focused = BrowserWindow.getFocusedWindow() || newWindow;
+      dialog.showMessageBox(focused, {
+        type: "error",
+        title: "Load Error",
+        message:
+          "The local app server did not start in time. The window will attempt to load; if it fails, please try again.",
+      });
+    } catch (dialogErr) {
+      console.warn("Failed to show load error dialog:", dialogErr);
+    }
+  }
+
+  // Load the app from the local server (retry logic is handled above)
   newWindow.loadURL(`http://localhost:${serverPort}`);
 
   // Handle "Save As" dialog native behavior
@@ -215,14 +306,6 @@ const createWindow = () => {
   newWindow.on("closed", () => {
     windows.delete(newWindow);
     newWindow = null;
-    // Quit if no windows are left, unless on macOS (optional, but typical for this app structure is to quit)
-    // However, the original code had `app.quit()` on closed.
-    // If we want multiple windows, we should only quit when all are closed.
-    // But on macOS, traditionally apps stay open.
-    // Let's mimic the original behavior: "when the project closes it should auto close" was a comment.
-    // But standard behavior:
-    // If not Mac, quit when all windows closed.
-    // `app.on("window-all-closed", ...)` handles this.
   });
 };
 
