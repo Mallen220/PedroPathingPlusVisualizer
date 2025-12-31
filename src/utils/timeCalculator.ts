@@ -373,7 +373,7 @@ export function calculatePathTime(
       prevPoint,
       line.controlPoints as any,
       line.endPoint as any,
-      100,
+      1000,
     );
     const length = analysis.length;
     segmentLengths.push(length);
