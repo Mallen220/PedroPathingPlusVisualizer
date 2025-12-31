@@ -11,7 +11,7 @@
   import type { Settings } from "../../types";
 
   export let isOpen = false;
-  export let settings: Settings;
+  export let settings = undefined as Settings | undefined;
 
   // Track which sections are collapsed
   let collapsedSections = {

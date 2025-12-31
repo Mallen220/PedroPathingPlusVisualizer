@@ -118,7 +118,9 @@ export function prepareTemplateContext(
     const startPointContext = formatPoint(sp);
 
     // Format control points
-    const controlPointsContext = line.controlPoints.map((cp) => formatPoint(cp));
+    const controlPointsContext = line.controlPoints.map((cp) =>
+      formatPoint(cp),
+    );
 
     const endPointContext = {
       ...formatPoint(line.endPoint),

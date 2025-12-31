@@ -26,7 +26,7 @@
   export let lines: Line[];
   export let sequence: SequenceItem[];
   export let shapes: Shape[] = [];
-  export const settings = undefined as Settings | undefined;
+  export let settings: Settings;
 
   let exportFullCode = false;
   let exportFormat: "java" | "points" | "sequential" | "json" | "custom" =
@@ -275,10 +275,7 @@
     const lastOpenBraces = val.lastIndexOf("{{", cursorPos);
 
     const newVal =
-      val.slice(0, lastOpenBraces + 2) +
-      value +
-      " " +
-      val.slice(cursorPos); // Add space for easier typing
+      val.slice(0, lastOpenBraces + 2) + value + " " + val.slice(cursorPos); // Add space for easier typing
     customTemplate = newVal;
     showAutocomplete = false;
 
@@ -804,27 +801,6 @@
                 placeholder="AutoPath"
               />
             </div>
-
-            <label
-              class="flex items-center gap-2 text-sm text-neutral-700 dark:text-neutral-200 cursor-pointer select-none"
-              aria-label="Template Mode"
-            >
-              <span
-                class="text-[10px] font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400"
-                >Mode:</span
-              >
-              <select
-                bind:value={customTemplateMode}
-                on:change={() => {
-                  saveCustomTemplateSettings();
-                  refreshCode();
-                }}
-                class="px-2 py-1 text-sm rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="full">Full File</option>
-                <option value="class-body">Class Body Only</option>
-              </select>
-            </label>
           {/if}
         </div>
       {/if}
@@ -887,7 +863,8 @@
                     />
                   </svg>
                   <div class="text-sm text-red-500">
-                    <span class="font-bold">Error on line {renderError.line}:</span
+                    <span class="font-bold"
+                      >Error on line {renderError.line}:</span
                     >
                     {renderError.message}
                   </div>
