@@ -84,6 +84,7 @@ function getCurvatureRadius(
 interface PathStep {
   deltaLength: number;
   radius: number;
+  rotation: number; // Absolute rotation change in this step (degrees)
 }
 
 interface PathAnalysis {
@@ -143,24 +144,26 @@ function analyzePathSegment(
     const radius = getCurvatureRadius(d1, d2);
     if (radius < minRadius) minRadius = radius;
 
-    if (i > 0) {
-      steps.push({ deltaLength, radius });
-    }
-
+    let stepRotation = 0;
     if (Math.abs(d1.x) > 1e-9 || Math.abs(d1.y) > 1e-9) {
       const angle = Math.atan2(d1.y, d1.x) * (180 / Math.PI);
       if (prevAngle !== null) {
         // Shortest difference
         const diff = getAngularDifference(prevAngle, angle);
+        stepRotation = Math.abs(diff);
 
         // Accumulate absolute (for physics time)
-        if (Math.abs(diff) > 0.001) {
-          tangentRotation += Math.abs(diff);
+        if (stepRotation > 0.001) {
+          tangentRotation += stepRotation;
           // Accumulate signed (for heading tracking)
           netRotation += diff;
         }
       }
       prevAngle = angle;
+    }
+
+    if (i > 0) {
+      steps.push({ deltaLength, radius, rotation: stepRotation });
     }
   }
 
@@ -224,11 +227,20 @@ function calculateMotionProfileDetailed(
     const dist = steps[i].deltaLength;
     const avgV = (vStart + vEnd) / 2;
 
+    let dtLinear = 0;
     if (avgV > 1e-6) {
-      totalTime += dist / avgV;
+      dtLinear = dist / avgV;
     } else {
-      totalTime += Math.sqrt((2 * dist) / maxAcc);
+      // Fallback for very low speeds (start from 0) using kinematics
+      dtLinear = Math.sqrt((2 * dist) / maxAcc);
     }
+
+    // Check rotation constraint
+    // We convert degrees to radians for aVelocity (radians/sec)
+    const dtRotation = (steps[i].rotation * (Math.PI / 180)) / aVelocity;
+
+    // Take the maximum time required (slower of the two)
+    totalTime += Math.max(dtLinear, dtRotation);
   }
 
   return totalTime;
@@ -394,18 +406,9 @@ export function calculatePathTime(
     } else if (line.endPoint.heading === "constant") {
       // Rotate to specific constant heading
       endHeading = unwrapAngle(line.endPoint.degrees, currentHeading);
-      rotationRequired = 0; // No rotation *during* travel?
-      // Actually, constant heading means the robot *maintains* heading while moving.
-      // But if we start at X and end at Y?
-      // "Constant" usually means "Face this angle entire time".
-      // If startHeading != endHeading, we would have turned in the Wait step.
-      // So rotation during travel is 0.
       rotationRequired = 0;
     } else if (line.endPoint.heading === "linear") {
       // Linear: Interpolate from start to end.
-      // start is requiredStartHeading.
-      // end is line.endPoint.endDeg.
-      // We unwind endDeg relative to start.
       endHeading = unwrapAngle(line.endPoint.endDeg, currentHeading);
       rotationRequired = Math.abs(endHeading - currentHeading);
     }
