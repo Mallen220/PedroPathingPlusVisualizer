@@ -202,9 +202,24 @@ function calculateMotionProfileTime(
 export function calculatePathTime(
   startPoint: Point,
   lines: Line[],
-  settings: Settings,
+  settings?: Settings,
   sequence?: SequenceItem[],
 ): TimePrediction {
+  // Provide local defaults to avoid circular imports with config/defaults
+  const s: Settings = {
+    xVelocity: 30,
+    yVelocity: 30,
+    aVelocity: Math.PI,
+    kFriction: 0.4,
+    rLength: 16,
+    rWidth: 16,
+    safetyMargin: 6,
+    maxVelocity: 40,
+    maxAcceleration: 30,
+    maxDeceleration: 30,
+    ...(settings || {}),
+  } as Settings;
+
   const msToSeconds = (value?: number | string) => {
     const numeric = Number(value);
     if (!Number.isFinite(numeric) || numeric <= 0) return 0;
@@ -212,8 +227,7 @@ export function calculatePathTime(
   };
 
   const useMotionProfile =
-    settings.maxVelocity !== undefined &&
-    settings.maxAcceleration !== undefined;
+    s.maxVelocity !== undefined && s.maxAcceleration !== undefined;
 
   const segmentLengths: number[] = [];
   const segmentTimes: number[] = [];
@@ -297,7 +311,7 @@ export function calculatePathTime(
     );
     if (diff > 0.1) {
       const diffRad = diff * (Math.PI / 180);
-      const rotTime = diffRad / settings.aVelocity;
+      const rotTime = diffRad / s.aVelocity;
       timeline.push({
         type: "wait",
         duration: rotTime,
@@ -321,12 +335,12 @@ export function calculatePathTime(
     segmentLengths.push(length);
 
     // Calculate Translation Time (Physical Limits)
-    let maxVel = settings.maxVelocity || 100;
+    let maxVel = s.maxVelocity || 100;
     // 1. Friction Limit (Centripetal: v = sqrt(k * g * r))
-    if (settings.kFriction && settings.kFriction > 0) {
+    if (s.kFriction && s.kFriction > 0) {
       // 386.22 in/s^2 is gravity
       const frictionLimit = Math.sqrt(
-        settings.kFriction * 386.22 * analysis.minRadius,
+        s.kFriction * 386.22 * analysis.minRadius,
       );
       if (frictionLimit < maxVel) maxVel = frictionLimit;
     }
@@ -334,7 +348,7 @@ export function calculatePathTime(
     // 2. Angular Velocity Limit for Curve Following (v = w * r)
     // Limits the speed based on the robot's maximum angular velocity and the path curvature.
     // This applies to the path vector rotation regardless of chassis heading mode.
-    const angVelLimit = settings.aVelocity * analysis.minRadius;
+    const angVelLimit = s.aVelocity * analysis.minRadius;
     if (angVelLimit < maxVel) maxVel = angVelLimit;
 
     let translationTime = 0;
@@ -342,11 +356,11 @@ export function calculatePathTime(
       translationTime = calculateMotionProfileTime(
         length,
         maxVel,
-        settings.maxAcceleration!,
-        settings.maxDeceleration,
+        s.maxAcceleration!,
+        s.maxDeceleration,
       );
     } else {
-      const avgVelocity = (settings.xVelocity + settings.yVelocity) / 2;
+      const avgVelocity = (s.xVelocity + s.yVelocity) / 2;
       translationTime = length / avgVelocity;
     }
 

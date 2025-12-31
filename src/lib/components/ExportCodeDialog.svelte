@@ -26,7 +26,8 @@
   export let lines: Line[];
   export let sequence: SequenceItem[];
   export let shapes: Shape[] = [];
-  export const settings = undefined as Settings | undefined;
+  // Accept settings via binding from parent (do not initialize as `const undefined`)
+  export let settings: Settings;
 
   let exportFullCode = false;
   let exportFormat: "java" | "points" | "sequential" | "json" | "custom" =
