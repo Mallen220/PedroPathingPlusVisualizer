@@ -1,6 +1,7 @@
 ## 1.4.2 (2025-12-31)
 
-- Fast Fix Settings not loading properly leading to critical application failures. 
+- Fast Fix Settings not loading properly leading to critical application failures.
+- Added Keyboard Shortcuts button to the navigation bar for better discoverability.
 
 ## 1.4.1 (2025-12-30)
 
