@@ -49,6 +49,8 @@
   let templateError: string | null = null;
   let showTemplateEditor = true;
   let templateMode: "full" | "body" = "full";
+  // When enabled, the rendered template output will be auto-formatted to remove extra blank lines and trim trailing whitespace
+  let templateAutoFormat = true;
 
   const AUTO_GENERATED_HEADER = `/* ============================================================= *
  *           Pedro Pathing Visualizer — Auto-Generated           *
@@ -60,8 +62,7 @@
  *  Changes will be overwritten when regenerated.                *
  * ============================================================= */`;
 
-  const DEFAULT_FULL_TEMPLATE = `${AUTO_GENERATED_HEADER}
-
+  const DEFAULT_FULL_TEMPLATE = `
 package {{ packageName }};
 
 import com.pedropathing.follower.Follower;
@@ -202,6 +203,16 @@ public class MyCustomPath {
     refreshCode();
   }
 
+  // Format the rendered template output by trimming trailing whitespace on each line
+  // and removing any blank/whitespace-only lines entirely.
+  function formatTemplateOutput(code: string): string {
+    // Split into lines, trim trailing whitespace, and filter out blank lines
+    const lines = code.split("\n").map((l) => l.replace(/[ \t]+$/g, ""));
+    const filtered = lines.filter((l) => l.trim() !== "");
+    // Ensure no leading/trailing blank lines remain (filter already handles this)
+    return filtered.join("\n");
+  }
+
   async function refreshCode() {
     templateError = null;
     try {
@@ -270,6 +281,10 @@ ${rendered}
         }
 
         exportedCode = rendered;
+        // Auto-format output if enabled
+        if (templateAutoFormat) {
+          exportedCode = formatTemplateOutput(exportedCode);
+        }
         currentLanguage = java;
       }
 
@@ -817,6 +832,26 @@ ${rendered}
                 >
                   Preview Code
                 </button>
+              </div>
+            </div>
+
+            <!-- Auto-format Output Toggle -->
+            <div class="flex flex-col gap-1.5 ml-4">
+              <label
+                class="flex items-center gap-2 text-sm text-neutral-700 dark:text-neutral-200 cursor-pointer select-none"
+              >
+                <div class="relative flex items-center">
+                  <input
+                    type="checkbox"
+                    bind:checked={templateAutoFormat}
+                    on:change={refreshCode}
+                    class="peer h-4 w-4 rounded border-neutral-300 text-blue-600 focus:ring-blue-500 dark:border-neutral-600 dark:bg-neutral-700 dark:ring-offset-neutral-800"
+                  />
+                </div>
+                <span>Auto-format Output</span>
+              </label>
+              <div class="text-xs text-neutral-500 dark:text-neutral-400">
+                Collapse extra blank lines and trim trailing whitespace
               </div>
             </div>
           {/if}
