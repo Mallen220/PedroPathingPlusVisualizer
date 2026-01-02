@@ -1,68 +1,40 @@
-/*
- * Copyright 2026 Matthew Allen
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+// Copyright 2026 Matthew Allen. Licensed under the Apache License, Version 2.0.
 import fs from 'fs';
 import path from 'path';
 
 const OWNER = 'Matthew Allen';
 const CURRENT_YEAR = new Date().getFullYear();
 
-const LICENSE_TEXT = `Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.`;
+const ONE_LINE_LICENSE = `Licensed under the Apache License, Version 2.0.`;
 
 const EXTENSIONS = {
-  '.js': 'BLOCK',
-  '.ts': 'BLOCK',
-  '.scss': 'BLOCK',
+  '.js': 'LINE',
+  '.ts': 'LINE',
+  '.scss': 'LINE',
   '.svelte': 'HTML',
   '.html': 'HTML',
   '.sh': 'HASH',
 };
 
 const COMMENT_STYLES = {
-  BLOCK: { start: '/*', end: '*/', prefix: ' * ' },
-  HTML: { start: '<!--', end: '-->', prefix: '  ' },
-  HASH: { start: '#', end: '', prefix: '# ' },
+  LINE: { start: '// ', end: '', prefix: '' },
+  BLOCK: { start: '/*', end: '*/', prefix: ' * ' }, // Kept for reference or removal
+  HTML: { start: '<!-- ', end: ' -->', prefix: '' },
+  HASH: { start: '# ', end: '', prefix: '' },
 };
 
-// Adjust HTML style to look good
-COMMENT_STYLES.HTML.prefix = '';
-
 function getHeader(yearRange, styleType) {
-  // const style = COMMENT_STYLES[styleType]; // Unused variable
-  const lines = [
-    `Copyright ${yearRange} ${OWNER}`,
-    '',
-    ...LICENSE_TEXT.split('\n')
-  ];
+  const text = `Copyright ${yearRange} ${OWNER}. ${ONE_LINE_LICENSE}`;
 
-  if (styleType === 'BLOCK') {
-    return `/*\n${lines.map(l => (l ? ' * ' + l : ' *')).join('\n')}\n */\n`;
+  if (styleType === 'LINE') {
+    return `// ${text}\n`;
   } else if (styleType === 'HTML') {
-    return `<!--\n${lines.map(l => (l ? '  ' + l : '  ')).join('\n')}\n-->\n`;
+    return `<!-- ${text} -->\n`;
   } else if (styleType === 'HASH') {
-    return `${lines.map(l => (l ? '# ' + l : '#')).join('\n')}\n`;
+    return `# ${text}\n`;
+  } else if (styleType === 'BLOCK') {
+     // Fallback if we ever use it, but we want one line
+     return `/* ${text} */\n`;
   }
 }
 
@@ -85,11 +57,11 @@ function traverse(dir) {
 }
 
 function processFile(filePath, styleType) {
-  let content = fs.readFileSync(filePath, 'utf8');
+  const originalContent = fs.readFileSync(filePath, 'utf8');
+  let content = originalContent;
 
-  // Regex to detect existing copyright header
-  const copyrightRegex = /Copyright (\d{4})(?:-(\d{4}))? (.*?)\n/i;
-
+  // Regex to detect existing copyright info to preserve years
+  const copyrightRegex = /Copyright (\d{4})(?:-(\d{4}))? (.*?)(?:\.|,|\n)/i;
   const match = content.match(copyrightRegex);
 
   let startYear = CURRENT_YEAR;
@@ -108,7 +80,7 @@ function processFile(filePath, styleType) {
   const yearRange = startYear === endYear ? `${startYear}` : `${startYear}-${endYear}`;
   const newHeader = getHeader(yearRange, styleType);
 
-  const lines = fs.readFileSync(filePath, 'utf8').split('\n');
+  const lines = content.split('\n');
   let shebang = '';
   let bodyLines = lines;
 
@@ -119,19 +91,36 @@ function processFile(filePath, styleType) {
 
   let body = bodyLines.join('\n');
 
-  // Remove existing header from body
-  if (styleType === 'BLOCK') {
-    const regex = /^\s*\/\*[\s\S]*?Copyright[\s\S]*?Matthew Allen[\s\S]*?\*\/\s*/;
-    body = body.replace(regex, '');
-  } else if (styleType === 'HTML') {
-    const regex = /^\s*<!--[\s\S]*?Copyright[\s\S]*?Matthew Allen[\s\S]*?-->\s*/;
-    body = body.replace(regex, '');
-  } else if (styleType === 'HASH') {
-    const hashBlockRegex = /^(\s*#[^\n]*\n)+/;
-    const m = body.match(hashBlockRegex);
-    if (m && m[0].includes('Copyright') && m[0].includes('Matthew Allen')) {
-      body = body.substring(m[0].length);
-    }
+  // Logic to remove existing headers (both multi-line and single-line variants)
+
+  // 1. Remove Multi-line Block Comments (/* ... */)
+  // Matches start of block comment, content including "Copyright" and "Matthew Allen", end of block comment.
+  const multiLineBlockRegex = /^\s*\/\*[\s\S]*?Copyright[\s\S]*?Matthew Allen[\s\S]*?\*\/\s*/;
+  if (multiLineBlockRegex.test(body)) {
+    body = body.replace(multiLineBlockRegex, '');
+  }
+
+  // 2. Remove HTML Comments (<!-- ... -->)
+  // Matches start, content, end.
+  const htmlCommentRegex = /^\s*<!--[\s\S]*?Copyright[\s\S]*?Matthew Allen[\s\S]*?-->\s*/;
+  if (htmlCommentRegex.test(body)) {
+    body = body.replace(htmlCommentRegex, '');
+  }
+
+  // 3. Remove Hash Comments (# ...)
+  // This is tricky because it might match code. We only look at the top.
+  // Matches a block of lines starting with #, containing Copyright and Matthew Allen.
+  const hashBlockRegex = /^(\s*#[^\n]*\n)+/;
+  const m = body.match(hashBlockRegex);
+  if (m && m[0].includes('Copyright') && m[0].includes('Matthew Allen')) {
+    body = body.substring(m[0].length);
+  }
+
+  // 4. Remove Single Line Comments (// ...) if present (e.g. if re-running this script)
+  // Matches lines starting with // containing Copyright and Matthew Allen at the very top.
+  const lineCommentRegex = /^\s*\/\/.*?Copyright.*?Matthew Allen.*?\n/;
+  if (lineCommentRegex.test(body)) {
+    body = body.replace(lineCommentRegex, '');
   }
 
   // Trim leading newlines from body to avoid gaps
@@ -139,7 +128,7 @@ function processFile(filePath, styleType) {
 
   const finalContent = shebang + newHeader + body;
 
-  if (finalContent !== fs.readFileSync(filePath, 'utf8')) {
+  if (finalContent !== originalContent) {
      fs.writeFileSync(filePath, finalContent);
      console.log(`Updated ${filePath}`);
   }
