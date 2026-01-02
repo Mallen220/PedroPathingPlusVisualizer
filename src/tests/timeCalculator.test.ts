@@ -23,11 +23,6 @@ describe("Time Calculator", () => {
     y: 0,
     heading: "constant",
     degrees: 0,
-    startDeg: 0,
-    endDeg: 0,
-    reversed: false,
-    reverse: false,
-    type: "point",
   };
 
   it("calculates travel time correctly for a simple line", () => {
@@ -37,7 +32,6 @@ describe("Time Calculator", () => {
         endPoint: {
           x: 10,
           y: 0,
-          type: "point",
           heading: "constant",
           degrees: 0,
         },
@@ -68,7 +62,6 @@ describe("Time Calculator", () => {
         endPoint: {
           x: 10,
           y: 0,
-          type: "point",
           heading: "constant",
           degrees: 0,
         },
@@ -107,7 +100,6 @@ describe("Time Calculator", () => {
         endPoint: {
           x: 10,
           y: 0,
-          type: "point",
           heading: "constant",
           degrees: 0,
         },
@@ -119,7 +111,6 @@ describe("Time Calculator", () => {
         endPoint: {
           x: 10,
           y: 10,
-          type: "point",
           heading: "tangential",
           reverse: false,
         },

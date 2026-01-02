@@ -209,11 +209,50 @@ function analyzePathSegment(
   let currentUnwrapped = Number.isFinite(initialHeading) ? initialHeading : 0;
 
   const isLine = cps.length === 0;
+  const fullPoints = isLine ? [start, end] : [start, ...cps, end];
+  const n = fullPoints.length - 1;
   const steps: PathStep[] = [];
+
+  // Pre-calculate derivative control points to avoid recalculation per sample
+  let d1Points: { x: number; y: number }[] = [];
+  let d2Points: { x: number; y: number }[] = [];
+
+  if (isLine) {
+    // For a line, 1st deriv is constant vector (P1 - P0)
+    // 2nd deriv is zero vector
+    d1Points = [{ x: end.x - start.x, y: end.y - start.y }];
+    d2Points = [{ x: 0, y: 0 }];
+  } else {
+    // 1st Derivative Control Points (Q points)
+    // Q_i = n * (P_{i+1} - P_i)
+    for (let i = 0; i < n; i++) {
+      d1Points.push({
+        x: n * (fullPoints[i + 1].x - fullPoints[i].x),
+        y: n * (fullPoints[i + 1].y - fullPoints[i].y),
+      });
+    }
+
+    // 2nd Derivative Control Points (R points)
+    // R_i = (n-1) * (Q_{i+1} - Q_i)
+    const m = n - 1; // Degree of 1st derivative
+    if (m < 1) {
+      // Should not happen for Quadratic (n=2, m=1) or Cubic (n=3, m=2)
+      // If n=1 (Line), handled above.
+      d2Points = [{ x: 0, y: 0 }];
+    } else {
+      for (let i = 0; i < m; i++) {
+        d2Points.push({
+          x: m * (d1Points[i + 1].x - d1Points[i].x),
+          y: m * (d1Points[i + 1].y - d1Points[i].y),
+        });
+      }
+    }
+  }
 
   for (let i = 0; i <= samples; i++) {
     const t = i / samples;
-    const point = getCurvePoint(t, [start, ...cps, end]);
+    // Use pre-allocated fullPoints
+    const point = getCurvePoint(t, fullPoints);
 
     let deltaLength = 0;
     if (i > 0) {
@@ -224,17 +263,10 @@ function analyzePathSegment(
     }
     prevPoint = point;
 
-    let d1 = { x: 0, y: 0 };
-    let d2 = { x: 0, y: 0 };
-
-    if (isLine) {
-      d1 = { x: end.x - start.x, y: end.y - start.y };
-      d2 = { x: 0, y: 0 };
-    } else {
-      const fullPoints = [start, ...cps, end];
-      d1 = getBezierDerivative(t, fullPoints);
-      d2 = getBezierSecondDerivative(t, fullPoints);
-    }
+    // Use pre-calculated derivative points with getCurvePoint
+    // getCurvePoint efficiently handles arrays of length 1 (constant), 2 (linear), 3 (quadratic)
+    const d1 = getCurvePoint(t, d1Points);
+    const d2 = getCurvePoint(t, d2Points);
 
     const radius = getCurvatureRadius(d1, d2);
     if (radius < minRadius) minRadius = radius;
