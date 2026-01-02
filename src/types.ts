@@ -165,3 +165,16 @@ export interface FileInfo {
   modified: Date;
   error?: string;
 }
+
+export interface CollisionMarker {
+  x: number;
+  y: number;
+  time: number;
+  segmentIndex?: number;
+}
+
+export interface Notification {
+  message: string;
+  type: "success" | "warning" | "error" | "info";
+  timeout?: number; // milliseconds
+}

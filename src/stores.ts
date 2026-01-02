@@ -1,5 +1,6 @@
 // Copyright 2026 Matthew Allen. Licensed under the Apache License, Version 2.0.
 import { writable } from "svelte/store";
+import type { CollisionMarker, Notification } from "./types";
 
 // Math tools stores
 export const showRuler = writable(false);
@@ -26,3 +27,9 @@ export const toggleCollapseAllTrigger = writable(0);
 
 // Currently selected point id in field rendering, format: 'point-<line+1>-<idx>' or 'point-0-0' for start
 export const selectedPointId = writable<string | null>(null);
+
+// Collision markers for validation
+export const collisionMarkers = writable<CollisionMarker[]>([]);
+
+// Notification system
+export const notification = writable<Notification | null>(null);

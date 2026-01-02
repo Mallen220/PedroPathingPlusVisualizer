@@ -11,6 +11,7 @@
   import FieldRenderer from "./lib/components/FieldRenderer.svelte";
   import KeyboardShortcuts from "./lib/components/KeyboardShortcuts.svelte";
   import ExportGifDialog from "./lib/components/ExportGifDialog.svelte";
+  import NotificationToast from "./lib/components/NotificationToast.svelte";
 
   // Stores
   import {
@@ -21,6 +22,7 @@
     showShortcuts,
     exportDialogState,
     selectedPointId,
+    collisionMarkers,
   } from "./stores";
   import {
     startPointStore,
@@ -124,6 +126,20 @@
   const { canUndoStore, canRedoStore } = history;
   $: canUndo = $canUndoStore;
   $: canRedo = $canRedoStore;
+
+  // Clear collision markers when path/settings change
+  // Note: We avoid depending on $collisionMarkers to prevent loops
+  $: $linesStore,
+    $startPointStore,
+    $shapesStore,
+    $settingsStore,
+    (() => {
+      // Use get() to read without subscribing
+      const current = get(collisionMarkers);
+      if (current && current.length > 0) {
+        collisionMarkers.set([]);
+      }
+    })();
 
   let isLoaded = false;
   let lastSavedState: string = "";
@@ -531,6 +547,8 @@
     on:close={() => showExportGif.set(false)}
   />
 {/if}
+
+<NotificationToast />
 
 <div
   class="h-screen w-full flex flex-col overflow-hidden bg-neutral-200 dark:bg-neutral-950"
