@@ -9,3 +9,4 @@ package.json
 scripts/add-copyright.js
 scripts/generate-file-notice.js
 src/tests/history.test.ts
+src/main.ts

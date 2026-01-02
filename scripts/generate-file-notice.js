@@ -52,7 +52,9 @@ function getModifiedFiles() {
     }
 
     // Split, trim, and deduplicate file paths
-    const files = [...new Set(output.split("\n").filter((f) => f.trim()))];
+    const files = [
+      ...new Set(output.split("\n").filter((f) => f.trim() && f !== "NOTICE")),
+    ];
 
     // Sort for consistent output
     files.sort();
@@ -124,7 +126,8 @@ async function appendToNotice() {
 
     // Add header if this is the first time
     if (!updatedContent.includes("These files have been edited")) {
-      updatedContent += "\n\nThese files have been edited, deleted, or created by Matthew Allen:\n";
+      updatedContent +=
+        "\n\nThese files have been edited, deleted, or created by Matthew Allen:\n";
     } else {
       updatedContent += "\n";
     }
