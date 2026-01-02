@@ -25,6 +25,7 @@
   import OptimizationDialog from "./components/OptimizationDialog.svelte";
   import WaypointTable from "./components/WaypointTable.svelte";
   import { calculatePathTime } from "../utils";
+  import { validatePath } from "../utils/validation";
   import { selectedLineId, selectedPointId } from "../stores";
   import { tick } from "svelte";
 
@@ -222,6 +223,10 @@
       optimizedLines: null,
       optimizationFailed: false,
     };
+  }
+
+  function handleValidate() {
+    validatePath(startPoint, lines, settings, sequence, shapes);
   }
 
   export let activeTab: "path" | "field" | "table" = "path";
@@ -889,6 +894,7 @@
         bind:sequence
         {recordChange}
         onToggleOptimization={() => (optimizationOpen = !optimizationOpen)}
+        onValidate={handleValidate}
         {optimizationOpen}
         {handleOptimizationApply}
         {onPreviewChange}
@@ -905,6 +911,7 @@
         {x}
         {y}
         onToggleOptimization={() => (optimizationOpen = !optimizationOpen)}
+        onValidate={handleValidate}
       />
 
       {#if optimizationOpen}

@@ -171,3 +171,9 @@ export interface CollisionMarker {
   time: number;
   segmentIndex?: number;
 }
+
+export interface Notification {
+  message: string;
+  type: "success" | "warning" | "error" | "info";
+  timeout?: number; // milliseconds
+}

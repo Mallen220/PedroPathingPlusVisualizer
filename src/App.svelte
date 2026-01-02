@@ -10,6 +10,7 @@
   import FieldRenderer from "./lib/components/FieldRenderer.svelte";
   import KeyboardShortcuts from "./lib/components/KeyboardShortcuts.svelte";
   import ExportGifDialog from "./lib/components/ExportGifDialog.svelte";
+  import NotificationToast from "./lib/components/NotificationToast.svelte";
 
   // Stores
   import {
@@ -530,6 +531,8 @@
     on:close={() => showExportGif.set(false)}
   />
 {/if}
+
+<NotificationToast />
 
 <div
   class="h-screen w-full flex flex-col overflow-hidden bg-neutral-200 dark:bg-neutral-950"

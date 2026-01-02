@@ -1,5 +1,5 @@
 import { writable } from "svelte/store";
-import type { CollisionMarker } from "./types";
+import type { CollisionMarker, Notification } from "./types";
 
 // Math tools stores
 export const showRuler = writable(false);
@@ -29,3 +29,6 @@ export const selectedPointId = writable<string | null>(null);
 
 // Collision markers for validation
 export const collisionMarkers = writable<CollisionMarker[]>([]);
+
+// Notification system
+export const notification = writable<Notification | null>(null);
