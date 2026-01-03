@@ -293,6 +293,67 @@ export const DEFAULT_KEY_BINDINGS: KeyBinding[] = [
     description: "Show keyboard shortcuts",
     action: "showHelp",
   },
+  // File Manager Shortcuts
+  {
+    id: "fm-up",
+    key: "up",
+    description: "File Manager: Move selection up",
+    action: "fmUp",
+  },
+  {
+    id: "fm-down",
+    key: "down",
+    description: "File Manager: Move selection down",
+    action: "fmDown",
+  },
+  {
+    id: "fm-left",
+    key: "left",
+    description: "File Manager: Move selection left",
+    action: "fmLeft",
+  },
+  {
+    id: "fm-right",
+    key: "right",
+    description: "File Manager: Move selection right",
+    action: "fmRight",
+  },
+  {
+    id: "fm-open",
+    key: "enter",
+    description: "File Manager: Open selected file",
+    action: "fmOpen",
+  },
+  {
+    id: "fm-delete",
+    key: "delete, backspace",
+    description: "File Manager: Delete selected file",
+    action: "fmDelete",
+  },
+  {
+    id: "fm-rename",
+    key: "f2",
+    description: "File Manager: Rename selected file",
+    action: "fmRename",
+  },
+  {
+    id: "fm-new-file",
+    key: "alt+n",
+    description: "File Manager: Create new file",
+    action: "fmNewFile",
+  },
+  {
+    id: "fm-search",
+    key: "cmd+f, ctrl+f, /",
+    description: "File Manager: Focus search",
+    action: "fmSearch",
+  },
+  {
+    id: "fm-refresh",
+    key: "f5, cmd+r, ctrl+r",
+    description: "File Manager: Refresh directory",
+    action: "fmRefresh",
+  },
 ];
 
 export const DEFAULT_SETTINGS: Settings = {

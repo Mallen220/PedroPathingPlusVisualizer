@@ -26,6 +26,7 @@
   import { onMount, onDestroy } from "svelte";
   import { fade } from "svelte/transition";
   import { get } from "svelte/store";
+  import hotkeys from "hotkeys-js";
   import type {
     FileInfo,
     Point,
@@ -39,7 +40,9 @@
     isUnsaved,
     fileManagerSessionState,
   } from "../stores";
+  import { settingsStore } from "./projectStore";
   import { saveAutoPathsDirectory } from "../utils/directorySettings";
+  import { DEFAULT_KEY_BINDINGS } from "../config/defaults";
 
   import FileManagerToolbar from "./components/filemanager/FileManagerToolbar.svelte";
   import FileManagerBreadcrumbs from "./components/filemanager/FileManagerBreadcrumbs.svelte";
@@ -607,6 +610,142 @@
       return m ? m[0] : "";
     },
   };
+
+  // --- Keyboard Shortcuts & Navigation ---
+
+  function getKey(action: string): string {
+    const bindings = $settingsStore.keyBindings || DEFAULT_KEY_BINDINGS;
+    const binding = bindings.find((b) => b.action === action);
+    return binding ? binding.key : "";
+  }
+
+  function setupKeyBindings() {
+    hotkeys.setScope("file-manager");
+
+    const bind = (action: string, handler: (e: KeyboardEvent) => void) => {
+      const key = getKey(action);
+      if (key) {
+        hotkeys(key, "file-manager", (e) => {
+          e.preventDefault();
+          handler(e);
+        });
+      }
+    };
+
+    // Navigation
+    bind("fmUp", () => navigate("up"));
+    bind("fmDown", () => navigate("down"));
+    bind("fmLeft", () => navigate("left"));
+    bind("fmRight", () => navigate("right"));
+
+    // Actions
+    bind("fmOpen", () => {
+      if (selectedFile) loadFile(selectedFile);
+    });
+    bind("fmDelete", () => {
+      if (selectedFile) deleteFile(selectedFile);
+    });
+    bind("fmRename", () => {
+      if (selectedFile) renamingFile = selectedFile;
+    });
+    bind("fmNewFile", () => {
+      creatingNewFile = true;
+    });
+    bind("fmRefresh", () => handleRefresh());
+    bind("fmSearch", () => {
+      // Logic to focus search input in FileManagerToolbar
+      // We'll emit an event or focus via DOM if possible, but simplest is to just expose a prop or use document.querySelector
+      const searchInput = document.querySelector(
+        'input[aria-label="Search files"]',
+      ) as HTMLInputElement;
+      if (searchInput) searchInput.focus();
+    });
+
+    // Override Global shortcuts to prevent them from firing
+    // We bind them to do nothing in file-manager scope
+    const globalConflicts = [
+      "add-path",
+      "add-wait",
+      "add-event-marker",
+      "play-pause",
+      "save-project",
+      "undo",
+      "redo",
+    ];
+    globalConflicts.forEach((id) => {
+      const binding = ($settingsStore.keyBindings || DEFAULT_KEY_BINDINGS).find(
+        (b) => b.id === id,
+      );
+      if (binding) {
+        hotkeys(binding.key, "file-manager", (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+        });
+      }
+    });
+
+    // Esc to close (already handled by window listener but added for completeness in hotkeys)
+    hotkeys("escape", "file-manager", (e) => {
+      isOpen = false;
+    });
+  }
+
+  function navigate(direction: "up" | "down" | "left" | "right") {
+    if (filteredFiles.length === 0) return;
+
+    let index = -1;
+    if (selectedFile) {
+      index = filteredFiles.findIndex((f) => f.path === selectedFile?.path);
+    }
+
+    let nextIndex = index;
+    const cols = viewMode === "grid" ? 3 : 1;
+
+    if (index === -1) {
+      nextIndex = 0;
+    } else {
+      switch (direction) {
+        case "up":
+          nextIndex = index - cols;
+          break;
+        case "down":
+          nextIndex = index + cols;
+          break;
+        case "left":
+          nextIndex = index - 1;
+          break;
+        case "right":
+          nextIndex = index + 1;
+          break;
+      }
+    }
+
+    // Boundary checks
+    if (nextIndex < 0) nextIndex = 0;
+    if (nextIndex >= filteredFiles.length) nextIndex = filteredFiles.length - 1;
+
+    if (nextIndex !== index) {
+      selectedFile = filteredFiles[nextIndex];
+      // Scroll into view logic handled by child components via reactive props
+    }
+  }
+
+  // Manage Scope Lifecycle
+  onMount(() => {
+    // We need to set up bindings. Ideally we watch settings, but onMount is likely sufficient as settings don't change often while FM is open.
+    // Better: use a reactive block to rebind if settings change?
+    // For now, onMount is consistent with how KeyboardShortcuts does it.
+    setupKeyBindings();
+  });
+
+  onDestroy(() => {
+    hotkeys.deleteScope("file-manager");
+    hotkeys.setScope("all");
+  });
+
+  // Since FileManager component is only mounted when open (due to {#if isOpen} in Navbar),
+  // onMount runs when opened, and onDestroy runs when closed.
+  // This is perfect for scope management.
 </script>
 
 <div class="fixed inset-0 z-[1010] flex" class:pointer-events-none={!isOpen}>
@@ -620,7 +759,7 @@
       tabindex="0"
       aria-label="Close file manager"
       on:keydown={(e) => {
-        if (e.key === "Escape") isOpen = false;
+        /* Handled by hotkeys */
       }}
     />
   {/if}
