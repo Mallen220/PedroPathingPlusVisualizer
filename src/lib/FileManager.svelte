@@ -119,11 +119,21 @@
   // Persist session state when changed
   $: fileManagerSessionState.set({ searchQuery, viewMode, sortMode });
 
-  // Sync sortMode to settings only after initialization
+  import { saveSettings } from "../utils/settingsPersistence";
+
+  // Sync sortMode to settings only after initialization and persist it
   $: if (sortModeInitialized && settings && sortMode) {
     if (settings.fileManagerSortMode !== sortMode) {
       settings.fileManagerSortMode = sortMode;
-      // Force update if needed, though bind should handle it
+      // Force update so Svelte reactivity at higher levels will detect the change
+      settings = { ...settings };
+
+      // Persist settings to disk (non-blocking)
+      saveSettings(settings).catch((e) =>
+        console.error("Failed to save settings fileManagerSortMode:", e),
+      );
+
+      // Re-sort files now that mode changed
       sortFiles();
     }
   }

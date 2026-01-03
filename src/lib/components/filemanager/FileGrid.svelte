@@ -228,6 +228,20 @@
     dispatch("select", file);
   }
 
+  // Open context menu anchored to an element (used by the kebab menu button)
+  function openContextMenuAtElement(el: HTMLElement, file: FileInfo) {
+    const rect = el.getBoundingClientRect();
+    // Place menu near the top-right of the element; ensure integers for ipc
+    contextMenu = { x: Math.round(rect.right - 8), y: Math.round(rect.top + 8), file };
+    dispatch("select", file);
+  }
+
+  // Wrapper that accepts an Event from the template and forwards a typed element to the anchor
+  function openContextMenuFromEvent(e: Event, file: FileInfo) {
+    const el = e.currentTarget as HTMLElement | null;
+    if (el) openContextMenuAtElement(el, file);
+  }
+
   function handleMenuAction(action: string) {
     if (!contextMenu) return;
     const file = contextMenu.file;
@@ -357,7 +371,7 @@
           }}
         >
           <!-- Icon / Preview -->
-          <div class="mb-2">
+          <div class="mb-2 relative">
             {#if previews[file.path] && previews[file.path].startPoint}
               <PathPreview
                 startPoint={previews[file.path].startPoint}
@@ -399,6 +413,19 @@
                 {/if}
               </div>
             {/if}
+
+            <!-- Kebab menu overlay (visible on hover) -->
+            <button
+              class="absolute top-1 right-1 p-1 rounded-full bg-white/80 dark:bg-neutral-800/80 shadow-sm opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity"
+              aria-label="File actions"
+              on:click|stopPropagation={(e) => openContextMenuFromEvent(e, file)}
+              title="More actions"
+            >
+
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-4 text-neutral-600 dark:text-neutral-300">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM12.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM18.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z" />
+              </svg>
+            </button>
           </div>
 
           <!-- Content -->
