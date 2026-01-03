@@ -1,7 +1,7 @@
 <!-- Copyright 2026 Matthew Allen. Licensed under the Apache License, Version 2.0. -->
 <!-- src/lib/components/filemanager/FileList.svelte -->
 <script lang="ts">
-  import { createEventDispatcher } from "svelte";
+  import { createEventDispatcher, onMount, onDestroy } from "svelte";
   import type { FileInfo } from "../../../types";
   import FileContextMenu from "./FileContextMenu.svelte";
   import PathPreview from "./PathPreview.svelte";
@@ -20,11 +20,12 @@
     "rename-start": FileInfo;
     "rename-save": string;
     "rename-cancel": void;
-    "context-menu": { event: MouseEvent; file: FileInfo };
+    "menu-action": { action: string; file: FileInfo };
   }>();
 
   let contextMenu: { x: number; y: number; file: FileInfo } | null = null;
   let renameInput: string = "";
+  let container: HTMLDivElement;
 
   // Preview cache + retry logic (similar to FileGrid)
   let previews: Record<string, { startPoint: any; lines: any[] } | null> = {};
@@ -161,6 +162,18 @@
     files.forEach((f) => refreshPreview(f.path));
   }
 
+  export function scrollToSelection(path: string) {
+    if (!container) return;
+    try {
+      const el = container.querySelector(
+        `[data-file-path="${CSS.escape(path)}"]`,
+      );
+      if (el) el.scrollIntoView({ block: "nearest" });
+    } catch (e) {
+      console.warn("Could not scroll to selection", e);
+    }
+  }
+
   function formatDate(date: Date): string {
     return new Date(date).toLocaleDateString();
   }
@@ -195,27 +208,7 @@
     const file = contextMenu.file;
     contextMenu = null;
 
-    // Dispatch the action to the parent component via a generic event or specific ones
-    // We will re-emit appropriately
-    // The parent (FileManager) can handle the specific logic
-
-    // We will bubble this up as specific events for clarity in usage
-    const eventMap: Record<string, any> = {
-      open: "open",
-      rename: "rename-start",
-      delete: "delete",
-      duplicate: "duplicate",
-      mirror: "mirror",
-      "save-to": "save-to",
-    };
-
-    // We need to dispatch a custom event that the parent listens to
-    // But since `dispatch` is strictly typed above, let's just emit a generic "action" event
-    // or we can add it to the dispatcher types.
-    // Let's modify the dispatcher types in the parent component instead or here.
-
-    // Actually, easier to dispatch a unified event for menu actions
-    dispatch("menu-action" as any, { action, file });
+    dispatch("menu-action", { action, file });
   }
 
   // Grouping logic for Date sort
@@ -303,12 +296,12 @@
   }
 
   // Initialize observer on mount
-  import { onMount, onDestroy } from "svelte";
   onMount(() => setupObserver());
   onDestroy(() => observer && observer.disconnect());
 </script>
 
 <div
+  bind:this={container}
   class="flex-1 overflow-y-auto pb-4"
   on:click={() => (contextMenu = null)}
   role="presentation"
@@ -327,6 +320,7 @@
       {#each group.files as file (file.path)}
         <div
           use:observeElement={file.path}
+          data-file-path={file.path}
           class="group flex items-center p-2 rounded-md cursor-pointer transition-colors border border-transparent
           {selectedFilePath === file.path
             ? 'bg-blue-50 dark:bg-blue-900/30 border-blue-200 dark:border-blue-800'

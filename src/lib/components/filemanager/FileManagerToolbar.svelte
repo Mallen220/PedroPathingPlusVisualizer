@@ -16,6 +16,12 @@
     search: string;
   }>();
 
+  let searchInput: HTMLInputElement;
+
+  export function focusSearch() {
+    searchInput?.focus();
+  }
+
   function handleSearch(e: Event) {
     const target = e.target as HTMLInputElement;
     searchQuery = target.value;
@@ -48,6 +54,7 @@
     </div>
     <input
       type="text"
+      bind:this={searchInput}
       value={searchQuery}
       on:input={handleSearch}
       placeholder="Search files..."
@@ -142,6 +149,7 @@
     on:click={() => dispatch("new-file")}
     class="p-1.5 text-neutral-500 hover:text-green-600 dark:text-neutral-400 dark:hover:text-green-400 rounded hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
     title="New File"
+    aria-label="Create new file"
   >
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -163,6 +171,7 @@
     on:click={() => dispatch("change-dir")}
     class="p-1.5 text-neutral-500 hover:text-blue-600 dark:text-neutral-400 dark:hover:text-blue-400 rounded hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
     title="Change Directory"
+    aria-label="Change directory"
   >
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -184,6 +193,7 @@
     on:click={() => dispatch("refresh")}
     class="p-1.5 text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-200 rounded hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
     title="Refresh"
+    aria-label="Refresh files"
   >
     <svg
       xmlns="http://www.w3.org/2000/svg"
