@@ -1,10 +1,11 @@
+<!-- Copyright 2026 Matthew Allen. Licensed under the Apache License, Version 2.0. -->
 <!-- src/lib/components/filemanager/FileGrid.svelte -->
 <script lang="ts">
   import { createEventDispatcher, tick, onMount, onDestroy } from "svelte";
   import type { FileInfo, Point, Line } from "../../../types";
   import FileContextMenu from "./FileContextMenu.svelte";
   import PathPreview from "./PathPreview.svelte";
-
+  import { AVAILABLE_FIELD_MAPS } from "../../../config/defaults";
   export let files: FileInfo[] = [];
   export let selectedFilePath: string | null = null;
   export let sortMode: "name" | "date" = "name";
@@ -12,8 +13,8 @@
   export let fieldImage: string | null = null;
 
   const dispatch = createEventDispatcher<{
-    "select": FileInfo;
-    "open": FileInfo;
+    select: FileInfo;
+    open: FileInfo;
     "rename-start": FileInfo;
     "rename-save": string;
     "rename-cancel": void;
@@ -24,7 +25,18 @@
   let renameInput = "";
 
   // Preview Data Cache
-  let previews: Record<string, { startPoint: Point, lines: Line[] } | null> = {};
+  let previews: Record<string, { startPoint: Point; lines: Line[] } | null> =
+    {};
+  // Retry counters for failed previews
+  let previewRetryCount: Record<string, number> = {};
+  const MAX_PREVIEW_RETRIES = 5;
+
+  // Debugging toggle for preview failures
+  const PREVIEW_DEBUG = true;
+
+  // Number of top files to preload proactively
+  const PRELOAD_COUNT = 30;
+
   let observer: IntersectionObserver;
   let elementMap = new Map<HTMLElement, string>();
 
@@ -46,27 +58,44 @@
     const batch = previewQueue.splice(0, BATCH_SIZE);
 
     try {
-      await Promise.all(batch.map(async (filePath) => {
-        // Double check if already loaded (might have been requeued or loaded elsewhere)
-        if (previews[filePath] && previews[filePath] !== null) return;
+      await Promise.all(
+        batch.map(async (filePath) => {
+          // If another load already succeeded for this file, skip
+          if (
+            previews[filePath] &&
+            previews[filePath] !== null &&
+            previews[filePath].startPoint
+          )
+            return;
 
-        try {
-          const content = await window.electronAPI.readFile(filePath);
-          const data = JSON.parse(content);
-          if (data.startPoint && Array.isArray(data.lines)) {
-            previews[filePath] = {
-              startPoint: data.startPoint,
-              lines: data.lines
-            };
-          } else {
-            // Invalid data - mark as loaded but invalid (e.g. empty object) so we don't retry
-            previews[filePath] = { startPoint: null, lines: [] } as any;
+          try {
+            const content = await window.electronAPI.readFile(filePath);
+            const data = JSON.parse(content);
+            if (data.startPoint && Array.isArray(data.lines)) {
+              previews[filePath] = {
+                startPoint: data.startPoint,
+                lines: data.lines,
+              };
+              // Reset retry count on success
+              previewRetryCount[filePath] = 0;
+              if (PREVIEW_DEBUG) console.debug(`[preview] Loaded ${filePath}`);
+            } else {
+              if (PREVIEW_DEBUG)
+                console.warn(
+                  `[preview] Malformed preview data for ${filePath}`,
+                  data,
+                );
+              // Malformed/empty file - mark as invalid but schedule retry later
+              schedulePreviewRetry(filePath);
+            }
+          } catch (e) {
+            if (PREVIEW_DEBUG)
+              console.warn(`[preview] Failed to read/parse ${filePath}:`, e);
+            // Read failed - schedule retry
+            schedulePreviewRetry(filePath);
           }
-        } catch (e) {
-          // Failed to load - mark as invalid
-          previews[filePath] = { startPoint: null, lines: [] } as any;
-        }
-      }));
+        }),
+      );
       previews = previews; // Reactivity update
     } finally {
       loadingPreviews = false;
@@ -78,12 +107,36 @@
     }
   }
 
-  async function loadPreview(filePath: string) {
-    if (previews[filePath] !== undefined) return; // Already loaded or in progress map (if we mapped it)
+  function schedulePreviewRetry(filePath: string) {
+    previewRetryCount[filePath] = (previewRetryCount[filePath] || 0) + 1;
+    if (previewRetryCount[filePath] <= MAX_PREVIEW_RETRIES) {
+      // Temporary mark so we don't keep re-queueing immediately
+      previews[filePath] = { startPoint: null, lines: [] } as any;
+      const delay = 1000 * Math.min(4, previewRetryCount[filePath]);
+      setTimeout(() => {
+        // Clear marker and requeue
+        previews[filePath] = undefined;
+        if (!previewQueue.includes(filePath)) {
+          previewQueue.push(filePath);
+          processPreviewQueue();
+        }
+      }, delay);
+    } else {
+      // Give up after too many retries
+      previews[filePath] = { startPoint: null, lines: [] } as any;
+    }
+  }
 
-    // Mark as pending in map to prevent duplicate queueing if observer triggers multiple times
-    // We use a specific 'pending' marker or just rely on queue set.
-    // Ideally we check if it is in queue.
+  async function loadPreview(filePath: string, force = false) {
+    // If already loaded and not forcing, skip
+    if (previews[filePath] !== undefined && !force) return;
+
+    // If forcing, clear previous markers and retry count
+    if (force) {
+      previews[filePath] = undefined;
+      previewRetryCount[filePath] = 0;
+    }
+
     if (previewQueue.includes(filePath)) return;
 
     previewQueue.push(filePath);
@@ -93,17 +146,20 @@
   function setupObserver() {
     if (observer) observer.disconnect();
 
-    observer = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          const path = elementMap.get(entry.target as HTMLElement);
-          if (path) {
-            loadPreview(path);
-            observer.unobserve(entry.target);
+    observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            const path = elementMap.get(entry.target as HTMLElement);
+            if (path) {
+              loadPreview(path);
+              observer.unobserve(entry.target);
+            }
           }
-        }
-      });
-    }, { rootMargin: "100px", threshold: 0.1 });
+        });
+      },
+      { rootMargin: "100px", threshold: 0.1 },
+    );
   }
 
   function observeElement(node: HTMLElement, filePath: string) {
@@ -118,15 +174,19 @@
       },
       update(newPath: string) {
         if (newPath !== filePath) {
-           elementMap.set(node, newPath);
-           // Re-observe if changed
-           observer.unobserve(node);
-           observer.observe(node);
+          elementMap.set(node, newPath);
+          // Re-observe if changed
+          observer.unobserve(node);
+          observer.observe(node);
         }
-      }
+      },
     };
   }
-
+  // Fallback handler for field image load errors
+  function handleFieldImageError(e: Event) {
+    const target = e.target as HTMLImageElement;
+    target.src = `/fields/${AVAILABLE_FIELD_MAPS[0].value}`;
+  }
   onMount(() => {
     setupObserver();
   });
@@ -145,17 +205,21 @@
 
   function isToday(date: Date): boolean {
     const today = new Date();
-    return date.getDate() === today.getDate() &&
+    return (
+      date.getDate() === today.getDate() &&
       date.getMonth() === today.getMonth() &&
-      date.getFullYear() === today.getFullYear();
+      date.getFullYear() === today.getFullYear()
+    );
   }
 
   function isYesterday(date: Date): boolean {
     const yesterday = new Date();
     yesterday.setDate(yesterday.getDate() - 1);
-    return date.getDate() === yesterday.getDate() &&
+    return (
+      date.getDate() === yesterday.getDate() &&
       date.getMonth() === yesterday.getMonth() &&
-      date.getFullYear() === yesterday.getFullYear();
+      date.getFullYear() === yesterday.getFullYear()
+    );
   }
 
   function handleContextMenu(event: MouseEvent, file: FileInfo) {
@@ -178,16 +242,15 @@
   }
 
   // Grouping logic for Date sort
-  $: groups = sortMode === "date"
-    ? groupFilesByDate(files)
-    : [{ title: "Files", files }];
+  $: groups =
+    sortMode === "date" ? groupFilesByDate(files) : [{ title: "Files", files }];
 
   function groupFilesByDate(files: FileInfo[]) {
     const today: FileInfo[] = [];
     const yesterday: FileInfo[] = [];
     const older: FileInfo[] = [];
 
-    files.forEach(f => {
+    files.forEach((f) => {
       const d = new Date(f.modified);
       if (isToday(d)) today.push(f);
       else if (isYesterday(d)) yesterday.push(f);
@@ -206,12 +269,71 @@
     await tick();
     node.select();
   }
+  // When files change, proactively load previews for recently modified files (e.g., today)
+  $: if (files && files.length) {
+    // Preload top N files proactively
+    files.slice(0, PRELOAD_COUNT).forEach((f) => {
+      if (previews[f.path] === undefined) loadPreview(f.path);
+      if (previews[f.path] && previews[f.path].startPoint == null)
+        loadPreview(f.path, true);
+    });
+    files.forEach((f) => {
+      const d = new Date(f.modified);
+      if (isToday(d)) {
+        // If we haven't loaded or queued a preview for this file yet, do so
+        if (previews[f.path] === undefined) {
+          loadPreview(f.path);
+        }
+      }
+
+      // If an earlier preview attempt failed (startPoint === null), retry it
+      if (previews[f.path] && previews[f.path].startPoint == null) {
+        loadPreview(f.path, true);
+      }
+    });
+  }
+
+  // If the field image or other settings change, retry any previously-failed previews
+  $: if (fieldImage !== undefined) {
+    Object.keys(previews).forEach((p) => {
+      if (previews[p] && previews[p].startPoint == null) {
+        loadPreview(p, true);
+      }
+    });
+  }
+
+  // Expose functions to allow parent to force refresh/clear previews when files open/save
+  export function refreshPreview(filePath: string) {
+    // Force reload by clearing cached preview entry and queuing a fresh load
+    previews[filePath] = undefined;
+    previewRetryCount[filePath] = 0;
+    loadPreview(filePath, true);
+  }
+
+  export function clearPreview(filePath: string) {
+    delete previews[filePath];
+    delete previewRetryCount[filePath];
+  }
+
+  export function refreshAllFailed() {
+    Object.keys(previews).forEach((p) => {
+      if (previews[p] && previews[p].startPoint == null) {
+        refreshPreview(p);
+      }
+    });
+  }
+
+  export function refreshAll() {
+    files.forEach((f) => refreshPreview(f.path));
+  }
 </script>
 
-<div class="flex-1 overflow-y-auto pb-4" on:click={() => contextMenu = null}>
+<div class="flex-1 overflow-y-auto pb-4" on:click={() => (contextMenu = null)}>
   {#each groups as group}
     {#if sortMode === "date"}
-      <div class="px-3 py-2 text-xs font-semibold text-neutral-500 uppercase tracking-wider bg-neutral-50/50 dark:bg-neutral-800/50 sticky top-0 backdrop-blur-sm z-1 mb-2">
+      <div
+        class="px-3 py-2 text-xs font-semibold text-neutral-500 uppercase tracking-wider bg-neutral-50/50 dark:bg-neutral-800/50 sticky top-0 backdrop-blur-sm z-1 mb-2"
+      >
         {group.title}
       </div>
     {/if}
@@ -231,26 +353,52 @@
           aria-label={file.name}
           use:observeElement={file.path}
           on:keydown={(e) => {
-             if (e.key === 'Enter') dispatch('open', file);
+            if (e.key === "Enter") dispatch("open", file);
           }}
         >
           <!-- Icon / Preview -->
           <div class="mb-2">
-             {#if previews[file.path] && previews[file.path].startPoint}
-               <PathPreview
-                 startPoint={previews[file.path].startPoint}
-                 lines={previews[file.path].lines}
-                 {fieldImage}
-                 width={80}
-                 height={80}
-               />
-             {:else}
-               <div class="w-[80px] h-[80px] flex items-center justify-center bg-neutral-50 dark:bg-neutral-900/50 rounded text-blue-500 dark:text-blue-400">
-                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-8">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z" />
-                </svg>
-               </div>
-             {/if}
+            {#if previews[file.path] && previews[file.path].startPoint}
+              <PathPreview
+                startPoint={previews[file.path].startPoint}
+                lines={previews[file.path].lines}
+                fieldImage={fieldImage ? `/fields/${fieldImage}` : null}
+                width={80}
+                height={80}
+              />
+            {:else}
+              <div
+                class="w-[80px] h-[80px] rounded overflow-hidden border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-900/50"
+              >
+                {#if fieldImage}
+                  <img
+                    src={`/fields/${fieldImage}`}
+                    alt="Field Map"
+                    class="w-full h-full object-cover"
+                    on:error={handleFieldImageError}
+                  />
+                {:else}
+                  <div
+                    class="w-full h-full flex items-center justify-center text-blue-500 dark:text-blue-400"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke-width="1.5"
+                      stroke="currentColor"
+                      class="size-8"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z"
+                      />
+                    </svg>
+                  </div>
+                {/if}
+              </div>
+            {/if}
           </div>
 
           <!-- Content -->
@@ -270,13 +418,20 @@
                 />
               </div>
             {:else}
-              <div class="text-xs font-medium text-neutral-900 dark:text-neutral-100 truncate w-full px-1" title={file.name}>
-                {file.name.replace(/\.pp$/, '')}
+              <div
+                class="text-xs font-medium text-neutral-900 dark:text-neutral-100 truncate w-full px-1"
+                title={file.name}
+              >
+                {file.name.replace(/\.pp$/, "")}
               </div>
               {#if file.error}
-                 <div class="text-[10px] text-red-500 truncate">{file.error}</div>
+                <div class="text-[10px] text-red-500 truncate">
+                  {file.error}
+                </div>
               {/if}
-              <div class="text-[10px] text-neutral-500 dark:text-neutral-400 mt-1">
+              <div
+                class="text-[10px] text-neutral-500 dark:text-neutral-400 mt-1"
+              >
                 {formatFileSize(file.size)}
               </div>
             {/if}
@@ -292,7 +447,7 @@
     x={contextMenu.x}
     y={contextMenu.y}
     fileName={contextMenu.file.name}
-    on:close={() => contextMenu = null}
+    on:close={() => (contextMenu = null)}
     on:action={(e) => handleMenuAction(e.detail)}
   />
 {/if}

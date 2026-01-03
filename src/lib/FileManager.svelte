@@ -34,7 +34,11 @@
     SequenceItem,
     Settings,
   } from "../types";
-  import { currentFilePath, isUnsaved, fileManagerSessionState } from "../stores";
+  import {
+    currentFilePath,
+    isUnsaved,
+    fileManagerSessionState,
+  } from "../stores";
   import { saveAutoPathsDirectory } from "../utils/directorySettings";
 
   import FileManagerToolbar from "./components/filemanager/FileManagerToolbar.svelte";
@@ -64,6 +68,9 @@
 
   // Renaming state
   let renamingFile: FileInfo | null = null;
+  // Reference to child components for preview refreshes
+  let fileGrid: any;
+  let fileList: any;
 
   // New file state
   let creatingNewFile = false;
@@ -239,30 +246,30 @@
 
   // Handle directory change (manual input)
   async function changeDirectoryManual(e: CustomEvent<string>) {
-     const newDir = e.detail;
-     if (!newDir) return;
+    const newDir = e.detail;
+    if (!newDir) return;
 
-     try {
-       // Ideally we verify if it exists first, but `listFiles` will fail if not
-       // Or we can try to save it directly.
-       // NOTE: `setDirectory` normally opens a dialog, so we can't use it for direct set if it doesn't take args.
-       // However, `saveAutoPathsDirectory` saves to store.
-       // Let's try to verify via listFiles or check directory existence if API allows.
+    try {
+      // Ideally we verify if it exists first, but `listFiles` will fail if not
+      // Or we can try to save it directly.
+      // NOTE: `setDirectory` normally opens a dialog, so we can't use it for direct set if it doesn't take args.
+      // However, `saveAutoPathsDirectory` saves to store.
+      // Let's try to verify via listFiles or check directory existence if API allows.
 
-       // Assuming user knows what they are doing or we catch error
-       currentDirectory = newDir;
-       await saveAutoPathsDirectory(newDir);
-       await refreshDirectory();
+      // Assuming user knows what they are doing or we catch error
+      currentDirectory = newDir;
+      await saveAutoPathsDirectory(newDir);
+      await refreshDirectory();
 
-       if (errorMessage) {
-          // If refresh failed, revert? Or just show error?
-          // Keeping error is fine.
-       } else {
-         showToast(`Directory changed`, "success");
-       }
-     } catch (err) {
-        errorMessage = `Failed to change directory: ${getErrorMessage(err)}`;
-     }
+      if (errorMessage) {
+        // If refresh failed, revert? Or just show error?
+        // Keeping error is fine.
+      } else {
+        showToast(`Directory changed`, "success");
+      }
+    } catch (err) {
+      errorMessage = `Failed to change directory: ${getErrorMessage(err)}`;
+    }
   }
 
   // File Operations
@@ -314,6 +321,9 @@
       isUnsaved.set(false);
       selectedFile = file;
       showToast(`Loaded: ${file.name}`, "success");
+
+      // Refresh the file preview so the latest content is reflected
+      if (fileGrid && file && file.path) fileGrid.refreshPreview(file.path);
     } catch (error) {
       showToast(`Error loading file: ${getErrorMessage(error)}`, "error");
     }
@@ -338,6 +348,12 @@
       await refreshDirectory();
       isUnsaved.set(false);
       showToast(`Saved to: ${targetFile.name}`, "success");
+
+      // Updated saved file — refresh its preview
+      if (fileGrid && targetFile && targetFile.path)
+        fileGrid.refreshPreview(targetFile.path);
+      if (fileList && targetFile && targetFile.path)
+        fileList.refreshPreview(targetFile.path);
     } catch (error) {
       showToast(`Failed to save: ${getErrorMessage(error)}`, "error");
     }
@@ -378,6 +394,9 @@
         currentFilePath.set(newFile.path);
         isUnsaved.set(false);
         showToast(`Created: ${fileName}`, "success");
+
+        // New file created — ensure preview is generated
+        if (fileGrid && newFile.path) fileGrid.refreshPreview(newFile.path);
       }
     } catch (error) {
       showToast(`Failed to create: ${getErrorMessage(error)}`, "error");
@@ -431,6 +450,13 @@
       );
       await refreshDirectory();
       showToast(`${mirror ? "Mirrored" : "Duplicated"}: ${newName}`, "success");
+
+      // Refresh preview for the newly created copy/mirror
+      const newFile = files.find((f) => f.name === newName);
+      if (newFile) {
+        if (fileGrid && newFile.path) fileGrid.refreshPreview(newFile.path);
+        if (fileList && newFile.path) fileList.refreshPreview(newFile.path);
+      }
     } catch (error) {
       showToast(`Failed to duplicate: ${getErrorMessage(error)}`, "error");
     }
@@ -621,7 +647,24 @@
       {viewMode}
       on:search={(e) => (searchQuery = e.detail)}
       on:sort-change={(e) => (sortMode = e.detail)}
-      on:view-change={(e) => (viewMode = e.detail)}
+      on:view-change={(e) => {
+        viewMode = e.detail;
+        // If switching to list/grid view, retry any previously failed previews so icons repopulate reliably
+        if (viewMode === "list") {
+          if (fileList && typeof fileList.refreshAllFailed === "function") {
+            fileList.refreshAllFailed();
+          } else if (fileList && typeof fileList.refreshAll === "function") {
+            // fallback: refresh everything
+            fileList.refreshAll();
+          }
+        } else if (viewMode === "grid") {
+          if (fileGrid && typeof fileGrid.refreshAllFailed === "function") {
+            fileGrid.refreshAllFailed();
+          } else if (fileGrid && typeof fileGrid.refreshAll === "function") {
+            fileGrid.refreshAll();
+          }
+        }
+      }}
       on:refresh={refreshDirectory}
       on:change-dir={changeDirectoryDialog}
       on:new-file={() => (creatingNewFile = true)}
@@ -711,31 +754,32 @@
           >
         {/if}
       </div>
+    {:else if viewMode === "list"}
+      <FileList
+        bind:this={fileList}
+        files={filteredFiles}
+        selectedFilePath={selectedFile?.path ?? null}
+        {sortMode}
+        fieldImage={settings.fieldMap}
+        {renamingFile}
+        on:select={(e) => (selectedFile = e.detail)}
+        on:open={(e) => loadFile(e.detail)}
+        on:rename-save={(e) =>
+          renamingFile && renameFile(renamingFile, e.detail)}
+        on:rename-cancel={() => (renamingFile = null)}
+        on:menu-action={handleMenuAction}
+      />
     {:else}
-      {#if viewMode === 'list'}
-        <FileList
-          files={filteredFiles}
-          selectedFilePath={selectedFile?.path ?? null}
-          {sortMode}
-          {renamingFile}
-          on:select={(e) => (selectedFile = e.detail)}
-          on:open={(e) => loadFile(e.detail)}
-          on:rename-save={(e) =>
-            renamingFile && renameFile(renamingFile, e.detail)}
-          on:rename-cancel={() => (renamingFile = null)}
-          on:menu-action={handleMenuAction}
-        />
-      {:else}
-        <FileGrid
-           files={filteredFiles}
-           selectedFilePath={selectedFile?.path ?? null}
-           {sortMode}
-           fieldImage={settings.fieldMap}
-           on:select={(e) => (selectedFile = e.detail)}
-           on:open={(e) => loadFile(e.detail)}
-           on:menu-action={handleMenuAction}
-        />
-      {/if}
+      <FileGrid
+        bind:this={fileGrid}
+        files={filteredFiles}
+        selectedFilePath={selectedFile?.path ?? null}
+        {sortMode}
+        fieldImage={settings.fieldMap}
+        on:select={(e) => (selectedFile = e.detail)}
+        on:open={(e) => loadFile(e.detail)}
+        on:menu-action={handleMenuAction}
+      />
     {/if}
 
     <!-- Footer Status -->
