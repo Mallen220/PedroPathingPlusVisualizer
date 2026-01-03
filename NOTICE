@@ -12,4 +12,14 @@ src/tests/history.test.ts
 src/main.ts
 src/lib/components/ControlPointsSection.svelte
 src/tests/pathOptimizer.test.ts
+src/lib/FileManager.svelte
+src/lib/components/NotificationToast.svelte
+src/lib/components/filemanager/FileContextMenu.svelte
+src/lib/components/filemanager/FileGrid.svelte
+src/lib/components/filemanager/FileList.svelte
+src/lib/components/filemanager/FileManagerBreadcrumbs.svelte
+src/lib/components/filemanager/FileManagerToolbar.svelte
+src/lib/components/filemanager/PathPreview.svelte
+src/stores.ts
+src/utils/validation.ts
 src/lib/components/SettingsDialog.svelte
