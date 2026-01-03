@@ -26,6 +26,7 @@
   import { onMount, onDestroy } from "svelte";
   import { fade } from "svelte/transition";
   import { get } from "svelte/store";
+  import hotkeys from "hotkeys-js";
   import type {
     FileInfo,
     Point,
@@ -40,6 +41,7 @@
     fileManagerSessionState,
   } from "../stores";
   import { saveAutoPathsDirectory } from "../utils/directorySettings";
+  import { DEFAULT_KEY_BINDINGS } from "../config/defaults";
 
   import FileManagerToolbar from "./components/filemanager/FileManagerToolbar.svelte";
   import FileManagerBreadcrumbs from "./components/filemanager/FileManagerBreadcrumbs.svelte";
@@ -99,6 +101,7 @@
   // New file input reference for programmatic focus
   import { tick } from "svelte";
   let newFileInput: HTMLInputElement | null = null;
+  let searchInputRef: HTMLInputElement | null = null;
 
   $: if (creatingNewFile) {
     // Focus the input after it renders
@@ -347,7 +350,7 @@
   }
 
   async function loadFile(file: FileInfo) {
-    if (file.error) return;
+    if (!file || file.error) return;
     try {
       const content = await electronAPI.readFile(file.path);
       const data = JSON.parse(content);
@@ -447,6 +450,7 @@
   }
 
   async function deleteFile(file: FileInfo) {
+    if (!file) return;
     if (!confirm(`Are you sure you want to delete "${file.name}"?`)) return;
     try {
       await electronAPI.deleteFile(file.path);
@@ -594,9 +598,123 @@
     }
   }
 
+  // --- Keyboard Shortcuts & Navigation Logic ---
+
+  function getKey(action: string): string {
+    const bindings = settings?.keyBindings || DEFAULT_KEY_BINDINGS;
+    const binding = bindings.find((b) => b.action === action);
+    return binding ? binding.key : "";
+  }
+
+  function handleNavigation(direction: "up" | "down" | "left" | "right") {
+    if (filteredFiles.length === 0) return;
+
+    let index = -1;
+    if (selectedFile) {
+      index = filteredFiles.findIndex((f) => f.path === selectedFile?.path);
+    }
+
+    // Grid columns (defaulting to 3 as per FileGrid)
+    const cols = 3;
+
+    if (index === -1) {
+      // If nothing selected, select first
+      index = 0;
+    } else {
+      if (viewMode === "list") {
+        if (direction === "up") index = Math.max(0, index - 1);
+        if (direction === "down")
+          index = Math.min(filteredFiles.length - 1, index + 1);
+      } else {
+        // Grid View
+        if (direction === "left") index = Math.max(0, index - 1);
+        if (direction === "right")
+          index = Math.min(filteredFiles.length - 1, index + 1);
+        if (direction === "up") index = Math.max(0, index - cols);
+        if (direction === "down")
+          index = Math.min(filteredFiles.length - 1, index + cols);
+      }
+    }
+
+    selectedFile = filteredFiles[index];
+    scrollToSelected();
+  }
+
+  function scrollToSelected() {
+    // We can emit an event or call a method on child components.
+    // Or we can rely on reactivity if child components watch selectedFile.
+    // FileList and FileGrid accept selectedFilePath prop.
+    // But they don't automatically scroll. We should call a method.
+    tick().then(() => {
+      // We can try to find the element manually or call child methods.
+      // But we haven't implemented scrollTo in children yet.
+      // However, typical accessible lists scroll on focus.
+      // Let's implement scroll logic in children or here.
+      // Since children render the elements, best to delegate.
+      // See `updateSelection` in children?
+      // Actually, let's just make `selectedFile` reactive in children trigger scroll.
+      // But we need to update children.
+    });
+  }
+
+  // Scope management
+  $: if (isOpen) {
+    hotkeys.setScope("file-manager");
+  } else {
+    hotkeys.setScope("all");
+    renamingFile = null;
+    creatingNewFile = false;
+  }
+
   onMount(() => {
     loadDirectory();
   });
+
+  $: if (isOpen && settings && settings.keyBindings) {
+    // Bind keys
+    // Unbind previous to avoid dupes? hotkeys handles it if key is same.
+    // But we are in a specific scope 'file-manager'
+
+    // Helpers
+    const bind = (action: string, handler: (e: KeyboardEvent) => void) => {
+      const key = getKey(action);
+      if (key) {
+        hotkeys(key, "file-manager", (e) => {
+          e.preventDefault();
+          handler(e);
+        });
+      }
+    };
+
+    bind("fmOpen", () => {
+      if (selectedFile) loadFile(selectedFile);
+    });
+    bind("fmUp", () => handleNavigation("up"));
+    bind("fmDown", () => handleNavigation("down"));
+    bind("fmLeft", () => handleNavigation("left"));
+    bind("fmRight", () => handleNavigation("right"));
+    bind("fmDelete", () => {
+      if (selectedFile && !renamingFile && !creatingNewFile)
+        deleteFile(selectedFile);
+    });
+    bind("fmRename", () => {
+      if (selectedFile) renamingFile = selectedFile;
+    });
+    bind("fmNewFile", () => (creatingNewFile = true));
+    bind("fmRefresh", () => handleRefresh());
+    bind("fmFocusSearch", () => {
+      // We need reference to FileManagerToolbar -> input
+      // Or just set state?
+      // Best to use an event or prop binding if possible, or query selector
+      const input = document.querySelector(
+        "#fm-search-input",
+      ) as HTMLInputElement;
+      if (input) input.focus();
+    });
+    bind("fmToggleView", () => {
+      viewMode = viewMode === "list" ? "grid" : "list";
+    });
+  }
 
   // Mock path utils
   const path = {

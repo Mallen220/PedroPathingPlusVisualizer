@@ -544,6 +544,13 @@
       const key = getKey(action);
       if (key) {
         hotkeys(key, (e) => {
+          // Check scope: if not 'all', and this handler was bound in 'all' (default),
+          // we might want to skip it if we consider 'all' as 'base layer'.
+          // However, hotkeys-js 'all' scope handlers run on ALL scopes usually.
+          // To implement modal blocking, we explicitly check if scope is 'all'.
+          // If we are in 'file-manager', we don't want these main app shortcuts to run.
+          if (hotkeys.getScope() !== "all") return;
+
           if (isUIElementFocused()) return;
           e.preventDefault();
           handler(e);
@@ -632,6 +639,7 @@
     const playKey = getKey("togglePlay");
     if (playKey) {
       hotkeys(playKey, (e) => {
+        if (hotkeys.getScope() !== "all") return;
         if (isUIElementFocused()) return;
         e.preventDefault();
         if (playing) pause();
@@ -639,4 +647,9 @@
       });
     }
   }
+
+  // Set default scope
+  onMount(() => {
+    hotkeys.setScope("all");
+  });
 </script>

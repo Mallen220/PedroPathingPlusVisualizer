@@ -293,6 +293,73 @@ export const DEFAULT_KEY_BINDINGS: KeyBinding[] = [
     description: "Show keyboard shortcuts",
     action: "showHelp",
   },
+  // File Manager Shortcuts
+  {
+    id: "fm-open",
+    key: "enter",
+    description: "Open selected file",
+    action: "fmOpen",
+  },
+  {
+    id: "fm-up",
+    key: "up",
+    description: "Move selection up",
+    action: "fmUp",
+  },
+  {
+    id: "fm-down",
+    key: "down",
+    description: "Move selection down",
+    action: "fmDown",
+  },
+  {
+    id: "fm-left",
+    key: "left",
+    description: "Move selection left",
+    action: "fmLeft",
+  },
+  {
+    id: "fm-right",
+    key: "right",
+    description: "Move selection right",
+    action: "fmRight",
+  },
+  {
+    id: "fm-delete",
+    key: "delete, backspace",
+    description: "Delete selected file",
+    action: "fmDelete",
+  },
+  {
+    id: "fm-rename",
+    key: "f2",
+    description: "Rename selected file",
+    action: "fmRename",
+  },
+  {
+    id: "fm-new-file",
+    key: "ctrl+n, cmd+n",
+    description: "Create new file",
+    action: "fmNewFile",
+  },
+  {
+    id: "fm-refresh",
+    key: "f5, ctrl+r, cmd+r",
+    description: "Refresh file list",
+    action: "fmRefresh",
+  },
+  {
+    id: "fm-focus-search",
+    key: "ctrl+f, cmd+f",
+    description: "Focus search bar",
+    action: "fmFocusSearch",
+  },
+  {
+    id: "fm-toggle-view",
+    key: "ctrl+shift+v, cmd+shift+v",
+    description: "Toggle list/grid view",
+    action: "fmToggleView",
+  },
 ];
 
 export const DEFAULT_SETTINGS: Settings = {
