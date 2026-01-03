@@ -1082,6 +1082,19 @@
     });
   });
 
+  onDestroy(() => {
+    if (two) {
+      // Remove from Two.Instances to prevent memory leak
+      const idx = Two.Instances.indexOf(two);
+      if (idx >= 0) {
+        Two.Instances.splice(idx, 1);
+      }
+      two.clear();
+      // release event listeners if any attached to two itself
+      two.unbind();
+    }
+  });
+
   // Public accessor for exportGif
   export function getTwoInstance() {
     return two;
