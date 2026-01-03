@@ -6,6 +6,7 @@
     gridSize,
     showGrid,
     snapToGrid,
+    snapToPoints,
     showProtractor,
     showShortcuts,
     selectedPointId,
@@ -597,6 +598,13 @@
     bind("cycleGridSize", () => cycleGridSize());
     bind("cycleGridSizeReverse", () => cycleGridSizeReverse());
     bind("toggleSnap", () => snapToGrid.update((v) => !v));
+    bind("toggleSnapPoints", () =>
+      snapToPoints.update((v) => {
+        const newVal = !v;
+        settingsStore.update((s) => ({ ...s, snapToPoints: newVal }));
+        return newVal;
+      }),
+    );
     bind("increasePlaybackSpeed", () => changePlaybackSpeedBy(0.25));
     bind("decreasePlaybackSpeed", () => changePlaybackSpeedBy(-0.25));
     bind("resetPlaybackSpeed", () => resetPlaybackSpeed());

@@ -116,6 +116,7 @@ export interface Settings {
   keyBindings?: KeyBinding[];
   recentFiles?: string[];
   fileManagerSortMode?: "name" | "date"; // File manager sort preference
+  snapToPoints?: boolean; // Snap dragged points to other existing points
 }
 
 export interface Shape {

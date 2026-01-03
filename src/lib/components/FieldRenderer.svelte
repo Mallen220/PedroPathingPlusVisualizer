@@ -6,6 +6,7 @@
   import {
     gridSize,
     snapToGrid,
+    snapToPoints,
     showGrid,
     selectedPointId,
     selectedLineId,
@@ -834,6 +835,74 @@
           inchY = Math.round(rawInchY / $gridSize) * $gridSize;
           inchX = Math.max(0, Math.min(FIELD_SIZE, inchX));
           inchY = Math.max(0, Math.min(FIELD_SIZE, inchY));
+        }
+
+        if ($snapToPoints) {
+          // Identify the current dragging element object to exclude it from snap targets
+          let currentObject: any = null;
+          if (currentElem.startsWith("obstacle-")) {
+            const parts = currentElem.split("-");
+            const shapeIdx = Number(parts[1]);
+            const vertexIdx = Number(parts[2]);
+            currentObject = shapes[shapeIdx]?.vertices[vertexIdx];
+          } else if (currentElem.startsWith("point-")) {
+            const line = Number(currentElem.split("-")[1]) - 1;
+            const point = Number(currentElem.split("-")[2]);
+            if (line === -1) {
+              currentObject = startPoint;
+            } else if (lines[line]) {
+              if (point === 0) {
+                currentObject = lines[line].endPoint;
+              } else {
+                currentObject = lines[line].controlPoints[point - 1];
+              }
+            }
+          }
+
+          // Build candidates list
+          let snapCandidates: { x: number; y: number }[] = [];
+
+          // Add Start Point
+          snapCandidates.push(startPoint);
+
+          // Add Line End Points and Control Points (optional, maybe exclude control points for clutter?)
+          // Let's include end points definitely. Control points maybe useful too.
+          lines.forEach((l) => {
+            snapCandidates.push(l.endPoint);
+            // Including control points in snap targets can be very crowded.
+            // Let's stick to key points: Start, End, and Obstacle vertices.
+            // l.controlPoints.forEach(cp => snapCandidates.push(cp));
+          });
+
+          // Add Obstacle Vertices
+          shapes.forEach((s) => {
+            s.vertices.forEach((v) => snapCandidates.push(v));
+          });
+
+          // Filter out the self (currentObject)
+          if (currentObject) {
+            snapCandidates = snapCandidates.filter((c) => c !== currentObject);
+          }
+
+          // Find closest
+          const SNAP_THRESHOLD = 1.0; // inches
+          let closestDist = Infinity;
+          let closestPoint = null;
+
+          for (const cand of snapCandidates) {
+            const dx = cand.x - inchX;
+            const dy = cand.y - inchY;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            if (dist < SNAP_THRESHOLD && dist < closestDist) {
+              closestDist = dist;
+              closestPoint = cand;
+            }
+          }
+
+          if (closestPoint) {
+            inchX = closestPoint.x;
+            inchY = closestPoint.y;
+          }
         }
 
         if (currentElem.startsWith("obstacle-")) {

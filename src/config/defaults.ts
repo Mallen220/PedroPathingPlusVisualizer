@@ -210,6 +210,12 @@ export const DEFAULT_KEY_BINDINGS: KeyBinding[] = [
     action: "toggleSnap",
   },
   {
+    id: "toggle-snap-points",
+    key: "shift+n",
+    description: "Toggle snap to points",
+    action: "toggleSnapPoints",
+  },
+  {
     id: "toggle-protractor",
     key: "shift+p",
     description: "Toggle protractor",
@@ -320,6 +326,7 @@ export const DEFAULT_SETTINGS: Settings = {
   optimizationMutationStrength: 6.0,
   keyBindings: DEFAULT_KEY_BINDINGS,
   recentFiles: [],
+  snapToPoints: false,
   // Developer/debugging aids
   showDebugSequence: false,
 };
