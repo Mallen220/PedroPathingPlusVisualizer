@@ -332,7 +332,7 @@ export const DEFAULT_KEY_BINDINGS: KeyBinding[] = [
   },
   {
     id: "fm-refresh",
-    key: "ctrl+r, cmd+r",
+    key: "f5",
     description: "Refresh files (File Manager only)",
     action: "fileManagerRefresh",
   },

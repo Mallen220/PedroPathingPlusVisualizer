@@ -26,6 +26,8 @@
   import { onMount, onDestroy } from "svelte";
   import { fade } from "svelte/transition";
   import { get } from "svelte/store";
+  import hotkeys from "hotkeys-js";
+  import { DEFAULT_KEY_BINDINGS } from "../config/defaults";
   import type {
     FileInfo,
     Point,
@@ -71,6 +73,7 @@
   // Reference to child components for preview refreshes
   let fileGrid: any;
   let fileList: any;
+  let toolbar: any;
 
   // New file state
   let creatingNewFile = false;
@@ -607,7 +610,109 @@
       return m ? m[0] : "";
     },
   };
+
+  function moveSelection(delta: number) {
+    if (filteredFiles.length === 0) return;
+
+    let index = -1;
+    if (selectedFile) {
+      index = filteredFiles.findIndex((f) => f.path === selectedFile?.path);
+    }
+
+    let newIndex = index + delta;
+
+    // Handle bounds
+    if (index === -1) {
+      newIndex = 0;
+    } else {
+      if (newIndex < 0) newIndex = 0;
+      if (newIndex >= filteredFiles.length) newIndex = filteredFiles.length - 1;
+    }
+
+    if (filteredFiles[newIndex]) {
+      selectedFile = filteredFiles[newIndex];
+      // Scroll to view
+      tick().then(() => {
+        if (viewMode === "list" && fileList) {
+          fileList.scrollToSelection(selectedFile!.path);
+        } else if (viewMode === "grid" && fileGrid) {
+          fileGrid.scrollToSelection(selectedFile!.path);
+        }
+      });
+    }
+  }
+
+  // Helper function to resolve binding key
+  function getKey(action: string): string {
+    const bindings = settings?.keyBindings || DEFAULT_KEY_BINDINGS;
+    const binding = bindings.find((b) => b.action === action);
+    return binding ? binding.key : "";
+  }
+
+  // Focus utility
+  function isUIElementFocused(): boolean {
+    const el = document.activeElement as HTMLElement | null;
+    if (!el) return false;
+    const tag = el.tagName;
+    // We want to block navigation if typing in an input
+    return ["INPUT", "TEXTAREA", "SELECT"].includes(tag) || (el as any).isContentEditable;
+  }
+
+  // Reactive registration
+  $: if (isOpen && settings && settings.keyBindings) {
+    hotkeys.setScope(isOpen ? 'fileManager' : 'all');
+  }
+
+  // We need to register the handlers for the 'fileManager' scope.
+  // We can do this on mount or reactive.
+  $: if (settings && settings.keyBindings) {
+    // Register for fileManager scope
+    const bind = (action: string, handler: (e: KeyboardEvent) => void) => {
+      const key = getKey(action);
+      if (key) {
+        hotkeys(key, 'fileManager', (e) => {
+          if (isUIElementFocused()) return;
+          e.preventDefault();
+          handler(e);
+        });
+      }
+    };
+
+    bind("fileManagerOpen", () => selectedFile && loadFile(selectedFile));
+    bind("fileManagerDelete", () => selectedFile && deleteFile(selectedFile));
+    bind("fileManagerRename", () => selectedFile && (renamingFile = selectedFile));
+    bind("fileManagerDuplicate", () => selectedFile && duplicateFile(selectedFile, false));
+    bind("fileManagerNewFile", () => (creatingNewFile = true));
+    bind("fileManagerSearch", () => toolbar?.focusSearch());
+    bind("fileManagerRefresh", () => handleRefresh());
+  }
+
+  // Handle standard navigation (Arrow keys) - usually not user-configurable
+  function handleNavigation(e: KeyboardEvent) {
+    if (!isOpen) return;
+    if (isUIElementFocused()) return;
+
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      moveSelection(viewMode === "grid" ? 3 : 1);
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      moveSelection(viewMode === "grid" ? -3 : -1);
+    } else if (e.key === "ArrowRight") {
+      e.preventDefault();
+      moveSelection(1);
+    } else if (e.key === "ArrowLeft") {
+      e.preventDefault();
+      moveSelection(-1);
+    } else if (e.key === "Escape") {
+      // Close file manager
+      isOpen = false;
+    }
+  }
+
 </script>
+
+<svelte:window on:keydown={handleNavigation} />
 
 <div class="fixed inset-0 z-[1010] flex" class:pointer-events-none={!isOpen}>
   <!-- Backdrop -->
@@ -619,9 +724,6 @@
       role="button"
       tabindex="0"
       aria-label="Close file manager"
-      on:keydown={(e) => {
-        if (e.key === "Escape") isOpen = false;
-      }}
     />
   {/if}
 
@@ -687,6 +789,7 @@
 
     <!-- Toolbar -->
     <FileManagerToolbar
+      bind:this={toolbar}
       {searchQuery}
       {sortMode}
       {viewMode}
