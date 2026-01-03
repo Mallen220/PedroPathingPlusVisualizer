@@ -3,6 +3,7 @@
   export let startPoint: Point;
   export let addPathAtStart: () => void;
   export let addWaitAtStart: () => void;
+  import CollapseAllButton from "./CollapseAllButton.svelte";
   export let toggleCollapseAll: () => void;
   export let allCollapsed: boolean;
 </script>
@@ -55,17 +56,7 @@
       </button>
     </div>
 
-    <button
-      on:click={toggleCollapseAll}
-      class="text-sm mb-2 px-2 py-1 rounded bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-700 border border-neutral-200 dark:border-neutral-700"
-      aria-label="Toggle collapse/expand all"
-    >
-      {#if allCollapsed}
-        <span class="whitespace-nowrap">Expand All</span>
-      {:else}
-        <span class="whitespace-nowrap">Collapse All</span>
-      {/if}
-    </button>
+    <CollapseAllButton {allCollapsed} onToggle={toggleCollapseAll} />
   </div>
   <div class="flex flex-wrap justify-start items-center gap-x-4 gap-y-2">
     <div class="flex items-center gap-2">
@@ -75,7 +66,7 @@
         min="0"
         max="144"
         type="number"
-        class="pl-1.5 rounded-md bg-neutral-100 border-[0.5px] focus:outline-none w-20 sm:w-28 dark:bg-neutral-950 dark:border-neutral-700"
+        class="pl-1.5 rounded-md bg-neutral-100 border-[0.5px] focus:outline-none w-16 sm:w-24 dark:bg-neutral-950 dark:border-neutral-700"
         step="0.1"
         disabled={startPoint.locked}
       />
@@ -85,7 +76,7 @@
         min="0"
         max="144"
         type="number"
-        class="pl-1.5 rounded-md bg-neutral-100 border-[0.5px] focus:outline-none w-20 sm:w-28 dark:bg-neutral-950 dark:border-neutral-700"
+        class="pl-1.5 rounded-md bg-neutral-100 border-[0.5px] focus:outline-none w-16 sm:w-24 dark:bg-neutral-950 dark:border-neutral-700"
         step="0.1"
         disabled={startPoint.locked}
       />
@@ -93,7 +84,7 @@
     <div class="flex items-center gap-4">
       <button
         on:click={addPathAtStart}
-        class="font-semibold text-green-500 text-sm flex flex-row justify-start items-center gap-1"
+        class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-green-600 dark:bg-green-700 rounded-md shadow-sm hover:bg-green-700 dark:hover:bg-green-600 transition-colors focus:outline-none focus:ring-2 focus:ring-green-300 dark:focus:ring-green-700"
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -101,7 +92,7 @@
           viewBox="0 0 24 24"
           stroke-width={2}
           stroke="currentColor"
-          class="size-5"
+          class="size-4"
         >
           <path
             stroke-linecap="round"
@@ -113,7 +104,7 @@
       </button>
       <button
         on:click={addWaitAtStart}
-        class="font-semibold text-amber-500 text-sm flex flex-row justify-start items-center gap-1"
+        class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-amber-500 dark:bg-amber-600 rounded-md shadow-sm hover:bg-amber-600 dark:hover:bg-amber-500 transition-colors focus:outline-none focus:ring-2 focus:ring-amber-200 dark:focus:ring-amber-500"
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -121,7 +112,7 @@
           fill="none"
           stroke="currentColor"
           stroke-width="2"
-          class="size-5"
+          class="size-4"
         >
           <circle cx="12" cy="12" r="9" />
           <path
