@@ -413,9 +413,10 @@
             class="ml-2 opacity-0 group-hover:opacity-100 transition-opacity flex items-center"
           >
             <button
-              class="p-1 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 rounded"
+              class="p-1 rounded-full bg-white/80 dark:bg-neutral-800/80 shadow-sm text-neutral-600 hover:text-neutral-800 dark:hover:text-neutral-200 transition-colors"
               on:click|stopPropagation={(e) => handleContextMenu(e, file)}
               title="More actions"
+              aria-label="File actions"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
