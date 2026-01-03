@@ -33,3 +33,14 @@ export const collisionMarkers = writable<CollisionMarker[]>([]);
 
 // Notification system
 export const notification = writable<Notification | null>(null);
+
+// File Manager Session State
+export const fileManagerSessionState = writable<{
+  searchQuery: string;
+  viewMode: "list" | "grid";
+  sortMode: "name" | "date";
+}>({
+  searchQuery: "",
+  viewMode: "grid",
+  sortMode: "date",
+});
