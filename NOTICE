@@ -25,3 +25,14 @@ src/utils/validation.ts
 src/lib/components/SettingsDialog.svelte
 vite.config.ts
 CHANGELOG.md
+src/App.svelte
+src/lib/ControlTab.svelte
+src/lib/Navbar.svelte
+src/lib/components/StartingPointSection.svelte
+src/lib/components/WaitRow.svelte
+src/lib/components/HeadingControls.svelte
+src/lib/components/PathLineSection.svelte
+src/lib/components/KeyboardShortcuts.svelte
+src/lib/components/WaypointTable.svelte
+src/lib/components/CollapseAllButton.svelte
+src/lib/components/WaitMarkersSection.svelte
