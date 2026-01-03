@@ -93,7 +93,7 @@
     <div class="flex items-center gap-4">
       <button
         on:click={addPathAtStart}
-        class="font-semibold text-green-500 text-sm flex flex-row justify-start items-center gap-1"
+        class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-neutral-600 dark:text-neutral-400 border border-neutral-300 dark:border-neutral-600 rounded-md transition-colors shadow-sm hover:text-green-600 dark:hover:text-green-400 hover:border-green-400 dark:hover:border-green-500 hover:bg-white dark:hover:bg-neutral-900 hover:shadow-[0_0_0_3px_rgba(34,197,94,0.35)] dark:hover:shadow-[0_0_0_3px_rgba(74,222,128,0.35)]"
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -101,7 +101,7 @@
           viewBox="0 0 24 24"
           stroke-width={2}
           stroke="currentColor"
-          class="size-5"
+          class="size-4"
         >
           <path
             stroke-linecap="round"
@@ -113,7 +113,7 @@
       </button>
       <button
         on:click={addWaitAtStart}
-        class="font-semibold text-amber-500 text-sm flex flex-row justify-start items-center gap-1"
+        class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-neutral-600 dark:text-neutral-400 border border-neutral-300 dark:border-neutral-600 rounded-md transition-colors shadow-sm hover:text-amber-600 dark:hover:text-amber-400 hover:border-amber-400 dark:hover:border-amber-500 hover:bg-white dark:hover:bg-neutral-900 hover:shadow-[0_0_0_3px_rgba(251,191,36,0.35)] dark:hover:shadow-[0_0_0_3px_rgba(251,191,36,0.35)]"
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -121,7 +121,7 @@
           fill="none"
           stroke="currentColor"
           stroke-width="2"
-          class="size-5"
+          class="size-4"
         >
           <circle cx="12" cy="12" r="9" />
           <path
