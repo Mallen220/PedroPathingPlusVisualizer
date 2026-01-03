@@ -28,3 +28,4 @@ CHANGELOG.md
 src/App.svelte
 src/lib/ControlTab.svelte
 src/lib/Navbar.svelte
+src/lib/components/StartingPointSection.svelte
