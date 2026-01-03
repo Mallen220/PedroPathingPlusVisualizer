@@ -78,7 +78,6 @@
 
     // If we're on the field tab, open the field dialog and start it
     if (activeTab === "field") {
-      // Defensive: wrap in try/catch so any runtime error doesn't crash the app
       try {
         optimizationOpen = true;
         await tick();
@@ -121,7 +120,6 @@
       return;
     }
 
-    // fallback
     if (waypointTableRef && waypointTableRef.stopOptimization)
       waypointTableRef.stopOptimization();
   }
@@ -271,7 +269,7 @@
     controlPoints: lines.map(() => true), // Start with control points collapsed
   };
 
-  // Debug helpers (kept simple so template expressions stay small)
+  // Debug helpers
   $: debugLinesIds = Array.isArray(lines) ? lines.map((l) => l.id) : [];
   $: debugSequenceIds = Array.isArray(sequence)
     ? sequence.filter((s) => s.kind === "path").map((s: any) => s.lineId)
@@ -283,41 +281,23 @@
     (id) => !debugLinesIds.includes(id),
   );
 
-  // One-time repair flag in case sequence misses lines (keeps Paths view consistent)
   let repairedSequenceOnce = false;
 
-  // If any sequence entries reference unknown lines or lines are missing from sequence,
-  // fix the sequence once to keep UI consistent. This removes invalid path refs and
-  // appends any real lines that are missing.
   $: if (
     Array.isArray(lines) &&
     Array.isArray(sequence) &&
     !repairedSequenceOnce
   ) {
     const lineIds = new Set(lines.map((l) => l.id));
-
-    // Remove sequence entries that reference non-existent lines
     const pruned = sequence.filter(
       (s) => s.kind !== "path" || lineIds.has((s as any).lineId),
     );
-
-    // Find any existing lines not present in sequence (append them)
     const presentIds = new Set(
       pruned.filter((s) => s.kind === "path").map((s) => (s as any).lineId),
     );
     const missing = lines.filter((l) => !presentIds.has(l.id));
 
     if (missing.length || pruned.length !== sequence.length) {
-      if (missing.length) {
-        console.warn(
-          "[ControlTab] appending missing sequence items:",
-          missing.map((m) => m.id),
-        );
-      }
-      if (pruned.length !== sequence.length) {
-        console.warn("[ControlTab] removing invalid sequence items");
-      }
-
       sequence = [
         ...pruned,
         ...missing.map((l) => ({ kind: "path", lineId: l.id })),
@@ -327,10 +307,8 @@
     }
   }
 
-  // Reactive statements to update UI state when lines or shapes change from file load
   $: if (lines.length !== collapsedSections.lines.length) {
     collapsedEventMarkers = lines.map(() => false);
-    // Determine whether current sections are all collapsed (without referencing reactive `allCollapsed` to avoid cycles)
     const wasAllCollapsed =
       collapsedSections &&
       collapsedSections.lines &&
@@ -338,13 +316,11 @@
       collapsedSections.lines.every((v) => v === true);
     collapsedSections = {
       obstacles: shapes.map(() => true),
-      // If sections were all collapsed, new lines should start collapsed
       lines: lines.map(() => (wasAllCollapsed ? true : false)),
       controlPoints: lines.map(() => true),
     };
   }
 
-  // Respond to global toggle collapse all trigger from hotkey
   import { toggleCollapseAllTrigger } from "../stores";
   let _lastToggleCollapse = $toggleCollapseAllTrigger;
   $: if ($toggleCollapseAllTrigger !== _lastToggleCollapse) {
@@ -365,7 +341,6 @@
   let dragPosition: DragPosition | null = null;
 
   function handleDragStart(e: DragEvent, index: number) {
-    // Ignore drag gestures that originate from event marker sliders so the parent list item does not move
     const originElem = document.elementFromPoint(
       e.clientX,
       e.clientY,
@@ -375,7 +350,6 @@
       return;
     }
 
-    // Check if item is locked
     const item = sequence[index];
     let isLocked = false;
     if (item.kind === "path") {
@@ -393,7 +367,6 @@
     draggingIndex = index;
     if (e.dataTransfer) {
       e.dataTransfer.effectAllowed = "move";
-      // Optional: set custom drag image if needed
     }
   }
 
@@ -401,8 +374,6 @@
     if (draggingIndex === null || activeTab !== "path") return;
     e.preventDefault();
 
-    // Use document.body to search globally for the list items
-    // Since we are in the Path tab, we look for our specific list items
     const target = getClosestTarget(e, '[role="listitem"]', document.body);
 
     if (!target) return;
@@ -448,8 +419,6 @@
     dragPosition = null;
   }
 
-  // Ensure default named paths are renumbered to match the displayed order when
-  // new paths are inserted at the beginning/middle/end of the list.
   function renumberDefaultPathNames() {
     const renamed = lines.map((l, idx) => {
       if (/^Path \d+$/.test(l.name)) {
@@ -470,7 +439,6 @@
     const lineIndex = lines.findIndex((l) => l.id === seqItem.lineId);
     const currentLine = lines[lineIndex];
 
-    // Calculate a new point offset from the current line's end point
     let newPoint: Point;
     if (currentLine.endPoint.heading === "linear") {
       newPoint = {
@@ -496,7 +464,6 @@
       };
     }
 
-    // Create a new line that starts where the current line ends
     const newLine = {
       id: makeId(),
       endPoint: newPoint,
@@ -510,7 +477,6 @@
       waitAfterName: "",
     };
 
-    // Insert the new line after the current one and a sequence item after current seq index
     const newLines = [...lines];
     newLines.splice(lineIndex + 1, 0, newLine);
     lines = newLines;
@@ -527,28 +493,22 @@
     collapsedSections.controlPoints.splice(lineIndex + 1, 0, true);
     collapsedEventMarkers.splice(lineIndex + 1, 0, false);
 
-    // Force reactivity
     collapsedSections = { ...collapsedSections };
     collapsedEventMarkers = [...collapsedEventMarkers];
   }
 
   function removeLine(idx: number) {
-    // Protect against deleting the last remaining path
     if (lines.length <= 1) return;
 
     const removedId = lines[idx]?.id;
-    // Remove the line from lines array
     const newLines = [...lines];
     newLines.splice(idx, 1);
     lines = newLines;
 
-    // If we removed a line, remove its path entry but preserve waits that follow it
     if (removedId) {
       sequence = sequence.filter(
         (item) => !(item.kind === "path" && item.lineId === removedId),
       );
-
-      // Clear selection if the removed line was selected
       if ($selectedLineId === removedId) selectedLineId.set(null);
     }
 
@@ -579,25 +539,21 @@
     sequence = [...sequence, { kind: "path", lineId: newLine.id! }];
     collapsedSections.lines.push(allCollapsed ? true : false);
     collapsedSections.controlPoints.push(true);
-    // Select the newly created line and its endpoint
     selectedLineId.set(newLine.id!);
     const newIndex = lines.findIndex((l) => l.id === newLine.id!);
     selectedPointId.set(`point-${newIndex + 1}-0`);
     recordChange();
   }
 
-  // Collapse all UI sections (lines, control points, event markers, obstacles)
   function collapseAll() {
     collapsedSections.lines = lines.map(() => true);
     collapsedSections.controlPoints = lines.map(() => true);
     collapsedEventMarkers = lines.map(() => true);
     collapsedSections.obstacles = shapes.map(() => true);
-    // Force reactivity
     collapsedSections = { ...collapsedSections };
     collapsedEventMarkers = [...collapsedEventMarkers];
   }
 
-  // Expand all UI sections
   function expandAll() {
     collapsedSections.lines = lines.map(() => false);
     collapsedSections.controlPoints = lines.map(() => false);
@@ -607,7 +563,6 @@
     collapsedEventMarkers = [...collapsedEventMarkers];
   }
 
-  // Toggle collapse/expand all depending on current state
   $: allCollapsed =
     collapsedSections.lines.length > 0 &&
     collapsedSections.lines.every((v) => v) &&
@@ -629,8 +584,6 @@
       locked: false,
     } as SequenceItem;
     sequence = [...sequence, wait];
-
-    // Select newly created wait
     selectedPointId.set(`wait-${wait.id}`);
     selectedLineId.set(null);
     recordChange();
@@ -645,8 +598,6 @@
       locked: false,
     } as SequenceItem;
     sequence = [wait, ...sequence];
-
-    // Select newly created wait
     selectedPointId.set(`wait-${wait.id}`);
     selectedLineId.set(null);
     recordChange();
@@ -671,7 +622,6 @@
       waitAfterName: "",
     };
     lines = [newLine, ...lines];
-    // Renumber default path names to match new ordering
     renumberDefaultPathNames();
     sequence = [{ kind: "path", lineId: newLine.id! }, ...sequence];
     collapsedSections.lines = [
@@ -686,7 +636,6 @@
       allCollapsed ? true : false,
       ...collapsedEventMarkers,
     ];
-    // Select the new starting path
     selectedLineId.set(newLine.id!);
     recordChange();
   }
@@ -709,7 +658,6 @@
   }
 
   function insertPathAfter(seqIndex: number) {
-    // Create a new line with default settings
     const newLine: Line = {
       id: makeId(),
       name: "",
@@ -728,22 +676,17 @@
       waitAfterName: "",
     };
 
-    // Add the new line to the lines array
     lines = [...lines, newLine];
-    // Renumber default path names now that the order will be reflected by sequence
     renumberDefaultPathNames();
 
-    // Insert the new path in the sequence after the wait
     const newSeq = [...sequence];
     newSeq.splice(seqIndex + 1, 0, { kind: "path", lineId: newLine.id! });
     sequence = newSeq;
 
-    // Add UI state for the new line (respect collapse-all)
     collapsedSections.lines.push(allCollapsed ? true : false);
     collapsedSections.controlPoints.push(true);
     collapsedEventMarkers.push(false);
 
-    // Force reactivity
     collapsedSections = { ...collapsedSections };
     collapsedEventMarkers = [...collapsedEventMarkers];
     recordChange();
@@ -772,11 +715,9 @@
       }
     });
 
-    // Append any lines that are not currently in the sequence to preserve data
     reordered.push(...byId.values());
 
     lines = reordered.map((entry) => entry.line);
-    // Re-number default names after reordering so Path 1..N matches current order
     const renamed = lines.map((l, idx) => {
       if (/^Path \d+$/.test(l.name)) return { ...l, name: `Path ${idx + 1}` };
       return l;
@@ -795,7 +736,6 @@
     const targetIndex = seqIndex + delta;
     if (targetIndex < 0 || targetIndex >= sequence.length) return;
 
-    // Prevent moving if either the source or target is a locked path or a locked wait
     const isLockedSequenceItem = (index: number) => {
       const it = sequence[index];
       if (!it) return false;
@@ -803,7 +743,6 @@
         const ln = lines.find((l) => l.id === it.lineId);
         return ln?.locked ?? false;
       }
-      // wait
       if (it.kind === "wait") {
         return (it as any).locked ?? false;
       }
@@ -831,50 +770,30 @@
       role="tablist"
       aria-label="Editor View Selection"
     >
-      <button
-        role="tab"
-        aria-selected={activeTab === "path"}
-        aria-controls="path-panel"
-        id="path-tab"
-        class="flex-1 px-4 py-1.5 text-sm font-medium rounded-md transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-purple-500 {activeTab ===
-        'path'
-          ? 'bg-white dark:bg-neutral-700 shadow-sm text-neutral-900 dark:text-white'
-          : 'text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300'}"
-        on:click={() => (activeTab = "path")}
-      >
-        Paths
-      </button>
-      <button
-        role="tab"
-        aria-selected={activeTab === "field"}
-        aria-controls="field-panel"
-        id="field-tab"
-        class="flex-1 px-4 py-1.5 text-sm font-medium rounded-md transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-purple-500 {activeTab ===
-        'field'
-          ? 'bg-white dark:bg-neutral-700 shadow-sm text-neutral-900 dark:text-white'
-          : 'text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300'}"
-        on:click={() => (activeTab = "field")}
-      >
-        Field & Tools
-      </button>
-      <button
-        role="tab"
-        aria-selected={activeTab === "table"}
-        aria-controls="table-panel"
-        id="table-tab"
-        class="flex-1 px-4 py-1.5 text-sm font-medium rounded-md transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-purple-500 {activeTab ===
-        'table'
-          ? 'bg-white dark:bg-neutral-700 shadow-sm text-neutral-900 dark:text-white'
-          : 'text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300'}"
-        on:click={() => (activeTab = "table")}
-      >
-        Table
-      </button>
+      {#each ["path", "field", "table"] as tab}
+        <button
+          role="tab"
+          aria-selected={activeTab === tab}
+          aria-controls="{tab}-panel"
+          id="{tab}-tab"
+          class="flex-1 px-4 py-1.5 text-sm font-medium rounded-md transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-purple-500 capitalize {activeTab ===
+          tab
+            ? 'bg-white dark:bg-neutral-700 shadow-sm text-neutral-900 dark:text-white'
+            : 'text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300'}"
+          on:click={() => (activeTab = tab)}
+        >
+          {tab === "field"
+            ? "Field & Tools"
+            : tab === "path"
+              ? "Paths"
+              : "Table"}
+        </button>
+      {/each}
     </div>
   </div>
 
   <div
-    class="flex flex-col justify-start items-start w-full rounded-lg bg-neutral-50 dark:bg-neutral-900 shadow-md p-4 overflow-y-auto overflow-x-hidden h-full gap-6"
+    class="flex flex-col justify-start items-start w-full rounded-lg bg-white dark:bg-neutral-900 shadow-sm border border-neutral-200 dark:border-neutral-800 p-4 overflow-y-auto overflow-x-hidden h-full gap-6 relative"
     role="tabpanel"
     id={activeTab === "path"
       ? "path-panel"
@@ -971,110 +890,125 @@
       {/if}
 
       <!-- Unified sequence render: paths and waits -->
-      {#each sequence as item, sIdx}
-        {@const isLocked =
-          item.kind === "path"
-            ? (lines.find((l) => l.id === item.lineId)?.locked ?? false)
-            : (item.locked ?? false)}
-        <div
-          role="listitem"
-          data-index={sIdx}
-          class="w-full transition-all duration-200 rounded-lg"
-          draggable={!isLocked}
-          on:dragstart={(e) => handleDragStart(e, sIdx)}
-          on:dragend={handleDragEnd}
-          class:border-t-4={dragOverIndex === sIdx && dragPosition === "top"}
-          class:border-b-4={dragOverIndex === sIdx && dragPosition === "bottom"}
-          class:border-blue-500={dragOverIndex === sIdx}
-          class:dark:border-blue-400={dragOverIndex === sIdx}
-          class:opacity-50={draggingIndex === sIdx}
-        >
-          {#if item.kind === "path"}
-            {#each lines.filter((l) => l.id === item.lineId) as ln (ln.id)}
-              <PathLineSection
-                bind:line={ln}
-                idx={lines.findIndex((l) => l.id === ln.id)}
-                bind:lines
-                bind:collapsed={
-                  collapsedSections.lines[
-                    lines.findIndex((l) => l.id === ln.id)
-                  ]
-                }
-                bind:collapsedEventMarkers={
-                  collapsedEventMarkers[lines.findIndex((l) => l.id === ln.id)]
-                }
-                bind:collapsedControlPoints={
-                  collapsedSections.controlPoints[
-                    lines.findIndex((l) => l.id === ln.id)
-                  ]
-                }
-                onRemove={() =>
-                  removeLine(lines.findIndex((l) => l.id === ln.id))}
-                onInsertAfter={() => insertLineAfter(sIdx)}
-                onAddWaitAfter={() => insertWaitAfter(sIdx)}
+      <div class="flex flex-col w-full gap-2 pb-16">
+        {#each sequence as item, sIdx}
+          {@const isLocked =
+            item.kind === "path"
+              ? (lines.find((l) => l.id === item.lineId)?.locked ?? false)
+              : (item.locked ?? false)}
+          <div
+            role="listitem"
+            data-index={sIdx}
+            class="w-full transition-all duration-200 rounded-lg"
+            draggable={!isLocked}
+            on:dragstart={(e) => handleDragStart(e, sIdx)}
+            on:dragend={handleDragEnd}
+            class:border-t-4={dragOverIndex === sIdx && dragPosition === "top"}
+            class:border-b-4={dragOverIndex === sIdx &&
+              dragPosition === "bottom"}
+            class:border-blue-500={dragOverIndex === sIdx}
+            class:dark:border-blue-400={dragOverIndex === sIdx}
+            class:opacity-50={draggingIndex === sIdx}
+          >
+            {#if item.kind === "path"}
+              {#each lines.filter((l) => l.id === item.lineId) as ln (ln.id)}
+                <PathLineSection
+                  bind:line={ln}
+                  idx={lines.findIndex((l) => l.id === ln.id)}
+                  bind:lines
+                  bind:collapsed={
+                    collapsedSections.lines[
+                      lines.findIndex((l) => l.id === ln.id)
+                    ]
+                  }
+                  bind:collapsedEventMarkers={
+                    collapsedEventMarkers[
+                      lines.findIndex((l) => l.id === ln.id)
+                    ]
+                  }
+                  bind:collapsedControlPoints={
+                    collapsedSections.controlPoints[
+                      lines.findIndex((l) => l.id === ln.id)
+                    ]
+                  }
+                  onRemove={() =>
+                    removeLine(lines.findIndex((l) => l.id === ln.id))}
+                  onInsertAfter={() => insertLineAfter(sIdx)}
+                  onAddWaitAfter={() => insertWaitAfter(sIdx)}
+                  onMoveUp={() => moveSequenceItem(sIdx, -1)}
+                  onMoveDown={() => moveSequenceItem(sIdx, 1)}
+                  canMoveUp={sIdx !== 0}
+                  canMoveDown={sIdx !== sequence.length - 1}
+                  {recordChange}
+                />
+              {/each}
+            {:else}
+              <WaitRow
+                id={getWait(item).id}
+                name={getWait(item).name}
+                durationMs={getWait(item).durationMs}
+                locked={getWait(item).locked ?? false}
+                onToggleLock={() => {
+                  const newSeq = [...sequence];
+                  newSeq[sIdx] = {
+                    ...getWait(item),
+                    locked: !(getWait(item).locked ?? false),
+                  };
+                  sequence = newSeq;
+                  recordChange?.();
+                }}
+                onChange={(newName, newDuration) => {
+                  const newSeq = [...sequence];
+                  newSeq[sIdx] = {
+                    ...getWait(item),
+                    name: newName,
+                    durationMs: Math.max(0, Number(newDuration) || 0),
+                  };
+                  sequence = newSeq;
+                }}
+                onRemove={() => {
+                  const newSeq = [...sequence];
+                  newSeq.splice(sIdx, 1);
+                  sequence = newSeq;
+                }}
+                onInsertAfter={() => {
+                  const newSeq = [...sequence];
+                  newSeq.splice(sIdx + 1, 0, {
+                    kind: "wait",
+                    id: makeId(),
+                    name: "Wait",
+                    durationMs: 0,
+                    locked: false,
+                  });
+                  sequence = newSeq;
+                }}
+                onAddPathAfter={() => insertPathAfter(sIdx)}
                 onMoveUp={() => moveSequenceItem(sIdx, -1)}
                 onMoveDown={() => moveSequenceItem(sIdx, 1)}
                 canMoveUp={sIdx !== 0}
                 canMoveDown={sIdx !== sequence.length - 1}
-                {recordChange}
               />
-            {/each}
-          {:else}
-            <WaitRow
-              id={getWait(item).id}
-              name={getWait(item).name}
-              durationMs={getWait(item).durationMs}
-              locked={getWait(item).locked ?? false}
-              onToggleLock={() => {
-                const newSeq = [...sequence];
-                newSeq[sIdx] = {
-                  ...getWait(item),
-                  locked: !(getWait(item).locked ?? false),
-                };
-                sequence = newSeq;
-                recordChange?.();
-              }}
-              onChange={(newName, newDuration) => {
-                const newSeq = [...sequence];
-                newSeq[sIdx] = {
-                  ...getWait(item),
-                  name: newName,
-                  durationMs: Math.max(0, Number(newDuration) || 0),
-                };
-                sequence = newSeq;
-              }}
-              onRemove={() => {
-                const newSeq = [...sequence];
-                newSeq.splice(sIdx, 1);
-                sequence = newSeq;
-              }}
-              onInsertAfter={() => {
-                const newSeq = [...sequence];
-                newSeq.splice(sIdx + 1, 0, {
-                  kind: "wait",
-                  id: makeId(),
-                  name: "Wait",
-                  durationMs: 0,
-                  locked: false,
-                });
-                sequence = newSeq;
-              }}
-              onAddPathAfter={() => insertPathAfter(sIdx)}
-              onMoveUp={() => moveSequenceItem(sIdx, -1)}
-              onMoveDown={() => moveSequenceItem(sIdx, 1)}
-              canMoveUp={sIdx !== 0}
-              canMoveDown={sIdx !== sequence.length - 1}
-            />
-            <WaitMarkersSection wait={getWait(item)} />
-          {/if}
-        </div>
-      {/each}
+              <WaitMarkersSection wait={getWait(item)} />
+            {/if}
+          </div>
+        {/each}
+      </div>
 
-      <!-- Add Line Button -->
-      <div class="flex flex-row items-center gap-4">
+      <!-- Add Line Buttons (Sticky Bottom) -->
+      <div class="absolute bottom-4 right-4 flex flex-col gap-2">
+        <!-- These could be floating action buttons if we wanted,
+              but for now keeping them accessible at the end of list is fine too.
+              Actually, making them sticky at the bottom of the container is better.
+         -->
+      </div>
+
+      <!-- Static buttons at the end of the list -->
+      <div
+        class="flex flex-row items-center gap-4 justify-center w-full mt-4 pb-4"
+      >
         <button
           on:click={addLine}
-          class="font-semibold text-green-500 text-sm flex flex-row justify-start items-center gap-1 hover:text-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 rounded px-1"
+          class="flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 transition-colors shadow-sm font-medium"
           aria-label="Add new path segment"
         >
           <svg
@@ -1091,12 +1025,12 @@
               d="M12 4.5v15m7.5-7.5h-15"
             />
           </svg>
-          <p>Add Path</p>
+          Add Path
         </button>
 
         <button
           on:click={addWait}
-          class="font-semibold text-amber-500 text-sm flex flex-row justify-start items-center gap-1 hover:text-amber-600 focus:outline-none focus:ring-2 focus:ring-amber-500 rounded px-1"
+          class="flex items-center gap-2 px-4 py-2 bg-amber-500 text-white rounded-md hover:bg-amber-600 transition-colors shadow-sm font-medium"
           aria-label="Add wait command"
         >
           <svg
@@ -1114,7 +1048,7 @@
               d="M12 7v5l3 2"
             />
           </svg>
-          <p>Add Wait</p>
+          Add Wait
         </button>
       </div>
     {/if}
