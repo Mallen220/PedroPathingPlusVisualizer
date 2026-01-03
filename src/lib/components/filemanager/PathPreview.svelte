@@ -1,3 +1,4 @@
+<!-- Copyright 2026 Matthew Allen. Licensed under the Apache License, Version 2.0. -->
 <!-- src/lib/components/filemanager/PathPreview.svelte -->
 <script lang="ts">
   import type { Point, Line } from "../../../types";
@@ -14,34 +15,82 @@
   $: scaleX = d3.scaleLinear().domain([0, FIELD_SIZE]).range([0, width]);
   $: scaleY = d3.scaleLinear().domain([0, FIELD_SIZE]).range([height, 0]);
 
-  function getPathD(start: Point, pathLines: Line[]): string {
-    if (!start) return "";
-    let d = `M ${scaleX(start.x)} ${scaleY(start.y)}`;
+  function isValidPoint(p: any): p is Point {
+    return p && typeof p.x === "number" && typeof p.y === "number";
+  }
 
-    // Simple straight line approximation for preview performance
-    // Ideally we would sample bezier, but for a tiny icon, line segments are fine
-    // Or we can use Bezier commands if we convert control points
-
-    for (const line of pathLines) {
-      const end = line.endPoint;
-      const cp = line.controlPoints;
-
-      if (cp.length === 2) {
-        // Cubic Bezier
-        d += ` C ${scaleX(cp[0].x)} ${scaleY(cp[0].y)}, ${scaleX(cp[1].x)} ${scaleY(cp[1].y)}, ${scaleX(end.x)} ${scaleY(end.y)}`;
-      } else if (cp.length === 1) {
-        // Quadratic Bezier
-        d += ` Q ${scaleX(cp[0].x)} ${scaleY(cp[0].y)}, ${scaleX(end.x)} ${scaleY(end.y)}`;
-      } else {
-        // Line
-        d += ` L ${scaleX(end.x)} ${scaleY(end.y)}`;
+  // Compute a point on a Bezier curve of arbitrary degree using De Casteljau's algorithm
+  function deCasteljau(controlPoints: Point[], t: number): Point {
+    // Work on a shallow copy to avoid mutating inputs
+    let pts = controlPoints.map((p) => ({ x: p.x, y: p.y }));
+    const n = pts.length;
+    for (let r = 1; r < n; r++) {
+      for (let i = 0; i < n - r; i++) {
+        pts[i] = {
+          x: pts[i].x * (1 - t) + pts[i + 1].x * t,
+          y: pts[i].y * (1 - t) + pts[i + 1].y * t,
+        };
       }
     }
+    return pts[0];
+  }
+
+  function getPathD(start: Point, pathLines: Line[]): string {
+    if (!start) return "";
+
+    let d = `M ${scaleX(start.x)} ${scaleY(start.y)}`;
+    let current = { x: start.x, y: start.y };
+
+    for (const line of pathLines || []) {
+      if (!line || !line.endPoint || !isValidPoint(line.endPoint)) continue;
+      const end = line.endPoint;
+      const cpRaw = Array.isArray(line.controlPoints) ? line.controlPoints : [];
+      const cps = cpRaw.filter(isValidPoint);
+
+      // If there are no control points, just draw a straight line
+      if (cps.length === 0) {
+        d += ` L ${scaleX(end.x)} ${scaleY(end.y)}`;
+        current = { x: end.x, y: end.y };
+        continue;
+      }
+
+      // Build control array for De Casteljau: [current, ...cps, end]
+      const bezierControls: Point[] = [current, ...cps, end];
+
+      // Choose number of samples based on degree and icon size (more points for higher degree)
+      const degree = bezierControls.length - 1;
+      const baseSamples = 10; // higher default for smoother curves
+      const samples = Math.min(
+        48,
+        Math.max(baseSamples, Math.ceil(baseSamples * (degree / 1.5))),
+      );
+
+      // Debug log for high-degree curves
+      const PREVIEW_DEBUG = true;
+      if (PREVIEW_DEBUG && cps.length > 2) {
+        console.debug(
+          `[preview] Sampling degree ${degree} curve (control points: ${cps.length}) with ${samples} samples`,
+        );
+      }
+
+      // Sample the curve and emit small line segments for the preview
+      for (let s = 1; s <= samples; s++) {
+        const t = s / samples;
+        const pt = deCasteljau(bezierControls, t);
+        d += ` L ${scaleX(pt.x)} ${scaleY(pt.y)}`;
+      }
+
+      current = { x: end.x, y: end.y };
+    }
+
     return d;
   }
 </script>
 
-<div class="relative bg-neutral-100 dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 overflow-hidden" style="width: {width}px; height: {height}px; border-radius: 4px;">
+<div
+  class="relative bg-neutral-100 dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 overflow-hidden"
+  style="width: {width}px; height: {height}px; border-radius: 4px;"
+>
   <svg {width} {height} viewBox="0 0 {width} {height}" class="block">
     <!-- Field Background -->
     {#if fieldImage}
@@ -49,7 +98,7 @@
       <!-- Since we are on a square field, and width/height should be square-ish, stretching is usually desired for field map -->
       <image href={fieldImage} {width} {height} preserveAspectRatio="none" />
     {/if}
-    <rect width={width} height={height} fill="none" stroke={fieldImage ? "none" : "#ccc"} />
+    <rect {width} {height} fill="none" stroke={fieldImage ? "none" : "#ccc"} />
 
     <!-- Path -->
     <path
@@ -63,7 +112,12 @@
 
     <!-- Start Point -->
     {#if startPoint}
-      <circle cx={scaleX(startPoint.x)} cy={scaleY(startPoint.y)} r="3" fill="#10b981" />
+      <circle
+        cx={scaleX(startPoint.x)}
+        cy={scaleY(startPoint.y)}
+        r="3"
+        fill="#10b981"
+      />
     {/if}
 
     <!-- End Point -->

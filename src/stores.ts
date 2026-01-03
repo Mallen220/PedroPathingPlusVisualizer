@@ -40,5 +40,5 @@ export const fileManagerSessionState = writable<{
   viewMode: "list" | "grid";
 }>({
   searchQuery: "",
-  viewMode: "list"
+  viewMode: "list",
 });

@@ -1,3 +1,4 @@
+<!-- Copyright 2026 Matthew Allen. Licensed under the Apache License, Version 2.0. -->
 <!-- src/lib/components/filemanager/FileContextMenu.svelte -->
 <script lang="ts">
   import { createEventDispatcher, onMount } from "svelte";
