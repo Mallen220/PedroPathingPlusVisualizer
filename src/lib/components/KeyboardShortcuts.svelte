@@ -13,6 +13,7 @@
     selectedLineId,
     toggleCollapseAllTrigger,
     fieldZoom,
+    fieldPan,
   } from "../../stores";
   import {
     startPointStore,
@@ -551,6 +552,7 @@
   function resetZoom() {
     if (isUIElementFocused()) return;
     fieldZoom.set(1.0);
+    fieldPan.set({ x: 0, y: 0 });
   }
 
   function changePlaybackSpeedBy(delta: number) {

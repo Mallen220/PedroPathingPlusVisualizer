@@ -14,6 +14,7 @@
     protractorLockToRobot,
     collisionMarkers,
     fieldZoom,
+    fieldPan,
   } from "../../stores";
   import {
     linesStore,
@@ -73,23 +74,26 @@
   let dragOffset = { x: 0, y: 0 };
   let currentElem: string | null = null;
   let isDown = false;
+  let isPanning = false;
+  let startPan = { x: 0, y: 0 };
 
   // D3 Scales
   $: zoom = $fieldZoom;
+  $: pan = $fieldPan;
   $: scaleFactor = zoom;
   $: x = d3
     .scaleLinear()
     .domain([0, FIELD_SIZE])
     .range([
-      width / 2 - (width * scaleFactor) / 2,
-      width / 2 + (width * scaleFactor) / 2,
+      width / 2 - (width * scaleFactor) / 2 + pan.x,
+      width / 2 + (width * scaleFactor) / 2 + pan.x,
     ]);
   $: y = d3
     .scaleLinear()
     .domain([0, FIELD_SIZE])
     .range([
-      height / 2 + (height * scaleFactor) / 2,
-      height / 2 - (height * scaleFactor) / 2,
+      height / 2 + (height * scaleFactor) / 2 + pan.y,
+      height / 2 - (height * scaleFactor) / 2 + pan.y,
     ]);
 
   // Visual Scale (Pixels per Inch at 1x Zoom)
@@ -882,6 +886,23 @@
             linesStore.set(lines);
           }
         }
+      } else if (isPanning) {
+        // Panning Logic
+        // Calculate the delta in pixels
+        const dx = evt.clientX - startPan.x;
+        const dy = evt.clientY - startPan.y;
+
+        // Update the pan store
+        fieldPan.update((p) => ({
+          x: p.x + dx,
+          y: p.y + dy,
+        }));
+
+        // Reset start position for next frame
+        startPan = { x: evt.clientX, y: evt.clientY };
+
+        // Set cursor to grabbing
+        two.renderer.domElement.style.cursor = "grabbing";
       } else {
         // Cursor Update
         // Use evt.target instead of elementFromPoint
@@ -923,43 +944,44 @@
             }
           }
         } else {
-          two.renderer.domElement.style.cursor = "auto";
+          two.renderer.domElement.style.cursor = "grab";
           currentElem = null;
         }
       }
     });
 
     two.renderer.domElement.addEventListener("mousedown", (evt: MouseEvent) => {
-      isDown = true;
       // Re-determine currentElem if needed
-      if (!currentElem) {
-        // Optimization: use evt.target
-        const el = evt.target as Element;
-        if (el?.id) {
-          if (el.id.startsWith("point") || el.id.startsWith("obstacle-"))
-            currentElem = el.id;
-          else if (el.id.includes("event-")) {
-            // Logic to normalize ID
-            // Copy-pasted from above logic for simplicity or extract helper
-            const idParts = el.id.split("-");
-            if (el.id.startsWith("wait-event-")) {
-              if (idParts.length >= 4) {
-                const waitId = idParts[idParts.length - 2];
-                const evIdx = idParts[idParts.length - 1];
-                currentElem = `wait-event-${waitId}-${evIdx}`;
-              } else currentElem = el.id;
-            } else {
-              if (idParts.length >= 3) {
-                const lineIdx = idParts[idParts.length - 2];
-                const evIdx = idParts[idParts.length - 1];
-                currentElem = `event-${lineIdx}-${evIdx}`;
-              } else currentElem = el.id;
-            }
+      let clickedElem = null;
+      // Optimization: use evt.target
+      const el = evt.target as Element;
+      if (el?.id) {
+        if (el.id.startsWith("point") || el.id.startsWith("obstacle-"))
+          clickedElem = el.id;
+        else if (el.id.includes("event-")) {
+          // Logic to normalize ID
+          // Copy-pasted from above logic for simplicity or extract helper
+          const idParts = el.id.split("-");
+          if (el.id.startsWith("wait-event-")) {
+            if (idParts.length >= 4) {
+              const waitId = idParts[idParts.length - 2];
+              const evIdx = idParts[idParts.length - 1];
+              clickedElem = `wait-event-${waitId}-${evIdx}`;
+            } else clickedElem = el.id;
+          } else {
+            if (idParts.length >= 3) {
+              const lineIdx = idParts[idParts.length - 2];
+              const evIdx = idParts[idParts.length - 1];
+              clickedElem = `event-${lineIdx}-${evIdx}`;
+            } else clickedElem = el.id;
           }
         }
       }
 
-      if (currentElem) {
+      if (clickedElem) {
+        isDown = true;
+        currentElem = clickedElem;
+
         if (currentElem.startsWith("point-")) {
           const parts = currentElem.split("-");
           const lineNum = Number(parts[1]);
@@ -1034,6 +1056,11 @@
           }
         }
         dragOffset = { x: objectX - mouseX, y: objectY - mouseY };
+      } else {
+        // Start Panning
+        isPanning = true;
+        startPan = { x: evt.clientX, y: evt.clientY };
+        two.renderer.domElement.style.cursor = "grabbing";
       }
     });
 
@@ -1042,7 +1069,9 @@
         onRecordChange(); // Notify parent of change
       }
       isDown = false;
+      isPanning = false;
       dragOffset = { x: 0, y: 0 };
+      two.renderer.domElement.style.cursor = "grab";
     });
 
     // Double Click to Add Line
@@ -1201,7 +1230,10 @@ left: ${x(robotXY.x)}px; transform: translate(-50%, -50%) rotate(${robotHeading}
     </button>
     <button
       class="w-7 h-7 flex items-center justify-center rounded hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-200 transition-colors"
-      on:click={() => fieldZoom.set(1.0)}
+      on:click={() => {
+        fieldZoom.set(1.0);
+        fieldPan.set({ x: 0, y: 0 });
+      }}
       aria-label="Reset zoom"
       title="Reset Zoom (Cmd/Ctrl + 0)"
     >
