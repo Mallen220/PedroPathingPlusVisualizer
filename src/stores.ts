@@ -11,6 +11,7 @@ export const gridSize = writable(12);
 export const currentFilePath = writable<string | null>(null);
 export const isUnsaved = writable(false);
 export const snapToGrid = writable(true);
+export const fieldZoom = writable(1.0);
 export const showShortcuts = writable(false);
 export const showSettings = writable(false);
 export const showExportGif = writable(false);

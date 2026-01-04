@@ -13,6 +13,7 @@
     showProtractor,
     protractorLockToRobot,
     collisionMarkers,
+    fieldZoom,
   } from "../../stores";
   import {
     linesStore,
@@ -74,14 +75,22 @@
   let isDown = false;
 
   // D3 Scales
+  $: zoom = $fieldZoom;
+  $: scaleFactor = zoom;
   $: x = d3
     .scaleLinear()
     .domain([0, FIELD_SIZE])
-    .range([0, width || FIELD_SIZE]);
+    .range([
+      width / 2 - (width * scaleFactor) / 2,
+      width / 2 + (width * scaleFactor) / 2,
+    ]);
   $: y = d3
     .scaleLinear()
     .domain([0, FIELD_SIZE])
-    .range([height || FIELD_SIZE, 0]);
+    .range([
+      height / 2 + (height * scaleFactor) / 2,
+      height / 2 - (height * scaleFactor) / 2,
+    ]);
 
   // Derived Values from Stores
   $: startPoint = $startPointStore;
@@ -1113,7 +1122,8 @@
         ? `/fields/${settings.fieldMap}`
         : "/fields/decode.webp"}
       alt="Field"
-      class="absolute top-0 left-0 w-full h-full rounded-lg z-10"
+      class="absolute rounded-lg z-10"
+      style={`top: ${y(FIELD_SIZE)}px; left: ${x(0)}px; width: ${x(FIELD_SIZE) - x(0)}px; height: ${y(0) - y(FIELD_SIZE)}px;`}
       draggable="false"
       on:error={(e) => {
         // @ts-ignore
@@ -1124,8 +1134,8 @@
     <img
       src={settings.robotImage || "/robot.png"}
       alt="Robot"
-      style={`position: absolute; top: ${robotXY.y}px;
-left: ${robotXY.x}px; transform: translate(-50%, -50%) rotate(${robotHeading}deg); z-index: 20; width: ${x(settings.rLength || DEFAULT_ROBOT_LENGTH)}px; height: ${x(settings.rWidth || DEFAULT_ROBOT_WIDTH)}px; pointer-events: none;`}
+      style={`position: absolute; top: ${y(robotXY.y)}px;
+left: ${x(robotXY.x)}px; transform: translate(-50%, -50%) rotate(${robotHeading}deg); z-index: 20; width: ${Math.abs(x(settings.rLength || DEFAULT_ROBOT_LENGTH) - x(0))}px; height: ${Math.abs(x(settings.rWidth || DEFAULT_ROBOT_WIDTH) - x(0))}px; pointer-events: none;`}
       draggable="false"
       on:error={(e) => {
         // @ts-ignore
@@ -1139,6 +1149,80 @@ left: ${robotXY.x}px; transform: translate(-50%, -50%) rotate(${robotHeading}deg
     visible={isMouseOverField}
     isObstructed={isObstructingHUD}
   />
+
+  <!-- Zoom Controls -->
+  <div
+    class="absolute top-2 right-2 flex flex-col gap-1 z-30 bg-white/80 dark:bg-neutral-800/80 p-1 rounded-md shadow-sm border border-neutral-200 dark:border-neutral-700 backdrop-blur-sm"
+  >
+    <button
+      class="w-7 h-7 flex items-center justify-center rounded hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-200 transition-colors"
+      on:click={() =>
+        fieldZoom.update((z) => Math.min(5.0, Number((z + 0.1).toFixed(2))))}
+      aria-label="Zoom in"
+      title="Zoom In (Cmd/Ctrl + +)"
+    >
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 20 20"
+        fill="currentColor"
+        class="w-4 h-4"
+      >
+        <path
+          d="M10.75 4.75a.75.75 0 00-1.5 0v4.5h-4.5a.75.75 0 000 1.5h4.5v4.5a.75.75 0 001.5 0v-4.5h4.5a.75.75 0 000-1.5h-4.5v-4.5z"
+        />
+      </svg>
+    </button>
+    <button
+      class="w-7 h-7 flex items-center justify-center rounded hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-200 transition-colors"
+      on:click={() =>
+        fieldZoom.update((z) => Math.max(0.1, Number((z - 0.1).toFixed(2))))}
+      aria-label="Zoom out"
+      title="Zoom Out (Cmd/Ctrl + -)"
+    >
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 20 20"
+        fill="currentColor"
+        class="w-4 h-4"
+      >
+        <path
+          fill-rule="evenodd"
+          d="M4 10a.75.75 0 01.75-.75h10.5a.75.75 0 010 1.5H4.75A.75.75 0 014 10z"
+          clip-rule="evenodd"
+        />
+      </svg>
+    </button>
+    <button
+      class="w-7 h-7 flex items-center justify-center rounded hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-200 transition-colors"
+      on:click={() => fieldZoom.set(1.0)}
+      aria-label="Reset zoom"
+      title="Reset Zoom (Cmd/Ctrl + 0)"
+    >
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 20 20"
+        fill="currentColor"
+        class="w-4 h-4"
+      >
+        <path
+          fill-rule="evenodd"
+          d="M3.5 2A1.5 1.5 0 002 3.5v13A1.5 1.5 0 003.5 18h13a1.5 1.5 0 001.5-1.5v-13A1.5 1.5 0 0016.5 2h-13zM9 5a.75.75 0 01.75.75v3.5h3.5a.75.75 0 010 1.5h-3.5v3.5a.75.75 0 01-1.5 0v-3.5h-3.5a.75.75 0 010-1.5h3.5v-3.5A.75.75 0 019 5z"
+          clip-rule="evenodd"
+          style="display:none"
+        />
+        <!-- Custom Reset Icon (Square with dot or similar, or just text '1x') -->
+        <!-- Using a simple maximize/fit icon representation or text -->
+        <text
+          x="10"
+          y="11"
+          font-size="8"
+          text-anchor="middle"
+          fill="currentColor"
+          font-weight="bold">R</text
+        >
+      </svg>
+    </button>
+  </div>
 </div>
 
 <style>
