@@ -3,6 +3,7 @@
   import { onMount, onDestroy } from "svelte";
   import Two from "two.js";
   import * as d3 from "d3";
+  import hotkeys from "hotkeys-js";
   import {
     gridSize,
     snapToGrid,
@@ -13,6 +14,8 @@
     showProtractor,
     protractorLockToRobot,
     collisionMarkers,
+    fieldZoom,
+    fieldPan,
   } from "../../stores";
   import {
     linesStore,
@@ -72,16 +75,9 @@
   let dragOffset = { x: 0, y: 0 };
   let currentElem: string | null = null;
   let isDown = false;
-
-  // D3 Scales
-  $: x = d3
-    .scaleLinear()
-    .domain([0, FIELD_SIZE])
-    .range([0, width || FIELD_SIZE]);
-  $: y = d3
-    .scaleLinear()
-    .domain([0, FIELD_SIZE])
-    .range([height || FIELD_SIZE, 0]);
+  let isPanning = false;
+  let panStart = { x: 0, y: 0 };
+  let initialPan = { x: 0, y: 0 };
 
   // Derived Values from Stores
   $: startPoint = $startPointStore;
@@ -92,6 +88,60 @@
   $: robotHeading = $robotHeadingStore;
   $: sequence = $sequenceStore; // Needed for wait markers
   $: markers = $collisionMarkers;
+  $: zoom = $fieldZoom;
+  $: pan = $fieldPan;
+
+  // D3 Scales with Zoom and Pan
+  // The viewport is [0, width] x [0, height].
+  // Center of viewport is (width/2, height/2).
+  // Base scale k = width / FIELD_SIZE.
+  // We want to zoom relative to the center.
+  // x(val) = ((val * baseScale) - center) * zoom + center + panX
+  $: baseScaleX = width / FIELD_SIZE;
+  $: baseScaleY = height / FIELD_SIZE;
+  $: centerX = width / 2;
+  $: centerY = height / 2;
+
+  $: x = d3
+    .scaleLinear()
+    .domain([0, FIELD_SIZE])
+    .range([
+      (0 * baseScaleX - centerX) * zoom + centerX + pan.x,
+      (FIELD_SIZE * baseScaleX - centerX) * zoom + centerX + pan.x,
+    ]);
+
+  $: y = d3
+    .scaleLinear()
+    .domain([0, FIELD_SIZE])
+    .range([
+      (FIELD_SIZE * baseScaleY - centerY) * zoom + centerY + pan.y,
+      (0 * baseScaleY - centerY) * zoom + centerY + pan.y,
+    ]);
+
+  // Helper to maintain visual size relative to viewport, invariant of field zoom
+  // We want an element to be N pixels on screen.
+  // x(length) - x(0) = length * baseScaleX * zoom.
+  // we want result to be N pixels.
+  // length * baseScaleX * zoom = N
+  // length = N / (baseScaleX * zoom)
+  function uiLength(pixelSize: number) {
+    if (!width) return 0.1;
+    return pixelSize / (baseScaleX * zoom);
+  }
+
+  // Zoom Controls
+  function zoomIn() {
+    fieldZoom.update((z) => Math.min(5, z * 1.2));
+  }
+
+  function zoomOut() {
+    fieldZoom.update((z) => Math.max(0.1, z / 1.2));
+  }
+
+  function resetZoom() {
+    fieldZoom.set(1);
+    fieldPan.set({ x: 0, y: 0 });
+  }
 
   // Helper to transform mouse coordinates based on rotation
   function getTransformedCoordinates(
@@ -124,7 +174,7 @@
     let startPointElem = new Two.Circle(
       x(startPoint.x),
       y(startPoint.y),
-      x(POINT_RADIUS),
+      x(startPoint.x + uiLength(POINT_RADIUS)) - x(startPoint.x),
     );
     startPointElem.id = `point-0-0`;
     startPointElem.fill = lines[0]?.color || "#000000"; // Fallback color if lines empty
@@ -140,7 +190,7 @@
           let pointElem = new Two.Circle(
             x(point.x),
             y(point.y),
-            x(POINT_RADIUS),
+            x(point.x + uiLength(POINT_RADIUS)) - x(point.x),
           );
           pointElem.id = `point-${idx + 1}-${idx1}-background`;
           pointElem.fill = line.color;
@@ -148,11 +198,14 @@
           let pointText = new Two.Text(
             `${idx1}`,
             x(point.x),
-            y(point.y - 0.15),
-            { size: x(POINT_RADIUS) as number } as any,
+            y(point.y - uiLength(0.15)),
+            {
+              size: x(point.x + uiLength(POINT_RADIUS)) - x(point.x),
+            } as any,
           );
           pointText.id = `point-${idx + 1}-${idx1}-text`;
-          pointText.size = x(1.55) as number;
+          pointText.size =
+            x(point.x + uiLength(1.55)) - x(point.x) || (12 as number);
           pointText.leading = 1;
           pointText.family = "ui-sans-serif, system-ui, sans-serif";
           pointText.alignment = "center";
@@ -165,7 +218,7 @@
           let pointElem = new Two.Circle(
             x(point.x),
             y(point.y),
-            x(POINT_RADIUS),
+            x(point.x + uiLength(POINT_RADIUS)) - x(point.x),
           );
           pointElem.id = `point-${idx + 1}-${idx1}`;
           pointElem.fill = line.color;
@@ -182,7 +235,7 @@
         let pointElem = new Two.Circle(
           x(vertex.x),
           y(vertex.y),
-          x(POINT_RADIUS) as number,
+          x(vertex.x + uiLength(POINT_RADIUS)) - x(vertex.x),
         );
         pointElem.id = `obstacle-${shapeIdx}-${vertexIdx}-background`;
         pointElem.fill = "#991b1b";
@@ -190,11 +243,14 @@
         let pointText = new Two.Text(
           `${vertexIdx + 1}`,
           x(vertex.x),
-          y(vertex.y - 0.15),
-          { size: x(POINT_RADIUS) as number } as any,
+          y(vertex.y - uiLength(0.15)),
+          {
+            size: x(vertex.x + uiLength(POINT_RADIUS)) - x(vertex.x),
+          } as any,
         );
         pointText.id = `obstacle-${shapeIdx}-${vertexIdx}-text`;
-        pointText.size = x(1.55) as number;
+        pointText.size =
+          x(vertex.x + uiLength(1.55)) - x(vertex.x) || (12 as number);
         pointText.leading = 1;
         pointText.family = "ui-sans-serif, system-ui, sans-serif";
         pointText.alignment = "center";
@@ -294,10 +350,15 @@
       lineElem.id = `line-${idx + 1}`;
       lineElem.stroke = line.color;
       const isSelected = line.id === currentSelectedId;
-      lineElem.linewidth = isSelected ? x(LINE_WIDTH * 2.5) : x(LINE_WIDTH);
+      lineElem.linewidth = isSelected
+        ? x(uiLength(LINE_WIDTH * 2.5)) - x(0)
+        : x(uiLength(LINE_WIDTH)) - x(0);
       lineElem.noFill();
       if (line.locked) {
-        lineElem.dashes = [x(2), x(2)];
+        lineElem.dashes = [
+          x(uiLength(2)) - x(0),
+          x(uiLength(2)) - x(0),
+        ];
         lineElem.opacity = 0.7;
       } else {
         lineElem.dashes = [];
@@ -355,7 +416,7 @@
         shapeElement.stroke = shape.color;
         shapeElement.fill = shape.color;
         shapeElement.opacity = 0.4;
-        shapeElement.linewidth = x(0.8);
+        shapeElement.linewidth = x(uiLength(0.8)) - x(0);
         shapeElement.automatic = false;
         _shapes.push(shapeElement);
       }
@@ -417,7 +478,7 @@
         ghostPath.stroke = "#a78bfa";
         ghostPath.fill = "#a78bfa";
         ghostPath.opacity = 0.15;
-        ghostPath.linewidth = x(0.5);
+        ghostPath.linewidth = x(uiLength(0.5)) - x(0);
         ghostPath.automatic = false;
       }
     }
@@ -479,7 +540,7 @@
         onionRect.stroke = "#818cf8";
         onionRect.noFill();
         onionRect.opacity = 0.35;
-        onionRect.linewidth = x(0.5);
+        onionRect.linewidth = x(uiLength(0.5)) - x(0);
         onionRect.automatic = false;
         onionLayers.push(onionRect);
       });
@@ -576,9 +637,9 @@
         }
         lineElem.id = `preview-line-${idx + 1}`;
         lineElem.stroke = "#60a5fa";
-        lineElem.linewidth = x(LINE_WIDTH);
+        lineElem.linewidth = x(uiLength(LINE_WIDTH)) - x(0);
         lineElem.noFill();
-        lineElem.dashes = [x(4), x(4)];
+        lineElem.dashes = [x(uiLength(4)) - x(0), x(uiLength(4)) - x(0)];
         lineElem.opacity = 0.7;
         _previewPaths.push(lineElem);
       });
@@ -617,7 +678,11 @@
         const py = y(pos.y);
         let grp = new Two.Group();
         grp.id = `event-${idx}-${evIdx}`;
-        let circle = new Two.Circle(px, py, x(1.8));
+        let circle = new Two.Circle(
+          px,
+          py,
+          x(pos.x + uiLength(1.8)) - x(pos.x),
+        );
         circle.fill = "#a78bfa";
         circle.noStroke();
         grp.add(circle);
@@ -651,20 +716,20 @@
           const markerCircle = new Two.Circle(
             x(point.x),
             y(point.y),
-            x(POINT_RADIUS * 1.3),
+            x(point.x + uiLength(POINT_RADIUS * 1.3)) - x(point.x),
           );
           markerCircle.id = `wait-event-circle-${ev.waitId}-${eventIdx}`;
           const waitSelected = $selectedPointId === `wait-${ev.waitId}`;
           if (waitSelected) {
             markerCircle.fill = "#f97316";
             markerCircle.stroke = "#fffbeb";
-            markerCircle.linewidth = x(0.6);
+            markerCircle.linewidth = x(uiLength(0.6)) - x(0);
           } else {
             markerCircle.fill = "#8b5cf6";
             markerCircle.stroke = "#ffffff";
-            markerCircle.linewidth = x(0.3);
+            markerCircle.linewidth = x(uiLength(0.3)) - x(0);
           }
-          const flagSize = x(1);
+          const flagSize = x(point.x + uiLength(1)) - x(point.x);
           const flagPoints = [
             new Two.Anchor(x(point.x), y(point.y) - flagSize / 2),
             new Two.Anchor(x(point.x) + flagSize / 2, y(point.y)),
@@ -688,12 +753,16 @@
     if (markers && markers.length > 0) {
       markers.forEach((marker, idx) => {
         const group = new Two.Group();
-        const circle = new Two.Circle(x(marker.x), y(marker.y), x(2));
+        const circle = new Two.Circle(
+          x(marker.x),
+          y(marker.y),
+          x(marker.x + uiLength(2)) - x(marker.x),
+        );
         circle.fill = "rgba(239, 68, 68, 0.5)"; // Red-500 with opacity
         circle.stroke = "#ef4444";
-        circle.linewidth = x(0.5);
+        circle.linewidth = x(uiLength(0.5)) - x(0);
 
-        const crossLength = x(1.5);
+        const crossLength = x(marker.x + uiLength(1.5)) - x(marker.x);
         const l1 = new Two.Line(
           x(marker.x) - crossLength,
           y(marker.y) - crossLength,
@@ -701,7 +770,7 @@
           y(marker.y) + crossLength,
         );
         l1.stroke = "#ffffff";
-        l1.linewidth = x(0.5);
+        l1.linewidth = x(uiLength(0.5)) - x(0);
 
         const l2 = new Two.Line(
           x(marker.x) + crossLength,
@@ -710,7 +779,7 @@
           y(marker.y) + crossLength,
         );
         l2.stroke = "#ffffff";
-        l2.linewidth = x(0.5);
+        l2.linewidth = x(uiLength(0.5)) - x(0);
 
         group.add(circle, l1, l2);
         elems.push(group);
@@ -780,9 +849,24 @@
 
     updateRobotImageDisplay();
 
+    // Hotkeys for zoom
+    hotkeys("cmd+=, ctrl+=, cmd+shift+=, ctrl+shift+=", (e) => {
+      e.preventDefault();
+      zoomIn();
+    });
+    hotkeys("cmd+-, ctrl+-", (e) => {
+      e.preventDefault();
+      zoomOut();
+    });
+    hotkeys("cmd+0, ctrl+0", (e) => {
+      e.preventDefault();
+      resetZoom();
+    });
+
     // Event Listeners
     two.renderer.domElement.addEventListener("mouseleave", () => {
       isMouseOverField = false;
+      isPanning = false;
     });
 
     two.renderer.domElement.addEventListener("mousemove", (evt: MouseEvent) => {
@@ -812,6 +896,25 @@
         const w = wrapperRect.width;
         const h = wrapperRect.height;
         isObstructingHUD = visualX < w * 0.35 && visualY > h * 0.8;
+      }
+
+      // Pan Logic
+      if (isPanning) {
+        // Calculate delta in visual pixels
+        const dx = evt.clientX - panStart.x;
+        const dy = evt.clientY - panStart.y;
+
+        // Apply rotation to the drag vector so dragging "up" moves view "up"
+        // even if the field is rotated.
+        const rad = (-settings.fieldRotation * Math.PI) / 180;
+        const rotDx = dx * Math.cos(rad) - dy * Math.sin(rad);
+        const rotDy = dx * Math.sin(rad) + dy * Math.cos(rad);
+
+        fieldPan.set({
+          x: initialPan.x + rotDx,
+          y: initialPan.y + rotDy,
+        });
+        return;
       }
 
       // Cursor and Dragging Logic
@@ -907,42 +1010,53 @@
             }
           }
         } else {
-          two.renderer.domElement.style.cursor = "auto";
+          two.renderer.domElement.style.cursor = "grab";
+          if (isPanning) two.renderer.domElement.style.cursor = "grabbing";
           currentElem = null;
         }
       }
     });
 
     two.renderer.domElement.addEventListener("mousedown", (evt: MouseEvent) => {
-      isDown = true;
       // Re-determine currentElem if needed
-      if (!currentElem) {
-        // Optimization: use evt.target
-        const el = evt.target as Element;
-        if (el?.id) {
-          if (el.id.startsWith("point") || el.id.startsWith("obstacle-"))
-            currentElem = el.id;
-          else if (el.id.includes("event-")) {
-            // Logic to normalize ID
-            // Copy-pasted from above logic for simplicity or extract helper
-            const idParts = el.id.split("-");
-            if (el.id.startsWith("wait-event-")) {
-              if (idParts.length >= 4) {
-                const waitId = idParts[idParts.length - 2];
-                const evIdx = idParts[idParts.length - 1];
-                currentElem = `wait-event-${waitId}-${evIdx}`;
-              } else currentElem = el.id;
-            } else {
-              if (idParts.length >= 3) {
-                const lineIdx = idParts[idParts.length - 2];
-                const evIdx = idParts[idParts.length - 1];
-                currentElem = `event-${lineIdx}-${evIdx}`;
-              } else currentElem = el.id;
-            }
+      // Optimization: use evt.target
+      let foundElem = false;
+      const el = evt.target as Element;
+      if (el?.id) {
+        if (el.id.startsWith("point") || el.id.startsWith("obstacle-")) {
+          currentElem = el.id;
+          foundElem = true;
+        } else if (el.id.includes("event-")) {
+          // Logic to normalize ID
+          // Copy-pasted from above logic for simplicity or extract helper
+          const idParts = el.id.split("-");
+          if (el.id.startsWith("wait-event-")) {
+            if (idParts.length >= 4) {
+              const waitId = idParts[idParts.length - 2];
+              const evIdx = idParts[idParts.length - 1];
+              currentElem = `wait-event-${waitId}-${evIdx}`;
+            } else currentElem = el.id;
+          } else {
+            if (idParts.length >= 3) {
+              const lineIdx = idParts[idParts.length - 2];
+              const evIdx = idParts[idParts.length - 1];
+              currentElem = `event-${lineIdx}-${evIdx}`;
+            } else currentElem = el.id;
           }
+          foundElem = true;
         }
       }
 
+      if (!foundElem) {
+        // Start Panning
+        isPanning = true;
+        panStart = { x: evt.clientX, y: evt.clientY };
+        initialPan = { ...pan };
+        two.renderer.domElement.style.cursor = "grabbing";
+        return;
+      }
+
+      isDown = true;
       if (currentElem) {
         if (currentElem.startsWith("point-")) {
           const parts = currentElem.split("-");
@@ -1026,6 +1140,8 @@
         onRecordChange(); // Notify parent of change
       }
       isDown = false;
+      isPanning = false;
+      two.renderer.domElement.style.cursor = "grab";
       dragOffset = { x: 0, y: 0 };
     });
 
@@ -1082,6 +1198,13 @@
     });
   });
 
+  onDestroy(() => {
+    // Unbind hotkeys to prevent memory leaks or duplicate listeners
+    hotkeys.unbind("cmd+=, ctrl+=, cmd+shift+=, ctrl+shift+=");
+    hotkeys.unbind("cmd+-, ctrl+-");
+    hotkeys.unbind("cmd+0, ctrl+0");
+  });
+
   // Public accessor for exportGif
   export function getTwoInstance() {
     return two;
@@ -1124,8 +1247,8 @@
     <img
       src={settings.robotImage || "/robot.png"}
       alt="Robot"
-      style={`position: absolute; top: ${robotXY.y}px;
-left: ${robotXY.x}px; transform: translate(-50%, -50%) rotate(${robotHeading}deg); z-index: 20; width: ${x(settings.rLength || DEFAULT_ROBOT_LENGTH)}px; height: ${x(settings.rWidth || DEFAULT_ROBOT_WIDTH)}px; pointer-events: none;`}
+      style={`position: absolute; top: ${y(robotXY.y)}px;
+left: ${x(robotXY.x)}px; transform: translate(-50%, -50%) rotate(${robotHeading}deg); z-index: 20; width: ${x(settings.rLength || DEFAULT_ROBOT_LENGTH) - x(0)}px; height: ${x(settings.rWidth || DEFAULT_ROBOT_WIDTH) - x(0)}px; pointer-events: none;`}
       draggable="false"
       on:error={(e) => {
         // @ts-ignore
@@ -1133,6 +1256,54 @@ left: ${robotXY.x}px; transform: translate(-50%, -50%) rotate(${robotHeading}deg
       }}
     />
   </div>
+
+  <!-- Zoom Controls -->
+  <div class="absolute bottom-4 right-4 flex flex-col gap-2 z-30">
+    <button
+      on:click={zoomIn}
+      class="p-2 bg-white dark:bg-neutral-800 rounded-md shadow-md hover:bg-neutral-100 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-300 transition-colors"
+      title="Zoom In (Cmd/Ctrl + +)"
+    >
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke-width="1.5"
+        stroke="currentColor"
+        class="size-5"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          d="M12 4.5v15m7.5-7.5h-15"
+        />
+      </svg>
+    </button>
+    <button
+      on:click={zoomOut}
+      class="p-2 bg-white dark:bg-neutral-800 rounded-md shadow-md hover:bg-neutral-100 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-300 transition-colors"
+      title="Zoom Out (Cmd/Ctrl + -)"
+    >
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke-width="1.5"
+        stroke="currentColor"
+        class="size-5"
+      >
+        <path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14" />
+      </svg>
+    </button>
+    <button
+      on:click={resetZoom}
+      class="p-2 bg-white dark:bg-neutral-800 rounded-md shadow-md hover:bg-neutral-100 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-300 transition-colors text-xs font-bold"
+      title="Reset Zoom (Cmd/Ctrl + 0)"
+    >
+      1:1
+    </button>
+  </div>
+
   <FieldCoordinates
     x={currentMouseX}
     y={currentMouseY}

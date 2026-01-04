@@ -348,19 +348,24 @@
 
   // Sync controller updates to Robot State
   $: {
+    // Create identity scales for robot state calculation (inches -> inches)
+    // This ensures robotXYStore holds field coordinates (inches), not pixels.
+    const xIdentity = d3.scaleLinear().domain([0, FIELD_SIZE]).range([0, FIELD_SIZE]);
+    const yIdentity = d3.scaleLinear().domain([0, FIELD_SIZE]).range([0, FIELD_SIZE]);
+
     if (timePrediction && timePrediction.timeline && lines.length > 0) {
       const state = calculateRobotState(
         percent,
         timePrediction.timeline,
         lines,
         startPoint,
-        x,
-        y,
+        xIdentity,
+        yIdentity,
       );
       robotXYStore.set({ x: state.x, y: state.y });
       robotHeadingStore.set(state.heading);
     } else {
-      robotXYStore.set({ x: x(startPoint.x), y: y(startPoint.y) });
+      robotXYStore.set({ x: startPoint.x, y: startPoint.y });
       robotHeadingStore.set(
         startPoint.heading === "constant" ? -startPoint.degrees : 0,
       );

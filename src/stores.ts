@@ -44,3 +44,7 @@ export const fileManagerSessionState = writable<{
   viewMode: "grid",
   sortMode: "date",
 });
+
+// Field Visualization State
+export const fieldZoom = writable(1.0);
+export const fieldPan = writable<{ x: number; y: number }>({ x: 0, y: 0 });
