@@ -1311,23 +1311,11 @@
 
                 <!-- App Icon (with white glow behind to show on dark backgrounds) -->
                 <div class="flex justify-center mt-3">
-                  <div class="relative w-20 h-20">
-                    <!-- Glow layer: white rounded blurred background placed behind the image -->
-                    <div
-                      class="absolute inset-0 flex items-center justify-center pointer-events-none"
-                    >
-                      <div
-                        class="w-14 h-14 rounded-full bg-white"
-                        style="transform: translateY(-7px); filter: blur(8px); opacity: 0.95;"
-                      ></div>
-                    </div>
-
-                    <img
-                      src="/icon.png"
-                      alt="Pedro Pathing Visualizer icon"
-                      class="relative w-14 h-14 object-contain mx-auto"
-                    />
-                  </div>
+                  <img
+                    src="/icon.png"
+                    alt="Pedro Pathing Visualizer icon"
+                    class="w-16 h-16 object-contain rounded-xl dark:shadow-[0_0_20px_rgba(255,255,255,0.4)] mx-auto"
+                  />
                 </div>
               </div>
 
