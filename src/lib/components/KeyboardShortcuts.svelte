@@ -12,6 +12,7 @@
     selectedPointId,
     selectedLineId,
     toggleCollapseAllTrigger,
+    fieldZoom,
   } from "../../stores";
   import {
     startPointStore,
@@ -539,6 +540,19 @@
     gridSize.set(prev);
   }
 
+  function modifyZoom(delta: number) {
+    if (isUIElementFocused()) return;
+    fieldZoom.update((z) => {
+      // Allow zooming from 0.1 to 5.0
+      return Math.max(0.1, Math.min(5.0, Number((z + delta).toFixed(2))));
+    });
+  }
+
+  function resetZoom() {
+    if (isUIElementFocused()) return;
+    fieldZoom.set(1.0);
+  }
+
   function changePlaybackSpeedBy(delta: number) {
     const clamped = Math.max(
       0.25,
@@ -598,6 +612,9 @@
     bind("cycleGridSize", () => cycleGridSize());
     bind("cycleGridSizeReverse", () => cycleGridSizeReverse());
     bind("toggleSnap", () => snapToGrid.update((v) => !v));
+    bind("zoomIn", () => modifyZoom(0.1));
+    bind("zoomOut", () => modifyZoom(-0.1));
+    bind("zoomReset", () => resetZoom());
     bind("increasePlaybackSpeed", () => changePlaybackSpeedBy(0.25));
     bind("decreasePlaybackSpeed", () => changePlaybackSpeedBy(-0.25));
     bind("resetPlaybackSpeed", () => resetPlaybackSpeed());
