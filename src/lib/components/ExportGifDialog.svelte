@@ -2,8 +2,10 @@
 <script lang="ts">
   import { createEventDispatcher } from "svelte";
   import { scale } from "svelte/transition";
-  import type { ExportGifOptions } from "../../utils/exportGif";
-  import { exportPathToGif } from "../../utils/exportGif";
+  import {
+    exportPathToGif,
+    exportPathToApng,
+  } from "../../utils/exportAnimation";
 
   export let show = false;
   export let twoInstance: any;
@@ -20,9 +22,10 @@
 
   const dispatch = createEventDispatcher();
 
+  let format: "gif" | "apng" = "gif";
   let fps = 15;
   let resolutionScale = 0.5; // Default 50%
-  let quality = 10; // 1-30, default 10 (good balance)
+  let quality = 10; // 1-30, default 10 (good balance) - Only for GIF
   let status = "idle"; // idle, generating, done, error
   let progress = 0;
   let statusMessage = "";
@@ -51,7 +54,7 @@
     previewUrl = null;
 
     try {
-      const blob = await exportPathToGif({
+      const options = {
         two: twoInstance,
         animationController,
         durationSec: animationController.getDuration(),
@@ -65,14 +68,21 @@
         robotLengthPx: robotLengthPx,
         robotWidthPx: robotWidthPx,
         getRobotState: robotStateFunction,
-        onProgress: (p) => {
+        onProgress: (p: number) => {
           progress = p;
           if (p < 0.5)
             statusMessage = `Capturing frames... ${Math.round(p * 200)}%`;
           else
-            statusMessage = `Encoding GIF... ${Math.round((p - 0.5) * 200)}%`;
+            statusMessage = `Encoding ${format.toUpperCase()}... ${Math.round((p - 0.5) * 200)}%`;
         },
-      });
+      };
+
+      let blob: Blob;
+      if (format === "gif") {
+        blob = await exportPathToGif(options);
+      } else {
+        blob = await exportPathToApng(options);
+      }
 
       previewBlob = blob;
       previewUrl = URL.createObjectURL(blob);
@@ -85,12 +95,15 @@
     }
   }
 
-  async function downloadGif() {
+  async function downloadAnimation() {
     if (!previewBlob) {
       await generatePreview();
     }
 
     if (!previewBlob) return;
+
+    const ext = format === "gif" ? "gif" : "png";
+    const label = format === "gif" ? "GIF" : "Animated PNG";
 
     if (
       electronAPI &&
@@ -98,8 +111,8 @@
       electronAPI.writeFileBase64
     ) {
       const dest = await electronAPI.showSaveDialog({
-        defaultPath: "path.gif",
-        filters: [{ name: "GIF", extensions: ["gif"] }],
+        defaultPath: `path.${ext}`,
+        filters: [{ name: label, extensions: [ext] }],
       });
       if (dest) {
         const reader = new FileReader();
@@ -107,7 +120,6 @@
           const b64 = (reader.result as string).split(",")[1];
           await electronAPI.writeFileBase64!(dest, b64);
           statusMessage = "Saved successfully!";
-          // Optionally close after saving?
           setTimeout(close, 2000);
         };
         reader.readAsDataURL(previewBlob);
@@ -115,7 +127,7 @@
     } else {
       const a = document.createElement("a");
       a.href = previewUrl!;
-      a.download = "path.gif";
+      a.download = `path.${ext}`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -146,7 +158,7 @@
         <h2
           class="text-xl font-semibold text-neutral-800 dark:text-neutral-100"
         >
-          Export GIF
+          Export Animation
         </h2>
         <button
           class="text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300"
@@ -173,14 +185,33 @@
       <!-- Content -->
       <div class="p-6 overflow-y-auto flex-1 flex flex-col gap-6">
         <!-- Controls Row -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <!-- Format -->
+          <div class="flex flex-col gap-2">
+            <label
+              for="anim-format"
+              class="text-sm font-medium text-neutral-700 dark:text-neutral-300"
+            >
+              Format
+            </label>
+            <select
+              id="anim-format"
+              bind:value={format}
+              disabled={status === "generating"}
+              class="bg-neutral-100 dark:bg-neutral-700 border border-neutral-300 dark:border-neutral-600 text-neutral-900 dark:text-white text-sm rounded-lg focus:ring-purple-500 focus:border-purple-500 block w-full p-2.5"
+            >
+              <option value="gif">GIF</option>
+              <option value="apng">Animated PNG</option>
+            </select>
+          </div>
+
           <!-- FPS Control -->
           <div class="flex flex-col gap-2">
             <label
               for="gif-fps"
               class="text-sm font-medium text-neutral-700 dark:text-neutral-300"
             >
-              Frame Rate (FPS): {fps}
+              Frame Rate: {fps} FPS
             </label>
             <input
               id="gif-fps"
@@ -216,8 +247,12 @@
             </select>
           </div>
 
-          <!-- Quality -->
-          <div class="flex flex-col gap-2">
+          <!-- Quality (GIF Only) -->
+          <div
+            class="flex flex-col gap-2 opacity-{format === 'gif'
+              ? '100'
+              : '50'}"
+          >
             <label
               for="gif-quality"
               class="text-sm font-medium text-neutral-700 dark:text-neutral-300"
@@ -235,18 +270,31 @@
               max="30"
               step="1"
               bind:value={quality}
-              disabled={status === "generating"}
+              disabled={status === "generating" || format !== "gif"}
               class="w-full accent-purple-600 dir-rtl"
-              title="Lower is better quality"
+              title={format === "gif"
+                ? "Lower is better quality"
+                : "Not applicable for APNG"}
             />
             <div
               class="text-xs text-neutral-500 dark:text-neutral-400 flex justify-between"
             >
-              <span>Best (Slower)</span>
-              <span>Draft (Faster)</span>
+              <span>Best</span>
+              <span>Draft</span>
             </div>
           </div>
         </div>
+
+        <!-- Info Blurb -->
+        {#if format === "apng"}
+          <div
+            class="text-xs text-neutral-500 dark:text-neutral-400 bg-blue-50 dark:bg-blue-900/20 p-2 rounded border border-blue-100 dark:border-blue-800"
+          >
+            <strong>Note:</strong> Animated PNGs support full 24-bit color and 8-bit
+            transparency, offering much higher quality than GIF, but file sizes can
+            be larger.
+          </div>
+        {/if}
 
         <!-- Progress Bar -->
         {#if status === "generating"}
@@ -291,7 +339,7 @@
           {#if previewUrl}
             <img
               src={previewUrl}
-              alt="GIF Preview"
+              alt="Animation Preview"
               class="max-w-full max-h-[40vh] object-contain shadow-sm"
             />
           {:else}
@@ -340,7 +388,7 @@
 
         <button
           class="px-4 py-2 text-sm font-medium text-white bg-green-600 hover:bg-green-700 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          on:click={downloadGif}
+          on:click={downloadAnimation}
           disabled={status === "generating" || !previewUrl}
         >
           Download / Save
@@ -349,8 +397,3 @@
     </div>
   </div>
 {/if}
-
-<style>
-  /* Reverse range input for quality (lower is better) */
-  /* Note: input[type=range] direction can be tricky, relying on label instead */
-</style>
