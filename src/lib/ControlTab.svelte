@@ -50,8 +50,7 @@
   export let handleSeek: (percent: number) => void;
   export let loopAnimation: boolean;
   export let playbackSpeed: number = 1.0;
-  export let changePlaybackSpeedBy: (delta: number) => void;
-  export let resetPlaybackSpeed: () => void;
+  export const resetPlaybackSpeed = undefined as unknown as () => void;
   export let setPlaybackSpeed: (factor: number, autoPlay?: boolean) => void;
 
   export const resetAnimation = undefined as unknown as () => void;
