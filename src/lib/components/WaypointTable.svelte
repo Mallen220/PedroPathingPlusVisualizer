@@ -26,6 +26,11 @@
     renumberDefaultPathNames,
   } from "../../utils/nameGenerator";
   import { getRandomColor } from "../../utils/draw";
+  import {
+    syncLinkedPoints,
+    handlePointRename,
+    isLinked,
+  } from "../../utils/pointLinking";
 
   export let startPoint: Point;
   export let lines: Line[];
@@ -106,8 +111,12 @@
     point: Point | ControlPoint,
     field: "x" | "y",
     value: number,
+    lineId?: string,
   ) {
     point[field] = value;
+    if (lineId) {
+      lines = syncLinkedPoints(lines, lineId);
+    }
     // Trigger reactivity for lines/startPoint
     lines = lines;
     startPoint = startPoint;
@@ -118,18 +127,19 @@
     e: Event,
     point: Point | ControlPoint,
     field: "x" | "y",
+    lineId?: string,
   ) {
     const input = e.target as HTMLInputElement;
     const val = parseFloat(input.value);
     if (!isNaN(val)) {
-      updatePoint(point, field, val);
+      updatePoint(point, field, val, lineId);
     }
   }
 
   function updateLineName(lineId: string, name: string) {
     const line = lines.find((l) => l.id === lineId);
     if (line) {
-      line.name = name;
+      lines = handlePointRename(lines, lineId, name);
       lines = lines; // Trigger reactivity
       recordChange();
     }
@@ -1051,6 +1061,31 @@
                       placeholder="Path {lineIdx + 1}"
                       aria-label="Path Name"
                     />
+                    {#if line.id && isLinked(lines, line.id)}
+                      <div
+                        class="group relative flex items-center justify-center"
+                        title="Linked Waypoint"
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          viewBox="0 0 24 24"
+                          fill="currentColor"
+                          class="size-4 text-blue-500"
+                        >
+                          <path
+                            fill-rule="evenodd"
+                            d="M19.902 4.098a3.75 3.75 0 0 0-5.304 0l-4.5 4.5a3.75 3.75 0 0 0 1.035 6.037.75.75 0 0 1-.646 1.353 5.25 5.25 0 0 1-1.449-8.45l4.5-4.5a5.25 5.25 0 1 1 7.424 7.424l-1.757 1.757a.75.75 0 1 1-1.06-1.06l1.757-1.757a3.75 3.75 0 0 0 0-5.304Zm-7.389 4.291a3.75 3.75 0 0 0 5.304 0l4.5 4.5a3.75 3.75 0 0 0-1.035-6.037.75.75 0 0 1 .646-1.353 5.25 5.25 0 0 1 1.449 8.45l-4.5 4.5a5.25 5.25 0 1 1-7.424-7.424l1.757-1.757a.75.75 0 1 1 1.06 1.06l-1.757 1.757a3.75 3.75 0 0 0 0 5.304Z"
+                            clip-rule="evenodd"
+                          />
+                        </svg>
+                        <div
+                          class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 p-2 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50 shadow-lg"
+                        >
+                          Linked Waypoint: Position is locked to other waypoints
+                          with the same name. Rename to unlink.
+                        </div>
+                      </div>
+                    {/if}
                   </div>
                 </td>
                 <td class="px-3 py-2">
@@ -1061,7 +1096,8 @@
                       step={stepSize}
                       value={line.endPoint.x}
                       aria-label="{line.name || `Path ${lineIdx + 1}`} X"
-                      on:input={(e) => handleInput(e, line.endPoint, "x")}
+                      on:input={(e) =>
+                        handleInput(e, line.endPoint, "x", line.id)}
                       disabled={line.locked}
                     />
                     <span class="text-xs text-neutral-500"
@@ -1076,7 +1112,8 @@
                     step={stepSize}
                     value={line.endPoint.y}
                     aria-label="{line.name || `Path ${lineIdx + 1}`} Y"
-                    on:input={(e) => handleInput(e, line.endPoint, "y")}
+                    on:input={(e) =>
+                      handleInput(e, line.endPoint, "y", line.id)}
                     disabled={line.locked}
                   />
                 </td>

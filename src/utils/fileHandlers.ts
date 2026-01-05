@@ -78,11 +78,39 @@ export async function saveProject() {
   const path = get(currentFilePath);
   if (path && electronAPI) {
     try {
+      // Create a deep copy of lines to modify names for saving without affecting UI
+      const lines = structuredClone(get(linesStore));
+      const sequence = get(sequenceStore);
+
+      // Track names to ensure uniqueness in the saved file
+      const nameCounts = new Map<string, number>();
+
+      lines.forEach((line) => {
+        const baseName = line.name || `Path ${lines.indexOf(line) + 1}`;
+        const count = nameCounts.get(baseName) || 0;
+        nameCounts.set(baseName, count + 1);
+
+        if (count > 0) {
+          // If name already exists, append index to make it unique in the file
+          // This allows PedroPathReader to distinguish paths while preserving "linking" in UI
+          // because UI linking (currently) relies on the loaded name.
+          // WAIT: If we change the name in the file, when we load it back, the UI will see unique names
+          // and they will NO LONGER BE LINKED.
+          // To fix this, we need to store the *original* name as metadata so we can restore the link.
+          line.name = `${baseName} (${count})`;
+          (line as any)._linkedName = baseName;
+        } else {
+          // First occurrence, name is fine
+          // But maybe we should mark it as having this base name too for consistency?
+          (line as any)._linkedName = baseName;
+        }
+      });
+
       const jsonString = JSON.stringify(
         {
           startPoint: get(startPointStore),
-          lines: get(linesStore),
-          sequence: get(sequenceStore),
+          lines: lines,
+          sequence: sequence,
           shapes: get(shapesStore),
         },
         null,
@@ -110,9 +138,26 @@ export function saveFileAs() {
     filename = baseName.replace(".pp", "");
   }
 
+  // Use the same uniquification logic as saveProject
+  const lines = structuredClone(get(linesStore));
+  const nameCounts = new Map<string, number>();
+
+  lines.forEach((line) => {
+    const baseName = line.name || `Path ${lines.indexOf(line) + 1}`;
+    const count = nameCounts.get(baseName) || 0;
+    nameCounts.set(baseName, count + 1);
+
+    if (count > 0) {
+      line.name = `${baseName} (${count})`;
+      (line as any)._linkedName = baseName;
+    } else {
+      (line as any)._linkedName = baseName;
+    }
+  });
+
   downloadTrajectory(
     get(startPointStore),
-    get(linesStore),
+    lines,
     get(shapesStore),
     get(sequenceStore),
     `${filename}.pp`,

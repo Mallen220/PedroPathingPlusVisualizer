@@ -129,6 +129,14 @@ export function loadProjectData(data: any) {
 
   const normLines = normalizeLines(data.lines || []);
 
+  // Restore linked names if metadata exists
+  // This reverses the uniquification done during save
+  normLines.forEach((line: any) => {
+    if (line._linkedName) {
+      line.name = line._linkedName;
+    }
+  });
+
   // Sanitize sequence with respect to normalized lines and set both stores
   const seqCandidate = (
     data.sequence && data.sequence.length

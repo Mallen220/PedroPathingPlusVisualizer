@@ -181,9 +181,8 @@ describe("codeExporter", () => {
       expect(code).toContain(
         "public class TestPath extends SequentialCommandGroup",
       );
-      expect(code).toContain(
-        "new FollowPathCommand(follower, startPointTOline1)",
-      );
+      // New behavior: uses simplified name 'line1'
+      expect(code).toContain("new FollowPathCommand(follower, line1)");
     });
 
     it("should handle NextFTC library", async () => {
@@ -200,7 +199,7 @@ describe("codeExporter", () => {
         "import dev.nextftc.core.command.groups.SequentialGroup",
       );
       expect(code).toContain("public class TestPath extends SequentialGroup");
-      expect(code).toContain("new FollowPath(startPointTOline1)");
+      expect(code).toContain("new FollowPath(line1)");
     });
 
     it("should handle wait commands in sequence", async () => {

@@ -20,6 +20,13 @@ const AUTO_GENERATED_FILE_WARNING_MESSAGE: string = `
  *  Changes will be overwritten when regenerated.                *
  * ============================================================= */
 `;
+
+function sanitizeName(name: string | undefined, defaultName: string): string {
+  if (!name) return defaultName;
+  const sanitized = name.replace(/[^a-zA-Z0-9]/g, "");
+  return sanitized || defaultName;
+}
+
 export async function generateJavaCode(
   startPoint: Point,
   lines: Line[],
@@ -50,23 +57,29 @@ export async function generateJavaCode(
     });
   }
 
+  // Map generated variable names to ensure uniqueness for PathChains
+  const variableNames = new Map<string, number>();
+
+  const getUniqueName = (baseName: string) => {
+    const count = variableNames.get(baseName) || 0;
+    variableNames.set(baseName, count + 1);
+    return count === 0 ? baseName : `${baseName}${count + 1}`;
+  };
+
+  // Pre-calculate line variable names to ensure consistency
+  const lineVariableNames = lines.map((line, idx) => {
+    const baseName = sanitizeName(line.name, `line${idx + 1}`);
+    return getUniqueName(baseName);
+  });
+
   let pathsClass = `
   public static class Paths {
-    ${lines
-      .map((line, idx) => {
-        const variableName = line.name
-          ? line.name.replace(/[^a-zA-Z0-9]/g, "")
-          : `line${idx + 1}`;
-        return `public PathChain ${variableName};`;
-      })
-      .join("\n")}
+    ${lineVariableNames.map((name) => `public PathChain ${name};`).join("\n")}
     
     public Paths(Follower follower) {
       ${lines
         .map((line, idx) => {
-          const variableName = line.name
-            ? line.name.replace(/[^a-zA-Z0-9]/g, "")
-            : `line${idx + 1}`;
+          const variableName = lineVariableNames[idx];
           const start =
             idx === 0
               ? `new Pose(${startPoint.x.toFixed(3)}, ${startPoint.y.toFixed(3)})`
@@ -282,71 +295,12 @@ export async function generateSequentialCommandCode(
     if (!className) className = "AutoPath";
   }
 
-  // Collect all pose names including control points
-  const allPoseDeclarations: string[] = [];
-  const allPoseInitializations: string[] = [];
-
-  // Track all pose variable names
-  const poseVariableNames: Map<string, string> = new Map();
-
-  // Add start point
-  allPoseDeclarations.push("    private Pose startPoint;");
-  poseVariableNames.set("startPoint", "startPoint");
-  allPoseInitializations.push('        startPoint = pp.get("startPoint");');
-
-  // Process each line
-  lines.forEach((line, lineIdx) => {
-    const endPointName = line.name
-      ? line.name.replace(/[^a-zA-Z0-9]/g, "")
-      : `point${lineIdx + 1}`;
-
-    // Add end point declaration
-    allPoseDeclarations.push(`    private Pose ${endPointName};`);
-    poseVariableNames.set(`point${lineIdx + 1}`, endPointName);
-
-    allPoseInitializations.push(
-      `        ${endPointName} = pp.get(\"${endPointName}\");`,
-    );
-
-    // Add control points if they exist
-    if (line.controlPoints && line.controlPoints.length > 0) {
-      line.controlPoints.forEach((_, controlIdx) => {
-        const controlPointName = `${endPointName}_control${controlIdx + 1}`;
-        allPoseDeclarations.push(`    private Pose ${controlPointName};`);
-        allPoseInitializations.push(
-          `        ${controlPointName} = pp.get(\"${controlPointName}\");`,
-        );
-        // Store for use in path building
-        poseVariableNames.set(
-          `${endPointName}_control${controlIdx + 1}`,
-          controlPointName,
-        );
-      });
-    }
-  });
-
-  // Generate path chain declarations
-  const pathChainDeclarations = lines
-    .map((_, idx) => {
-      const startPoseName =
-        idx === 0
-          ? "startPoint"
-          : lines[idx - 1]?.name
-            ? lines[idx - 1]!.name!.replace(/[^a-zA-Z0-9]/g, "")
-            : `point${idx}`;
-      const endPoseName = lines[idx].name
-        ? lines[idx].name.replace(/[^a-zA-Z0-9]/g, "")
-        : `point${idx + 1}`;
-      const pathName = `${startPoseName}TO${endPoseName}`;
-      return `    private PathChain ${pathName};`;
-    })
-    .join("\n");
+  const isNextFTC = targetLibrary === "NextFTC";
 
   // Generate ProgressTracker field
   const progressTrackerField = `    private final ProgressTracker progressTracker;`;
 
   // Define library-specific names
-  const isNextFTC = targetLibrary === "NextFTC";
   const SequentialGroupClass = isNextFTC
     ? "SequentialGroup"
     : "SequentialCommandGroup";
@@ -357,6 +311,181 @@ export async function generateSequentialCommandCode(
   const InstantCmdClass = "InstantCommand";
   const WaitUntilCmdClass = isNextFTC ? "WaitUntil" : "WaitUntilCommand"; // Assuming NextFTC has similar or user maps it
   const FollowPathCmdClass = isNextFTC ? "FollowPath" : "FollowPathCommand";
+
+  // Collect all pose names including control points
+  const allPoseDeclarations: string[] = [];
+  const allPoseInitializations: string[] = [];
+
+  // Track all pose variable names map<variableName, variableName>
+  // To avoid re-declaring variables that are identical
+  const poseVariableNames: Map<string, string> = new Map();
+  // Map <PoseName, PoseName> to handle duplicates correctly for declarations
+  const declaredPoses = new Set<string>();
+
+  // Helper to register pose
+  // If a pose with same name exists, it returns existing name.
+  // Wait, the requirement says: "For poses the variable is the same so it's ok if they have a shared name as long as it is not initialized many times."
+  // So if we have two points named "Score", we declare `private Pose Score;` once.
+  // And initialize `Score = pp.get("Score");` once.
+  const registerPose = (name: string, ppKey: string) => {
+    if (declaredPoses.has(name)) return;
+    declaredPoses.add(name);
+    allPoseDeclarations.push(`    private Pose ${name};`);
+    allPoseInitializations.push(`        ${name} = pp.get("${ppKey}");`);
+  };
+
+  // Add start point
+  registerPose("startPoint", "startPoint");
+
+  // Arrays to hold the resolved variable names for each line
+  const lineStartPoseNames: string[] = [];
+  const lineEndPoseNames: string[] = [];
+  // Map line index to array of control point variable names
+  const lineControlPointNames: Map<number, string[]> = new Map();
+
+  // 1. First Pass: Generate unique PathChain variable names for all lines
+  // We need these to prefix control points to ensure uniqueness
+  const pathChainVariableNames: Map<string, number> = new Map();
+  const getUniquePathName = (baseName: string) => {
+    const count = pathChainVariableNames.get(baseName) || 0;
+    pathChainVariableNames.set(baseName, count + 1);
+    return count === 0 ? baseName : `${baseName}${count + 1}`;
+  };
+
+  const linePathVariableNames = lines.map((line, idx) => {
+    let pathName = "";
+    if (line.name) {
+      // Use line name as base
+      pathName = sanitizeName(line.name, "path");
+      pathName = pathName.charAt(0).toLowerCase() + pathName.slice(1);
+    } else {
+      // Fallback if no name (though sanitizeName handles it, logic here matches previous)
+      // Actually we need start/end names for fallback but let's stick to simple "path" + idx or similar if no name?
+      // Or just rely on what we did before?
+      // Before we used `startPoseTOendPose`.
+      // Let's defer "pathName" generation until we have start/end poses,
+      // BUT we need a unique identifier for the LINE itself to name control points.
+      // So let's use line index or generated path name.
+      // If we use generated path name, we need start/end poses.
+      // Circular dependency? No, poses are based on point names.
+      // But point names (for variables) are just sanitized line names.
+      // Let's iterate lines first to register Poses.
+      return ""; // Placeholder, computed later
+    }
+    return getUniquePathName(pathName);
+  });
+
+  // 2. Second Pass: Register Poses and resolve names
+  lines.forEach((line, lineIdx) => {
+    const endPointName = sanitizeName(line.name, `point${lineIdx + 1}`);
+
+    // Register end point
+    registerPose(endPointName, endPointName);
+    lineEndPoseNames.push(endPointName);
+
+    // Determine start pose name for this line
+    if (lineIdx === 0) {
+      lineStartPoseNames.push("startPoint");
+    } else {
+      // Previous line's end point
+      const prevLine = lines[lineIdx - 1];
+      const prevName = sanitizeName(prevLine.name, `point${lineIdx}`);
+      lineStartPoseNames.push(prevName);
+    }
+
+    // Resolve Path Variable Name if it wasn't resolved in pass 1 (empty name case)
+    if (!linePathVariableNames[lineIdx]) {
+      const startPoseName = lineStartPoseNames[lineIdx];
+      const endPoseName = endPointName; // Current line end
+      const pathName = `${startPoseName}TO${endPoseName}`;
+      linePathVariableNames[lineIdx] = getUniquePathName(pathName);
+    }
+
+    // Register control points if they exist
+    // Use the unique PathChain variable name as prefix to ensure independence
+    // e.g. scorePath_control1, scorePath2_control1
+    const controlPointVars: string[] = [];
+    if (line.controlPoints && line.controlPoints.length > 0) {
+      const uniquePathVar = linePathVariableNames[lineIdx];
+      line.controlPoints.forEach((_, controlIdx) => {
+        const controlPointName = `${uniquePathVar}Control${controlIdx + 1}`;
+        allPoseDeclarations.push(`    private Pose ${controlPointName};`);
+        const pt = line.controlPoints[controlIdx];
+        allPoseInitializations.push(`        ${controlPointName} = new Pose(${pt.x.toFixed(3)}, ${pt.y.toFixed(3)}, "geometric"); // Control point for ${uniquePathVar}`);
+        controlPointVars.push(controlPointName);
+      });
+    }
+    lineControlPointNames.set(lineIdx, controlPointVars);
+  });
+
+  // Generate path chain declarations
+  const pathChainDeclarations = lines
+    .map((line, idx) => {
+      const uniquePathName = linePathVariableNames[idx];
+      return `    private PathChain ${uniquePathName};`;
+    })
+    .join("\n");
+
+  // Generate path building
+  const pathBuilders = lines
+    .map((line, idx) => {
+      const startPoseName = lineStartPoseNames[idx];
+      const endPoseName = lineEndPoseNames[idx];
+      const pathName = linePathVariableNames[idx];
+
+      const isCurve = line.controlPoints.length > 0;
+      const curveType = isCurve ? "BezierCurve" : "BezierLine";
+
+      // Build control points string using the unique variables
+      let controlPointsStr = "";
+      if (isCurve) {
+        const cpVars = lineControlPointNames.get(idx) || [];
+        controlPointsStr = cpVars.join(", ") + ", ";
+      }
+
+      // Determine heading interpolation
+      let headingConfig = "";
+      if (line.endPoint.heading === "constant") {
+        headingConfig = `setConstantHeadingInterpolation(${endPoseName}.getHeading())`;
+      } else if (line.endPoint.heading === "linear") {
+        headingConfig = `setLinearHeadingInterpolation(${startPoseName}.getHeading(), ${endPoseName}.getHeading())`;
+      } else {
+        headingConfig = `setTangentHeadingInterpolation()`;
+      }
+
+      // Build reverse config
+      const reverseConfig = line.endPoint.reverse
+        ? "\n                .setReversed(true)"
+        : "";
+
+      return `        ${pathName} = follower.pathBuilder()
+            .addPath(new ${curveType}(${startPoseName}, ${controlPointsStr}${endPoseName}))
+            .${headingConfig}${reverseConfig}
+            .build();`;
+    })
+    .join("\n\n        ");
+
+  // Generate imports based on library
+  let imports = "";
+  if (isNextFTC) {
+    imports = `
+import dev.nextftc.core.command.groups.SequentialGroup;
+import dev.nextftc.core.command.groups.ParallelRaceGroup;
+import dev.nextftc.core.command.Delay;
+import dev.nextftc.core.command.WaitUntil;
+import dev.nextftc.core.command.InstantCommand;
+import dev.nextftc.extensions.pedro.command.FollowPath;
+`;
+  } else {
+    imports = `
+import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
+import com.seattlesolvers.solverslib.command.ParallelRaceGroup;
+import com.seattlesolvers.solverslib.command.WaitUntilCommand;
+import com.seattlesolvers.solverslib.command.WaitCommand;
+import com.seattlesolvers.solverslib.command.InstantCommand;
+import com.seattlesolvers.solverslib.pedroCommand.FollowPathCommand;
+`;
+  }
 
   // Generate addCommands calls with event handling; iterate sequence if provided
   const commands: string[] = [];
@@ -429,17 +558,10 @@ export async function generateSequentialCommandCode(
       return;
     }
 
-    const startPoseName =
-      lineIdx === 0
-        ? "startPoint"
-        : lines[lineIdx - 1]?.name
-          ? lines[lineIdx - 1]!.name!.replace(/[^a-zA-Z0-9]/g, "")
-          : `point${lineIdx}`;
-    const endPoseName = line.name
-      ? line.name.replace(/[^a-zA-Z0-9]/g, "")
-      : `point${lineIdx + 1}`;
-    const pathName = `${startPoseName}TO${endPoseName}`;
-    const pathDisplayName = `${startPoseName}TO${endPoseName}`;
+    // Use the resolved unique path variable name
+    const pathName = linePathVariableNames[lineIdx];
+    // Display name can be the same as unique name or the original logic
+    const pathDisplayName = pathName;
 
     // Construct FollowPath instantiation
     const followPathInstance = isNextFTC
@@ -496,78 +618,6 @@ export async function generateSequentialCommandCode(
       );
     }
   });
-
-  // Generate path building
-  const pathBuilders = lines
-    .map((line, idx) => {
-      const startPoseName =
-        idx === 0
-          ? "startPoint"
-          : lines[idx - 1]?.name
-            ? lines[idx - 1]!.name!.replace(/[^a-zA-Z0-9]/g, "")
-            : `point${idx}`;
-      const endPoseName = line.name
-        ? line.name.replace(/[^a-zA-Z0-9]/g, "")
-        : `point${idx + 1}`;
-      const pathName = `${startPoseName}TO${endPoseName}`;
-
-      const isCurve = line.controlPoints.length > 0;
-      const curveType = isCurve ? "BezierCurve" : "BezierLine";
-
-      // Build control points string
-      let controlPointsStr = "";
-      if (isCurve) {
-        const controlPoints: string[] = [];
-        line.controlPoints.forEach((_, cpIdx) => {
-          const controlPointName = `${endPoseName}_control${cpIdx + 1}`;
-          controlPoints.push(controlPointName);
-        });
-        controlPointsStr = controlPoints.join(", ") + ", ";
-      }
-
-      // Determine heading interpolation
-      let headingConfig = "";
-      if (line.endPoint.heading === "constant") {
-        headingConfig = `setConstantHeadingInterpolation(${endPoseName}.getHeading())`;
-      } else if (line.endPoint.heading === "linear") {
-        headingConfig = `setLinearHeadingInterpolation(${startPoseName}.getHeading(), ${endPoseName}.getHeading())`;
-      } else {
-        headingConfig = `setTangentHeadingInterpolation()`;
-      }
-
-      // Build reverse config
-      const reverseConfig = line.endPoint.reverse
-        ? "\n                .setReversed(true)"
-        : "";
-
-      return `        ${pathName} = follower.pathBuilder()
-            .addPath(new ${curveType}(${startPoseName}, ${controlPointsStr}${endPoseName}))
-            .${headingConfig}${reverseConfig}
-            .build();`;
-    })
-    .join("\n\n        ");
-
-  // Generate imports based on library
-  let imports = "";
-  if (isNextFTC) {
-    imports = `
-import dev.nextftc.core.command.groups.SequentialGroup;
-import dev.nextftc.core.command.groups.ParallelRaceGroup;
-import dev.nextftc.core.command.Delay;
-import dev.nextftc.core.command.WaitUntil;
-import dev.nextftc.core.command.InstantCommand;
-import dev.nextftc.extensions.pedro.command.FollowPath;
-`;
-  } else {
-    imports = `
-import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
-import com.seattlesolvers.solverslib.command.ParallelRaceGroup;
-import com.seattlesolvers.solverslib.command.WaitUntilCommand;
-import com.seattlesolvers.solverslib.command.WaitCommand;
-import com.seattlesolvers.solverslib.command.InstantCommand;
-import com.seattlesolvers.solverslib.pedroCommand.FollowPathCommand;
-`;
-  }
 
   const sequentialCommandCode = `
 ${AUTO_GENERATED_FILE_WARNING_MESSAGE}

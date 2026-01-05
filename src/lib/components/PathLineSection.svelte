@@ -8,6 +8,11 @@
   import ColorPicker from "./ColorPicker.svelte";
   import { selectedLineId } from "../../stores";
   import TrashIcon from "./icons/TrashIcon.svelte";
+  import {
+    syncLinkedPoints,
+    handlePointRename,
+    isLinked,
+  } from "../../utils/pointLinking";
 
   export let line: Line;
   export let idx: number;
@@ -81,14 +86,18 @@
       </button>
 
       <input
-        bind:value={line.name}
+        value={line.name}
         placeholder="Path {idx + 1}"
         class="pl-1.5 rounded-md bg-neutral-100 dark:bg-neutral-950 dark:border-neutral-700 border-[0.5px] focus:outline-none text-sm font-semibold min-w-[100px]"
         disabled={line.locked}
-        on:input={() => {
-          // Force parent reactivity so other components (like exporters)
-          // pick up the updated name immediately.
-          lines = [...lines];
+        on:input={(e) => {
+          if (line.id) {
+            lines = handlePointRename(lines, line.id, e.currentTarget.value);
+          } else {
+            // Fallback if no ID (shouldn't happen)
+            line.name = e.currentTarget.value;
+            lines = [...lines];
+          }
         }}
         on:blur={() => {
           // Commit the change for history/undo
@@ -96,6 +105,32 @@
           if (recordChange) recordChange();
         }}
       />
+
+      {#if line.id && isLinked(lines, line.id)}
+        <div
+          class="group relative flex items-center justify-center"
+          title="Linked Waypoint"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="currentColor"
+            class="size-4 text-blue-500"
+          >
+            <path
+              fill-rule="evenodd"
+              d="M19.902 4.098a3.75 3.75 0 0 0-5.304 0l-4.5 4.5a3.75 3.75 0 0 0 1.035 6.037.75.75 0 0 1-.646 1.353 5.25 5.25 0 0 1-1.449-8.45l4.5-4.5a5.25 5.25 0 1 1 7.424 7.424l-1.757 1.757a.75.75 0 1 1-1.06-1.06l1.757-1.757a3.75 3.75 0 0 0 0-5.304Zm-7.389 4.291a3.75 3.75 0 0 0 5.304 0l4.5 4.5a3.75 3.75 0 0 0-1.035-6.037.75.75 0 0 1 .646-1.353 5.25 5.25 0 0 1 1.449 8.45l-4.5 4.5a5.25 5.25 0 1 1-7.424-7.424l1.757-1.757a.75.75 0 1 1 1.06 1.06l-1.757 1.757a3.75 3.75 0 0 0 0 5.304Z"
+              clip-rule="evenodd"
+            />
+          </svg>
+          <div
+            class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 p-2 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50 shadow-lg"
+          >
+            Linked Waypoint: Position is locked to other waypoints with the same
+            name. Rename to unlink.
+          </div>
+        </div>
+      {/if}
 
       <ColorPicker
         bind:color={line.color}
@@ -277,7 +312,15 @@
             type="number"
             min="0"
             max="144"
-            bind:value={line.endPoint.x}
+            value={line.endPoint.x}
+            on:input={(e) => {
+              line.endPoint.x = parseFloat(e.currentTarget.value);
+              if (line.id) {
+                lines = syncLinkedPoints(lines, line.id);
+              } else {
+                lines = [...lines];
+              }
+            }}
             disabled={line.locked}
             title={snapToGridTitle}
           />
@@ -288,7 +331,15 @@
             min="0"
             max="144"
             type="number"
-            bind:value={line.endPoint.y}
+            value={line.endPoint.y}
+            on:input={(e) => {
+              line.endPoint.y = parseFloat(e.currentTarget.value);
+              if (line.id) {
+                lines = syncLinkedPoints(lines, line.id);
+              } else {
+                lines = [...lines];
+              }
+            }}
             disabled={line.locked}
             title={snapToGridTitle}
           />

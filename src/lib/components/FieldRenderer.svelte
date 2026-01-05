@@ -42,6 +42,7 @@
     loadRobotImage,
     updateRobotImageDisplay,
   } from "../../utils";
+import { syncLinkedPoints } from "../../utils/pointLinking";
   import type {
     Line,
     Point,
@@ -919,6 +920,9 @@
             if (point === 0 && lines[line].endPoint) {
               lines[line].endPoint.x = inchX;
               lines[line].endPoint.y = inchY;
+              if (lines[line].id) {
+                lines = syncLinkedPoints(lines, lines[line].id);
+              }
             } else {
               if (!lines[line]?.locked) {
                 lines[line].controlPoints[point - 1].x = inchX;
