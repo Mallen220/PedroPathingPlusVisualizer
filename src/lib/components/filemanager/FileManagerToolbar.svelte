@@ -148,7 +148,11 @@
       {/if}
     </button>
 
-    <div class="w-px h-5 bg-neutral-200 dark:bg-neutral-700 mx-1 shrink-0"></div>
+    <div class="flex-1"></div>
+
+    <div
+      class="w-px h-5 bg-neutral-200 dark:bg-neutral-700 mx-1 shrink-0"
+    ></div>
 
     <!-- Import -->
     <label
@@ -156,12 +160,7 @@
       title="Import .pp File"
       aria-label="Import .pp File"
     >
-      <input
-        type="file"
-        accept=".pp"
-        class="hidden"
-        on:change={handleImport}
-      />
+      <input type="file" accept=".pp" class="hidden" on:change={handleImport} />
       <svg
         xmlns="http://www.w3.org/2000/svg"
         fill="none"
@@ -201,7 +200,9 @@
       </svg>
     </button>
 
-    <div class="flex-1"></div>
+    <div
+      class="w-px h-5 bg-neutral-200 dark:bg-neutral-700 mx-1 shrink-0"
+    ></div>
 
     <!-- Refresh -->
     <button
