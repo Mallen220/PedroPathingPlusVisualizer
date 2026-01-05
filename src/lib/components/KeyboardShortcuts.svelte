@@ -174,6 +174,27 @@
   }
 
   function addEventMarker() {
+    // Check if a wait is selected
+    if ($selectedPointId && $selectedPointId.startsWith("wait-")) {
+      const waitId = $selectedPointId.substring(5);
+      const waitItem = sequence.find(
+        (s) => s.kind === "wait" && (s as any).id === waitId,
+      ) as any;
+
+      if (waitItem) {
+        if (waitItem.locked) return;
+        waitItem.eventMarkers = waitItem.eventMarkers || [];
+        waitItem.eventMarkers.push({
+          id: `event-${Date.now()}`,
+          name: "Event",
+          position: 0.5,
+        });
+        sequenceStore.set(sequence);
+        recordChange();
+        return;
+      }
+    }
+
     const targetId =
       $selectedLineId || (lines.length > 0 ? lines[lines.length - 1].id : null);
     const targetLine = targetId ? lines.find((l) => l.id === targetId) : null;

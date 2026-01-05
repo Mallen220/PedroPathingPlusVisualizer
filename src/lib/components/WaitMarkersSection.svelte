@@ -77,6 +77,7 @@
 <div class="flex flex-col w-full justify-start items-start mt-2">
   <div class="flex items-center justify-between w-full">
     <button
+      tabindex="-1"
       on:click={toggleCollapsed}
       class="flex items-center gap-2 font-light hover:bg-neutral-200 dark:hover:bg-neutral-800 px-2 py-1 rounded transition-colors text-sm"
       title={(collapsed ? "Show" : "Hide") + " event markers"}
@@ -100,6 +101,7 @@
       Event Markers ({wait.eventMarkers?.length || 0})
     </button>
     <button
+      tabindex="-1"
       on:click={addEventMarker}
       class="text-sm text-purple-500 hover:text-purple-600 flex items-center gap-1 px-2 py-1"
       title="Add Event Marker"
@@ -133,6 +135,7 @@
             <div class="flex items-center gap-2">
               <div class="w-3 h-3 rounded-full bg-purple-500"></div>
               <input
+                tabindex="-1"
                 bind:value={event.name}
                 class="pl-1.5 rounded-md bg-white dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-600 focus:outline-none focus:ring-1 focus:ring-purple-500 text-sm w-36"
                 placeholder="Event name"
@@ -143,6 +146,7 @@
               />
             </div>
             <button
+              tabindex="-1"
               on:click={() => removeEventMarker(eventIdx)}
               class="text-red-500 hover:text-red-600"
               title="Remove Event Marker"
@@ -157,6 +161,7 @@
               >Position:</span
             >
             <input
+              tabindex="-1"
               type="range"
               min="0"
               max="1"
@@ -169,6 +174,7 @@
               on:input={(e) => handlePositionInput(e, event)}
             />
             <input
+              tabindex="-1"
               type="number"
               value={event.position}
               disabled={wait.locked}

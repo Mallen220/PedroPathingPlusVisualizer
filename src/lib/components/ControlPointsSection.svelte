@@ -112,6 +112,7 @@
   <!-- Control Points header with toggle and add button -->
   <div class="flex items-center justify-between w-full">
     <button
+      tabindex="-1"
       on:click={toggleCollapsed}
       class="flex items-center gap-2 font-light hover:bg-neutral-200 dark:hover:bg-neutral-800 px-2 py-1 rounded transition-colors text-sm"
       title="{collapsed ? 'Show' : 'Hide'} control points"
@@ -135,6 +136,7 @@
       Control Points ({line.controlPoints.length})
     </button>
     <button
+      tabindex="-1"
       on:click={() => {
         line.controlPoints = [
           ...line.controlPoints,
@@ -217,6 +219,7 @@
               <!-- Move Up/Down Buttons -->
               <div class="flex flex-row gap-0.5 mr-2">
                 <button
+                  tabindex="-1"
                   title={line.locked ? "Locked" : "Move up"}
                   on:click|stopPropagation={() => moveControlPoint(idx, -1)}
                   class="p-1 rounded-full text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 bg-neutral-100/70 dark:bg-neutral-900/70 border border-neutral-200/70 dark:border-neutral-700/70 disabled:opacity-40 disabled:cursor-not-allowed"
@@ -238,6 +241,7 @@
                   </svg>
                 </button>
                 <button
+                  tabindex="-1"
                   title={line.locked ? "Locked" : "Move down"}
                   on:click|stopPropagation={() => moveControlPoint(idx, 1)}
                   class="p-1 rounded-full text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 bg-neutral-100/70 dark:bg-neutral-900/70 border border-neutral-200/70 dark:border-neutral-700/70 disabled:opacity-40 disabled:cursor-not-allowed"
@@ -262,6 +266,7 @@
               </div>
 
               <button
+                tabindex="-1"
                 on:click={() => {
                   let _pts = line.controlPoints;
                   _pts.splice(idx, 1);
@@ -297,6 +302,7 @@
                 >X:</span
               >
               <input
+                tabindex="-1"
                 bind:value={point.x}
                 type="number"
                 min="0"
@@ -317,6 +323,7 @@
                 >Y:</span
               >
               <input
+                tabindex="-1"
                 bind:value={point.y}
                 type="number"
                 min="0"
