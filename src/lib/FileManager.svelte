@@ -40,6 +40,7 @@
     fileManagerSessionState,
   } from "../stores";
   import { saveAutoPathsDirectory } from "../utils/directorySettings";
+  import { mirrorPathData } from "../utils/pathTransform";
 
   import FileManagerToolbar from "./components/filemanager/FileManagerToolbar.svelte";
   import FileManagerBreadcrumbs from "./components/filemanager/FileManagerBreadcrumbs.svelte";
@@ -467,8 +468,6 @@
       const data = JSON.parse(content);
 
       if (mirror) {
-        // Mirror logic would go here, reuse existing logic
-        // For brevity, assuming existing mirrorPathData function is available or we recreate it
         const mirrored = mirrorPathData(data);
         data.lines = mirrored.lines;
         data.startPoint = mirrored.startPoint;
@@ -504,47 +503,6 @@
       showToast(`Failed to duplicate: ${getErrorMessage(error)}`, "error");
     }
   }
-
-  // --- Mirror Logic Helpers (re-implemented efficiently) ---
-  function mirrorPointHeading(point: Point): Point {
-    if (point.heading === "linear")
-      return {
-        ...point,
-        startDeg: 180 - point.startDeg,
-        endDeg: 180 - point.endDeg,
-      };
-    if (point.heading === "constant")
-      return { ...point, degrees: 180 - point.degrees };
-    // Tangential reverse flag stays same
-    return point;
-  }
-
-  function mirrorPathData(data: any) {
-    const m = JSON.parse(JSON.stringify(data));
-    if (m.startPoint) {
-      m.startPoint.x = 144 - m.startPoint.x;
-      m.startPoint = mirrorPointHeading(m.startPoint);
-    }
-    if (m.lines) {
-      m.lines.forEach((line: any) => {
-        if (line.endPoint) {
-          line.endPoint.x = 144 - line.endPoint.x;
-          line.endPoint = mirrorPointHeading(line.endPoint);
-        }
-        if (line.controlPoints) {
-          line.controlPoints.forEach((cp: any) => (cp.x = 144 - cp.x));
-        }
-      });
-    }
-    if (m.shapes) {
-      m.shapes.forEach((s: any) =>
-        s.vertices?.forEach((v: any) => (v.x = 144 - v.x)),
-      );
-    }
-    return m;
-  }
-
-  // ---
 
   function showToast(
     message: string,

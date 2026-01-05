@@ -26,6 +26,7 @@
   import ExportCodeDialog from "./components/ExportCodeDialog.svelte";
   import { SaveIcon } from "./components/icons";
   import { calculatePathTime, formatTime } from "../utils";
+  import { mirrorPathData, reversePathData } from "../utils/pathTransform";
   import { showShortcuts } from "../stores";
 
   export let loadFile: (evt: any) => any;
@@ -53,6 +54,7 @@
   let fileManagerOpen = false;
   let shortcutsOpen = false;
   let exportMenuOpen = false;
+  let editMenuOpen = false;
   let exportDialog: ExportCodeDialog;
 
   let saveDropdownOpen = false;
@@ -60,6 +62,8 @@
   let saveButtonRef: HTMLElement;
   let exportMenuRef: HTMLElement;
   let exportButtonRef: HTMLElement;
+  let editMenuRef: HTMLElement;
+  let editButtonRef: HTMLElement;
 
   let selectedGridSize = 12;
   const gridSizeOptions = [1, 3, 6, 12, 24];
@@ -104,6 +108,46 @@
   function handleExport(format: "java" | "points" | "sequential" | "json") {
     exportMenuOpen = false;
     exportDialogState.set({ isOpen: true, format });
+  }
+
+  function handleMirrorPath() {
+    editMenuOpen = false;
+    if (!confirm("Mirror the current path horizontally (Red <-> Blue)?"))
+      return;
+
+    const mirrored = mirrorPathData({
+      startPoint,
+      lines,
+      shapes,
+      sequence,
+    });
+
+    startPoint = mirrored.startPoint;
+    lines = mirrored.lines;
+    shapes = mirrored.shapes;
+    // We don't necessarily update sequence for mirroring unless item properties changed?
+    // mirrorPathData does not touch sequence IDs, so sequence remains valid.
+
+    recordChange();
+  }
+
+  function handleReversePath() {
+    editMenuOpen = false;
+    if (!confirm("Reverse the direction of the current path?")) return;
+
+    const reversed = reversePathData({
+      startPoint,
+      lines,
+      shapes,
+      sequence,
+    });
+
+    startPoint = reversed.startPoint;
+    lines = reversed.lines;
+    sequence = reversed.sequence || [];
+    // Shapes are not affected by reverse
+
+    recordChange();
   }
 
   function resetPath() {
@@ -171,6 +215,16 @@
     }
 
     if (
+      editMenuOpen &&
+      editMenuRef &&
+      !editMenuRef.contains(event.target as Node) &&
+      editButtonRef &&
+      !editButtonRef.contains(event.target as Node)
+    ) {
+      editMenuOpen = false;
+    }
+
+    if (
       viewOptionsOpen &&
       viewOptionsRef &&
       !viewOptionsRef.contains(event.target as Node) &&
@@ -188,6 +242,9 @@
     }
     if (exportMenuOpen && event.key === "Escape") {
       exportMenuOpen = false;
+    }
+    if (editMenuOpen && event.key === "Escape") {
+      editMenuOpen = false;
     }
   }
 
@@ -369,6 +426,99 @@
     <div
       class="w-px h-6 bg-neutral-200 dark:bg-neutral-700 hidden md:block"
     ></div>
+
+    <!-- Edit Actions (Mirror/Reverse) -->
+    <div class="relative">
+      <button
+        bind:this={editButtonRef}
+        on:click={() => (editMenuOpen = !editMenuOpen)}
+        class="p-1.5 rounded-md hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-600 dark:text-neutral-300 transition-colors flex items-center gap-1"
+        title="Edit Tools"
+        aria-label="Edit Tools"
+        aria-haspopup="true"
+        aria-expanded={editMenuOpen}
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke-width="2"
+          stroke="currentColor"
+          class="size-5"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            d="M10.5 6h9.75M10.5 6a1.5 1.5 0 1 1-3 0m3 0a1.5 1.5 0 1 0-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-9.75 0h9.75"
+          />
+        </svg>
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke-width="2"
+          stroke="currentColor"
+          class="size-3 transition-transform {editMenuOpen ? 'rotate-180' : ''}"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            d="m19.5 8.25-7.5 7.5-7.5-7.5"
+          />
+        </svg>
+      </button>
+
+      {#if editMenuOpen}
+        <div
+          bind:this={editMenuRef}
+          class="absolute right-0 mt-2 w-48 bg-white dark:bg-neutral-800 rounded-lg shadow-xl py-1 z-50 border border-neutral-200 dark:border-neutral-700 animate-in fade-in zoom-in-95 duration-100"
+          role="menu"
+        >
+          <button
+            on:click={handleMirrorPath}
+            class="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700"
+            role="menuitem"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke-width="1.5"
+              stroke="currentColor"
+              class="size-4"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M7.5 21 3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5"
+              />
+            </svg>
+            Mirror Path (Flip X)
+          </button>
+          <button
+            on:click={handleReversePath}
+            class="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700"
+            role="menuitem"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke-width="1.5"
+              stroke="currentColor"
+              class="size-4"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99"
+              />
+            </svg>
+            Reverse Path
+          </button>
+        </div>
+      {/if}
+    </div>
 
     <!-- Sidebar Toggle -->
     <button
