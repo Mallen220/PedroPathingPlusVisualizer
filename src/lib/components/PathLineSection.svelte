@@ -56,6 +56,7 @@
   >
     <div class="flex flex-row items-center gap-2 flex-wrap">
       <button
+        tabindex="-1"
         on:click={toggleCollapsed}
         class="flex items-center gap-2 font-semibold hover:bg-neutral-200 dark:hover:bg-neutral-800 px-2 py-1 rounded transition-colors"
         title="{collapsed ? 'Expand' : 'Collapse'} path"
@@ -81,6 +82,7 @@
       </button>
 
       <input
+        tabindex="-1"
         bind:value={line.name}
         placeholder="Path {idx + 1}"
         class="pl-1.5 rounded-md bg-neutral-100 dark:bg-neutral-950 dark:border-neutral-700 border-[0.5px] focus:outline-none text-sm font-semibold min-w-[100px]"
@@ -101,10 +103,12 @@
         bind:color={line.color}
         title="Change Path Color"
         disabled={line.locked}
+        tabindex="-1"
       />
 
       <!-- Lock/Unlock Button -->
       <button
+        tabindex="-1"
         title={line.locked ? "Unlock Path" : "Lock Path"}
         aria-label={line.locked ? "Unlock Path" : "Lock Path"}
         on:click|stopPropagation={() => {
@@ -148,6 +152,7 @@
 
       <div class="flex flex-row gap-0.5 ml-1">
         <button
+          tabindex="-1"
           title={line.locked ? "Path locked" : "Move up"}
           aria-label="Move path up"
           on:click|stopPropagation={() => {
@@ -172,6 +177,7 @@
           </svg>
         </button>
         <button
+          tabindex="-1"
           title={line.locked ? "Path locked" : "Move down"}
           aria-label="Move path down"
           on:click|stopPropagation={() => {
@@ -202,6 +208,7 @@
       <!-- Add Point After Button -->
 
       <button
+        tabindex="-1"
         title="Add Point After This Line"
         aria-label="Add Point After This Line"
         on:click={onInsertAfter}
@@ -224,6 +231,7 @@
 
       <!-- Add Wait After Button -->
       <button
+        tabindex="-1"
         title="Add Wait After"
         aria-label="Add Wait After"
         on:click={onAddWaitAfter}
@@ -248,6 +256,7 @@
 
       {#if lines.length > 1}
         <button
+          tabindex="-1"
           title="Remove Line"
           aria-label="Remove Line"
           class="text-red-500 hover:text-red-600 disabled:opacity-40 disabled:cursor-not-allowed"
@@ -272,6 +281,7 @@
         <div class="flex items-center gap-2">
           <div class="font-extralight">X:</div>
           <input
+            tabindex="-1"
             class="pl-1.5 rounded-md bg-neutral-100 dark:bg-neutral-950 dark:border-neutral-700 border-[0.5px] focus:outline-none w-14 sm:w-14"
             step={$snapToGrid && $showGrid ? $gridSize : 0.1}
             type="number"
@@ -283,6 +293,7 @@
           />
           <div class="font-extralight">Y:</div>
           <input
+            tabindex="-1"
             class="pl-1.5 rounded-md bg-neutral-100 dark:bg-neutral-950 dark:border-neutral-700 border-[0.5px] focus:outline-none w-14 sm:w-14"
             step={$snapToGrid && $showGrid ? $gridSize : 0.1}
             min="0"
@@ -297,6 +308,7 @@
         <HeadingControls
           endPoint={line.endPoint}
           locked={line.locked}
+          tabindex="-1"
           on:change={() => {
             // Force reactivity so timeline recalculates immediately
             lines = [...lines];

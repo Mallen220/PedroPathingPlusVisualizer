@@ -819,8 +819,8 @@
 
     two.add(shapeGroup);
     two.add(lineGroup);
-    two.add(pointGroup);
     two.add(eventGroup);
+    two.add(pointGroup);
     two.add(collisionGroup);
 
     two.update();
