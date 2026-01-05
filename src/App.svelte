@@ -399,6 +399,10 @@
     const val = Math.max(0.25, Math.min(3.0, playbackSpeed + delta));
     playbackSpeedStore.set(val);
   }
+  // Compatibility alias expected by ControlTab props
+  function changePlaybackSpeed(delta: number) {
+    changePlaybackSpeedBy(delta);
+  }
   function resetPlaybackSpeed() {
     playbackSpeedStore.set(1.0);
   }
@@ -723,7 +727,6 @@
         {resetAnimation}
         {recordChange}
         playbackSpeed={$playbackSpeedStore}
-        {changePlaybackSpeedBy}
         {resetPlaybackSpeed}
         {setPlaybackSpeed}
         bind:activeTab={activeControlTab}
