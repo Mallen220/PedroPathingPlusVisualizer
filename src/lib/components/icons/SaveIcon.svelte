@@ -13,11 +13,21 @@
   class={className}
 >
   <!-- SD card outline with slanted top-right corner -->
-  <path stroke-linecap="round" stroke-linejoin="round" d="M21 8.5 16.5 4H6.5A2.5 2.5 0 0 0 4 6.5v11A2.5 2.5 0 0 0 6.5 20h11A2.5 2.5 0 0 0 20 17.5V8.5z" />
+  <path
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    d="M21 8.5 16.5 4H6.5A2.5 2.5 0 0 0 4 6.5v11A2.5 2.5 0 0 0 6.5 20h11A2.5 2.5 0 0 0 20 17.5V8.5z"
+  />
 
   <!-- Contact pads (filled) -->
   <rect x="7" y="4.8" width="1.6" height="1.6" rx="0.3" fill="currentColor" />
   <rect x="9.2" y="4.8" width="1.6" height="1.6" rx="0.3" fill="currentColor" />
-  <rect x="11.4" y="4.8" width="1.6" height="1.6" rx="0.3" fill="currentColor" />
-
+  <rect
+    x="11.4"
+    y="4.8"
+    width="1.6"
+    height="1.6"
+    rx="0.3"
+    fill="currentColor"
+  />
 </svg>

@@ -50,3 +50,6 @@ src/lib/components/FieldRenderer.svelte
 src/lib/zoomHelpers.ts
 src/tests/zoomHelpers.test.ts
 src/utils/nameGenerator.ts
+src/lib/components/OptimizationDialog.svelte
+src/lib/components/icons/SaveIcon.svelte
+vite.config.d.ts

@@ -339,7 +339,9 @@
       );
       sequence = [
         ...sequence,
-        ...missing.map((l) => ({ kind: "path", lineId: l.id || "" } as SequenceItem)),
+        ...missing.map(
+          (l) => ({ kind: "path", lineId: l.id || "" }) as SequenceItem,
+        ),
       ];
       repairedOnce = true;
       if (recordChange) recordChange();
@@ -606,7 +608,7 @@
       newLine.locked = false;
       newLine.name = generateName(
         line.name || "Path",
-        lines.map((l) => l.name),
+        lines.map((l) => l.name || ""),
       );
 
       // Offset the new line slightly or keep it same?
@@ -695,7 +697,7 @@
     // Check naming
     newWait.name = generateName(
       "Wait",
-      sequence.map((s) => s.name || ""),
+      sequence.map((s) => (s.kind === "wait" ? s.name : "") || ""),
     );
 
     const newSeq = [...sequence];
@@ -894,7 +896,7 @@
         isOpen={true}
         {startPoint}
         {lines}
-        settings={settings}
+        {settings}
         {sequence}
         {shapes}
         onApply={handleOptimizationApply}
