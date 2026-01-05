@@ -30,6 +30,8 @@
     syncLinkedPoints,
     handlePointRename,
     isLinked,
+    syncLinkedWaits,
+    isWaitLinked,
   } from "../../utils/pointLinking";
 
   export let startPoint: Point;
@@ -165,6 +167,7 @@
   function updateWaitDuration(item: SequenceItem, duration: number) {
     if (item.kind === "wait") {
       item.durationMs = duration;
+      sequence = syncLinkedWaits(sequence, item.id); // Sync other linked waits
       sequence = sequence; // Trigger reactivity
       recordChange();
     }
@@ -1297,6 +1300,31 @@
                   placeholder="Wait Name"
                   aria-label="Wait Name"
                 />
+                {#if isWaitLinked(sequence, item.id)}
+                  <div
+                    class="group relative flex items-center justify-center"
+                    title="Linked Wait"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 24 24"
+                      fill="currentColor"
+                      class="size-4 text-blue-500"
+                    >
+                      <path
+                        fill-rule="evenodd"
+                        d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25ZM12.75 6a.75.75 0 0 0-1.5 0v6c0 .414.336.75.75.75h4.5a.75.75 0 0 0 0-1.5h-3.75V6Z"
+                        clip-rule="evenodd"
+                      />
+                    </svg>
+                    <div
+                      class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 p-2 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50 shadow-lg"
+                    >
+                      Linked Wait: Duration is synchronized with other waits of
+                      the same name.
+                    </div>
+                  </div>
+                {/if}
               </td>
               <td class="px-3 py-2">
                 <input

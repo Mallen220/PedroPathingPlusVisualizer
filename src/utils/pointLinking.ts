@@ -1,5 +1,58 @@
 // Copyright 2026 Matthew Allen. Licensed under the Apache License, Version 2.0.
-import type { Line, Point } from "../types";
+import type { Line, Point, SequenceItem } from "../types";
+
+/**
+ * Updates the duration of all waits that share the same name as the changed wait.
+ *
+ * @param sequence The current sequence items.
+ * @param changedWaitId The ID of the wait that was modified.
+ * @return A new array of sequence items with synchronized waits.
+ */
+export function syncLinkedWaits(
+  sequence: SequenceItem[],
+  changedWaitId: string,
+): SequenceItem[] {
+  const changedWait = sequence.find(
+    (s) => s.kind === "wait" && s.id === changedWaitId,
+  ) as any;
+
+  if (!changedWait || !changedWait.name) {
+    return sequence;
+  }
+
+  const durationMs = changedWait.durationMs;
+  const targetName = changedWait.name;
+
+  return sequence.map((item) => {
+    if (
+      item.kind === "wait" &&
+      item.id !== changedWaitId &&
+      item.name === targetName
+    ) {
+      return {
+        ...item,
+        durationMs,
+      };
+    }
+    return item;
+  });
+}
+
+/**
+ * Checks if a wait is linked to any other wait (shares a name).
+ *
+ * @param sequence The sequence items.
+ * @param waitId The ID of the wait to check.
+ * @return True if the wait shares a name with another wait.
+ */
+export function isWaitLinked(sequence: SequenceItem[], waitId: string): boolean {
+  const wait = sequence.find((s) => s.kind === "wait" && s.id === waitId) as any;
+  if (!wait || !wait.name) return false;
+
+  return sequence.some(
+    (s) => s.kind === "wait" && s.id !== waitId && s.name === wait.name,
+  );
+}
 
 /**
  * Updates the end point of all lines that share the same name as the changed line.

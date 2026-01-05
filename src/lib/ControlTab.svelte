@@ -18,6 +18,7 @@
   } from "../utils/dragDrop";
   import { getRandomColor } from "../utils";
   import { makeId, renumberDefaultPathNames } from "../utils/nameGenerator";
+  import { syncLinkedWaits } from "../utils/pointLinking";
   import ObstaclesSection from "./components/ObstaclesSection.svelte";
   import RobotPositionDisplay from "./components/RobotPositionDisplay.svelte";
   import StartingPointSection from "./components/StartingPointSection.svelte";
@@ -842,6 +843,11 @@
     syncLinesToSequence(newSeq);
     recordChange?.();
   }
+
+  function handleWaitDurationChange(id: string, duration: number) {
+    sequence = syncLinkedWaits(sequence, id);
+    if (recordChange) recordChange();
+  }
 </script>
 
 <div
@@ -1114,9 +1120,13 @@
           >
             {#if item.kind === "path"}
               {#each lines.filter((l) => l.id === item.lineId) as ln (ln.id)}
+                {@const lineIndex = lines.findIndex((l) => l.id === ln.id)}
                 <PathLineSection
                   bind:line={ln}
-                  idx={lines.findIndex((l) => l.id === ln.id)}
+                  previousEndPoint={lineIndex === 0
+                    ? startPoint
+                    : lines[lineIndex - 1].endPoint}
+                  idx={lineIndex}
                   bind:lines
                   bind:collapsed={
                     collapsedSections.lines[
@@ -1174,6 +1184,7 @@
                 canMoveUp={sIdx !== 0}
                 canMoveDown={sIdx !== sequence.length - 1}
                 {recordChange}
+                onDurationChange={handleWaitDurationChange}
               />
             {/if}
           </div>

@@ -13,8 +13,10 @@
     handlePointRename,
     isLinked,
   } from "../../utils/pointLinking";
+  import type { Point } from "../../types";
 
   export let line: Line;
+  export let previousEndPoint: Point | undefined = undefined;
   export let idx: number;
   export let lines: Line[];
   export let collapsed: boolean;
@@ -33,6 +35,14 @@
 
   $: snapToGridTitle =
     $snapToGrid && $showGrid ? `Snapping to ${$gridSize} grid` : "No snapping";
+
+  $: isZeroLength = (() => {
+    if (!previousEndPoint || !line.endPoint) return false;
+    const dx = line.endPoint.x - previousEndPoint.x;
+    const dy = line.endPoint.y - previousEndPoint.y;
+    const dist = Math.sqrt(dx * dx + dy * dy);
+    return dist < 0.1;
+  })();
 
   function toggleCollapsed() {
     collapsed = !collapsed;
@@ -128,6 +138,33 @@
           >
             Linked Waypoint: Position is locked to other waypoints with the same
             name. Rename to unlink.
+          </div>
+        </div>
+      {/if}
+
+      {#if isZeroLength}
+        <div
+          class="group relative flex items-center justify-center"
+          title="Zero Length Path"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            class="size-4 text-amber-500"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z"
+            />
+          </svg>
+          <div
+            class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 p-2 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50 shadow-lg"
+          >
+            Warning: This path has zero length (start point equals end point).
           </div>
         </div>
       {/if}

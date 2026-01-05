@@ -21,6 +21,7 @@
   export let canMoveUp: boolean = true;
   export let canMoveDown: boolean = true;
   export let recordChange: (() => void) | undefined = undefined;
+  export let onDurationChange: ((id: string, duration: number) => void) | undefined = undefined;
 
   // We assume the parent binds to 'wait' or handles updates via object mutation reference.
   // We trigger recordChange on updates.
@@ -38,10 +39,13 @@
   function handleDurationChange(e: Event) {
     const target = e.currentTarget as HTMLInputElement;
     const val = parseFloat(target.value);
+    let newVal = 0;
     if (!Number.isNaN(val) && val >= 0) {
-      wait.durationMs = val;
-    } else {
-      wait.durationMs = 0;
+      newVal = val;
+    }
+    wait.durationMs = newVal;
+    if (onDurationChange) {
+        onDurationChange(wait.id, newVal);
     }
     if (recordChange) recordChange();
   }
