@@ -395,39 +395,39 @@
         // Find the new file info object to pass to loadFile
         const newFile = files.find((f) => f.name === fileName);
         if (newFile) {
-           await loadFile(newFile);
+          await loadFile(newFile);
         } else {
-           // Fallback if refresh failed or something
-           showToast("File imported but not found in list", "warning");
+          // Fallback if refresh failed or something
+          showToast("File imported but not found in list", "warning");
         }
-
       } else {
-         // Web mode / No directory: just load into memory
-         const reader = new FileReader();
-         reader.onload = (e) => {
-            const content = e.target?.result as string;
-            try {
-               const data = JSON.parse(content);
-               if (!data.startPoint || !data.lines) throw new Error("Invalid format");
+        // Web mode / No directory: just load into memory
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const content = e.target?.result as string;
+          try {
+            const data = JSON.parse(content);
+            if (!data.startPoint || !data.lines)
+              throw new Error("Invalid format");
 
-               startPoint = data.startPoint;
-               lines = normalizeLines(data.lines || []);
-               shapes = data.shapes || [];
-               sequence = deriveSequence(data, lines);
+            startPoint = data.startPoint;
+            lines = normalizeLines(data.lines || []);
+            shapes = data.shapes || [];
+            sequence = deriveSequence(data, lines);
 
-               // We don't have a path, so we can't set currentFilePath to a persistent location
-               // But we can set it to the file name for display?
-               // Usually currentFilePath implies it's saved.
-               currentFilePath.set(null);
-               isUnsaved.set(true); // Treat as unsaved imported data
-               selectedFile = null;
+            // We don't have a path, so we can't set currentFilePath to a persistent location
+            // But we can set it to the file name for display?
+            // Usually currentFilePath implies it's saved.
+            currentFilePath.set(null);
+            isUnsaved.set(true); // Treat as unsaved imported data
+            selectedFile = null;
 
-               showToast(`Imported: ${file.name}`, "success");
-            } catch (err) {
-               showToast("Invalid file content", "error");
-            }
-         };
-         reader.readAsText(file);
+            showToast(`Imported: ${file.name}`, "success");
+          } catch (err) {
+            showToast("Invalid file content", "error");
+          }
+        };
+        reader.readAsText(file);
       }
     } catch (err) {
       showToast(`Import failed: ${getErrorMessage(err)}`, "error");
