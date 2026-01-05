@@ -51,8 +51,7 @@
   export let handleSeek: (percent: number) => void;
   export let loopAnimation: boolean;
   export let playbackSpeed: number = 1.0;
-  export let changePlaybackSpeedBy: (delta: number) => void;
-  export let resetPlaybackSpeed: () => void;
+  export const resetPlaybackSpeed = undefined as unknown as () => void;
   export let setPlaybackSpeed: (factor: number, autoPlay?: boolean) => void;
 
   export const resetAnimation = undefined as unknown as () => void;
@@ -631,7 +630,7 @@
     sequence = [...sequence, wait];
 
     // Select newly created wait
-    selectedPointId.set(`wait-${wait.id}`);
+    selectedPointId.set(`wait-${(wait as any).id}`);
     selectedLineId.set(null);
     recordChange();
   }
@@ -647,7 +646,7 @@
     sequence = [wait, ...sequence];
 
     // Select newly created wait
-    selectedPointId.set(`wait-${wait.id}`);
+    selectedPointId.set(`wait-${(wait as any).id}`);
     selectedLineId.set(null);
     recordChange();
   }
@@ -987,10 +986,10 @@
           onValidate={handleValidate}
           {optimizationOpen}
           {handleOptimizationApply}
-          {onPreviewChange}
+          onPreviewChange={onPreviewChange || (() => {})}
           bind:shapes
           bind:collapsedObstacles={collapsedSections.obstacles}
-          {settings}
+          settings={settings}
         />
       </div>
     {/if}
@@ -1021,7 +1020,6 @@
               bind:optimizedLines={optOptimizedLines}
               bind:optimizationFailed={optFailed}
               isOpen={true}
-              useModal={false}
               {startPoint}
               {lines}
               {settings}
@@ -1233,8 +1231,6 @@
       bind:loopAnimation
       {markers}
       {playbackSpeed}
-      {changePlaybackSpeedBy}
-      {resetPlaybackSpeed}
       {setPlaybackSpeed}
     />
   </div>
