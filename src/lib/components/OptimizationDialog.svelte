@@ -40,25 +40,25 @@
     isStopping = false;
 
     if (settings) {
-        optimizer = new PathOptimizer(
-            startPoint,
-            lines,
-            settings,
-            sequence,
-            shapes,
-        );
+      optimizer = new PathOptimizer(
+        startPoint,
+        lines,
+        settings,
+        sequence,
+        shapes,
+      );
     } else {
-        logs = [...logs, "Error: Settings not loaded."];
-        isRunning = false;
-        return;
+      logs = [...logs, "Error: Settings not loaded."];
+      isRunning = false;
+      return;
     }
 
     logs = [...logs, "Initializing population..."];
 
     if (!optimizer) {
-         logs = [...logs, "Error: Optimizer initialization failed."];
-         isRunning = false;
-         return;
+      logs = [...logs, "Error: Optimizer initialization failed."];
+      isRunning = false;
+      return;
     }
 
     const optimizationResult = await optimizer.optimize(

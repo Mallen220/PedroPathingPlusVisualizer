@@ -211,7 +211,6 @@
             `${idx1}`,
             x(point.x),
             y(point.y) - uiLength(0.15),
-            uiLength(POINT_RADIUS),
           );
           pointText.id = `point-${idx + 1}-${idx1}-text`;
           pointText.size = uiLength(1.55);
@@ -253,7 +252,6 @@
           `${vertexIdx + 1}`,
           x(vertex.x),
           y(vertex.y) - uiLength(0.15),
-          uiLength(POINT_RADIUS),
         );
         pointText.id = `obstacle-${shapeIdx}-${vertexIdx}-text`;
         pointText.size = uiLength(1.55);

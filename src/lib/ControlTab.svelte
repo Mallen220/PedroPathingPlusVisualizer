@@ -989,7 +989,7 @@
           onPreviewChange={onPreviewChange || (() => {})}
           bind:shapes
           bind:collapsedObstacles={collapsedSections.obstacles}
-          settings={settings}
+          {settings}
         />
       </div>
     {/if}

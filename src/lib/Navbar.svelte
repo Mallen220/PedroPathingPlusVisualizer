@@ -223,7 +223,7 @@
   bind:lines
   bind:sequence
   bind:shapes
-  settings={settings}
+  {settings}
 />
 
 <SettingsDialog bind:isOpen={$showSettings} bind:settings />
@@ -715,7 +715,7 @@
           title="Save Options"
           aria-label="Save Options"
         >
-            <SaveIcon className="size-5" />
+          <SaveIcon className="size-5" />
           <svg
             xmlns="http://www.w3.org/2000/svg"
             fill="none"
