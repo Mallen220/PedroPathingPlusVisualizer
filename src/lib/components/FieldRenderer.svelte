@@ -750,9 +750,16 @@
     if (markers && markers.length > 0) {
       markers.forEach((marker, idx) => {
         const group = new Two.Group();
+        const isBoundary = marker.type === "boundary";
+
         const circle = new Two.Circle(x(marker.x), y(marker.y), uiLength(2));
-        circle.fill = "rgba(239, 68, 68, 0.5)"; // Red-500 with opacity
-        circle.stroke = "#ef4444";
+        if (isBoundary) {
+          circle.fill = "rgba(249, 115, 22, 0.5)"; // Orange-500 with opacity
+          circle.stroke = "#f97316";
+        } else {
+          circle.fill = "rgba(239, 68, 68, 0.5)"; // Red-500 with opacity
+          circle.stroke = "#ef4444";
+        }
         circle.linewidth = uiLength(0.5);
 
         const crossLength = uiLength(1.5);
@@ -894,6 +901,11 @@
         if ($snapToGrid && $showGrid && $gridSize > 0) {
           inchX = Math.round(rawInchX / $gridSize) * $gridSize;
           inchY = Math.round(rawInchY / $gridSize) * $gridSize;
+        }
+
+        // Clamp to field bounds if restricted or if snapped (snap already clamped)
+        // Actually snap block above clamped to 0-144, but we need to check restriction setting
+        if (settings.restrictDraggingToField !== false) {
           inchX = Math.max(0, Math.min(FIELD_SIZE, inchX));
           inchY = Math.max(0, Math.min(FIELD_SIZE, inchY));
         }
@@ -1148,8 +1160,10 @@
         inchX = Math.round(inchX / $gridSize) * $gridSize;
         inchY = Math.round(inchY / $gridSize) * $gridSize;
       }
-      inchX = Math.max(0, Math.min(FIELD_SIZE, inchX));
-      inchY = Math.max(0, Math.min(FIELD_SIZE, inchY));
+      if (settings.restrictDraggingToField !== false) {
+        inchX = Math.max(0, Math.min(FIELD_SIZE, inchX));
+        inchY = Math.max(0, Math.min(FIELD_SIZE, inchY));
+      }
 
       const newLine: Line = {
         id: `line-${Math.random().toString(36).slice(2)}`,
