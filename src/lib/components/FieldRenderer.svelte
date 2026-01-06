@@ -916,44 +916,30 @@
           minY = 0;
           maxY = FIELD_SIZE;
 
-          // Identify if we are dragging a control point or an anchor (start/end)
-          let isAnchor = false;
           if (currentElem.startsWith("point-")) {
             const parts = currentElem.split("-");
             const lineNum = Number(parts[1]);
             const pointIdx = Number(parts[2]);
 
-            // Check if it's start point (lineNum=0, pointIdx=0)
-            // OR if it's the start (0) or end of a line segment
+            // Calculate base robot margin (half of smallest dimension)
+            const robotMargin = Math.min(settings.rLength, settings.rWidth) / 2;
+            const safety = settings.safetyMargin || 0;
+
+            let margin = 0;
+
+            // Start Point (point-0-0)
             if (lineNum === 0 && pointIdx === 0) {
-              isAnchor = true;
-            } else if (lineNum > 0) {
-               const lineIndex = lineNum - 1;
-               const line = lines[lineIndex];
-               // It's an anchor if it's the start (which is previous end, but that's handled by previous line's end usually?
-               // Wait, the points are rendered as:
-               // - StartPoint (point-0-0)
-               // - Line 1: EndPoint (point-1-0 is NOT end, point-1-0 is start? No.)
-               // Let's check `points` logic above.
-               // point-0-0 is Start Point.
-               // Loop lines:
-               // [line.endPoint, ...line.controlPoints].forEach((point, idx1)...
-               // idx1=0 is endPoint. idx1 > 0 are controlPoints.
-               // So point-N-0 is the End Point of line N-1 (0-indexed logic in store, 1-indexed in ID).
-               // Wait, ID is `point-${idx + 1}-${idx1}`.
-               // idx is line index (0..). idx1 is index in [endPoint, ...controlPoints].
-               // So idx1=0 is the END POINT of the line.
-
-               // So if pointIdx === 0, it is an endpoint (Anchor).
-               if (pointIdx === 0) {
-                 isAnchor = true;
-               }
+              margin = robotMargin;
             }
-          }
+            // Other Anchor Points (Endpoints of lines: point-N-0 where N > 0)
+            else if (lineNum > 0 && pointIdx === 0) {
+              margin = robotMargin + safety;
+            }
+            // Control Points (point-N-M where M > 0) -> No extra margin, just field bounds
+            else {
+              margin = 0;
+            }
 
-          if (isAnchor) {
-            // Apply robot dimension constraint
-            const margin = Math.min(settings.rLength, settings.rWidth) / 2;
             minX = margin;
             maxX = FIELD_SIZE - margin;
             minY = margin;
