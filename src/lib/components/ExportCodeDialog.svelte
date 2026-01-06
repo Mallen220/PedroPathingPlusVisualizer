@@ -173,6 +173,12 @@
   }
 
   async function handleSaveFile() {
+    // For project exports (.pp / json), use the dedicated Download as .pp button instead
+    // of the generic Save to File action.
+    if (exportFormat === "json") {
+      return;
+    }
+
     if (!electronAPI || !electronAPI.showSaveDialog || !electronAPI.writeFile) {
       // Fallback for web: use download attribute trick via Blob
       // But downloadTrajectory is specialized for JSON/PP usually, let's make a generic one.
@@ -190,7 +196,7 @@
       } else if (exportFormat === "points") {
         filename = "points.txt";
       } else if (exportFormat === "json") {
-        filename = "trajectory.json";
+        filename = "trajectory.pp";
       }
       a.download = filename;
       document.body.appendChild(a);
@@ -684,27 +690,29 @@
             Close
           </button>
 
-          <button
-            class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-neutral-700 dark:text-neutral-200 bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 rounded-lg transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-neutral-500"
-            on:click={handleSaveFile}
-            title="Save the generated content to a file"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke-width="2"
-              stroke="currentColor"
-              class="size-4"
+          {#if exportFormat !== "json"}
+            <button
+              class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-neutral-700 dark:text-neutral-200 bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 rounded-lg transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-neutral-500"
+              on:click={handleSaveFile}
+              title="Save the generated content to a file"
             >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M12 12.75l-3-3m3 3 3-3m-3 3V3"
-              />
-            </svg>
-            Save to File
-          </button>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke-width="2"
+                stroke="currentColor"
+                class="size-4"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M12 12.75l-3-3m3 3 3-3m-3 3V3"
+                />
+              </svg>
+              Save to File
+            </button>
+          {/if}
 
           {#if exportFormat === "json"}
             <button
