@@ -42,6 +42,7 @@
     loadRobotImage,
     updateRobotImageDisplay,
   } from "../../utils";
+  import { updateLinkedWaypoints } from "../../utils/pointLinking";
   import type {
     Line,
     Point,
@@ -972,6 +973,16 @@
             if (point === 0 && lines[line].endPoint) {
               lines[line].endPoint.x = inchX;
               lines[line].endPoint.y = inchY;
+              if (lines[line].id) {
+                const updated = updateLinkedWaypoints(
+                  lines,
+                  lines[line].id as string,
+                );
+                // Only update if changes occurred to avoid unnecessary store updates
+                if (updated !== lines) {
+                  lines = updated;
+                }
+              }
             } else {
               if (!lines[line]?.locked) {
                 lines[line].controlPoints[point - 1].x = inchX;
