@@ -352,28 +352,7 @@ export async function generateSequentialCommandCode(
     return count === 0 ? baseName : `${baseName}${count + 1}`;
   };
 
-  const linePathVariableNames = lines.map((line, idx) => {
-    let pathName = "";
-    if (line.name) {
-      // Use line name as base
-      pathName = sanitizeName(line.name, "path");
-      pathName = pathName.charAt(0).toLowerCase() + pathName.slice(1);
-    } else {
-      // Fallback if no name (though sanitizeName handles it, logic here matches previous)
-      // Actually we need start/end names for fallback but let's stick to simple "path" + idx or similar if no name?
-      // Or just rely on what we did before?
-      // Before we used `startPoseTOendPose`.
-      // Let's defer "pathName" generation until we have start/end poses,
-      // BUT we need a unique identifier for the LINE itself to name control points.
-      // So let's use line index or generated path name.
-      // If we use generated path name, we need start/end poses.
-      // Circular dependency? No, poses are based on point names.
-      // But point names (for variables) are just sanitized line names.
-      // Let's iterate lines first to register Poses.
-      return ""; // Placeholder, computed later
-    }
-    return getUniquePathName(pathName);
-  });
+  const linePathVariableNames = lines.map(() => "");
 
   // 2. Second Pass: Register Poses and resolve names
   lines.forEach((line, lineIdx) => {
@@ -393,13 +372,12 @@ export async function generateSequentialCommandCode(
       lineStartPoseNames.push(prevName);
     }
 
-    // Resolve Path Variable Name if it wasn't resolved in pass 1 (empty name case)
-    if (!linePathVariableNames[lineIdx]) {
-      const startPoseName = lineStartPoseNames[lineIdx];
-      const endPoseName = endPointName; // Current line end
-      const pathName = `${startPoseName}TO${endPoseName}`;
-      linePathVariableNames[lineIdx] = getUniquePathName(pathName);
-    }
+    // Resolve Path Variable Name
+    // Always use startPoseTOendPose format as requested, but ensure uniqueness
+    const startPoseName = lineStartPoseNames[lineIdx];
+    const endPoseName = endPointName; // Current line end
+    const pathName = `${startPoseName}TO${endPoseName}`;
+    linePathVariableNames[lineIdx] = getUniquePathName(pathName);
 
     // Register control points if they exist
     // Use the unique PathChain variable name as prefix to ensure independence

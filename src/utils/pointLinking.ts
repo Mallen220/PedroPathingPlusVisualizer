@@ -105,6 +105,13 @@ export function handlePointRename(
   renamedLineId: string,
   newName: string,
 ): Line[] {
+  // If new name is empty, just rename and do not link/snap
+  if (!newName) {
+    return lines.map((line) =>
+      line.id === renamedLineId ? { ...line, name: newName } : line,
+    );
+  }
+
   // Find an existing line with the new name (excluding the one being renamed)
   const existingLine = lines.find(
     (l) => l.name === newName && l.id !== renamedLineId,

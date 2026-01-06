@@ -107,7 +107,7 @@
       <!-- Name Input -->
       <input
         bind:value={wait.name}
-        placeholder="Wait Name"
+        placeholder="Wait {idx + 1}"
         class="pl-1.5 rounded-md bg-neutral-100 dark:bg-neutral-950 dark:border-neutral-700 border-[0.5px] focus:outline-none text-sm font-semibold min-w-[100px]"
         disabled={wait.locked}
         on:input={() => {

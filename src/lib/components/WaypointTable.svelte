@@ -702,16 +702,10 @@
     const newWait: SequenceItem = {
       kind: "wait",
       id: makeId(),
-      name: "Wait",
+      name: "",
       durationMs: 1000,
       locked: false,
     };
-
-    // Check naming
-    newWait.name = generateName(
-      "Wait",
-      sequence.map((s) => (s.kind === "wait" ? s.name : "") || ""),
-    );
 
     const newSeq = [...sequence];
     newSeq.splice(index, 0, newWait);
@@ -1297,7 +1291,7 @@
                     // @ts-ignore
                     updateWaitName(item, e.target.value)}
                   disabled={item.locked}
-                  placeholder="Wait Name"
+                  placeholder="Wait {seqIndex + 1}"
                   aria-label="Wait Name"
                 />
                 {#if isWaitLinked(sequence, item.id)}
