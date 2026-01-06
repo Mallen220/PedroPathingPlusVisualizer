@@ -50,6 +50,7 @@
     BasePoint,
     SequenceItem,
   } from "../../types";
+  import { updateLinkedLines } from "../../utils/pointLinking";
   import MathTools from "../MathTools.svelte";
   import FieldCoordinates from "./FieldCoordinates.svelte";
   import type { Path } from "two.js/src/path";
@@ -919,6 +920,8 @@
             if (point === 0 && lines[line].endPoint) {
               lines[line].endPoint.x = inchX;
               lines[line].endPoint.y = inchY;
+              // Handle linking
+              lines = updateLinkedLines(lines, lines[line].id || "", "xy");
             } else {
               if (!lines[line]?.locked) {
                 lines[line].controlPoints[point - 1].x = inchX;
