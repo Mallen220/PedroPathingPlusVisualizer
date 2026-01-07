@@ -30,6 +30,7 @@
   import { calculatePathTime } from "../utils";
   import { validatePath } from "../utils/validation";
   import { selectedLineId, selectedPointId } from "../stores";
+  import { tooltip } from "./actions/useTooltip";
   import { tick } from "svelte";
   import { slide } from "svelte/transition";
 
@@ -865,6 +866,7 @@
         aria-selected={activeTab === "path"}
         aria-controls="path-panel"
         id="path-tab"
+        use:tooltip={"Path Editor"}
         class="flex-1 px-4 py-2 text-sm font-medium rounded-md transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-purple-500 flex items-center justify-center gap-2 {activeTab ===
         'path'
           ? 'bg-white dark:bg-neutral-700 shadow-sm text-neutral-900 dark:text-white'
@@ -896,6 +898,7 @@
         aria-selected={activeTab === "field"}
         aria-controls="field-panel"
         id="field-tab"
+        use:tooltip={"Field & Tools"}
         class="flex-1 px-4 py-2 text-sm font-medium rounded-md transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-purple-500 flex items-center justify-center gap-2 {activeTab ===
         'field'
           ? 'bg-white dark:bg-neutral-700 shadow-sm text-neutral-900 dark:text-white'
@@ -936,6 +939,7 @@
         aria-selected={activeTab === "table"}
         aria-controls="table-panel"
         id="table-tab"
+        use:tooltip={"Waypoint Table"}
         class="flex-1 px-4 py-2 text-sm font-medium rounded-md transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-purple-500 flex items-center justify-center gap-2 {activeTab ===
         'table'
           ? 'bg-white dark:bg-neutral-700 shadow-sm text-neutral-900 dark:text-white'
@@ -1189,6 +1193,7 @@
         <div class="flex flex-row justify-center items-center gap-3 pt-4">
           <button
             on:click={addLine}
+            use:tooltip={"Add a new path segment"}
             class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-green-600 dark:bg-green-700 rounded-md shadow-sm hover:bg-green-700 dark:hover:bg-green-600 transition-colors focus:outline-none focus:ring-2 focus:ring-green-300 dark:focus:ring-green-700"
             aria-label="Add new path segment"
           >
@@ -1211,6 +1216,7 @@
 
           <button
             on:click={addWait}
+            use:tooltip={"Add a new wait event"}
             class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-amber-500 dark:bg-amber-600 rounded-md shadow-sm hover:bg-amber-600 dark:hover:bg-amber-500 transition-colors focus:outline-none focus:ring-2 focus:ring-amber-200 dark:focus:ring-amber-500"
             aria-label="Add wait command"
           >
