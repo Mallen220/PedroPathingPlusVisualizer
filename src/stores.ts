@@ -50,3 +50,11 @@ export const fileManagerSessionState = writable<{
   viewMode: "grid",
   sortMode: "date",
 });
+
+// Tooltip State
+export const tooltipState = writable<{
+  content: string;
+  x: number;
+  y: number;
+  visible: boolean;
+} | null>(null);

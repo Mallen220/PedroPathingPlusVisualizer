@@ -8,6 +8,7 @@
     gridSize,
   } from "../stores";
   import type * as d3 from "d3";
+  import { tooltip } from "./actions/useTooltip";
 
   export let x: d3.ScaleLinear<number, number, number>;
   export let y: d3.ScaleLinear<number, number, number>;
@@ -204,7 +205,7 @@
       role="button"
       tabindex="0"
       aria-label="Ruler start point"
-      title="Ruler start point"
+      use:tooltip="Ruler start point"
       on:mousedown={(e) => handleMouseDown(e, "ruler-start")}
     />
 
@@ -218,7 +219,7 @@
       role="button"
       tabindex="0"
       aria-label="Ruler end point"
-      title="Ruler end point"
+      use:tooltip="Ruler end point"
       on:mousedown={(e) => handleMouseDown(e, "ruler-end")}
     />
 
@@ -322,7 +323,7 @@
           role="button"
           tabindex="0"
           aria-label="Drag to rotate radius line"
-          title="Drag to rotate radius line"
+          use:tooltip="Drag to rotate radius line"
           on:mousedown={(e) => handleMouseDown(e, "protractor-rotate")}
         />
         <text
@@ -356,7 +357,7 @@
           role="button"
           tabindex="0"
           aria-label="Drag to resize protractor"
-          title="Drag to resize protractor"
+          use:tooltip="Drag to resize protractor"
           on:mousedown={(e) => handleMouseDown(e, "protractor-resize")}
         />
         <text
@@ -385,7 +386,7 @@
         aria-label={$protractorLockToRobot
           ? "Click to unlock from robot"
           : "Drag to move protractor"}
-        title={$protractorLockToRobot
+        use:tooltip={$protractorLockToRobot
           ? "Click to unlock from robot"
           : "Drag to move protractor"}
         on:mousedown={(e) => {

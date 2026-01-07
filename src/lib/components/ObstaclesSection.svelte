@@ -4,6 +4,7 @@
   import { snapToGrid, showGrid, gridSize } from "../../stores";
   import TrashIcon from "./icons/TrashIcon.svelte";
   import type { Shape } from "../../types";
+  import { tooltip } from "../actions/useTooltip";
 
   export let shapes: Shape[];
   export let collapsedObstacles: boolean[];
@@ -195,7 +196,7 @@
       collapsedObstacles = [...collapsedObstacles, true];
     }}
     class="font-semibold text-red-500 text-sm flex flex-row justify-start items-center gap-1 mt-2"
-    title="Add a new obstacle shape to the field"
+    use:tooltip="Add a new obstacle shape to the field"
   >
     <svg
       xmlns="http://www.w3.org/2000/svg"

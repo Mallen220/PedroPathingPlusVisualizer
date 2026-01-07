@@ -5,6 +5,7 @@
   import type { Settings } from "../../types";
   import { DEFAULT_KEY_BINDINGS } from "../../config/defaults";
   import { notification } from "../../stores";
+  import { tooltip } from "../actions/useTooltip";
 
   export let isOpen = false;
   export let settings: Settings;
@@ -279,7 +280,7 @@
             on:click={() => (isOpen = false)}
             class="p-2 rounded-lg hover:bg-neutral-200 dark:hover:bg-neutral-800 text-neutral-500 dark:text-neutral-400 transition-colors"
             aria-label="Close dialog"
-            title="Close"
+            use:tooltip="Close"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -512,7 +513,7 @@
         <button
           on:click={() => (isOpen = false)}
           class="px-4 py-2 bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 text-sm font-semibold rounded-lg shadow-sm hover:opacity-90 transition-opacity"
-          title="Close dialog"
+          use:tooltip="Close dialog"
         >
           Done
         </button>

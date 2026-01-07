@@ -28,6 +28,7 @@
   import { SaveIcon } from "./components/icons";
   import { calculatePathTime, formatTime } from "../utils";
   import { showShortcuts } from "../stores";
+  import { tooltip } from "./actions/useTooltip";
 
   export let loadFile: (evt: any) => any;
 
@@ -789,25 +790,25 @@
             <button
               on:click={() => handleExport("java")}
               class="block w-full text-left px-4 py-2 text-sm text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700"
-              title="Export path as Java code for your robot"
+              use:tooltip="Export path as Java code for your robot"
               >Java Code</button
             >
             <button
               on:click={() => handleExport("points")}
               class="block w-full text-left px-4 py-2 text-sm text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700"
-              title="Export path as a raw array of points"
+              use:tooltip="Export path as a raw array of points"
               >Points Array</button
             >
             <button
               on:click={() => handleExport("sequential")}
               class="block w-full text-left px-4 py-2 text-sm text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700"
-              title="Export path as a sequential command"
+              use:tooltip="Export path as a sequential command"
               >Sequential Command</button
             >
             <button
               on:click={() => handleExport("json")}
               class="block w-full text-left px-4 py-2 text-sm text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700"
-              title="Save project as a .pp file"
+              use:tooltip="Save project as a .pp file"
               >.pp File</button
             >
             <div class="h-px bg-neutral-200 dark:bg-neutral-700 my-1"></div>
@@ -817,7 +818,7 @@
                 exportGif && exportGif();
               }}
               class="block w-full text-left px-4 py-2 text-sm text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700"
-              title="Export path as a GIF or APNG animation"
+              use:tooltip="Export path as a GIF or APNG animation"
               >Export Animated</button
             >
           </div>

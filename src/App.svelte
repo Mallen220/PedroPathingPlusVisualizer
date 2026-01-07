@@ -12,6 +12,7 @@
   import KeyboardShortcuts from "./lib/components/KeyboardShortcuts.svelte";
   import ExportGifDialog from "./lib/components/ExportGifDialog.svelte";
   import NotificationToast from "./lib/components/NotificationToast.svelte";
+  import TooltipUI from "./lib/components/TooltipUI.svelte";
 
   // Stores
   import {
@@ -615,6 +616,7 @@
 {/if}
 
 <NotificationToast />
+<TooltipUI />
 
 <!-- Main Container -->
 <div
