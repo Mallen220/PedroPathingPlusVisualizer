@@ -1,7 +1,14 @@
 // Copyright 2026 Matthew Allen. Licensed under the Apache License, Version 2.0.
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { validatePath } from "../utils/validation";
-import type { Line, Point, SequenceItem, Settings, Shape, CollisionMarker } from "../types";
+import type {
+  Line,
+  Point,
+  SequenceItem,
+  Settings,
+  Shape,
+  CollisionMarker,
+} from "../types";
 
 // Hoist mocks to be accessible inside vi.mock factory
 const mocks = vi.hoisted(() => ({
@@ -43,14 +50,22 @@ describe("Validation Utils", () => {
   });
 
   it("should report success when no collisions or issues are found", () => {
-    const startPoint: Point = { x: 0, y: 0, heading: "tangential", velocity: 1 };
+    const startPoint: Point = {
+      x: 0,
+      y: 0,
+      heading: "tangential",
+      reverse: false,
+    };
     const lines: Line[] = [
       {
         id: "1",
         name: "L1",
-        endPoint: { x: 10, y: 10, heading: "tangential", velocity: 1 },
-        control1: { x: 0, y: 0 },
-        control2: { x: 0, y: 0 },
+        color: "black",
+        endPoint: { x: 10, y: 10, heading: "tangential", reverse: false },
+        controlPoints: [
+          { x: 0, y: 0 },
+          { x: 0, y: 0 },
+        ],
       },
     ];
 
@@ -65,14 +80,22 @@ describe("Validation Utils", () => {
   });
 
   it("should detect zero-length segments", () => {
-    const startPoint: Point = { x: 0, y: 0, heading: "tangential", velocity: 1 };
+    const startPoint: Point = {
+      x: 0,
+      y: 0,
+      heading: "tangential",
+      reverse: false,
+    };
     const lines: Line[] = [
       {
         id: "1",
         name: "L1",
-        endPoint: { x: 0, y: 0, heading: "tangential", velocity: 1 }, // Same as start
-        control1: { x: 0, y: 0 },
-        control2: { x: 0, y: 0 },
+        color: "black",
+        endPoint: { x: 0, y: 0, heading: "tangential", reverse: false }, // Same as start
+        controlPoints: [
+          { x: 0, y: 0 },
+          { x: 0, y: 0 },
+        ],
       },
     ];
 
@@ -85,19 +108,27 @@ describe("Validation Utils", () => {
       expect.objectContaining({
         message: expect.stringContaining("1 zero-length"),
         type: "error",
-      })
+      }),
     );
   });
 
   it("should report obstacles from PathOptimizer", () => {
-    const startPoint: Point = { x: 0, y: 0, heading: "tangential", velocity: 1 };
+    const startPoint: Point = {
+      x: 0,
+      y: 0,
+      heading: "tangential",
+      reverse: false,
+    };
     const lines: Line[] = [
       {
         id: "1",
         name: "L1",
-        endPoint: { x: 10, y: 10, heading: "tangential", velocity: 1 },
-        control1: { x: 0, y: 0 },
-        control2: { x: 0, y: 0 },
+        color: "black",
+        endPoint: { x: 10, y: 10, heading: "tangential", reverse: false },
+        controlPoints: [
+          { x: 0, y: 0 },
+          { x: 0, y: 0 },
+        ],
       },
     ];
 
@@ -113,19 +144,27 @@ describe("Validation Utils", () => {
     expect(mocks.notificationSet).toHaveBeenCalledWith(
       expect.objectContaining({
         message: expect.stringContaining("1 obstacle"),
-      })
+      }),
     );
   });
 
   it("should report boundary violations from PathOptimizer", () => {
-    const startPoint: Point = { x: 0, y: 0, heading: "tangential", velocity: 1 };
+    const startPoint: Point = {
+      x: 0,
+      y: 0,
+      heading: "tangential",
+      reverse: false,
+    };
     const lines: Line[] = [
       {
         id: "1",
         name: "L1",
-        endPoint: { x: 10, y: 10, heading: "tangential", velocity: 1 },
-        control1: { x: 0, y: 0 },
-        control2: { x: 0, y: 0 },
+        color: "black",
+        endPoint: { x: 10, y: 10, heading: "tangential", reverse: false },
+        controlPoints: [
+          { x: 0, y: 0 },
+          { x: 0, y: 0 },
+        ],
       },
     ];
 
@@ -141,19 +180,27 @@ describe("Validation Utils", () => {
     expect(mocks.notificationSet).toHaveBeenCalledWith(
       expect.objectContaining({
         message: expect.stringContaining("1 boundary"),
-      })
+      }),
     );
   });
 
   it("should combine multiple issue types in the message", () => {
-    const startPoint: Point = { x: 0, y: 0, heading: "tangential", velocity: 1 };
+    const startPoint: Point = {
+      x: 0,
+      y: 0,
+      heading: "tangential",
+      reverse: false,
+    };
     const lines: Line[] = [
       {
         id: "1",
         name: "L1",
-        endPoint: { x: 0, y: 0, heading: "tangential", velocity: 1 }, // Zero length
-        control1: { x: 0, y: 0 },
-        control2: { x: 0, y: 0 },
+        color: "black",
+        endPoint: { x: 0, y: 0, heading: "tangential", reverse: false }, // Zero length
+        controlPoints: [
+          { x: 0, y: 0 },
+          { x: 0, y: 0 },
+        ],
       },
     ];
 
@@ -168,7 +215,7 @@ describe("Validation Utils", () => {
       expect.arrayContaining([
         expect.objectContaining({ type: "zero-length" }),
         expect.objectContaining({ type: "obstacle" }),
-      ])
+      ]),
     );
 
     // We expect the message to contain "1 obstacle" and "1 zero-length"

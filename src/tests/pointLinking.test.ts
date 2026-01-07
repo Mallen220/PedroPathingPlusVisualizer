@@ -14,9 +14,12 @@ import type { Line, SequenceItem, SequenceWaitItem } from "../types";
 const createLine = (id: string, name: string, x: number, y: number): Line => ({
   id,
   name,
-  endPoint: { heading: "tangential", x, y, velocity: 1 },
-  control1: { x: 0, y: 0 },
-  control2: { x: 0, y: 0 },
+  color: "black",
+  endPoint: { heading: "tangential", x, y, reverse: false },
+  controlPoints: [
+    { x: 0, y: 0 },
+    { x: 0, y: 0 },
+  ],
 });
 
 // Helper to create a dummy wait item
@@ -29,7 +32,6 @@ const createWait = (
   id,
   name,
   durationMs,
-  type: "wait",
 });
 
 describe("Point Linking Utils", () => {
@@ -53,10 +55,7 @@ describe("Point Linking Utils", () => {
     });
 
     it("updateLinkedWaypoints should do nothing if name is empty", () => {
-      const lines = [
-        createLine("1", "", 10, 10),
-        createLine("2", "", 20, 20),
-      ];
+      const lines = [createLine("1", "", 10, 10), createLine("2", "", 20, 20)];
       lines[0].endPoint.x = 50;
 
       const result = updateLinkedWaypoints(lines, "1");
