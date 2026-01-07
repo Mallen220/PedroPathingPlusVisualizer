@@ -189,6 +189,8 @@ function unwrapAngle(target: number, reference: number): number {
   return reference + diff;
 }
 
+const analysisCache = new Map<string, PathAnalysis>();
+
 /**
  * Analyzes a path segment (Line, Quadratic, or Cubic)
  */
@@ -201,86 +203,153 @@ function analyzePathSegment(
 ): PathAnalysis {
   const cps = controlPoints || [];
 
-  let length = 0;
-  let minRadius = Infinity;
-  let prevPoint = start;
-  let tangentRotation = 0;
-  let netRotation = 0;
-  let prevAngle: number | null = null;
-  let currentUnwrapped = Number.isFinite(initialHeading) ? initialHeading : 0;
+  // 1. Generate Cache Key
+  // Key includes all geometric properties + samples count.
+  // We use 4 decimal places for key generation to handle slight float variations
+  // while distinguishing meaningful changes.
+  const keyParts = [
+    start.x.toFixed(4),
+    start.y.toFixed(4),
+    end.x.toFixed(4),
+    end.y.toFixed(4),
+    samples,
+  ];
+  for (let i = 0; i < cps.length; i++) {
+    keyParts.push(cps[i].x.toFixed(4));
+    keyParts.push(cps[i].y.toFixed(4));
+  }
+  const key = keyParts.join("|");
 
-  const isLine = cps.length === 0;
-  const steps: PathStep[] = [];
+  let cached = analysisCache.get(key);
 
-  const fullPoints = [start, ...cps, end];
+  if (!cached) {
+    // If not in cache, calculate with initialHeading = 0 (relative mode)
+    // We will store this base analysis in the cache.
+    let length = 0;
+    let minRadius = Infinity;
+    let prevPoint = start;
+    let tangentRotation = 0;
+    let netRotation = 0;
+    let prevAngle: number | null = null;
+    let currentUnwrapped = 0; // Relative to 0
 
-  for (let i = 0; i <= samples; i++) {
-    const t = i / samples;
-    const point = getCurvePoint(t, fullPoints);
+    const isLine = cps.length === 0;
+    const steps: PathStep[] = [];
 
-    let deltaLength = 0;
-    if (i > 0) {
-      const dx = point.x - prevPoint.x;
-      const dy = point.y - prevPoint.y;
-      deltaLength = Math.sqrt(dx * dx + dy * dy);
-      length += deltaLength;
-    }
-    prevPoint = point;
+    const fullPoints = [start, ...cps, end];
 
-    let d1 = { x: 0, y: 0 };
-    let d2 = { x: 0, y: 0 };
+    for (let i = 0; i <= samples; i++) {
+      const t = i / samples;
+      const point = getCurvePoint(t, fullPoints);
 
-    if (isLine) {
-      d1 = { x: end.x - start.x, y: end.y - start.y };
-      d2 = { x: 0, y: 0 };
-    } else {
-      d1 = getBezierDerivative(t, fullPoints);
-      d2 = getBezierSecondDerivative(t, fullPoints);
-    }
-
-    const radius = getCurvatureRadius(d1, d2);
-    if (radius < minRadius) minRadius = radius;
-
-    let stepRotation = 0;
-    if (Math.abs(d1.x) > 1e-9 || Math.abs(d1.y) > 1e-9) {
-      const angle = Math.atan2(d1.y, d1.x) * (180 / Math.PI);
-
-      if (prevAngle === null) {
-        // Do not reset currentUnwrapped; respect the initialHeading passed in.
-      } else {
-        // Shortest difference
-        const diff = getAngularDifference(prevAngle, angle);
-        stepRotation = Math.abs(diff);
-
-        // Accumulate absolute (for physics time)
-        if (stepRotation > 0.001) {
-          tangentRotation += stepRotation;
-          // Accumulate signed (for heading tracking)
-          netRotation += diff;
-          // Update unwrapped heading
-          currentUnwrapped += diff;
-        }
+      let deltaLength = 0;
+      if (i > 0) {
+        const dx = point.x - prevPoint.x;
+        const dy = point.y - prevPoint.y;
+        deltaLength = Math.sqrt(dx * dx + dy * dy);
+        length += deltaLength;
       }
-      prevAngle = angle;
+      prevPoint = point;
+
+      let d1 = { x: 0, y: 0 };
+      let d2 = { x: 0, y: 0 };
+
+      if (isLine) {
+        d1 = { x: end.x - start.x, y: end.y - start.y };
+        d2 = { x: 0, y: 0 };
+      } else {
+        d1 = getBezierDerivative(t, fullPoints);
+        d2 = getBezierSecondDerivative(t, fullPoints);
+      }
+
+      const radius = getCurvatureRadius(d1, d2);
+      if (radius < minRadius) minRadius = radius;
+
+      let stepRotation = 0;
+      if (Math.abs(d1.x) > 1e-9 || Math.abs(d1.y) > 1e-9) {
+        const angle = Math.atan2(d1.y, d1.x) * (180 / Math.PI);
+
+        if (prevAngle === null) {
+          // Do not reset currentUnwrapped; respect the initialHeading passed in.
+        } else {
+          // Shortest difference
+          const diff = getAngularDifference(prevAngle, angle);
+          stepRotation = Math.abs(diff);
+
+          // Accumulate absolute (for physics time)
+          if (stepRotation > 0.001) {
+            tangentRotation += stepRotation;
+            // Accumulate signed (for heading tracking)
+            netRotation += diff;
+            // Update unwrapped heading
+            currentUnwrapped += diff;
+          }
+        }
+        prevAngle = angle;
+      }
+
+      if (i > 0) {
+        steps.push({
+          deltaLength,
+          radius,
+          rotation: stepRotation,
+          heading: currentUnwrapped, // Storing relative heading
+        });
+      }
     }
 
-    if (i > 0) {
-      steps.push({
-        deltaLength,
-        radius,
-        rotation: stepRotation,
-        heading: currentUnwrapped,
-      });
+    cached = {
+      length,
+      minRadius,
+      tangentRotation,
+      netRotation,
+      steps,
+      startHeading: 0, // Placeholder
+    };
+
+    // Store in cache
+    if (analysisCache.size > 10000) {
+      analysisCache.clear();
     }
+    analysisCache.set(key, cached);
+  }
+
+  // Reconstruct result with correct initialHeading
+  // We can share references for immutable primitives (length, radius, rotations)
+  // But steps need new objects if we modify heading.
+  // Actually, we can just return a new object with mapped steps.
+  // To avoid O(N) allocation on cache hit, we could optimize this further,
+  // but mapping is much faster than Bezier math.
+
+  const finalStartHeading = Number.isFinite(initialHeading)
+    ? initialHeading
+    : 0;
+
+  // Optimization: If initialHeading is effectively 0, we can use cached steps directly?
+  // No, because cached might be used by multiple callers, we shouldn't mutate it.
+  // But we return a new object anyway.
+
+  // Use a loop for speed instead of map
+  const newSteps = new Array(cached.steps.length);
+  const cachedSteps = cached.steps;
+  const len = cachedSteps.length;
+  for (let i = 0; i < len; i++) {
+    const s = cachedSteps[i];
+    newSteps[i] = {
+      deltaLength: s.deltaLength,
+      radius: s.radius,
+      rotation: s.rotation,
+      heading: s.heading + finalStartHeading,
+    };
   }
 
   return {
-    length,
-    minRadius,
-    tangentRotation,
-    netRotation,
-    steps,
-    startHeading: initialHeading,
+    length: cached.length,
+    minRadius: cached.minRadius,
+    tangentRotation: cached.tangentRotation,
+    netRotation: cached.netRotation,
+    steps: newSteps,
+    startHeading: finalStartHeading,
   };
 }
 
