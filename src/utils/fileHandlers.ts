@@ -43,20 +43,37 @@ function getElectronAPI(): ExtendedElectronAPI | undefined {
 
 export function loadProjectData(data: any) {
   if (data.startPoint) startPointStore.set(data.startPoint);
+  // Helper to strip " (##)" suffix from names to restore linkage
+  const stripSuffix = (name: string) => {
+    if (!name) return name;
+    const match = name.match(/^(.*) \(\d+\)$/);
+    return match ? match[1] : name;
+  };
+
+  let loadedLines: Line[] = [];
+
   if (data.lines) {
     // Ensure loaded lines have IDs and restore linked names
-    const lines = (data.lines as Line[]).map((l) => {
+    loadedLines = (data.lines as Line[]).map((l) => {
       const newLine = { ...l, id: l.id || makeId() };
       // Restore name from metadata if present
       if (newLine._linkedName) {
         newLine.name = newLine._linkedName;
+      } else if (newLine.name) {
+        // Attempt to strip suffix to restore linkage for older files
+        newLine.name = stripSuffix(newLine.name);
       }
       return newLine;
     });
-    linesStore.set(lines);
+    linesStore.set(loadedLines);
   }
   if (data.settings) settingsStore.set(data.settings);
   if (data.sequence) {
+    // Note: If no lines were loaded (loadedLines empty), we should probably use linesStore if data.sequence exists?
+    // But usually sequence depends on lines from the same file.
+    // If lines were missing but sequence exists, we might have issues.
+    // But we are focusing on suffix stripping here.
+
     const seq = (data.sequence as SequenceItem[]).map((s) => {
       if (s.kind === "wait") {
         const newWait = { ...s };
@@ -64,6 +81,9 @@ export function loadProjectData(data: any) {
         // Restore name from metadata if present
         if ((newWait as any)._linkedName) {
           newWait.name = (newWait as any)._linkedName;
+        } else if (newWait.name) {
+          // Attempt to strip suffix
+          newWait.name = stripSuffix(newWait.name);
         }
         return newWait;
       }
