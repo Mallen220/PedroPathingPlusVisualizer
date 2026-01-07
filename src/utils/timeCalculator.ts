@@ -357,6 +357,17 @@ function calculateMotionProfileDetailed(
     const angVelLimit = aVelocity * step.radius;
     if (angVelLimit < limit) limit = angVelLimit;
 
+    // Apply Swerve Kinematic Constraints
+    // V_limit = V_max / (1 + R_drive / radius)
+    // where R_drive is approx sqrt(L^2 + W^2) / 2
+    if (settings.drivetrainType === "Swerve" && step.radius > 0.001) {
+      const L = settings.rLength || 16;
+      const W = settings.rWidth || 16;
+      const R_drive = Math.hypot(L, W) / 2;
+      const swerveLimit = maxVelGlobal / (1 + R_drive / step.radius);
+      if (swerveLimit < limit) limit = swerveLimit;
+    }
+
     const dist = step.deltaLength;
     const maxReachable = Math.sqrt(
       vAtPoints[i] * vAtPoints[i] + 2 * maxAcc * dist,

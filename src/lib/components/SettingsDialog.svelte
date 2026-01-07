@@ -468,6 +468,26 @@
 
               <div>
                 <label
+                  for="drivetrain-type"
+                  class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1"
+                >
+                  Drivetrain Type
+                  <div class="text-xs text-neutral-500 dark:text-neutral-400">
+                    Select the drivetrain for visualization
+                  </div>
+                </label>
+                <select
+                  id="drivetrain-type"
+                  bind:value={settings.drivetrainType}
+                  class="w-full px-3 py-2 rounded-md border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="Holonomic">Holonomic (Mecanum)</option>
+                  <option value="Swerve">Swerve</option>
+                </select>
+              </div>
+
+              <div>
+                <label
                   for="safety-margin"
                   class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1"
                 >

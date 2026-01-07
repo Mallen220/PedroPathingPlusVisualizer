@@ -17,6 +17,7 @@
     x: number;
     y: number;
     heading: number;
+    modules?: { angle: number }[];
   };
   export let electronAPI: any;
 

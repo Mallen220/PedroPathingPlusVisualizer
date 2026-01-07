@@ -849,6 +849,86 @@
     two.add(pointGroup);
     two.add(collisionGroup);
 
+    // Draw Swerve Modules if enabled
+    if (settings.drivetrainType === "Swerve" && robotModules) {
+        const L = settings.rLength || 16;
+        const W = settings.rWidth || 16;
+        const moduleWidth = uiLength(2); // Wheel width visual
+        const moduleDiameter = uiLength(4); // Wheel diameter visual (length)
+
+        // Module offsets relative to robot center (Standard: X is forward, Y is left?)
+        // Wait, animation calculation used: FL (L/2, -W/2), FR (L/2, W/2), etc.
+        // Screen coords: X Right, Y Down.
+        // Robot Heading 0: Faces Right.
+        // FL: (L/2, -W/2) -> Right-Up on screen.
+        // FR: (L/2, W/2) -> Right-Down on screen.
+        // BL: (-L/2, -W/2) -> Left-Up on screen.
+        // BR: (-L/2, W/2) -> Left-Down on screen.
+        const offsets = [
+             { x: L / 2, y: -W / 2 }, // FL
+             { x: L / 2, y: W / 2 }, // FR
+             { x: -L / 2, y: -W / 2 }, // BL
+             { x: -L / 2, y: W / 2 }, // BR
+        ];
+
+        robotModules.forEach((mod, idx) => {
+            if (!offsets[idx]) return;
+            const off = offsets[idx];
+
+            // 1. Rotate offset by robot heading to place module in field frame
+            // Robot Heading in degrees (Standard Math logic in Animation was: 0=Right, 90=Down for screen)
+            // robotHeading store is Visual Heading (-math).
+            // Actually animation.ts returns `heading: robotHeading` where `robotHeading = -interpolated`.
+            // So `robotHeading` is suited for CSS `rotate()`. (CW positive).
+            // `cos` needs radians.
+            const hRad = (robotHeading * Math.PI) / 180;
+            const cos = Math.cos(hRad);
+            const sin = Math.sin(hRad);
+
+            // Rotate offset (x, y)
+            const rx = off.x * cos - off.y * sin;
+            const ry = off.x * sin + off.y * cos;
+
+            // Module Center in Screen Pixels
+            const mx = x(robotXY.x + rx);
+            const my = y(robotXY.y + ry);
+
+            // Create Module Graphic
+            // A rectangle representing the wheel
+            // Rotated by module.angle
+            // module.angle is Global Angle (degrees).
+            // CSS/Two.js rotation is CW.
+            // If Math Angle 0 is Right, 90 is Down.
+            // Two.js rotation matches if we use radians.
+            const wheel = new Two.Rectangle(0, 0, moduleDiameter, moduleWidth);
+            wheel.fill = "#404040";
+            wheel.stroke = "#000000";
+            wheel.linewidth = uiLength(0.2);
+
+            // Add directional indicator (line or color)
+            const dirLine = new Two.Line(-moduleDiameter/2, 0, moduleDiameter/2, 0);
+            dirLine.stroke = "#cccccc";
+            dirLine.linewidth = uiLength(0.2);
+
+            const modGroup = new Two.Group();
+            modGroup.translation.set(mx, my);
+            // module.angle is in degrees. Convert to radians.
+            // Also ensure it matches visual system (CW positive for Two.js)
+            // Kinematics calculated Math Angle (0 Right, 90 Down? No, math is usually CCW).
+            // My kinematics used screen coords for vector diff: dx = x2-x1.
+            // If Y is down:
+            // Right (1,0) -> atan2(0,1) = 0.
+            // Down (0,1) -> atan2(1,0) = 90.
+            // So atan2 in screen coords IS CW positive (if Y is down).
+            // So module.angle is already compatible with Two.js rotation!
+            modGroup.rotation = (mod.angle * Math.PI) / 180;
+
+            modGroup.add(wheel, dirLine);
+            robotModulesGroup.add(modGroup);
+        });
+        two.add(robotModulesGroup);
+    }
+
     two.update();
   }
 

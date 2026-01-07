@@ -367,11 +367,13 @@
         timePrediction.timeline,
         lines,
         startPoint,
-        d3.scaleLinear(),
-        d3.scaleLinear(),
+        settings, // Pass settings for swerve calc
+        d3.scaleLinear().domain([0, 1]).range([0, 1]), // Identity-ish
+        d3.scaleLinear().domain([0, 1]).range([0, 1]),
       );
       robotXYStore.set({ x: state.x, y: state.y });
       robotHeadingStore.set(state.heading);
+      robotModulesStore.set(state.modules);
     } else {
       // Store position in inches
       robotXYStore.set({ x: startPoint.x, y: startPoint.y });
