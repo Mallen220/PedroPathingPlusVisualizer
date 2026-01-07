@@ -50,9 +50,11 @@ export function loadProjectData(data: any) {
     return match ? match[1] : name;
   };
 
+  let loadedLines: Line[] = [];
+
   if (data.lines) {
     // Ensure loaded lines have IDs and restore linked names
-    const lines = (data.lines as Line[]).map((l) => {
+    loadedLines = (data.lines as Line[]).map((l) => {
       const newLine = { ...l, id: l.id || makeId() };
       // Restore name from metadata if present
       if (newLine._linkedName) {
@@ -63,10 +65,15 @@ export function loadProjectData(data: any) {
       }
       return newLine;
     });
-    linesStore.set(lines);
+    linesStore.set(loadedLines);
   }
   if (data.settings) settingsStore.set(data.settings);
   if (data.sequence) {
+    // Note: If no lines were loaded (loadedLines empty), we should probably use linesStore if data.sequence exists?
+    // But usually sequence depends on lines from the same file.
+    // If lines were missing but sequence exists, we might have issues.
+    // But we are focusing on suffix stripping here.
+
     const seq = (data.sequence as SequenceItem[]).map((s) => {
       if (s.kind === "wait") {
         const newWait = { ...s };
