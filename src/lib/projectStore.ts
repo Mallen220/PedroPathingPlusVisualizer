@@ -127,7 +127,23 @@ export function loadProjectData(data: any) {
   };
   startPointStore.set(sp);
 
-  const normLines = normalizeLines(data.lines || []);
+  // Helper to strip " (##)" suffix from names to restore linkage
+  const stripSuffix = (name: string) => {
+    if (!name) return name;
+    const match = name.match(/^(.*) \(\d+\)$/);
+    return match ? match[1] : name;
+  };
+
+  const normLines = normalizeLines(data.lines || []).map((l) => {
+    // Restore name from metadata if present
+    if (l._linkedName) {
+      return { ...l, name: l._linkedName };
+    } else if (l.name) {
+      // Attempt to strip suffix to restore linkage for older files
+      return { ...l, name: stripSuffix(l.name) };
+    }
+    return l;
+  });
 
   // Sanitize sequence with respect to normalized lines and set both stores
   const seqCandidate = (
@@ -136,7 +152,21 @@ export function loadProjectData(data: any) {
       : normLines.map((ln) => ({ kind: "path", lineId: ln.id! }))
   ) as SequenceItem[];
 
-  const sanitized = sanitizeSequence(normLines, seqCandidate);
+  // Also apply name stripping to sequence items (waits)
+  const processedSeq = seqCandidate.map((s) => {
+    if (s.kind === "wait") {
+      const newWait = { ...s };
+      if ((newWait as any)._linkedName) {
+        newWait.name = (newWait as any)._linkedName;
+      } else if (newWait.name) {
+        newWait.name = stripSuffix(newWait.name);
+      }
+      return newWait;
+    }
+    return s;
+  });
+
+  const sanitized = sanitizeSequence(normLines, processedSeq);
 
   // Renumber default names to match displayed order
   const renamedLines = renumberDefaultPathNames(normLines);
