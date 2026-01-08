@@ -1329,7 +1329,7 @@
 
           <button
             on:click={addRotate}
-            class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-purple-500 dark:bg-purple-600 rounded-md shadow-sm hover:bg-purple-600 dark:hover:bg-purple-500 transition-colors focus:outline-none focus:ring-2 focus:ring-purple-200 dark:focus:ring-purple-500"
+            class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-green-500 dark:bg-green-600 rounded-md shadow-sm hover:bg-green-600 dark:hover:bg-green-500 transition-colors focus:outline-none focus:ring-2 focus:ring-green-200 dark:focus:ring-green-500"
             aria-label="Add rotate command"
           >
             <svg
