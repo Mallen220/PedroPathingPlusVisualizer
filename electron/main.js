@@ -1,12 +1,9 @@
 // Copyright 2026 Matthew Allen. Licensed under the Apache License, Version 2.0.
-import { app, BrowserWindow, ipcMain, dialog, Menu, shell } from "electron";
+import { app, BrowserWindow, ipcMain, dialog, Menu, shell, protocol, net } from "electron";
 import path from "path";
-import express from "express";
-import http from "http";
-import { fileURLToPath } from "url";
+import { fileURLToPath, pathToFileURL } from "url";
 import fs from "fs/promises";
 import AppUpdater from "./updater.js";
-import rateLimit from "express-rate-limit";
 
 // Handle __dirname in ES Modules
 const __filename = fileURLToPath(import.meta.url);
@@ -14,52 +11,26 @@ const __dirname = path.dirname(__filename);
 
 // Replace single mainWindow with a Set of windows
 const windows = new Set();
-let server;
-let serverPort = 34567;
 let appUpdater;
 
 // Track if we've already cleared the default session storage/cache once
 let sessionCleared = false;
 
-// Wait for the local server to become ready (useful when creating windows rapidly)
-const waitForServerReady = async (timeoutMs = 5000) => {
-  const start = Date.now();
-  // Quick shortcut if node server object reports listening
-  if (server && server.listening) return;
-
-  while (Date.now() - start < timeoutMs) {
-    // If server object exists and is listening, we're done
-    if (server && server.listening) return;
-
-    // Try a small HTTP GET to be certain the app is serving
-    try {
-      await new Promise((resolve, reject) => {
-        const req = http.get(
-          { hostname: "127.0.0.1", port: serverPort, path: "/", timeout: 2000 },
-          (res) => {
-            // Drain the response and resolve
-            res.resume();
-            resolve(true);
-          },
-        );
-        req.on("error", reject);
-        req.on("timeout", () => {
-          req.destroy(new Error("timeout"));
-        });
-      });
-      return;
-    } catch (_) {
-      // Ignore and retry
-    }
-
-    // Small backoff
-    await new Promise((r) => setTimeout(r, 100));
-  }
-
-  throw new Error("Server did not become ready within timeout");
-};
 // Variable to store the pending file path if opened before renderer is ready
 let pendingFilePath = null;
+
+// Register custom protocol privileges
+protocol.registerSchemesAsPrivileged([
+  {
+    scheme: "pedro",
+    privileges: {
+      standard: true,
+      secure: true,
+      supportFetchAPI: true,
+      corsEnabled: true,
+    },
+  },
+]);
 
 // Handle macOS open-file event (triggered when app is launching or running)
 app.on("open-file", (event, path) => {
@@ -108,6 +79,23 @@ if (!gotTheLock) {
 
   // App initialization
   app.on("ready", async () => {
+    // Setup protocol handler
+    protocol.handle("pedro", (request) => {
+      const url = request.url.replace(/^pedro:\/\/app\/?/, "");
+
+      let distPath;
+      if (app.isPackaged) {
+        distPath = path.join(process.resourcesPath, "app.asar", "dist");
+      } else {
+        distPath = path.join(__dirname, "../dist");
+      }
+
+      // Default to index.html if empty
+      const filePath = url ? path.join(distPath, url) : path.join(distPath, "index.html");
+
+      return net.fetch(pathToFileURL(filePath).toString());
+    });
+
     // Check for file arguments on initial launch (Windows/Linux)
     if (process.platform !== "darwin" && process.argv.length >= 2) {
       const lastArg = process.argv[process.argv.length - 1];
@@ -116,16 +104,12 @@ if (!gotTheLock) {
       }
     }
 
-    await startServer();
     createWindow();
     createMenu();
     updateDockMenu();
     updateJumpList();
 
     // Check for updates (only once)
-    // We pass the first window for dialogs if needed, or handle it inside AppUpdater
-    // Since AppUpdater takes a window in constructor, let's defer it or pick the first one.
-    // For now, let's attach it to the first window created.
     setTimeout(() => {
       if (windows.size > 0) {
         // Use the first available window
@@ -148,11 +132,6 @@ function handleOpenedFile(filePath) {
   // If we have windows, send to the focused one or the first one
   const win = BrowserWindow.getFocusedWindow() || windows.values().next().value;
   if (win) {
-    // If window exists, send immediately (or check if it's ready? The renderer will just ignore if not hooked up yet,
-    // but usually if window is open, it's loaded. To be safe, we can try sending.)
-    // However, if the app is just starting, the renderer might not be ready.
-    // The robust way is to store it and let the renderer ask for it, OR send it if we know it's ready.
-    // For simplicity, we'll store it in pendingFilePath and also try to send it if a window exists.
     pendingFilePath = filePath;
     win.webContents.send("open-file-path", filePath);
 
@@ -164,82 +143,6 @@ function handleOpenedFile(filePath) {
     pendingFilePath = filePath;
   }
 }
-
-/**
- * Try to start the HTTP server on `serverPort`, and if it's already in use
- * try subsequent ports up to `maxAttempts` times. When successful, set the
- * global `server` and `serverPort` to the listening instance/port.
- */
-const startServer = async () => {
-  const expressApp = express();
-
-  const limiter = rateLimit({
-    windowMs: 1 * 60 * 1000, // 1 minute
-    max: 100, // Limit to 100 requests per windowMs
-    standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
-    legacyHeaders: false, // Disable the `X-RateLimit-*` headers
-    message: "Too many requests from this client, please try again later.",
-  });
-
-  let distPath;
-
-  if (app.isPackaged) {
-    // In production: files are in app.asar at root
-    distPath = path.join(process.resourcesPath, "app.asar", "dist");
-  } else {
-    // In development
-    distPath = path.join(__dirname, "../dist");
-  }
-
-  console.log("Serving static files from:", distPath);
-
-  // Serve static files
-  expressApp.use(express.static(distPath));
-
-  // SPA fallback
-  expressApp.get("*", limiter, (req, res) => {
-    res.sendFile(path.join(distPath, "index.html"));
-  });
-
-  // Helper to attempt listening on ports starting at `startPort`.
-  const tryListenOnPortRange = (startPort, maxAttempts = 50) => {
-    return new Promise((resolve, reject) => {
-      let attempt = 0;
-      let port = startPort;
-
-      const attemptListen = () => {
-        attempt += 1;
-        // Create a new server instance for each attempt so errors don't persist
-        const candidate = http.createServer(expressApp);
-
-        candidate.once("error", (err) => {
-          if (err && err.code === "EADDRINUSE" && attempt < maxAttempts) {
-            console.warn(`Port ${port} in use, trying ${port + 1}`);
-            port += 1;
-            // Give a tiny delay to avoid busy-looping
-            setTimeout(attemptListen, 10);
-          } else {
-            reject(err);
-          }
-        });
-
-        candidate.once("listening", () => {
-          server = candidate;
-          serverPort = port;
-          console.log(`Local server running on port ${serverPort}`);
-          resolve();
-        });
-
-        candidate.listen(port);
-      };
-
-      attemptListen();
-    });
-  };
-
-  // Try to listen, allowing fallback ports if needed
-  await tryListenOnPortRange(serverPort, 100);
-};
 
 const createWindow = async () => {
   let newWindow = new BrowserWindow({
@@ -255,10 +158,7 @@ const createWindow = async () => {
 
   windows.add(newWindow);
 
-  // Only clear cache/storage once to avoid unexpected race conditions when
-  // rapidly creating new windows. Clearing on every new window can interfere
-  // with the service worker / static asset caching and cause intermittent
-  // load failures.
+  // Only clear cache/storage once
   if (!sessionCleared) {
     try {
       await newWindow.webContents.session.clearCache();
@@ -269,28 +169,8 @@ const createWindow = async () => {
     }
   }
 
-  // Ensure our local server is actually ready before trying to load the UI.
-  // This prevents creating windows that immediately fail to load because the
-  // server hasn't bound yet (a common race when creating windows quickly).
-  try {
-    await waitForServerReady(5000);
-  } catch (err) {
-    console.error("Server not ready when creating window:", err);
-    try {
-      const focused = BrowserWindow.getFocusedWindow() || newWindow;
-      dialog.showMessageBox(focused, {
-        type: "error",
-        title: "Load Error",
-        message:
-          "The local app server did not start in time. The window will attempt to load; if it fails, please try again.",
-      });
-    } catch (dialogErr) {
-      console.warn("Failed to show load error dialog:", dialogErr);
-    }
-  }
-
-  // Load the app from the local server (retry logic is handled above)
-  newWindow.loadURL(`http://localhost:${serverPort}`);
+  // Load the app from the custom protocol
+  newWindow.loadURL("pedro://app/index.html");
 
   // Handle "Save As" dialog native behavior
   newWindow.webContents.session.on(
@@ -346,10 +226,6 @@ const sendToFocusedWindow = (channel, ...args) => {
   if (win) {
     win.webContents.send(channel, ...args);
   } else {
-    // Fallback: if only one window, send to it?
-    // Or if no window is focused (rare when clicking menu), send to most recently created?
-    // Usually Menu click focuses the app, so a window should be focused or last active.
-    // Let's try to find the last active one if getFocusedWindow is null.
     if (windows.size === 1) {
       const first = windows.values().next().value;
       if (first) first.webContents.send(channel, ...args);
@@ -527,12 +403,6 @@ const createMenu = () => {
 // CRITICAL: Satisfies "when the project closes it should auto close"
 app.on("window-all-closed", () => {
   app.quit();
-});
-
-app.on("will-quit", () => {
-  if (server) {
-    server.close();
-  }
 });
 
 // Add these functions at the top, after the imports
