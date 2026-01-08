@@ -28,6 +28,7 @@
   import { SaveIcon } from "./components/icons";
   import { calculatePathTime, formatTime } from "../utils";
   import { showShortcuts } from "../stores";
+  import { mirrorPathData, reversePathData } from "../utils/pathTransform";
 
   // svelte-ignore unused-export-let
   // export let loadFile: (evt: any) => any;
@@ -54,6 +55,7 @@
 
   let shortcutsOpen = false;
   let exportMenuOpen = false;
+  let editMenuOpen = false;
   let exportDialog: ExportCodeDialog;
 
   let saveDropdownOpen = false;
@@ -61,6 +63,8 @@
   let saveButtonRef: HTMLElement;
   let exportMenuRef: HTMLElement;
   let exportButtonRef: HTMLElement;
+  let editMenuRef: HTMLElement;
+  let editButtonRef: HTMLElement;
 
   let selectedGridSize = 12;
   const gridSizeOptions = [1, 3, 6, 12, 24];
@@ -105,6 +109,25 @@
   function handleExport(format: "java" | "points" | "sequential" | "json") {
     exportMenuOpen = false;
     exportDialogState.set({ isOpen: true, format });
+  }
+
+  function handleMirrorPath() {
+    const newData = mirrorPathData({ startPoint, lines, shapes });
+    startPoint = newData.startPoint;
+    lines = newData.lines;
+    shapes = newData.shapes;
+    if (recordChange) recordChange();
+    editMenuOpen = false;
+  }
+
+  function handleReversePath() {
+    const newData = reversePathData({ startPoint, lines, sequence, shapes });
+    startPoint = newData.startPoint;
+    lines = newData.lines;
+    sequence = newData.sequence || sequence; // fallback if undefined
+    shapes = newData.shapes || shapes;
+    if (recordChange) recordChange();
+    editMenuOpen = false;
   }
 
   function resetPath() {
@@ -172,6 +195,16 @@
     }
 
     if (
+      editMenuOpen &&
+      editMenuRef &&
+      !editMenuRef.contains(event.target as Node) &&
+      editButtonRef &&
+      !editButtonRef.contains(event.target as Node)
+    ) {
+      editMenuOpen = false;
+    }
+
+    if (
       viewOptionsOpen &&
       viewOptionsRef &&
       !viewOptionsRef.contains(event.target as Node) &&
@@ -189,6 +222,9 @@
     }
     if (exportMenuOpen && event.key === "Escape") {
       exportMenuOpen = false;
+    }
+    if (editMenuOpen && event.key === "Escape") {
+      editMenuOpen = false;
     }
   }
 
@@ -702,6 +738,55 @@
 
     <!-- Main Actions -->
     <div class="flex items-center gap-2">
+      <!-- Edit Menu -->
+      <div class="relative">
+        <button
+          bind:this={editButtonRef}
+          on:click={() => (editMenuOpen = !editMenuOpen)}
+          class="flex items-center gap-1 p-2 rounded-md hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-600 dark:text-neutral-300 transition-colors"
+          title="Edit Options"
+          aria-label="Edit Options"
+        >
+          <span class="font-medium">Edit</span>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke-width="2"
+            stroke="currentColor"
+            class="size-3 transition-transform {editMenuOpen
+              ? 'rotate-180'
+              : ''}"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="m19.5 8.25-7.5 7.5-7.5-7.5"
+            />
+          </svg>
+        </button>
+
+        {#if editMenuOpen}
+          <div
+            bind:this={editMenuRef}
+            class="absolute right-0 mt-2 w-48 bg-white dark:bg-neutral-800 rounded-lg shadow-xl py-1 z-50 border border-neutral-200 dark:border-neutral-700 animate-in fade-in zoom-in-95 duration-100"
+          >
+            <button
+              on:click={handleMirrorPath}
+              class="flex items-center gap-3 w-full text-left px-4 py-2 text-sm text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700"
+            >
+              <span class="font-medium">Mirror Path (Red ↔ Blue)</span>
+            </button>
+            <button
+              on:click={handleReversePath}
+              class="flex items-center gap-3 w-full text-left px-4 py-2 text-sm text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700"
+            >
+              <span class="font-medium">Reverse Path</span>
+            </button>
+          </div>
+        {/if}
+      </div>
+
       <!-- Save -->
       <div class="relative">
         <button
