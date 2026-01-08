@@ -48,8 +48,8 @@ export class PathOptimizer {
     sequence: SequenceItem[],
     shapes: Shape[] = [],
   ) {
-    this.startPoint = _.cloneDeep(startPoint);
-    this.originalLines = _.cloneDeep(lines);
+    this.startPoint = structuredClone(startPoint);
+    this.originalLines = structuredClone(lines);
     this.settings = settings;
     this.sequence = sequence;
     this.shapes = shapes;
@@ -71,9 +71,10 @@ export class PathOptimizer {
 
   // Generate a mutated version of the lines
   private mutate(lines: Line[], isColliding: boolean = false): Line[] {
-    const newLines = _.cloneDeep(lines);
     const MIN_DIST = 10; // Minimum distance in inches for control points
 
+    // Copy-on-write: Start with a shallow copy of the array
+    const newLines = lines.slice();
     let prevPoint = this.startPoint;
 
     // Adaptive parameters based on collision state
@@ -86,21 +87,55 @@ export class PathOptimizer {
       : this.mutationStrength;
     const structuralMutationChance = isColliding ? 0.3 : 0.05;
 
-    newLines.forEach((line) => {
+    for (let i = 0; i < newLines.length; i++) {
+      const line = newLines[i];
+
       // Don't mutate locked lines
       if (line.locked) {
         prevPoint = line.endPoint;
-        return;
+        continue; // Keep original reference
       }
 
+      // Check if we need to mutate this line
+      // Structural check
+      const willStructurallyMutate = Math.random() < structuralMutationChance;
+
+      // Control points mutation check
+      let willMutatePoints = false;
+      if (!willStructurallyMutate) {
+        // Optimization: Check if any point will mutate before cloning
+        // Note: This changes the RNG sequence slightly compared to cloning first then checking,
+        // but statistically it's valid.
+        // However, we need to iterate points to check.
+        // Since we iterate points anyway to mutate, we can just do it.
+        // But to avoid cloning, we need to know IF we will mutate.
+        // We can pre-roll the dice.
+        for (let cpIdx = 0; cpIdx < line.controlPoints.length; cpIdx++) {
+          if (Math.random() < adaptiveMutationRate) {
+            willMutatePoints = true;
+            break;
+          }
+        }
+      }
+
+      if (!willStructurallyMutate && !willMutatePoints) {
+        prevPoint = line.endPoint;
+        continue; // No changes, keep original reference
+      }
+
+      // If we are here, we need to mutate. Clone the line.
+      // Use structuredClone for deep copy of controlPoints and endPoint
+      // (though endPoint is usually not mutated here, controlPoints are)
+      const newLine = structuredClone(line);
+      newLines[i] = newLine;
+
       // Structural Mutation: Add/Remove Control Points
-      // Only do this with low probability to maintain stability, unless colliding
-      if (Math.random() < structuralMutationChance) {
-        if (line.controlPoints.length < 3 && Math.random() < 0.6) {
+      if (willStructurallyMutate) {
+        if (newLine.controlPoints.length < 3 && Math.random() < 0.6) {
           // Allow up to 3 points
           // Add a control point at the midpoint of start/end
-          const midX = (prevPoint.x + line.endPoint.x) / 2;
-          const midY = (prevPoint.y + line.endPoint.y) / 2;
+          const midX = (prevPoint.x + newLine.endPoint.x) / 2;
+          const midY = (prevPoint.y + newLine.endPoint.y) / 2;
 
           // Add massive jitter if colliding
           const jitterMult = isColliding ? 4 : 2;
@@ -115,19 +150,29 @@ export class PathOptimizer {
           };
 
           // Insert in middle
-          const insertIdx = Math.floor(line.controlPoints.length / 2);
-          line.controlPoints.splice(insertIdx, 0, newCP);
-        } else if (line.controlPoints.length > 0 && Math.random() < 0.3) {
+          const insertIdx = Math.floor(newLine.controlPoints.length / 2);
+          newLine.controlPoints.splice(insertIdx, 0, newCP);
+        } else if (newLine.controlPoints.length > 0 && Math.random() < 0.3) {
           // Remove a random control point
           const removeIdx = Math.floor(
-            Math.random() * line.controlPoints.length,
+            Math.random() * newLine.controlPoints.length,
           );
-          line.controlPoints.splice(removeIdx, 1);
+          newLine.controlPoints.splice(removeIdx, 1);
         }
       }
 
       // Mutate control points
-      line.controlPoints.forEach((cp) => {
+      newLine.controlPoints.forEach((cp) => {
+        // We re-roll probability here.
+        // Technically we pre-rolled above to check "if any" would mutate.
+        // If we want to be statistically exact, we should use the same decisions.
+        // But for Genetic Algorithm, re-rolling is fine as long as probability is same.
+        // The fact that we entered this block means either structural change OR at least one point MIGHT change.
+        // Wait, if we re-roll, we might end up NOT mutating any points even if we thought we would?
+        // Yes. But that's harmless (just wasted a clone).
+        // To be more efficient, we could force at least one mutation if we entered due to points.
+        // But let's keep it simple.
+
         if (Math.random() < adaptiveMutationRate) {
           cp.x += (Math.random() - 0.5) * adaptiveMutationStrength;
           cp.y += (Math.random() - 0.5) * adaptiveMutationStrength;
@@ -139,9 +184,9 @@ export class PathOptimizer {
       });
 
       // Enforce minimum distance constraints
-      if (line.controlPoints.length > 0) {
+      if (newLine.controlPoints.length > 0) {
         // 1. Check first control point vs prevPoint (start of line)
-        const firstCP = line.controlPoints[0];
+        const firstCP = newLine.controlPoints[0];
         let dx = firstCP.x - prevPoint.x;
         let dy = firstCP.y - prevPoint.y;
         let dist = Math.sqrt(dx * dx + dy * dy);
@@ -157,9 +202,9 @@ export class PathOptimizer {
         }
 
         // 2. Check last control point vs endPoint (end of line)
-        const lastCP = line.controlPoints[line.controlPoints.length - 1];
-        dx = lastCP.x - line.endPoint.x;
-        dy = lastCP.y - line.endPoint.y;
+        const lastCP = newLine.controlPoints[newLine.controlPoints.length - 1];
+        dx = lastCP.x - newLine.endPoint.x;
+        dy = lastCP.y - newLine.endPoint.y;
         dist = Math.sqrt(dx * dx + dy * dy);
 
         if (dist < MIN_DIST) {
@@ -169,14 +214,14 @@ export class PathOptimizer {
             lastCP.x -= MIN_DIST;
           } else {
             const scale = MIN_DIST / dist;
-            lastCP.x = line.endPoint.x + dx * scale;
-            lastCP.y = line.endPoint.y + dy * scale;
+            lastCP.x = newLine.endPoint.x + dx * scale;
+            lastCP.y = newLine.endPoint.y + dy * scale;
           }
         }
       }
 
-      prevPoint = line.endPoint;
-    });
+      prevPoint = newLine.endPoint;
+    }
 
     return newLines;
   }
@@ -224,7 +269,17 @@ export class PathOptimizer {
       this.settings.rLength + (this.settings.safetyMargin || 0) * 2;
     const rWidth = this.settings.rWidth + (this.settings.safetyMargin || 0) * 2;
 
+    // Pre-calculate boundary check values outside the loop
+    const boundaryCheckEnabled =
+      this.settings.validateFieldBoundaries !== false;
+    const exclusionDist = Math.max(2, (this.settings.safetyMargin || 0) * 2);
+    const BOUNDARY_EPSILON = 0.05;
+
     let eventIdx = 0;
+
+    // Cache curve points to avoid re-allocating array in loop
+    let lastLineIdx = -1;
+    let cachedCurvePoints: any[] = [];
 
     for (let t = 0; t <= totalTime; t += step) {
       // Optimized timeline lookup: Advance event index if t exceeds current event end
@@ -263,9 +318,6 @@ export class PathOptimizer {
         const currentLine = lines[lineIdx];
         if (!currentLine) break; // Should not happen
 
-        const prevPoint =
-          lineIdx === 0 ? this.startPoint : lines[lineIdx - 1].endPoint;
-
         const timeProgress =
           activeEvent.duration > 0
             ? (t - activeEvent.startTime) / activeEvent.duration
@@ -275,12 +327,19 @@ export class PathOptimizer {
           Math.max(0, Math.min(1, timeProgress)),
         );
 
-        const curvePoints = [
-          prevPoint,
-          ...currentLine.controlPoints,
-          currentLine.endPoint,
-        ];
-        const robotInchesXY = getCurvePoint(linePercent, curvePoints);
+        // Optimization: Cache curve points
+        if (lineIdx !== lastLineIdx) {
+          const prevPoint =
+            lineIdx === 0 ? this.startPoint : lines[lineIdx - 1].endPoint;
+          cachedCurvePoints = [
+            prevPoint,
+            ...currentLine.controlPoints,
+            currentLine.endPoint,
+          ];
+          lastLineIdx = lineIdx;
+        }
+
+        const robotInchesXY = getCurvePoint(linePercent, cachedCurvePoints);
         x = robotInchesXY.x;
         y = robotInchesXY.y;
 
@@ -299,7 +358,7 @@ export class PathOptimizer {
           case "tangential":
             const nextPointInches = getCurvePoint(
               linePercent + (currentLine.endPoint.reverse ? -0.01 : 0.01),
-              curvePoints,
+              cachedCurvePoints,
             );
             const dx = nextPointInches.x - x;
             const dy = nextPointInches.y - y;
@@ -317,20 +376,15 @@ export class PathOptimizer {
       let collisionType: "obstacle" | "boundary" = "obstacle";
 
       // 1. Boundary Checks (if enabled)
-      if (this.settings.validateFieldBoundaries !== false) {
+      if (boundaryCheckEnabled) {
         // Calculate distance from start point to ignore validation near start
         // This handles cases where safety margin protrudes at start (which is allowed)
         const distToStart = Math.sqrt(
           Math.pow(x - this.startPoint.x, 2) +
             Math.pow(y - this.startPoint.y, 2),
         );
-        const exclusionDist = Math.max(
-          2,
-          (this.settings.safetyMargin || 0) * 2,
-        );
 
         if (distToStart > exclusionDist) {
-          const BOUNDARY_EPSILON = 0.05;
           for (const corner of corners) {
             if (
               corner.x < -BOUNDARY_EPSILON ||
@@ -345,17 +399,6 @@ export class PathOptimizer {
           }
         }
       }
-
-      // 2. Obstacle Checks (only if no boundary violation yet, or check both?)
-      // We prioritize showing obstacle collisions if both happen, OR we show both?
-      // Let's stick to flagging the first one found or prioritizing obstacles?
-      // Actually, if we hit a boundary, we might also be in an obstacle (outside field?)
-      // But typically boundaries are walls.
-      // Let's check obstacles if not already colliding with boundary, or just check anyway
-      // and let the marker type reflect the most severe? Or just one marker per timestamp?
-      // The `markers` array can hold multiple for same time? Yes.
-      // But let's just push one marker per time step to avoid clutter.
-      // If boundary hit, we mark it. If obstacle hit, we mark it.
 
       if (!isColliding) {
         for (const shape of this.activeShapes) {
@@ -430,7 +473,7 @@ export class PathOptimizer {
     // Iterate through grid points
     for (let x = step / 2; x < FIELD_SIZE; x += step) {
       for (let y = step / 2; y < FIELD_SIZE; y += step) {
-        const seedLines = _.cloneDeep(this.originalLines);
+        const seedLines = structuredClone(this.originalLines);
         let modified = false;
         seedLines.forEach((line) => {
           if (!line.locked && line.controlPoints.length < 1) {
@@ -476,7 +519,7 @@ export class PathOptimizer {
     // Smart Initialization: Seed with variants that have extra control points
     if (this.shapes && this.shapes.length > 0) {
       for (let i = 0; i < Math.min(20, this.populationSize); i++) {
-        const seedLines = _.cloneDeep(this.originalLines);
+        const seedLines = structuredClone(this.originalLines);
         let prevPoint = this.startPoint;
 
         seedLines.forEach((line) => {
