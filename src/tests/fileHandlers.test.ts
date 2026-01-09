@@ -1,7 +1,7 @@
 // Copyright 2026 Matthew Allen. Licensed under the Apache License, Version 2.0.
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { get } from "svelte/store";
-import * as fileHandlers from "./fileHandlers";
+import * as fileHandlers from "../utils/fileHandlers";
 import {
   currentFilePath,
   projectMetadataStore,
@@ -15,6 +15,7 @@ import {
   shapesStore,
   settingsStore,
 } from "../lib/projectStore";
+import { DEFAULT_SETTINGS } from "../config/defaults";
 
 // Mock Svelte stores
 vi.mock("../stores", async () => {
@@ -60,7 +61,7 @@ describe("fileHandlers", () => {
 
     // Reset stores
     currentFilePath.set("");
-    settingsStore.set({ recentFiles: [] });
+    settingsStore.set({ ...DEFAULT_SETTINGS, recentFiles: [] });
     linesStore.set([]);
     sequenceStore.set([]);
   });
@@ -119,7 +120,7 @@ describe("fileHandlers", () => {
       vi.stubGlobal("confirm", confirmMock);
 
       // Initialize store
-      settingsStore.set({ recentFiles: ["/path/to/file.pp", "/other.pp"] });
+      settingsStore.set({ ...DEFAULT_SETTINGS, recentFiles: ["/path/to/file.pp", "/other.pp"] });
 
       // Act
       await fileHandlers.loadRecentFile("/path/to/file.pp");

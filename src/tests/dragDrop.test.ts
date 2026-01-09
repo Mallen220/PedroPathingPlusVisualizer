@@ -4,7 +4,7 @@ import {
   reorderSequence,
   calculateDragPosition,
   getClosestTarget,
-} from "./dragDrop";
+} from "../utils/dragDrop";
 
 describe("reorderSequence", () => {
   const letters = ["a", "b", "c", "d", "e"];
