@@ -70,8 +70,18 @@ describe("fileHandlers", () => {
     it("restores linked names by stripping suffixes", () => {
       const data = {
         lines: [
-          { id: "1", name: "Path 1", startPoint: { x: 0, y: 0 }, endPoint: { x: 10, y: 10 } },
-          { id: "2", name: "Path 1 (2)", startPoint: { x: 10, y: 10 }, endPoint: { x: 20, y: 20 } },
+          {
+            id: "1",
+            name: "Path 1",
+            startPoint: { x: 0, y: 0 },
+            endPoint: { x: 10, y: 10 },
+          },
+          {
+            id: "2",
+            name: "Path 1 (2)",
+            startPoint: { x: 10, y: 10 },
+            endPoint: { x: 20, y: 20 },
+          },
         ],
         sequence: [],
       };
@@ -84,20 +94,20 @@ describe("fileHandlers", () => {
     });
 
     it("restores linked names from _linkedName metadata", () => {
-        const data = {
-          lines: [
-            { id: "1", name: "Unique Name 1", _linkedName: "Shared Name" },
-            { id: "2", name: "Unique Name 2", _linkedName: "Shared Name" },
-          ],
-          sequence: [],
-        };
+      const data = {
+        lines: [
+          { id: "1", name: "Unique Name 1", _linkedName: "Shared Name" },
+          { id: "2", name: "Unique Name 2", _linkedName: "Shared Name" },
+        ],
+        sequence: [],
+      };
 
-        fileHandlers.loadProjectData(data);
-        const lines = get(linesStore);
+      fileHandlers.loadProjectData(data);
+      const lines = get(linesStore);
 
-        expect(lines[0].name).toBe("Shared Name");
-        expect(lines[1].name).toBe("Shared Name");
-      });
+      expect(lines[0].name).toBe("Shared Name");
+      expect(lines[1].name).toBe("Shared Name");
+    });
   });
 
   describe("loadRecentFile", () => {
@@ -120,7 +130,10 @@ describe("fileHandlers", () => {
       vi.stubGlobal("confirm", confirmMock);
 
       // Initialize store
-      settingsStore.set({ ...DEFAULT_SETTINGS, recentFiles: ["/path/to/file.pp", "/other.pp"] });
+      settingsStore.set({
+        ...DEFAULT_SETTINGS,
+        recentFiles: ["/path/to/file.pp", "/other.pp"],
+      });
 
       // Act
       await fileHandlers.loadRecentFile("/path/to/file.pp");
@@ -152,40 +165,40 @@ describe("fileHandlers", () => {
     });
 
     it("handles save failures", async () => {
-        mockElectronAPI.saveFile.mockResolvedValue({
-            success: false,
-            error: "Permission denied"
-        });
+      mockElectronAPI.saveFile.mockResolvedValue({
+        success: false,
+        error: "Permission denied",
+      });
 
-        await fileHandlers.saveProject();
+      await fileHandlers.saveProject();
 
-        const notif = get(notification);
-        expect(notif?.type).toBe("error");
+      const notif = get(notification);
+      expect(notif?.type).toBe("error");
     });
   });
 
   describe("handleExternalFileOpen", () => {
-      it("loads file directly if no saved directory configured", async () => {
-          mockElectronAPI.readFile.mockResolvedValue(JSON.stringify({}));
-          mockElectronAPI.getSavedDirectory.mockResolvedValue("");
+    it("loads file directly if no saved directory configured", async () => {
+      mockElectronAPI.readFile.mockResolvedValue(JSON.stringify({}));
+      mockElectronAPI.getSavedDirectory.mockResolvedValue("");
 
-          await fileHandlers.handleExternalFileOpen("/external/file.pp");
+      await fileHandlers.handleExternalFileOpen("/external/file.pp");
 
-          expect(get(currentFilePath)).toBe("/external/file.pp");
-      });
+      expect(get(currentFilePath)).toBe("/external/file.pp");
+    });
 
-      it("prompts to copy if file is outside saved directory", async () => {
-          mockElectronAPI.readFile.mockResolvedValue(JSON.stringify({}));
-          mockElectronAPI.getSavedDirectory.mockResolvedValue("/my/projects");
-          mockElectronAPI.fileExists.mockResolvedValue(false); // Dest doesn't exist
-          (global.confirm as any).mockReturnValue(true); // User says yes to copy
+    it("prompts to copy if file is outside saved directory", async () => {
+      mockElectronAPI.readFile.mockResolvedValue(JSON.stringify({}));
+      mockElectronAPI.getSavedDirectory.mockResolvedValue("/my/projects");
+      mockElectronAPI.fileExists.mockResolvedValue(false); // Dest doesn't exist
+      (global.confirm as any).mockReturnValue(true); // User says yes to copy
 
-          await fileHandlers.handleExternalFileOpen("/external/file.pp");
+      await fileHandlers.handleExternalFileOpen("/external/file.pp");
 
-          // Should check if it copies to /my/projects/file.pp
-          // Depending on separator logic in implementation
-          expect(mockElectronAPI.copyFile).toHaveBeenCalled();
-          // We can't easily check exact string due to separator logic, but we verify copyFile was called
-      });
+      // Should check if it copies to /my/projects/file.pp
+      // Depending on separator logic in implementation
+      expect(mockElectronAPI.copyFile).toHaveBeenCalled();
+      // We can't easily check exact string due to separator logic, but we verify copyFile was called
+    });
   });
 });
