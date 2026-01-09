@@ -275,6 +275,7 @@
   // State for collapsed sections
   let collapsedSections = {
     obstacles: shapes.map(() => true),
+    obstaclesSection: false,
     lines: lines.map(() => false),
     controlPoints: lines.map(() => true), // Start with control points collapsed
     // Track collapsed state for waits by their ID
@@ -603,6 +604,7 @@
     collapsedSections.controlPoints = lines.map(() => true);
     collapsedEventMarkers = lines.map(() => true);
     collapsedSections.obstacles = shapes.map(() => true);
+    collapsedSections.obstaclesSection = true;
     collapsedSections.globalMarkers = true;
 
     // Set all waits to collapsed
@@ -625,6 +627,7 @@
     collapsedSections.controlPoints = lines.map(() => false);
     collapsedEventMarkers = lines.map(() => false);
     collapsedSections.obstacles = shapes.map(() => false);
+    collapsedSections.obstaclesSection = false;
     collapsedSections.globalMarkers = false;
 
     // Set all waits to expanded (false)
@@ -1113,6 +1116,7 @@
         <ObstaclesSection
           bind:shapes
           bind:collapsedObstacles={collapsedSections.obstacles}
+          bind:collapsed={collapsedSections.obstaclesSection}
         />
       </div>
     {/if}
