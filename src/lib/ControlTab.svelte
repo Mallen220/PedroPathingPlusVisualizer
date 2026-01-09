@@ -1279,7 +1279,6 @@
     onClose={() => (statsOpen = false)}
   />
 
-
   <div
     class="flex-none w-full bg-white dark:bg-neutral-800 border-t border-neutral-200 dark:border-neutral-700 z-30 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]"
   >
