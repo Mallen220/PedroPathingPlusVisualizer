@@ -77,8 +77,7 @@
     // Tangential start logic
     if (startPoint.heading === "tangential" && lines.length > 0) {
       const l = lines[0];
-      const next =
-        l.controlPoints.length > 0 ? l.controlPoints[0] : l.endPoint;
+      const next = l.controlPoints.length > 0 ? l.controlPoints[0] : l.endPoint;
       simHeading =
         Math.atan2(next.y - startPoint.y, next.x - startPoint.x) *
         (180 / Math.PI);
@@ -106,7 +105,7 @@
         }
 
         // If not found (e.g. 0 duration), we still want to show the row if it exists in sequence
-        const duration = event ? event.duration : (item.durationMs / 1000); // Fallback to item duration
+        const duration = event ? event.duration : item.durationMs / 1000; // Fallback to item duration
 
         segments.push({
           name: item.name || "Wait",
@@ -127,7 +126,10 @@
       let event: any = null;
       for (let i = timelineIndex; i < timeline.length; i++) {
         const tEv = timeline[i];
-        if (tEv.type === "travel" && tEv.lineIndex === lines.findIndex((l) => l.id === line.id)) {
+        if (
+          tEv.type === "travel" &&
+          tEv.lineIndex === lines.findIndex((l) => l.id === line.id)
+        ) {
           event = tEv;
           timelineIndex = i + 1;
           break;
@@ -141,9 +143,10 @@
           ? event.headingProfile[0]
           : simHeading;
 
-      const resolution = (event.motionProfile && event.motionProfile.length > 0)
-        ? event.motionProfile.length - 1
-        : ((settings as any).resolution || 100);
+      const resolution =
+        event.motionProfile && event.motionProfile.length > 0
+          ? event.motionProfile.length - 1
+          : (settings as any).resolution || 100;
 
       const analysis = analyzePathSegment(
         simPoint,
@@ -176,13 +179,13 @@
             // Use headingProfile if available to capture linear interpolation rotation
             let vAng = 0;
             if (headingProfile && headingProfile.length > i + 1) {
-                const h1 = headingProfile[i];
-                const h2 = headingProfile[i+1];
-                const diff = Math.abs(getAngularDifference(h1, h2)); // degrees
-                vAng = (diff * (Math.PI / 180)) / dt; // rad/s
+              const h1 = headingProfile[i];
+              const h2 = headingProfile[i + 1];
+              const diff = Math.abs(getAngularDifference(h1, h2)); // degrees
+              vAng = (diff * (Math.PI / 180)) / dt; // rad/s
             } else {
-                // Fallback to geometric rotation only
-                vAng = (step.rotation * (Math.PI / 180)) / dt;
+              // Fallback to geometric rotation only
+              vAng = (step.rotation * (Math.PI / 180)) / dt;
             }
             if (vAng > segMaxAng) segMaxAng = vAng;
           }
@@ -197,7 +200,8 @@
       }
 
       segments.push({
-        name: line.name || `Path ${lines.findIndex((l) => l.id === line.id) + 1}`,
+        name:
+          line.name || `Path ${lines.findIndex((l) => l.id === line.id) + 1}`,
         length: analysis.length,
         time: event.duration,
         maxVel: segMaxLin,
@@ -231,7 +235,10 @@
     });
 
     navigator.clipboard.writeText(md).then(() => {
-      notification.set({ message: "Copied stats to clipboard!", type: "success" });
+      notification.set({
+        message: "Copied stats to clipboard!",
+        type: "success",
+      });
     });
   }
 </script>
