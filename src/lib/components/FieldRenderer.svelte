@@ -291,7 +291,11 @@
           (e: any) => e.type === "travel" && e.lineIndex === idx,
         );
 
-        if (event && event.velocityProfile && event.velocityProfile.length > 0) {
+        if (
+          event &&
+          event.velocityProfile &&
+          event.velocityProfile.length > 0
+        ) {
           const vProfile = event.velocityProfile as number[];
           const maxVel = Math.max(1, settings.maxVelocity);
 
@@ -307,7 +311,10 @@
             // Calculate the proportional index in the velocity profile
             const profileIndex = Math.floor(t * (vProfile.length - 1));
             // Ensure we don't go out of bounds (though Math.floor guarantees <= length-1)
-            const safeIndex = Math.min(vProfile.length - 1, Math.max(0, profileIndex));
+            const safeIndex = Math.min(
+              vProfile.length - 1,
+              Math.max(0, profileIndex),
+            );
 
             const vAvg = vProfile[safeIndex] || 0;
             const ratio = Math.min(1, Math.max(0, vAvg / maxVel));
