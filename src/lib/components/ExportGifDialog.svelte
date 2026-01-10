@@ -26,6 +26,12 @@
   let fps = 15;
   let resolutionScale = 0.5; // Default 50%
   let quality = 10; // 1-30, default 10 (good balance)
+  // UI slider is reversed (left=Draft, right=Best). Keep internal semantics (1=best),
+  // and bind the visible slider to `sliderQuality` which maps to `quality = 31 - sliderQuality`.
+  let sliderQuality = 31 - quality;
+  // One-way reactive sync: when sliderQuality changes, update internal `quality`.
+  $: quality = 31 - sliderQuality;
+
   let status = "idle"; // idle, generating, done, error
   let progress = 0;
   let statusMessage = "";
@@ -294,18 +300,18 @@
               min="1"
               max="30"
               step="1"
-              bind:value={quality}
+              bind:value={sliderQuality}
               disabled={status === "generating"}
-              class="w-full accent-purple-600 dir-rtl"
+              class="w-full accent-purple-600"
               title={format === "gif"
-                ? "Lower is better quality"
-                : "Left: Lossless, Right: 256 Colors"}
+                ? "Right is better quality"
+                : "Left: 256 Colors, Right: Lossless"}
             />
             <div
               class="text-xs text-neutral-500 dark:text-neutral-400 flex justify-between"
             >
-              <span>Best</span>
               <span>Draft</span>
+              <span>Best</span>
             </div>
           </div>
         </div>
