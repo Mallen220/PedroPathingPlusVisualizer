@@ -38,6 +38,52 @@ async function bumpVersion() {
 
   console.log(`✅ Updated version to ${newVersion}`);
 
+  // Handle newest.md
+  const newestPath = path.join(
+    __dirname,
+    "../src/lib/components/whats-new/features/newest.md",
+  );
+  try {
+    const stats = await fs.stat(newestPath);
+    if (stats.isFile()) {
+      const newFeaturePath = path.join(
+        __dirname,
+        `../src/lib/components/whats-new/features/v${newVersion}.md`,
+      );
+      await fs.rename(newestPath, newFeaturePath);
+      console.log(`✅ Renamed newest.md to v${newVersion}.md`);
+    }
+  } catch (err) {
+    if (err.code !== "ENOENT") {
+      console.error("❌ Error handling newest.md:", err);
+    }
+  }
+
+  // Ensure newest.md exists (recreate it if it was renamed or didn't exist)
+  try {
+    const template = `### What's New!
+
+**Features:**
+-
+
+**Bug Fixes:**
+-
+`;
+
+    // Check if it exists now.
+    try {
+      await fs.access(newestPath);
+      // It exists. If we renamed it, it shouldn't exist unless race condition.
+      // If we didn't rename it (e.g. it didn't exist), we need to create it.
+    } catch {
+      // It doesn't exist, create it.
+      await fs.writeFile(newestPath, template);
+      console.log(`✅ Created new newest.md`);
+    }
+  } catch (err) {
+    console.error("❌ Error creating newest.md:", err);
+  }
+
   // Create a simple changelog entry
   const changelog = await ask("Enter changelog summary (optional): ");
 
@@ -61,7 +107,9 @@ async function bumpVersion() {
   rl.close();
   console.log("\n🎉 Ready to release!");
   console.log("\nNext steps:");
-  console.log("1. git add package.json CHANGELOG.md");
+  console.log(
+    "1. git add package.json CHANGELOG.md src/lib/components/whats-new/features/",
+  );
   console.log('2. git commit -m "Bump version to v' + newVersion + '"');
   console.log("3. git push");
   console.log("4. npm run dist:publish");

@@ -35,5 +35,6 @@ export const features: FeatureHighlight[] = Object.entries(modules)
     const title = `Version ${id.replace(/^v/, "")} Highlights`;
     return { id, title, content };
   })
+  .filter((f) => f.id !== "newest")
   // Sort descending by version (newest first)
   .sort((a, b) => compareVersions(b.id, a.id));
