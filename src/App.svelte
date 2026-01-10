@@ -111,6 +111,50 @@
   let showSidebar = true;
   let activeControlTab: "path" | "field" | "table" = "path";
   let controlTabRef: any = null;
+  // DOM container for the ControlTab; used to size/position the stats panel
+  let controlTabContainer: HTMLDivElement | null = null;
+  let controlTabRect = {
+    top: 0,
+    left: 0,
+    width: 0,
+    height: 0,
+    right: 0,
+    bottom: 0,
+  };
+  let _controlTabObserver: ResizeObserver | null = null;
+
+  function updateControlRect() {
+    if (!controlTabContainer) return;
+    const r = controlTabContainer.getBoundingClientRect();
+    controlTabRect = {
+      top: Math.round(r.top),
+      left: Math.round(r.left),
+      width: Math.round(r.width),
+      height: Math.round(r.height),
+      right: Math.round(r.right),
+      bottom: Math.round(r.bottom),
+    };
+  }
+
+  $: if (controlTabContainer && _controlTabObserver) {
+    try {
+      _controlTabObserver.observe(controlTabContainer);
+      updateControlRect();
+    } catch (e) {}
+  }
+
+  onMount(() => {
+    updateControlRect();
+    _controlTabObserver = new ResizeObserver(updateControlRect);
+    if (controlTabContainer) _controlTabObserver.observe(controlTabContainer);
+    window.addEventListener("resize", updateControlRect);
+  });
+
+  onDestroy(() => {
+    if (_controlTabObserver) _controlTabObserver.disconnect();
+    window.removeEventListener("resize", updateControlRect);
+  });
+
   let statsOpen = false;
   let mainContentHeight = 0;
   let mainContentWidth = 0;
@@ -651,6 +695,7 @@
     sequence={$sequenceStore}
     settings={$settingsStore}
     startPoint={$startPointStore}
+    controlRect={controlTabRect}
     onClose={() => (statsOpen = false)}
   />
 {/if}
@@ -753,6 +798,7 @@
 
     <!-- Control Tab -->
     <div
+      bind:this={controlTabContainer}
       class="flex-1 h-auto lg:h-full min-h-0 min-w-0 transition-transform duration-300 ease-in-out transform bg-neutral-50 dark:bg-neutral-900"
       class:translate-x-full={!showSidebar && isLargeScreen}
       class:translate-y-full={!showSidebar && !isLargeScreen}

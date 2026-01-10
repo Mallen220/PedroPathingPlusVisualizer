@@ -16,6 +16,21 @@
   export let settings: Settings;
   export let isOpen: boolean = false;
   export let onClose: () => void;
+  // If provided, position/size will match this rect (from the Control Tab container)
+  export let controlRect: {
+    top: number;
+    left: number;
+    width: number;
+    height: number;
+    right: number;
+    bottom: number;
+  } | null = null;
+
+  // Compute style for panel: match controlRect when available, else fallback to bottom sheet
+  $: panelStyle =
+    controlRect && controlRect.width > 0
+      ? `position:fixed; top:${controlRect.top}px; left:${controlRect.left}px; width:${controlRect.width}px; height:${controlRect.height}px; z-index:50;`
+      : `position:fixed; left:0; right:0; bottom:0; height:50vh; z-index:50;`;
 
   interface SegmentStat {
     name: string;
@@ -245,187 +260,183 @@
 </script>
 
 {#if isOpen && pathStats}
-  <!-- svelte-ignore a11y-click-events-have-key-events -->
+  <!-- Non-modal floating panel to allow field to remain visible -->
   <!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
   <div
-    class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
+    class="z-50 flex flex-col overflow-hidden bg-white dark:bg-neutral-800 rounded-xl shadow-xl border border-neutral-200 dark:border-neutral-700"
+    style={panelStyle}
     transition:slide={{ duration: 200 }}
-    on:click|self={onClose}
     role="dialog"
-    aria-modal="true"
+    aria-modal="false"
     aria-labelledby="stats-title"
   >
+    <!-- Header -->
     <div
-      class="bg-white dark:bg-neutral-800 rounded-xl shadow-xl w-full max-w-2xl max-h-[80vh] flex flex-col overflow-hidden border border-neutral-200 dark:border-neutral-700"
+      class="flex items-center justify-between p-4 border-b border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-900/50"
     >
-      <!-- Header -->
-      <div
-        class="flex items-center justify-between p-4 border-b border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-900/50"
+      <h2
+        id="stats-title"
+        class="text-lg font-semibold text-neutral-900 dark:text-white"
       >
-        <h2
-          id="stats-title"
-          class="text-lg font-semibold text-neutral-900 dark:text-white"
+        Path Statistics
+      </h2>
+      <div class="flex items-center gap-2">
+        <button
+          on:click={copyToMarkdown}
+          class="p-2 text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300 rounded-lg hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
+          title="Copy as Markdown"
+          aria-label="Copy statistics table as Markdown"
         >
-          Path Statistics
-        </h2>
-        <div class="flex items-center gap-2">
-          <button
-            on:click={copyToMarkdown}
-            class="p-2 text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300 rounded-lg hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
-            title="Copy as Markdown"
-            aria-label="Copy statistics table as Markdown"
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            class="size-5"
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              class="size-5"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"
-              />
-            </svg>
-          </button>
-          <button
-            on:click={onClose}
-            class="p-2 text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300 rounded-lg hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
-            aria-label="Close"
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"
+            />
+          </svg>
+        </button>
+        <button
+          on:click={onClose}
+          class="p-2 text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300 rounded-lg hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
+          aria-label="Close"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            class="size-5"
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              class="size-5"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M6 18L18 6M6 6l12 12"
-              />
-            </svg>
-          </button>
-        </div>
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M6 18L18 6M6 6l12 12"
+            />
+          </svg>
+        </button>
       </div>
+    </div>
 
-      <!-- Summary Cards -->
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 p-4">
-        <div
-          class="bg-neutral-100 dark:bg-neutral-700/50 p-3 rounded-lg flex flex-col items-center justify-center text-center"
-        >
-          <span
-            class="text-xs text-neutral-500 dark:text-neutral-400 uppercase tracking-wide"
-            >Total Time</span
-          >
-          <span class="text-xl font-bold text-neutral-900 dark:text-white mt-1">
-            {formatTime(pathStats.totalTime)}
-          </span>
-        </div>
-        <div
-          class="bg-neutral-100 dark:bg-neutral-700/50 p-3 rounded-lg flex flex-col items-center justify-center text-center"
-        >
-          <span
-            class="text-xs text-neutral-500 dark:text-neutral-400 uppercase tracking-wide"
-            >Distance</span
-          >
-          <span class="text-xl font-bold text-neutral-900 dark:text-white mt-1">
-            {pathStats.totalDistance.toFixed(1)}"
-          </span>
-        </div>
-        <div
-          class="bg-neutral-100 dark:bg-neutral-700/50 p-3 rounded-lg flex flex-col items-center justify-center text-center"
-        >
-          <span
-            class="text-xs text-neutral-500 dark:text-neutral-400 uppercase tracking-wide"
-            >Max Vel</span
-          >
-          <span class="text-xl font-bold text-neutral-900 dark:text-white mt-1">
-            {pathStats.maxLinearVelocity.toFixed(1)} in/s
-          </span>
-        </div>
-        <div
-          class="bg-neutral-100 dark:bg-neutral-700/50 p-3 rounded-lg flex flex-col items-center justify-center text-center"
-        >
-          <span
-            class="text-xs text-neutral-500 dark:text-neutral-400 uppercase tracking-wide"
-            >Max Ang Vel</span
-          >
-          <span class="text-xl font-bold text-neutral-900 dark:text-white mt-1">
-            {pathStats.maxAngularVelocity.toFixed(1)} rad/s
-          </span>
-        </div>
-      </div>
-
-      <!-- Table Header (desktop only) -->
+    <!-- Summary Cards -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 p-4">
       <div
-        class="hidden sm:grid grid-cols-12 gap-2 px-6 py-2 bg-neutral-100 dark:bg-neutral-900/30 border-y border-neutral-200 dark:border-neutral-700 text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider"
+        class="bg-neutral-100 dark:bg-neutral-700/50 p-3 rounded-lg flex flex-col items-center justify-center text-center"
       >
-        <div class="col-span-4">Segment</div>
-        <div class="col-span-2 text-right">Length</div>
-        <div class="col-span-2 text-right">Time</div>
-        <div class="col-span-2 text-right">Max V</div>
-        <div class="col-span-2 text-right">Max ω</div>
+        <span
+          class="text-xs text-neutral-500 dark:text-neutral-400 uppercase tracking-wide"
+          >Total Time</span
+        >
+        <span class="text-xl font-bold text-neutral-900 dark:text-white mt-1">
+          {formatTime(pathStats.totalTime)}
+        </span>
       </div>
+      <div
+        class="bg-neutral-100 dark:bg-neutral-700/50 p-3 rounded-lg flex flex-col items-center justify-center text-center"
+      >
+        <span
+          class="text-xs text-neutral-500 dark:text-neutral-400 uppercase tracking-wide"
+          >Distance</span
+        >
+        <span class="text-xl font-bold text-neutral-900 dark:text-white mt-1">
+          {pathStats.totalDistance.toFixed(1)}"
+        </span>
+      </div>
+      <div
+        class="bg-neutral-100 dark:bg-neutral-700/50 p-3 rounded-lg flex flex-col items-center justify-center text-center"
+      >
+        <span
+          class="text-xs text-neutral-500 dark:text-neutral-400 uppercase tracking-wide"
+          >Max Vel</span
+        >
+        <span class="text-xl font-bold text-neutral-900 dark:text-white mt-1">
+          {pathStats.maxLinearVelocity.toFixed(1)} in/s
+        </span>
+      </div>
+      <div
+        class="bg-neutral-100 dark:bg-neutral-700/50 p-3 rounded-lg flex flex-col items-center justify-center text-center"
+      >
+        <span
+          class="text-xs text-neutral-500 dark:text-neutral-400 uppercase tracking-wide"
+          >Max Ang Vel</span
+        >
+        <span class="text-xl font-bold text-neutral-900 dark:text-white mt-1">
+          {pathStats.maxAngularVelocity.toFixed(1)} rad/s
+        </span>
+      </div>
+    </div>
 
-      <!-- Scrollable List -->
-      <div class="overflow-y-auto flex-1 p-2">
-        <div class="flex flex-col gap-1">
-          {#each pathStats.segments as seg}
+    <!-- Table Header (desktop only) -->
+    <div
+      class="hidden sm:grid grid-cols-12 gap-2 px-6 py-2 bg-neutral-100 dark:bg-neutral-900/30 border-y border-neutral-200 dark:border-neutral-700 text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider"
+    >
+      <div class="col-span-4">Segment</div>
+      <div class="col-span-2 text-right">Length</div>
+      <div class="col-span-2 text-right">Time</div>
+      <div class="col-span-2 text-right">Max V</div>
+      <div class="col-span-2 text-right">Max ω</div>
+    </div>
+
+    <!-- Scrollable List -->
+    <div class="overflow-y-auto flex-1 p-2">
+      <div class="flex flex-col gap-1">
+        {#each pathStats.segments as seg}
+          <div
+            class="grid grid-cols-1 sm:grid-cols-12 gap-2 px-4 py-3 rounded-lg hover:bg-neutral-50 dark:hover:bg-neutral-700/30 transition-colors items-start text-sm"
+          >
             <div
-              class="grid grid-cols-1 sm:grid-cols-12 gap-2 px-4 py-3 rounded-lg hover:bg-neutral-50 dark:hover:bg-neutral-700/30 transition-colors items-start text-sm"
+              class="col-span-1 sm:col-span-4 flex items-center gap-2 truncate"
             >
               <div
-                class="col-span-1 sm:col-span-4 flex items-center gap-2 truncate"
+                class="w-3 h-3 rounded-full flex-none"
+                style="background-color: {seg.color}"
+              ></div>
+              <span
+                class="font-medium text-neutral-900 dark:text-neutral-200 truncate"
+                >{seg.name}</span
               >
-                <div
-                  class="w-3 h-3 rounded-full flex-none"
-                  style="background-color: {seg.color}"
-                ></div>
-                <span
-                  class="font-medium text-neutral-900 dark:text-neutral-200 truncate"
-                  >{seg.name}</span
-                >
-              </div>
-
-              <!-- Compact metrics for small screens -->
-              <div
-                class="sm:hidden mt-2 w-full text-sm text-neutral-600 dark:text-neutral-400 flex flex-wrap gap-2"
-              >
-                <div class="flex-1">Len: {seg.length.toFixed(1)}"</div>
-                <div class="flex-1">Time: {seg.time.toFixed(2)}s</div>
-                <div class="flex-1">Max V: {seg.maxVel.toFixed(1)}</div>
-                <div class="flex-1">ω: {seg.maxAngVel.toFixed(1)}</div>
-              </div>
-
-              <!-- Desktop metrics -->
-              <div
-                class="hidden sm:block sm:col-span-2 text-right text-neutral-600 dark:text-neutral-400"
-              >
-                {seg.length.toFixed(1)}"
-              </div>
-              <div
-                class="hidden sm:block sm:col-span-2 text-right text-neutral-600 dark:text-neutral-400"
-              >
-                {seg.time.toFixed(2)}s
-              </div>
-              <div
-                class="hidden sm:block sm:col-span-2 text-right text-neutral-600 dark:text-neutral-400"
-              >
-                {seg.maxVel.toFixed(1)}
-              </div>
-              <div
-                class="hidden sm:block sm:col-span-2 text-right text-neutral-600 dark:text-neutral-400"
-              >
-                {seg.maxAngVel.toFixed(1)}
-              </div>
             </div>
-          {/each}
-        </div>
+
+            <!-- Compact metrics for small screens -->
+            <div
+              class="sm:hidden mt-2 w-full text-sm text-neutral-600 dark:text-neutral-400 flex flex-wrap gap-2"
+            >
+              <div class="flex-1">Len: {seg.length.toFixed(1)}"</div>
+              <div class="flex-1">Time: {seg.time.toFixed(2)}s</div>
+              <div class="flex-1">Max V: {seg.maxVel.toFixed(1)}</div>
+              <div class="flex-1">ω: {seg.maxAngVel.toFixed(1)}</div>
+            </div>
+
+            <!-- Desktop metrics -->
+            <div
+              class="hidden sm:block sm:col-span-2 text-right text-neutral-600 dark:text-neutral-400"
+            >
+              {seg.length.toFixed(1)}"
+            </div>
+            <div
+              class="hidden sm:block sm:col-span-2 text-right text-neutral-600 dark:text-neutral-400"
+            >
+              {seg.time.toFixed(2)}s
+            </div>
+            <div
+              class="hidden sm:block sm:col-span-2 text-right text-neutral-600 dark:text-neutral-400"
+            >
+              {seg.maxVel.toFixed(1)}
+            </div>
+            <div
+              class="hidden sm:block sm:col-span-2 text-right text-neutral-600 dark:text-neutral-400"
+            >
+              {seg.maxAngVel.toFixed(1)}
+            </div>
+          </div>
+        {/each}
       </div>
     </div>
   </div>
