@@ -113,3 +113,4 @@ verification/whats_new_grid.png
 verification/verify_whats_new.py
 verification/page_content.html
 src/tests/whats-new.test.ts
+src/lib/components/GlobalEventMarkers.svelte

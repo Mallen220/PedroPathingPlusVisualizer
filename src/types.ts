@@ -42,6 +42,8 @@ export interface EventMarker {
   lineIndex?: number;
   // For wait-based markers, the id of the wait in `sequence`
   waitId?: string;
+  // For rotate-based markers, the id of the rotate in `sequence`
+  rotateId?: string;
   parameters?: Record<string, any>;
 }
 

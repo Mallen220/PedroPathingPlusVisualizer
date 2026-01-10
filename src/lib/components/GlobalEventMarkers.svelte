@@ -23,7 +23,7 @@
     originalId: string;
     name: string;
     globalPosition: number;
-    parentType: "path" | "wait";
+    parentType: "path" | "wait" | "rotate";
     parentId: string;
     parentIndex: number;
     parentName: string;
@@ -75,6 +75,24 @@
               parentId: wait.id,
               parentIndex: index,
               parentName: wait.name || `Wait ${index + 1}`,
+              ref: m,
+            });
+          });
+        }
+      } else if (item.kind === "rotate") {
+        const rotate = item as any;
+        const rotateMarkers = rotate.eventMarkers as EventMarker[] | undefined;
+        if (rotateMarkers && rotateMarkers.length) {
+          rotateMarkers.forEach((m) => {
+            markers.push({
+              id: m.id,
+              originalId: m.id,
+              name: m.name,
+              globalPosition: index + m.position,
+              parentType: "rotate",
+              parentId: rotate.id,
+              parentIndex: index,
+              parentName: rotate.name || `Rotate ${index + 1}`,
               ref: m,
             });
           });
@@ -147,12 +165,18 @@
         line.eventMarkers = [...line.eventMarkers, newMarker];
         lines = [...lines]; // Trigger reactivity
       }
-    } else {
+    } else if (item.kind === "wait") {
       const wait = item as SequenceWaitItem;
       if (!wait.eventMarkers) wait.eventMarkers = [];
       newMarker.waitId = wait.id;
       wait.eventMarkers = [...wait.eventMarkers, newMarker];
       sequence = [...sequence]; // Trigger reactivity
+    } else if (item.kind === "rotate") {
+      const rotate = item as any;
+      if (!rotate.eventMarkers) rotate.eventMarkers = [];
+      newMarker.rotateId = rotate.id;
+      rotate.eventMarkers = [...rotate.eventMarkers, newMarker];
+      sequence = [...sequence];
     }
   }
 
@@ -165,13 +189,23 @@
         );
         lines = [...lines];
       }
-    } else {
+    } else if (marker.parentType === "wait") {
       const wait = sequence.find(
         (s) => s.kind === "wait" && s.id === marker.parentId,
       ) as SequenceWaitItem | undefined;
       if (wait && wait.eventMarkers) {
         wait.eventMarkers = wait.eventMarkers.filter(
           (m) => m.id !== marker.originalId,
+        );
+        sequence = [...sequence];
+      }
+    } else if (marker.parentType === "rotate") {
+      const rotate = sequence.find(
+        (s) => s.kind === "rotate" && s.id === marker.parentId,
+      ) as any | undefined;
+      if (rotate && rotate.eventMarkers) {
+        rotate.eventMarkers = rotate.eventMarkers.filter(
+          (m: EventMarker) => m.id !== marker.originalId,
         );
         sequence = [...sequence];
       }
@@ -218,19 +252,31 @@
           if (!line.eventMarkers) line.eventMarkers = [];
           // Update context fields if needed by types (though largely unused or implicit)
           if (newMarkerData.waitId) delete newMarkerData.waitId;
+          if (newMarkerData.rotateId) delete newMarkerData.rotateId;
           newMarkerData.lineIndex = lines.findIndex((l) => l.id === line.id);
 
           line.eventMarkers = [...line.eventMarkers, newMarkerData];
           lines = [...lines];
         }
-      } else {
+      } else if (newItem.kind === "wait") {
         const wait = newItem as SequenceWaitItem;
         if (!wait.eventMarkers) wait.eventMarkers = [];
         if (newMarkerData.lineIndex !== undefined)
           delete newMarkerData.lineIndex;
+        if (newMarkerData.rotateId) delete newMarkerData.rotateId;
         newMarkerData.waitId = wait.id;
 
         wait.eventMarkers = [...wait.eventMarkers, newMarkerData];
+        sequence = [...sequence];
+      } else if (newItem.kind === "rotate") {
+        const rotate = newItem as any;
+        if (!rotate.eventMarkers) rotate.eventMarkers = [];
+        if (newMarkerData.lineIndex !== undefined)
+          delete newMarkerData.lineIndex;
+        if (newMarkerData.waitId) delete newMarkerData.waitId;
+        newMarkerData.rotateId = rotate.id;
+
+        rotate.eventMarkers = [...rotate.eventMarkers, newMarkerData];
         sequence = [...sequence];
       }
     } else {
