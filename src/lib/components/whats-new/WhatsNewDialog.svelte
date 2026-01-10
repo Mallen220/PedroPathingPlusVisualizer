@@ -204,11 +204,11 @@
       : currentView === "content" && activePage
         ? activePage.title
         : currentView === "content" && activeFeatureId
-          ? features.find((f) => f.id === activeFeatureId)?.title ??
-            "Feature Highlight"
-        : currentView === "release-list"
-          ? "Release Notes"
-          : "What's New";
+          ? (features.find((f) => f.id === activeFeatureId)?.title ??
+            "Feature Highlight")
+          : currentView === "release-list"
+            ? "Release Notes"
+            : "What's New";
 </script>
 
 <svelte:window on:keydown={handleKeydown} />
