@@ -27,7 +27,9 @@
   import WaitSection from "./components/WaitSection.svelte";
   import RotateSection from "./components/RotateSection.svelte";
   import OptimizationDialog from "./components/OptimizationDialog.svelte";
+  import GlobalEventMarkers from "./components/GlobalEventMarkers.svelte";
   import WaypointTable from "./components/WaypointTable.svelte";
+  import PathStatisticsDialog from "./components/PathStatisticsDialog.svelte";
   import { calculatePathTime } from "../utils";
   import { validatePath } from "../utils/validation";
   import { selectedLineId, selectedPointId } from "../stores";
@@ -64,6 +66,7 @@
   export let onPreviewChange: ((lines: Line[] | null) => void) | null = null;
 
   let optimizationOpen = false;
+  let statsOpen = false;
   let waypointTableRef: any = null;
 
   // Field panel optimizer reference and bound runtime state
@@ -273,12 +276,14 @@
   // State for collapsed sections
   let collapsedSections = {
     obstacles: shapes.map(() => true),
+    obstaclesSection: false,
     lines: lines.map(() => false),
     controlPoints: lines.map(() => true), // Start with control points collapsed
     // Track collapsed state for waits by their ID
     waits: {} as Record<string, boolean>,
     // Track collapsed state for rotates by their ID
     rotates: {} as Record<string, boolean>,
+    globalMarkers: false,
   };
 
   // Debug helpers (kept simple so template expressions stay small)
@@ -358,6 +363,7 @@
       // If sections were all collapsed, new lines should start collapsed
       lines: lines.map(() => (wasAllCollapsed ? true : false)),
       controlPoints: lines.map(() => true),
+      globalMarkers: wasAllCollapsed ? true : false,
     };
   }
 
@@ -605,6 +611,8 @@
     collapsedSections.controlPoints = lines.map(() => true);
     collapsedEventMarkers = lines.map(() => true);
     collapsedSections.obstacles = shapes.map(() => true);
+    collapsedSections.obstaclesSection = true;
+    collapsedSections.globalMarkers = true;
 
     // Set all waits to collapsed
     const newWaits = { ...collapsedSections.waits };
@@ -635,6 +643,8 @@
     collapsedSections.controlPoints = lines.map(() => false);
     collapsedEventMarkers = lines.map(() => false);
     collapsedSections.obstacles = shapes.map(() => false);
+    collapsedSections.obstaclesSection = false;
+    collapsedSections.globalMarkers = false;
 
     // Set all waits to expanded (false)
     const newWaits = { ...collapsedSections.waits };
@@ -930,9 +940,9 @@
   class="flex-1 flex flex-col justify-start items-center gap-2 h-full relative"
 >
   <!-- Tab Switcher -->
-  <div class="w-full px-2 pt-2 flex-none z-10">
+  <div class="w-full px-2 pt-2 flex-none z-10 flex gap-2">
     <div
-      class="flex flex-row w-full bg-neutral-200 dark:bg-neutral-800 rounded-lg p-1 gap-1"
+      class="flex-1 flex flex-row bg-neutral-200 dark:bg-neutral-800 rounded-lg p-1 gap-1"
       role="tablist"
       aria-label="Editor View Selection"
     >
@@ -1066,6 +1076,28 @@
         Table
       </button>
     </div>
+    <button
+      on:click={() => (statsOpen = !statsOpen)}
+      class="flex-none flex items-center justify-center px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 border border-neutral-200 dark:border-neutral-700 hover:bg-neutral-50 dark:hover:bg-neutral-700 gap-2"
+      title="Path Statistics"
+      aria-label="View path statistics"
+    >
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        class="size-4"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+        />
+      </svg>
+      Stats
+    </button>
   </div>
 
   <div
@@ -1140,9 +1172,16 @@
           </div>
         {/if}
 
+        <GlobalEventMarkers
+          bind:sequence
+          bind:lines
+          bind:collapsedMarkers={collapsedSections.globalMarkers}
+        />
+
         <ObstaclesSection
           bind:shapes
           bind:collapsedObstacles={collapsedSections.obstacles}
+          bind:collapsed={collapsedSections.obstaclesSection}
         />
       </div>
     {/if}
@@ -1203,11 +1242,6 @@
                   bind:lines
                   bind:collapsed={
                     collapsedSections.lines[
-                      lines.findIndex((l) => l.id === ln.id)
-                    ]
-                  }
-                  bind:collapsedEventMarkers={
-                    collapsedEventMarkers[
                       lines.findIndex((l) => l.id === ln.id)
                     ]
                   }
@@ -1352,6 +1386,15 @@
       </div>
     {/if}
   </div>
+
+  <PathStatisticsDialog
+    bind:isOpen={statsOpen}
+    {lines}
+    {sequence}
+    {settings}
+    {startPoint}
+    onClose={() => (statsOpen = false)}
+  />
 
   <div
     class="flex-none w-full bg-white dark:bg-neutral-800 border-t border-neutral-200 dark:border-neutral-700 z-30 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]"

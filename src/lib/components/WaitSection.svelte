@@ -2,7 +2,6 @@
 <script lang="ts">
   import { selectedPointId, selectedLineId } from "../../stores";
   import TrashIcon from "./icons/TrashIcon.svelte";
-  import WaitMarkersSection from "./WaitMarkersSection.svelte";
   import type { SequenceWaitItem, SequenceItem } from "../../types";
   import { isWaitLinked, handleWaitRename } from "../../utils/pointLinking";
   import { tooltipPortal } from "../actions/portal";
@@ -350,9 +349,6 @@
         />
         <span class="text-sm font-extralight">ms</span>
       </div>
-
-      <!-- Wait Markers (Embedded) -->
-      <WaitMarkersSection bind:wait allCollapsed={false} />
     </div>
   {/if}
 </div>
