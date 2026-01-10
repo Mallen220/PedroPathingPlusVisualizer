@@ -7,6 +7,7 @@
   } from "../../utils/timeCalculator";
   import type { Point, Line, SequenceItem, Settings } from "../../types";
   import { slide } from "svelte/transition";
+  import { onMount } from "svelte";
   import { getAngularDifference } from "../../utils/math";
   import { notification } from "../../stores";
 
@@ -26,11 +27,18 @@
     bottom: number;
   } | null = null;
 
-  // Compute style for panel: match controlRect when available, else fallback to bottom sheet
+  // Compute style for panel: inset slightly from controlRect so it behaves like a dialog; use a small gap and min sizes
   $: panelStyle =
     controlRect && controlRect.width > 0
-      ? `position:fixed; top:${controlRect.top}px; left:${controlRect.left}px; width:${controlRect.width}px; height:${controlRect.height}px; z-index:50;`
-      : `position:fixed; left:0; right:0; bottom:0; height:50vh; z-index:50;`;
+      ? (() => {
+          const gap = 36; // pixels inset from control rect
+          const top = controlRect.top + gap;
+          const left = controlRect.left + gap;
+          const width = Math.max(220, controlRect.width - gap * 2);
+          const height = Math.max(120, controlRect.height - gap * 2);
+          return `position:fixed; top:${top}px; left:${left}px; width:${width}px; height:${height}px; z-index:50;`;
+        })()
+      : `position:fixed; left:36px; right:36px; bottom:36px; height:calc(50vh - 72px); z-index:50;`;
 
   interface SegmentStat {
     name: string;
