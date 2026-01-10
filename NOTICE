@@ -82,4 +82,8 @@ src/tests/exportCode.test.ts
 src/tests/exportGifDialog.test.ts
 src/utils/codeExporter.ts
 src/utils/exportAnimation.ts
+src/lib/components/whats-new/WhatsNewDialog.svelte
+src/lib/components/whats-new/features/index.ts
+src/lib/components/whats-new/features/v1.5.1.md
+src/utils/codeExporter.ts
 test-results/.last-run.json
