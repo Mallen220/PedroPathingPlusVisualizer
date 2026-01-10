@@ -1,12 +1,12 @@
 <!-- Copyright 2026 Matthew Allen. Licensed under the Apache License, Version 2.0. -->
 <script lang="ts">
-  import type { EventMarker, SequenceWaitItem } from "../../types";
+  import type { EventMarker, SequenceRotateItem } from "../../types";
   import TrashIcon from "./icons/TrashIcon.svelte";
 
-  export let wait: SequenceWaitItem;
-  // When a global collapse/expand-all is triggered, wait marker sections should respect it
+  export let rotate: SequenceRotateItem;
+  // When a global collapse/expand-all is triggered, rotate marker sections should respect it
   export let allCollapsed: boolean = false;
-  // Initialize collapsed to reflect global collapse state so newly-rendered waits follow the global command
+  // Initialize collapsed to reflect global collapse state so newly-rendered rotates follow the global command
   let collapsed: boolean = allCollapsed;
   let _lastAllCollapsed = allCollapsed;
 
@@ -22,22 +22,22 @@
 
   function addEventMarker() {
     collapsed = false;
-    const list = wait.eventMarkers ?? [];
+    const list = rotate.eventMarkers ?? [];
     const newMarker: EventMarker = {
-      id: `wait-event-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-      name: `WaitEvent_${(wait.eventMarkers?.length ?? 0) + 1}`,
+      id: `rotate-event-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      name: `RotateEvent_${(rotate.eventMarkers?.length ?? 0) + 1}`,
       position: 0.5,
-      waitId: wait.id,
+      rotateId: rotate.id,
     };
-    wait.eventMarkers = [...list, newMarker];
+    rotate.eventMarkers = [...list, newMarker];
   }
 
   function removeEventMarker(eventIdx: number) {
-    const list = wait.eventMarkers ?? [];
+    const list = rotate.eventMarkers ?? [];
     if (eventIdx >= 0 && eventIdx < list.length) {
       const next = [...list];
       next.splice(eventIdx, 1);
-      wait.eventMarkers = next;
+      rotate.eventMarkers = next;
     }
   }
 
@@ -45,7 +45,7 @@
     const value = parseFloat(e.target?.value);
     if (!isNaN(value)) {
       evt.position = value;
-      wait.eventMarkers = [...(wait.eventMarkers ?? [])];
+      rotate.eventMarkers = [...(rotate.eventMarkers ?? [])];
     }
   }
 
@@ -56,7 +56,7 @@
       return;
     }
     evt.position = value;
-    wait.eventMarkers = [...(wait.eventMarkers ?? [])];
+    rotate.eventMarkers = [...(rotate.eventMarkers ?? [])];
   }
 
   function handlePositionKeydown(e: any, evt: EventMarker) {
@@ -69,7 +69,7 @@
         return;
       }
       evt.position = value;
-      wait.eventMarkers = [...(wait.eventMarkers ?? [])];
+      rotate.eventMarkers = [...(rotate.eventMarkers ?? [])];
       if (tgt && typeof tgt.blur === "function") tgt.blur();
     }
   }
@@ -99,14 +99,14 @@
           d="m8.25 4.5 7.5 7.5-7.5 7.5"
         />
       </svg>
-      Event Markers ({wait.eventMarkers?.length || 0})
+      Event Markers ({rotate.eventMarkers?.length || 0})
     </button>
     <button
       tabindex="-1"
       on:click={addEventMarker}
       class="text-sm text-purple-500 hover:text-purple-600 flex items-center gap-1 px-2 py-1"
       title="Add Event Marker"
-      disabled={wait.locked}
+      disabled={rotate.locked}
     >
       <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -126,9 +126,9 @@
     </button>
   </div>
 
-  {#if !collapsed && wait.eventMarkers && wait.eventMarkers.length > 0}
+  {#if !collapsed && rotate.eventMarkers && rotate.eventMarkers.length > 0}
     <div class="w-full mt-2 space-y-2">
-      {#each wait.eventMarkers as event, eventIdx}
+      {#each rotate.eventMarkers as event, eventIdx}
         <div
           class="flex flex-col p-2 border border-purple-300 dark:border-purple-700 rounded-md bg-purple-50 dark:bg-purple-900/20"
         >
@@ -140,9 +140,9 @@
                 bind:value={event.name}
                 class="pl-1.5 rounded-md bg-white dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-600 focus:outline-none focus:ring-1 focus:ring-purple-500 text-sm w-36"
                 placeholder="Event name"
-                disabled={wait.locked}
+                disabled={rotate.locked}
                 on:change={() => {
-                  wait.eventMarkers = [...(wait.eventMarkers ?? [])];
+                  rotate.eventMarkers = [...(rotate.eventMarkers ?? [])];
                 }}
               />
             </div>
@@ -151,7 +151,7 @@
               on:click={() => removeEventMarker(eventIdx)}
               class="text-red-500 hover:text-red-600"
               title="Remove Event Marker"
-              disabled={wait.locked}
+              disabled={rotate.locked}
             >
               <TrashIcon className="size-4" strokeWidth={2} />
             </button>
@@ -170,7 +170,7 @@
               value={event.position}
               class="flex-1 slider"
               data-event-marker-slider
-              disabled={wait.locked}
+              disabled={rotate.locked}
               on:dragstart|preventDefault|stopPropagation
               on:input={(e) => handlePositionInput(e, event)}
             />
@@ -178,7 +178,7 @@
               tabindex="-1"
               type="number"
               value={event.position}
-              disabled={wait.locked}
+              disabled={rotate.locked}
               min="0"
               max="1"
               step="0.01"
@@ -189,7 +189,7 @@
           </div>
 
           <div class="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
-            Wait: {wait.name}, Position: {event.position.toFixed(2)}
+            Rotate: {rotate.name}, Position: {event.position.toFixed(2)}
           </div>
         </div>
       {/each}

@@ -5,6 +5,7 @@
   import type { SequenceRotateItem, SequenceItem } from "../../types";
   import { isRotateLinked, handleRotateRename } from "../../utils/pointLinking";
   import { tooltipPortal } from "../actions/portal";
+  import RotateMarkersSection from "./RotateMarkersSection.svelte";
 
   export let rotate: SequenceRotateItem;
   export let sequence: SequenceItem[];
@@ -369,7 +370,7 @@
         <span class="text-sm font-extralight">deg</span>
       </div>
 
-      <!-- Event Markers could be added here later as per prompt, but for now prompt says focus on creating the new type -->
+      <RotateMarkersSection {rotate} allCollapsed={collapsed} />
     </div>
   {/if}
 </div>

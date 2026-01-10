@@ -168,10 +168,13 @@ export async function generateJavaCode(
   const targetSequence =
     sequence && sequence.length > 0
       ? sequence
-      : lines.map((line, i) => ({
-          kind: "path",
-          lineId: line.id || `line-${i + 1}`,
-        } as any));
+      : lines.map(
+          (line, i) =>
+            ({
+              kind: "path",
+              lineId: line.id || `line-${i + 1}`,
+            }) as any,
+        );
 
   targetSequence.forEach((item) => {
     stateMachineCode += `\n        case ${stateStep}:`;
@@ -214,7 +217,13 @@ export async function generateJavaCode(
     } else if (item.kind === "rotate") {
       const degrees = (item as any).degrees || 0;
       const radians = (degrees * Math.PI) / 180;
+      const markers = (item as any).eventMarkers || [];
+
       stateMachineCode += `\n          follower.turnTo(${radians.toFixed(3)});`;
+      stateMachineCode += `\n          rotateStartHeading = follower.getPose().getHeading();`;
+      if (markers.length > 0) {
+        stateMachineCode += `\n          executedMarkers.clear();`;
+      }
       stateMachineCode += `\n          setPathState(${stateStep + 1});`;
       stateMachineCode += `\n          break;`;
 
@@ -222,6 +231,22 @@ export async function generateJavaCode(
       stateMachineCode += `\n          if(!follower.isBusy()) {`;
       stateMachineCode += `\n            setPathState(${stateStep + 2});`;
       stateMachineCode += `\n          }`;
+
+      if (markers.length > 0) {
+        stateMachineCode += `\n          // Handle rotate event markers`;
+        stateMachineCode += `\n          double currentHeading = follower.getPose().getHeading();`;
+        stateMachineCode += `\n          double totalTurn = getShortestTurnDistance(rotateStartHeading, ${radians.toFixed(3)});`;
+        stateMachineCode += `\n          double currentTurn = getShortestTurnDistance(rotateStartHeading, currentHeading);`;
+        stateMachineCode += `\n          double percent = totalTurn > 0.001 ? currentTurn / totalTurn : 1.0;`;
+
+        markers.forEach((marker: any) => {
+          stateMachineCode += `\n          if (percent >= ${marker.position.toFixed(3)} && !executedMarkers.contains("${marker.name}")) {`;
+          stateMachineCode += `\n            executedMarkers.add("${marker.name}");`;
+          stateMachineCode += `\n            panelsTelemetry.debug("Marker", "${marker.name}");`;
+          stateMachineCode += `\n            // TODO: Add command execution here`;
+          stateMachineCode += `\n          }`;
+        });
+      }
       stateMachineCode += `\n          break;`;
       stateStep += 2;
     }
@@ -254,6 +279,8 @@ export async function generateJavaCode(
     import com.pedropathing.paths.PathChain;
     import com.pedropathing.geometry.Pose;
     ${eventMarkerNames.size > 0 ? "import com.pedropathing.NamedCommands;" : ""}
+    import java.util.HashSet;
+    import java.util.Set;
     
     @Autonomous(name = "Pedro Pathing Autonomous", group = "Autonomous")
     @Configurable // Panels
@@ -263,6 +290,8 @@ export async function generateJavaCode(
       private int pathState; // Current autonomous path state (state machine)
       private ElapsedTime pathTimer; // Timer for path state machine
       private Paths paths; // Paths defined in the Paths class
+      private double rotateStartHeading;
+      private Set<String> executedMarkers = new HashSet<>();
       
       @Override
       public void init() {
@@ -303,6 +332,13 @@ export async function generateJavaCode(
       public void setPathState(int pState) {
         pathState = pState;
         pathTimer.reset();
+      }
+
+      public double getShortestTurnDistance(double angle1, double angle2) {
+          double diff = angle2 - angle1;
+          while (diff > Math.PI) diff -= 2 * Math.PI;
+          while (diff < -Math.PI) diff += 2 * Math.PI;
+          return Math.abs(diff);
       }
       
       ${namedCommandsSection}
@@ -593,11 +629,42 @@ export async function generateSequentialCommandCode(
       const rotateItem: any = item as any;
       const degrees = rotateItem.degrees || 0;
       const radians = (degrees * Math.PI) / 180;
+      const markers: any[] = rotateItem.eventMarkers || [];
 
-      commands.push(
-        `                new ${InstantCmdClass}(() -> follower.turnTo(${radians.toFixed(3)}))`,
-        `                new ${WaitUntilCmdClass}(() -> !follower.isTurning())`,
-      );
+      if (markers.length === 0) {
+        commands.push(
+          `                new ${InstantCmdClass}(() -> follower.turnTo(${radians.toFixed(3)}))`,
+          `                new ${WaitUntilCmdClass}(() -> !follower.isTurning())`,
+        );
+      } else {
+        markers.sort((a: any, b: any) => (a.position || 0) - (b.position || 0));
+
+        const markerCommands: string[] = [];
+        markers.forEach((marker: any) => {
+          markerCommands.push(
+            `new ${WaitUntilCmdClass}(() -> {`,
+            `    double current = follower.getPose().getHeading();`,
+            `    double covered = getShortestTurnDistance(rotateStartHeading, current);`,
+            `    return rotateTotalHeading > 0.001 && (covered / rotateTotalHeading) >= ${marker.position.toFixed(3)};`,
+            `}),`,
+            `new ${InstantCmdClass}(() -> progressTracker.executeEvent("${marker.name}"))`,
+          );
+        });
+
+        commands.push(
+          `                new ${InstantCmdClass}(() -> {`,
+          `                    follower.turnTo(${radians.toFixed(3)});`,
+          `                    rotateStartHeading = follower.getPose().getHeading();`,
+          `                    rotateTotalHeading = getShortestTurnDistance(rotateStartHeading, ${radians.toFixed(3)});`,
+          `                }),`,
+          `                new ${ParallelRaceClass}(`,
+          `                    new ${WaitUntilCmdClass}(() -> !follower.isTurning()),`,
+          `                    new ${SequentialGroupClass}(`,
+          `                        ${markerCommands.join(",\n                        ")}`,
+          `                    )`,
+          `                )`,
+        );
+      }
       return;
     }
 
@@ -837,6 +904,8 @@ ${progressTrackerField}
 
     // Poses
 ${allPoseDeclarations.join("\n")}
+    private double rotateStartHeading;
+    private double rotateTotalHeading;
 
     // Path chains
 ${pathChainDeclarations}
@@ -861,6 +930,13 @@ ${commands.join(",\n")}
 
     public void buildPaths() {
         ${pathBuilders}
+    }
+
+    public double getShortestTurnDistance(double angle1, double angle2) {
+        double diff = angle2 - angle1;
+        while (diff > Math.PI) diff -= 2 * Math.PI;
+        while (diff < -Math.PI) diff += 2 * Math.PI;
+        return Math.abs(diff);
     }
 }
 `;

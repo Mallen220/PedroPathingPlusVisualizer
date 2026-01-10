@@ -78,3 +78,6 @@ verification/verify_rotate.py
 src/lib/components/PathStatisticsDialog.svelte
 src/lib/components/ObstaclesSection.svelte
 src/tests/fileHandlers.test.ts
+src/lib/components/RotateMarkersSection.svelte
+src/utils/codeExporter.ts
+test-results/.last-run.json
