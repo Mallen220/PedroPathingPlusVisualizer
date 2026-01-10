@@ -38,6 +38,8 @@
   let previewBlob: Blob | null = null;
   let previewUrl: string | null = null;
 
+  let abortController: AbortController | null = null;
+
   // Preview sizing helpers — measure the preview container and constrain
   // the preview image to a square sized by min(width, height)
   let previewContainer: HTMLDivElement | null = null;
@@ -60,8 +62,21 @@
     dispatch("close");
   }
 
+  function handleCancel() {
+    if (status === "generating") {
+      // Abort the ongoing generation but keep dialog open
+      abortController?.abort();
+      statusMessage = "Cancelling...";
+      return;
+    }
+    close();
+  }
+
   async function generatePreview() {
     if (status === "generating") return;
+    // Start a new AbortController for this generation session
+    abortController = new AbortController();
+
     status = "generating";
     progress = 0;
     statusMessage = "Capturing frames...";
@@ -77,6 +92,7 @@
         fps: fps,
         scale: resolutionScale,
         quality: quality,
+        signal: abortController.signal,
         backgroundImageSrc: settings.fieldMap
           ? `/fields/${settings.fieldMap}`
           : "/fields/decode.webp",
@@ -104,10 +120,19 @@
       previewUrl = URL.createObjectURL(blob);
       status = "done";
       statusMessage = "Preview ready!";
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      status = "error";
-      statusMessage = "Error: " + err;
+      if (err && err.name === "AbortError") {
+        // Cancellation requested — reset status but keep dialog open
+        status = "idle";
+        statusMessage = "Cancelled";
+        progress = 0;
+      } else {
+        status = "error";
+        statusMessage = "Error: " + err;
+      }
+    } finally {
+      abortController = null;
     }
   }
 
@@ -406,8 +431,7 @@
       >
         <button
           class="px-4 py-2 text-sm font-medium text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded-lg transition-colors"
-          on:click={close}
-          disabled={status === "generating"}
+          on:click={handleCancel}
         >
           Cancel
         </button>

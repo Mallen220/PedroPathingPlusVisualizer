@@ -8,6 +8,12 @@ import gifWorkerUrl from "gif.js/dist/gif.worker.js?url";
 import * as UPNG from "upng-js";
 import type Two from "two.js";
 
+function makeAbortError() {
+  const e = new Error("Aborted");
+  e.name = "AbortError";
+  return e;
+}
+
 export interface ExportAnimationOptions {
   two: Two; // Two.js instance
   animationController: any; // controller from createAnimationController
@@ -17,6 +23,7 @@ export interface ExportAnimationOptions {
   quality?: number; // gif.js quality parameter (1=best, 30=worst)
   filename?: string; // suggested filename
   onProgress?: (progress: number) => void; // 0..1
+  signal?: AbortSignal; // optional abort signal to cancel export
   /** Optional background image URL to draw under the SVG frames (e.g., field map) */
   backgroundImageSrc?: string; /** Optional robot overlay image to draw on top of frames */
   robotImageSrc?: string;
@@ -197,105 +204,129 @@ export async function exportPathToGif(
 
   const framesDataURLs: string[] = [];
 
-  for (let i = 0; i < frames; i++) {
-    const percent = (i / (frames - 1)) * 100;
-    if (animationController.seekToPercent)
-      animationController.seekToPercent(percent);
-    two.update();
+  try {
+    for (let i = 0; i < frames; i++) {
+      if (options.signal?.aborted) throw makeAbortError();
+      const percent = (i / (frames - 1)) * 100;
+      if (animationController.seekToPercent)
+        animationController.seekToPercent(percent);
+      two.update();
 
-    await renderFrameToCanvas(
-      ctx,
-      canvas,
-      svgEl,
-      percent,
-      options,
-      backgroundImage,
-      robotImage,
-      scale,
-    );
+      await renderFrameToCanvas(
+        ctx,
+        canvas,
+        svgEl,
+        percent,
+        options,
+        backgroundImage,
+        robotImage,
+        scale,
+      );
 
-    // Capture fallback data
-    try {
-      framesDataURLs.push(canvas.toDataURL("image/png"));
-    } catch (e) {}
+      // Capture fallback data
+      try {
+        framesDataURLs.push(canvas.toDataURL("image/png"));
+      } catch (e) {}
 
-    try {
-      gif.addFrame(ctx, { copy: true, delay: delayMs });
-    } catch (e) {}
+      try {
+        gif.addFrame(ctx, { copy: true, delay: delayMs });
+      } catch (e) {}
 
-    if (onProgress) {
-      onProgress(((i + 1) / frames) * 0.5);
-    }
-  }
-
-  // Restore
-  if (animationController.seekToPercent)
-    animationController.seekToPercent(prevPercent);
-  if (prevPlaying && animationController.play) animationController.play();
-
-  return new Promise(async (resolve, reject) => {
-    let encodeStarted = false;
-    const fallbackTimeout = setTimeout(async () => {
-      if (!encodeStarted) {
-        console.warn(
-          "Worker encoding not detected — falling back to main-thread encode",
-        );
-        try {
-          const gif2 = new GIF({
-            workers: 0,
-            quality: quality,
-            width: canvas.width,
-            height: canvas.height,
-          });
-          if (onProgress) onProgress(0.5);
-          if (onProgress) {
-            gif2.on("progress", (p: number) => onProgress(0.5 + p * 0.5));
-          }
-
-          for (let i = 0; i < framesDataURLs.length; i++) {
-            const dataUrl = framesDataURLs[i];
-            await new Promise<void>((res, rej) => {
-              const im = new Image();
-              im.onload = () => {
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                ctx.drawImage(im, 0, 0, canvas.width, canvas.height);
-                try {
-                  gif2.addFrame(ctx, { copy: true, delay: delayMs });
-                } catch (e) {}
-                res();
-              };
-              im.onerror = (e) => rej(e);
-              im.src = dataUrl;
-            });
-          }
-          gif2.on("finished", (blobObj: Blob) => resolve(blobObj));
-          gif2.on("error", (err: any) => reject(err));
-          gif2.render();
-        } catch (err) {
-          reject(err);
-        }
+      if (onProgress) {
+        onProgress(((i + 1) / frames) * 0.5);
       }
-    }, 3000);
-
-    gif.on("finished", (blobObj: Blob) => {
-      clearTimeout(fallbackTimeout);
-      resolve(blobObj);
-    });
-    gif.on("error", (err: any) => {
-      clearTimeout(fallbackTimeout);
-      reject(err);
-    });
-    gif.on("progress", () => {
-      encodeStarted = true;
-    });
-
-    try {
-      gif.render();
-    } catch (err) {
-      clearTimeout(fallbackTimeout);
-      reject(err);
     }
-  });
+
+    // Restore before encoding stage
+    if (animationController.seekToPercent)
+      animationController.seekToPercent(prevPercent);
+    if (prevPlaying && animationController.play) animationController.play();
+
+    return await new Promise(async (resolve, reject) => {
+      let encodeStarted = false;
+
+      const onAbort = () => {
+        try {
+          (gif as any).abort?.();
+        } catch (e) {}
+        reject(makeAbortError());
+      };
+
+      if (options.signal) {
+        if (options.signal.aborted) return reject(makeAbortError());
+        options.signal.addEventListener("abort", onAbort);
+      }
+
+      const fallbackTimeout = setTimeout(async () => {
+        if (!encodeStarted) {
+          console.warn(
+            "Worker encoding not detected — falling back to main-thread encode",
+          );
+          try {
+            const gif2 = new GIF({
+              workers: 0,
+              quality: quality,
+              width: canvas.width,
+              height: canvas.height,
+            });
+            if (onProgress) onProgress(0.5);
+            if (onProgress) {
+              gif2.on("progress", (p: number) => onProgress(0.5 + p * 0.5));
+            }
+
+            for (let i = 0; i < framesDataURLs.length; i++) {
+              if (options.signal?.aborted) return reject(makeAbortError());
+              const dataUrl = framesDataURLs[i];
+              await new Promise<void>((res, rej) => {
+                const im = new Image();
+                im.onload = () => {
+                  ctx.clearRect(0, 0, canvas.width, canvas.height);
+                  ctx.drawImage(im, 0, 0, canvas.width, canvas.height);
+                  try {
+                    gif2.addFrame(ctx, { copy: true, delay: delayMs });
+                  } catch (e) {}
+                  res();
+                };
+                im.onerror = (e) => rej(e);
+                im.src = dataUrl;
+              });
+            }
+            gif2.on("finished", (blobObj: Blob) => resolve(blobObj));
+            gif2.on("error", (err: any) => reject(err));
+            gif2.render();
+          } catch (err) {
+            reject(err);
+          }
+        }
+      }, 3000);
+
+      gif.on("finished", (blobObj: Blob) => {
+        if (options.signal) options.signal.removeEventListener("abort", onAbort);
+        clearTimeout(fallbackTimeout);
+        resolve(blobObj);
+      });
+      gif.on("error", (err: any) => {
+        if (options.signal) options.signal.removeEventListener("abort", onAbort);
+        clearTimeout(fallbackTimeout);
+        reject(err);
+      });
+      gif.on("progress", () => {
+        encodeStarted = true;
+      });
+
+      try {
+        gif.render();
+      } catch (err) {
+        clearTimeout(fallbackTimeout);
+        reject(err);
+      }
+    });
+  } finally {
+    // Ensure animation state is restored even on abort
+    if (animationController.seekToPercent)
+      animationController.seekToPercent(prevPercent);
+    if (prevPlaying && animationController.play) animationController.play();
+  }
 }
 
 export async function exportPathToApng(
@@ -348,54 +379,62 @@ export async function exportPathToApng(
 
   const buffers: ArrayBuffer[] = [];
 
-  for (let i = 0; i < frames; i++) {
-    const percent = (i / (frames - 1)) * 100;
-    if (animationController.seekToPercent)
-      animationController.seekToPercent(percent);
-    two.update();
+  try {
+    for (let i = 0; i < frames; i++) {
+      if (options.signal?.aborted) throw makeAbortError();
+      const percent = (i / (frames - 1)) * 100;
+      if (animationController.seekToPercent)
+        animationController.seekToPercent(percent);
+      two.update();
 
-    await renderFrameToCanvas(
-      ctx,
-      canvas,
-      svgEl,
-      percent,
-      options,
-      backgroundImage,
-      robotImage,
-      scale,
+      await renderFrameToCanvas(
+        ctx,
+        canvas,
+        svgEl,
+        percent,
+        options,
+        backgroundImage,
+        robotImage,
+        scale,
+      );
+
+      // Get buffer for UPNG
+      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      buffers.push(imageData.data.buffer);
+
+      if (onProgress) {
+        // Encoding is fast/sync, so we count mostly frame capture
+        onProgress(((i + 1) / frames) * 0.9);
+      }
+    }
+
+    // Restore
+    if (animationController.seekToPercent)
+      animationController.seekToPercent(prevPercent);
+    if (prevPlaying && animationController.play) animationController.play();
+
+    if (onProgress) onProgress(0.95);
+
+    // Encode APNG
+    // cnum = 0 means lossless. >0 means palette size.
+    // Mapping: Quality 1-9 => Lossless (0), Quality >= 10 => 256 colors
+    const cnum = quality <= 9 ? 0 : 256;
+
+    const apngBuffer = UPNG.encode(
+      buffers,
+      canvas.width,
+      canvas.height,
+      cnum,
+      delays,
     );
 
-    // Get buffer for UPNG
-    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-    buffers.push(imageData.data.buffer);
+    if (onProgress) onProgress(1.0);
 
-    if (onProgress) {
-      // Encoding is fast/sync, so we count mostly frame capture
-      onProgress(((i + 1) / frames) * 0.9);
-    }
+    return new Blob([apngBuffer], { type: "image/png" });
+  } finally {
+    // Ensure animation state is restored even on abort
+    if (animationController.seekToPercent)
+      animationController.seekToPercent(prevPercent);
+    if (prevPlaying && animationController.play) animationController.play();
   }
-
-  // Restore
-  if (animationController.seekToPercent)
-    animationController.seekToPercent(prevPercent);
-  if (prevPlaying && animationController.play) animationController.play();
-
-  if (onProgress) onProgress(0.95);
-
-  // Encode APNG
-  // cnum = 0 means lossless. >0 means palette size.
-  // Mapping: Quality 1-9 => Lossless (0), Quality >= 10 => 256 colors
-  const cnum = quality <= 9 ? 0 : 256;
-
-  const apngBuffer = UPNG.encode(
-    buffers,
-    canvas.width,
-    canvas.height,
-    cnum,
-    delays,
-  );
-
-  if (onProgress) onProgress(1.0);
-
-  return new Blob([apngBuffer], { type: "image/png" });
 }
