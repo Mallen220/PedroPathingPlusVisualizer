@@ -166,6 +166,13 @@ describe("exportAnimation", () => {
       // We expect drawImage to be called for background + svg frame
       expect(mockCtx.drawImage).toHaveBeenCalled();
     });
+
+    it("should abort when signal is aborted (GIF)", async () => {
+      const controller = new AbortController();
+      const p = exportPathToGif({ ...options, durationSec: 0.5, fps: 15, signal: controller.signal });
+      setTimeout(() => controller.abort(), 10);
+      await expect(p).rejects.toHaveProperty("name", "AbortError");
+    });
   });
 
   describe("exportPathToApng", () => {
@@ -200,6 +207,13 @@ describe("exportAnimation", () => {
         256,
         expect.anything(),
       );
+    });
+
+    it("should abort when signal is aborted (APNG)", async () => {
+      const controller = new AbortController();
+      const p = exportPathToApng({ ...options, durationSec: 0.5, fps: 15, signal: controller.signal });
+      setTimeout(() => controller.abort(), 10);
+      await expect(p).rejects.toHaveProperty("name", "AbortError");
     });
   });
 });
