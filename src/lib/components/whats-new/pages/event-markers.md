@@ -15,9 +15,9 @@ There are three types of event markers, automatically determined by where they a
 
 ## **Managing Markers**
 
-All markers are managed in the **Event Markers** panel on the left side of the screen.
+All markers are managed in the **Event Markers** panel in the control tab under the `Field` tab. 
 
-1.  **Add a Marker:** Click the **+** button in the panel header. This adds a new marker to the end of your sequence.
+1.  **Add a Marker:** Click the purple **+ Add** button in the panel header. This adds a new marker to the end of your sequence.
 2.  **Name It:** Give your marker a descriptive name (e.g., `"IntakeDeploy"`, `"Shoot"`). This name is used in your exported code to identify the event.
 3.  **Position It:** Use the slider or number input to set the marker's **Global Position**.
 
