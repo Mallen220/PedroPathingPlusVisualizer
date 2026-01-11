@@ -288,18 +288,30 @@
         const durPct = toPct(ev.duration);
 
         // Check if this is a Rotation
-        // Either by waitId mapping to a RotateItem, or by heading change
+        // Either by waitId mapping to a RotateItem (explicit action), or by heading change (implicit auto-turn)
         let isRotate = false;
+        let explicit = undefined as boolean | undefined;
         if (ev.waitId) {
           const seqItem = sequence.find((s) => (s as any).id === ev.waitId);
-          if (seqItem && seqItem.kind === "rotate") isRotate = true;
+          if (seqItem) {
+            // If sequence explicit rotate or wait, treat as explicit action
+            if (seqItem.kind === "rotate") {
+              isRotate = true;
+              explicit = true;
+            } else if (seqItem.kind === "wait") {
+              isRotate = false;
+              explicit = true; // explicit wait defined by user
+            }
+          }
         }
-        // Fallback: check heading difference (e.g. for auto-turns)
+        // Fallback: heading difference indicates an implicit rotation inserted by pathing
         if (
           !isRotate &&
           Math.abs((ev.startHeading || 0) - (ev.targetHeading || 0)) > 0.1
         ) {
           isRotate = true;
+          // Mark as implicit
+          explicit = false;
         }
 
         items.push({
@@ -307,7 +319,8 @@
           percent: startPct,
           durationPercent: durPct,
           name: ev.name || (isRotate ? "Rotate" : "Wait"),
-          // Color handled by PlaybackControls CSS classes mostly, but can pass explicit if needed
+          // Mark whether this is an explicit (user-defined) action or an implicit pathing behavior
+          explicit: isRotate ? explicit : explicit,
         });
       }
     });

@@ -13,6 +13,7 @@
     durationPercent?: number;
     color?: string;
     name: string;
+    explicit?: boolean; // true = user-defined action, false = implicit pathing behavior
   }[] = [];
   export let playbackSpeed: number = 1.0;
   export let setPlaybackSpeed: (factor: number, autoPlay?: boolean) => void;
@@ -202,19 +203,17 @@
         {#if item.type === "wait"}
           <!-- Wait: Amber highlight/underline -->
           <div
-            class="absolute top-1/2 -translate-y-1/2 h-1 bg-amber-500/70"
+            class="absolute top-1/2 -translate-y-1/2 h-2 bg-amber-500/70"
             style="left: {item.percent}%; width: {item.durationPercent}%; border-radius: 2px;"
             title={item.name}
           ></div>
         {:else if item.type === "rotate"}
-          <!-- Rotate: Blue highlight/underline with icon -->
+          <!-- Rotate: explicit rotates are highlighted in blue; implicit (auto) rotates use a lighter style -->
           <div
-            class="absolute top-1/2 -translate-y-1/2 h-1 bg-blue-500/70"
+            class={item.explicit === true ? 'absolute top-1/2 -translate-y-1/2 h-2 bg-blue-500/70' : 'absolute top-1/2 -translate-y-1/2 h-2 bg-blue-200/40'}
             style="left: {item.percent}%; width: {item.durationPercent}%; border-radius: 2px;"
-            title={item.name}
-          >
-            <!-- Optional small icon overlaid centrally if width permits -->
-          </div>
+            title={item.name + (item.explicit === false ? ' (auto)' : '')}
+          ></div>
         {/if}
       {/each}
     </div>
@@ -227,19 +226,21 @@
     <div class="absolute inset-0 w-full h-full pointer-events-none">
       {#each timelineItems as item}
         {#if item.type === "rotate"}
-          <!-- Center the icon in the duration -->
+          <!-- Center the icon in the duration; explicit rotates are blue, implicit are neutral/lighter -->
           <div
-            class="absolute top-0 -translate-y-2 flex justify-center"
-            style="left: {item.percent + (item.durationPercent || 0) / 2}%;"
+            class="absolute"
+            style="left: {item.percent + (item.durationPercent || 0) / 2}%; top: 50%; transform: translate(-50%, -50%); pointer-events: none;"
+            title={item.name + (item.explicit === false ? ' (auto)' : '')}
           >
-            <!-- Small rotate icon -->
+            <!-- Small rotate icon (color dependent on explicit flag) -->
             <svg
               xmlns="http://www.w3.org/2000/svg"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
               stroke-width="2"
-              class="w-3 h-3 text-blue-600 dark:text-blue-400 bg-white dark:bg-neutral-900 rounded-full"
+              class="w-4 h-4 rounded-full bg-white dark:bg-neutral-900"
+              style="color: {item.explicit === true ? 'rgb(37 99 235)' : 'rgb(107 114 128)'}"
             >
               <path
                 stroke-linecap="round"
