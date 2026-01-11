@@ -209,11 +209,11 @@
             aria-hidden="true"
           ></div>
         {:else if item.type === "rotate"}
-          <!-- Rotate: explicit rotates are highlighted in blue; implicit (auto) rotates use a lighter style -->
+          <!-- Rotate: explicit rotates are highlighted in pink; implicit (auto) rotates use a lighter style -->
           <div
             class={item.explicit === true
-              ? "absolute top-1/2 -translate-y-1/2 h-2 bg-blue-500/70"
-              : "absolute top-1/2 -translate-y-1/2 h-2 bg-blue-200/40"}
+              ? "absolute top-1/2 -translate-y-1/2 h-2 bg-pink-500/70"
+              : "absolute top-1/2 -translate-y-1/2 h-2 bg-pink-200/40"}
             style="left: {item.percent}%; width: {item.durationPercent}%; border-radius: 2px;"
             aria-hidden="true"
           ></div>
@@ -237,7 +237,7 @@
                 2}%; top: 50%; transform: translate(-50%, -50%); pointer-events: none;"
             aria-hidden="true"
           >
-            <!-- Small rotate icon (explicit rotates are blue) -->
+            <!-- Small rotate icon (explicit rotates are pink) -->
             <svg
               xmlns="http://www.w3.org/2000/svg"
               viewBox="0 0 24 24"
@@ -245,7 +245,7 @@
               stroke="currentColor"
               stroke-width="2"
               class="w-4 h-4 rounded-full bg-white dark:bg-neutral-900"
-              style="color: rgb(37 99 235)"
+              style="color: rgb(236 72 153)"
             >
               <path
                 stroke-linecap="round"
