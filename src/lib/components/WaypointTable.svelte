@@ -1088,7 +1088,7 @@
           >
           <th
             class="px-3 py-2 border-b dark:border-neutral-700 bg-neutral-100 dark:bg-neutral-800"
-            >Y (in)</th
+            >Y (in) / Deg (°)</th
           >
           <th
             class="px-3 py-2 border-b dark:border-neutral-700 w-10 bg-neutral-100 dark:bg-neutral-800"
