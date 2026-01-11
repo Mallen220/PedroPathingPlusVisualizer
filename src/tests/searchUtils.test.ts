@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { getSnippet, highlightSnippet, highlightText } from './searchUtils';
+import { getSnippet, highlightSnippet, highlightText } from '../lib/components/whats-new/searchUtils';
 import { JSDOM } from 'jsdom';
 
 describe('WhatsNew Search Utils', () => {
@@ -121,6 +121,27 @@ describe('WhatsNew Search Utils', () => {
           highlightText(root, 'test');
           const marks = root.querySelectorAll('mark');
           expect(marks.length).toBe(2);
+      });
+
+      it('should update highlights when query changes and clear on empty query', () => {
+          const root = document.getElementById('root')!;
+          root.innerHTML = 'Path editing';
+
+          // Initial short query
+          highlightText(root, 'p');
+          let marks = root.querySelectorAll('mark');
+          expect(marks.length).toBe(1);
+          expect(marks[0].textContent).toBe('P');
+
+          // Longer query should re-highlight the full match
+          highlightText(root, 'pa');
+          marks = root.querySelectorAll('mark');
+          expect(marks.length).toBe(1);
+          expect(marks[0].textContent).toBe('Pa');
+
+          // Clearing the query should remove marks
+          highlightText(root, '');
+          expect(root.querySelectorAll('mark').length).toBe(0);
       });
   });
 });

@@ -44,7 +44,33 @@ export function highlightSnippet(text: string, query: string): string {
 }
 
 export function highlightText(root: Element, query: string): void {
-  if (!query.trim()) return;
+  // Helper to remove any existing <mark> highlights inside root
+  const removeExistingMarks = () => {
+    const existing = root.querySelectorAll("mark");
+    existing.forEach((m) => {
+      const txt = document.createTextNode(m.textContent || "");
+      m.replaceWith(txt);
+    });
+    // Merge adjacent text nodes (important after replacing marks) so searches
+    // that span previously marked boundaries can match again.
+    try {
+      root.normalize();
+    } catch (e) {
+      // Ignore if normalize is not available
+    }
+  };
+
+  // If query is empty, clear existing highlights and return
+  if (!query.trim()) {
+    removeExistingMarks();
+    return;
+  }
+
+  // Ensure previous marks are removed before performing new highlights. If we
+  // don't, earlier marks can split text nodes and prevent longer matches from
+  // being found (e.g., typing "p" then "pa" would leave only "p" highlighted).
+  removeExistingMarks();
+
   const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null);
   const textNodes: Node[] = [];
   let node: Node | null;
