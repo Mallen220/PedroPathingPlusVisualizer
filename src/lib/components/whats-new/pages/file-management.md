@@ -18,7 +18,7 @@ The file manager appears in the sidebar when you click **Files** in the top-left
 
 ### Navigation
 
-The breadcrumb bar below the toolbar shows your current path.
+The breadcrumb bar below the toolbar shows your current directory.
 
 *   **Edit Path**: Click the path text to manually type a new directory location.
 *   **Home Directory**: You can use `~` as a shortcut for your home folder.
@@ -41,4 +41,4 @@ Right-click a file (or click the **⋮** menu in Grid view) to access actions:
 ## Saving & Exporting
 
 *   **Save Project**: Press `Ctrl+S` (or `Cmd+S`) to save changes to the current file.
-*   **Export**: To generate Java code or JSON, use the **Export** button in the main navbar. See [Exporting Code](/exporting) for details.
+*   **Export**: To generate Java code or .PP, use the **Export** button in the main navbar. See [Exporting Code] for details.
