@@ -266,7 +266,7 @@
       max="100"
       step="0.000001"
       aria-label="Animation progress"
-      class="w-full appearance-none slider focus:outline-none bg-transparent relative z-10 timeline-slider"
+      class="w-full appearance-none slider focus:outline-none bg-transparent dark:bg-transparent relative z-10 timeline-slider"
       on:input={handleSeekInput}
     />
 
