@@ -198,7 +198,7 @@
   <div class="w-full relative h-6 flex items-center">
     <!-- Timeline Highlights Layer (Under slider) -->
     <div
-      class="absolute inset-0 w-full h-full pointer-events-none overflow-hidden rounded-full"
+      class="absolute inset-0 w-full h-full pointer-events-none overflow-hidden rounded-full bg-neutral-200 dark:bg-neutral-700 shadow-inner"
     >
       {#each timelineItems as item}
         {#if item.type === "wait"}
@@ -266,7 +266,7 @@
       max="100"
       step="0.000001"
       aria-label="Animation progress"
-      class="w-full appearance-none slider focus:outline-none bg-transparent relative z-10"
+      class="w-full appearance-none slider focus:outline-none bg-transparent relative z-10 timeline-slider"
       on:input={handleSeekInput}
     />
 
@@ -334,8 +334,19 @@
   </div>
 </div>
 
-
 <svelte:window
   on:click={() => (showSpeedMenu = false)}
   on:keydown={(e) => e.key === "Escape" && (showSpeedMenu = false)}
 />
+
+<style>
+  /* Make the timeline slider track transparent so the underlying highlights layer is visible */
+  .timeline-slider::-webkit-slider-runnable-track {
+    background-color: transparent !important;
+    box-shadow: none !important;
+  }
+  :global(.dark) .timeline-slider::-webkit-slider-runnable-track {
+    background-color: transparent !important;
+    box-shadow: none !important;
+  }
+</style>
