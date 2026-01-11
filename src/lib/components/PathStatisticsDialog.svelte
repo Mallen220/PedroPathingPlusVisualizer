@@ -141,6 +141,38 @@
         return;
       }
 
+      // Handle Rotate Item
+      if (item.kind === "rotate") {
+        // Find corresponding wait event
+        let event: any = null;
+        for (let i = timelineIndex; i < timeline.length; i++) {
+          const tEv = timeline[i];
+          if (tEv.type === "wait" && (tEv as any).waitId === item.id) {
+            event = tEv;
+            timelineIndex = i + 1; // Advance past this event
+            break;
+          }
+        }
+
+        const duration = event ? event.duration : 0;
+
+        let maxAngVel = 0;
+        if (event && event.duration > 0) {
+             const diff = Math.abs(getAngularDifference((event as any).startHeading, (event as any).targetHeading));
+             maxAngVel = (diff * (Math.PI / 180)) / event.duration;
+        }
+
+        segments.push({
+          name: item.name || "Rotate",
+          length: 0,
+          time: duration,
+          maxVel: 0,
+          maxAngVel: maxAngVel,
+          color: "#d946ef", // Fuchsia-500 (matching pink/fuchsia theme of rotate)
+        });
+        return;
+      }
+
       // Handle Path Item
       if (item.kind !== "path") return;
       const line = lineById.get(item.lineId);
