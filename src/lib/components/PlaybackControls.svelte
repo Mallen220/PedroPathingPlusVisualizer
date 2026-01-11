@@ -311,7 +311,7 @@
     {#each timelineItems as item}
       {#if item.type === "marker"}
         <div
-          class="absolute z-20 group"
+          class="absolute z-20 group opacity-0 hover:opacity-100 transition-opacity duration-200"
           role="button"
           tabindex="0"
           on:mouseenter={(e) => handleMarkerHoverEnter(e, item.name)}
@@ -342,7 +342,7 @@
         </div>
       {:else if item.type === "dot"}
         <div
-          class="absolute z-20"
+          class="absolute z-20 opacity-0 hover:opacity-100 transition-opacity duration-200"
           role="button"
           tabindex="0"
           on:mouseenter={(e) => handleMarkerHoverEnter(e, item.name)}
