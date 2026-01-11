@@ -15,11 +15,10 @@ Located at the bottom of the screen, the control bar manages the simulation:
 
 Enable these overlays in **Settings** to better understand robot behavior:
 
-*   **Ghost Paths**: Shows a semi-transparent footprint of the robot along the entire path. Useful for checking clearance in tight spaces.
 *   **Onion Skinning**: Displays a trail of robot bodies at regular intervals. Helps visualize how the robot rotates and moves through complex curves.
 *   **Velocity Heatmap**: Colors the path line based on speed.
-    *   **Green**: Fast movement.
-    *   **Red**: Slow movement or stopping.
+    *   **Green**: Slow movement or stopping.
+    *   **Red**: Fast movement.
 
 ## Physics & Accuracy
 
