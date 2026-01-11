@@ -363,7 +363,7 @@
             "Feature Highlight")
           : currentView === "release-list"
             ? "Release Notes"
-            : "What's New";
+            : "What's New / Docs";
 </script>
 
 <svelte:window on:keydown={handleKeydown} />
