@@ -90,11 +90,11 @@
     <div class="flex flex-row items-center gap-2 flex-wrap">
       <!-- Collapse Button & Title -->
       <button
-        tabindex="-1"
         on:click|stopPropagation={toggleCollapsed}
-        class="flex items-center gap-2 font-semibold hover:bg-neutral-200 dark:hover:bg-neutral-800 px-2 py-1 rounded transition-colors"
+        class="flex items-center gap-2 font-semibold hover:bg-neutral-200 dark:hover:bg-neutral-800 px-2 py-1 rounded transition-colors focus:outline-none focus:ring-2 focus:ring-pink-500"
         title="{collapsed ? 'Expand' : 'Collapse'} rotate"
         aria-label="{collapsed ? 'Expand' : 'Collapse'} rotate"
+        aria-expanded={!collapsed}
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -118,15 +118,15 @@
       <!-- Name Input -->
       <div class="relative">
         <input
-          tabindex="-1"
           value={rotate.name}
           placeholder="Rotate Name"
-          class="pl-1.5 rounded-md bg-neutral-100 dark:bg-neutral-950 dark:border-neutral-700 border-[0.5px] focus:outline-none text-sm font-semibold min-w-[100px] pr-6"
+          class="pl-1.5 rounded-md bg-neutral-100 dark:bg-neutral-950 dark:border-neutral-700 border-[0.5px] focus:outline-none focus:ring-2 focus:ring-pink-500 text-sm font-semibold min-w-[100px] pr-6"
           class:text-pink-500={hoveredRotateId === rotate.id}
           disabled={rotate.locked}
           on:input={handleNameInput}
           on:blur={handleBlur}
           on:click|stopPropagation
+          aria-label="Rotate Name"
         />
         {#if linked}
           <!-- svelte-ignore a11y-no-static-element-interactions -->
@@ -163,14 +163,13 @@
 
       <!-- Lock/Unlock Button -->
       <button
-        tabindex="-1"
         title={rotate.locked ? "Unlock Rotate" : "Lock Rotate"}
         aria-label={rotate.locked ? "Unlock Rotate" : "Lock Rotate"}
         on:click|stopPropagation={() => {
           rotate.locked = !rotate.locked;
           if (recordChange) recordChange();
         }}
-        class="p-1 rounded hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
+        class="p-1 rounded hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors focus:outline-none focus:ring-2 focus:ring-pink-500"
       >
         {#if rotate.locked}
           <svg
@@ -207,13 +206,12 @@
 
       <div class="flex flex-row gap-0.5 ml-1">
         <button
-          tabindex="-1"
           title={rotate.locked ? "Rotate locked" : "Move up"}
           aria-label="Move rotate up"
           on:click|stopPropagation={() => {
             if (!rotate.locked && canMoveUp && onMoveUp) onMoveUp();
           }}
-          class="p-1 rounded-full text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 bg-neutral-100/70 dark:bg-neutral-900/70 border border-neutral-200/70 dark:border-neutral-700/70 disabled:opacity-40 disabled:cursor-not-allowed"
+          class="p-1 rounded-full text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 bg-neutral-100/70 dark:bg-neutral-900/70 border border-neutral-200/70 dark:border-neutral-700/70 disabled:opacity-40 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-pink-500"
           disabled={!canMoveUp || rotate.locked}
         >
           <svg
@@ -232,13 +230,12 @@
           </svg>
         </button>
         <button
-          tabindex="-1"
           title={rotate.locked ? "Rotate locked" : "Move down"}
           aria-label="Move rotate down"
           on:click|stopPropagation={() => {
             if (!rotate.locked && canMoveDown && onMoveDown) onMoveDown();
           }}
-          class="p-1 rounded-full text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 bg-neutral-100/70 dark:bg-neutral-900/70 border border-neutral-200/70 dark:border-neutral-700/70 disabled:opacity-40 disabled:cursor-not-allowed"
+          class="p-1 rounded-full text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 bg-neutral-100/70 dark:bg-neutral-900/70 border border-neutral-200/70 dark:border-neutral-700/70 disabled:opacity-40 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-pink-500"
           disabled={!canMoveDown || rotate.locked}
         >
           <svg
@@ -262,11 +259,10 @@
     <div class="flex flex-row justify-end items-center gap-1 ml-auto">
       <!-- Add Path After Button -->
       <button
-        tabindex="-1"
         title="Add Path After This Rotate"
         aria-label="Add Path After This Rotate"
         on:click|stopPropagation={onAddPathAfter}
-        class="text-green-500 hover:text-green-600"
+        class="text-green-500 hover:text-green-600 rounded focus:outline-none focus:ring-2 focus:ring-green-500"
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -286,11 +282,10 @@
 
       <!-- Add Wait After Button -->
       <button
-        tabindex="-1"
         title="Add Wait After"
         aria-label="Add Wait After"
         on:click|stopPropagation={onAddWaitAfter}
-        class="text-amber-500 hover:text-amber-600"
+        class="text-amber-500 hover:text-amber-600 rounded focus:outline-none focus:ring-2 focus:ring-amber-500"
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -309,13 +304,12 @@
         </svg>
       </button>
 
-      <!-- Add Rotate After Button (Maybe? The prompt didn't strictly say so, but usually you want to be able to add another of same type. "Insert After" in WaitSection just calls insertWait) -->
+      <!-- Add Rotate After Button -->
       <button
-        tabindex="-1"
         title="Add Rotate After"
         aria-label="Add Rotate After"
         on:click|stopPropagation={onInsertAfter}
-        class="text-pink-500 hover:text-pink-600"
+        class="text-pink-500 hover:text-pink-600 rounded focus:outline-none focus:ring-2 focus:ring-pink-500"
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -334,10 +328,9 @@
       </button>
 
       <button
-        tabindex="-1"
         title="Remove Rotate"
         aria-label="Remove Rotate"
-        class="text-red-500 hover:text-red-600 disabled:opacity-40 disabled:cursor-not-allowed"
+        class="text-red-500 hover:text-red-600 disabled:opacity-40 disabled:cursor-not-allowed rounded focus:outline-none focus:ring-2 focus:ring-red-500"
         on:click|stopPropagation={() => {
           if (!rotate.locked && onRemove) onRemove();
         }}
@@ -355,16 +348,16 @@
     <div class="flex flex-col justify-start items-start w-full gap-2 pl-2">
       <!-- Degrees Input -->
       <div class="flex items-center gap-2">
-        <span class="text-sm font-light">Heading:</span>
+        <span class="text-sm font-light" id="rotate-heading-label-{rotate.id}">Heading:</span>
         <input
-          tabindex="-1"
-          class="pl-1.5 rounded-md bg-neutral-100 dark:bg-neutral-950 dark:border-neutral-700 border-[0.5px] focus:outline-none w-24"
+          class="pl-1.5 rounded-md bg-neutral-100 dark:bg-neutral-950 dark:border-neutral-700 border-[0.5px] focus:outline-none focus:ring-2 focus:ring-pink-500 w-24"
           type="number"
           step="any"
           value={rotate.degrees}
           on:change={handleDegreesChange}
           on:click|stopPropagation
           disabled={rotate.locked}
+          aria-labelledby="rotate-heading-label-{rotate.id}"
         />
         <span class="text-sm font-extralight">deg</span>
       </div>
