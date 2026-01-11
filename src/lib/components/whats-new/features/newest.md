@@ -9,5 +9,9 @@
   - **Keyboard Shortcut:** Press `Shift + N` to quickly open the "What's New" dialog.
 - **New Documentation:** Added comprehensive guides for Event Markers, Exporting Code, File Management, Obstacles, Path Optimization, Path Editing, Settings, and Simulation.
 - **Improved Keyboard Navigation:** Extensive new shortcuts for navigating focus and manipulating selections, making it easier to use the app without a mouse.
+- **Simulation Improvements:**
+  - **Rotation Duration:** The simulation now accurately accounts for the time required to perform 'Rotate' commands, providing a more realistic total path time.
+- **User Interface:**
+  - **Standardized Inputs:** Input fields for 'Wait' and 'Rotate' commands now use consistent labels and placeholders.
 
 ## **Bug Fixes:**
