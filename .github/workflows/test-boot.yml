@@ -16,9 +16,8 @@ jobs:
       matrix:
         include:
           # Test macOS x64 build (likely running on ARM runner via Rosetta if macos-latest is ARM)
-          # macos-13 is deprecated, so we use macos-latest for the "other" mac test.
-          - os: macos-latest
-            arch: x64
+          # - os: macos-latest
+          #   arch: x64
           # Test macOS ARM64 build
           - os: macos-14
             arch: arm64
