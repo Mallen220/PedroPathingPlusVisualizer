@@ -82,6 +82,8 @@ jobs:
           # On others, run directly
           # We need to determine if we should use xvfb-run
           USE_XVFB: ${{ runner.os == 'Linux' }}
+          # Wait (ms) before taking boot screenshot in Playwright tests
+          BOOT_SCREENSHOT_DELAY_MS: '10000'
         run: |
           npx playwright install-deps
           if [ "$USE_XVFB" = "true" ]; then
