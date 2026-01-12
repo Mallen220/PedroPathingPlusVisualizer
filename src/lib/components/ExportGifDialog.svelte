@@ -143,7 +143,6 @@
       status = "done";
       statusMessage = "Preview ready!";
     } catch (err: any) {
-      console.error(err);
       if (err && err.name === "AbortError") {
         // Cancellation requested — reset status but keep dialog open
         status = "idle";
