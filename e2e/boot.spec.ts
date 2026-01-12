@@ -16,6 +16,13 @@ test('app boots and displays main interface', async () => {
   console.log(`Platform: ${platform}, Arch: ${arch}`);
   console.log(`Release dir: ${releaseDir}`);
 
+  // Debug: list release dir
+  if (fs.existsSync(releaseDir)) {
+      console.log(`Contents of ${releaseDir}:`, fs.readdirSync(releaseDir));
+  } else {
+      console.log(`${releaseDir} does not exist!`);
+  }
+
   if (platform === 'darwin') {
     // macOS
     // Look for .app bundle.
@@ -28,6 +35,8 @@ test('app boots and displays main interface', async () => {
     for (const dir of possibleDirs) {
       const fullDir = path.join(releaseDir, dir);
       if (fs.existsSync(fullDir)) {
+        console.log(`Found dir: ${fullDir}`);
+        console.log(`Contents:`, fs.readdirSync(fullDir));
         // Look for .app inside
         const files = fs.readdirSync(fullDir);
         const appFile = files.find(file => file.endsWith('.app'));
@@ -35,6 +44,8 @@ test('app boots and displays main interface', async () => {
           appPath = path.join(fullDir, appFile);
           break;
         }
+      } else {
+          console.log(`Dir not found: ${fullDir}`);
       }
     }
 

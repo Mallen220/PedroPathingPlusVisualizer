@@ -48,6 +48,9 @@ jobs:
       - name: Install Dependencies
         run: npm ci
 
+      - name: Build Assets
+        run: npm run build
+
       - name: Build Application (Linux)
         if: runner.os == 'Linux'
         # We use --dir to get the unpacked executable for easier testing
