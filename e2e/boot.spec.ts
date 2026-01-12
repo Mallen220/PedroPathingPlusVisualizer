@@ -130,7 +130,14 @@ test('app boots and displays main interface', async () => {
   const title = await window.title();
   console.log(`App title: ${title}`);
 
-  // Take screenshot immediately to see what's wrong
+  // Optional delay before taking screenshot (set via env BOOT_SCREENSHOT_DELAY_MS)
+  const delayMs = parseInt(process.env.BOOT_SCREENSHOT_DELAY_MS || '0', 10);
+  if (delayMs > 0) {
+    console.log(`Waiting ${delayMs}ms before taking screenshot`);
+    await window.waitForTimeout(delayMs);
+  }
+
+  // Take screenshot (after optional delay)
   const screenshotPath = path.join(process.cwd(), 'test-results', `boot-${platform}-${arch}.png`);
   // Ensure test-results exists
   if (!fs.existsSync(path.dirname(screenshotPath))) {
