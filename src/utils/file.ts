@@ -1,5 +1,5 @@
 // Copyright 2026 Matthew Allen. Licensed under the Apache License, Version 2.0.
-import type { Point, Line, Shape, SequenceItem, Settings } from "../types";
+import type { Point, Line, Shape, SequenceItem, Settings, Checkpoint } from "../types";
 
 /**
  * File save/load utilities for the visualizer
@@ -11,6 +11,7 @@ export interface SaveData {
   shapes?: Shape[];
   settings?: any;
   sequence?: SequenceItem[];
+  checkpoints?: Checkpoint[];
 }
 
 /**
@@ -22,9 +23,10 @@ export function downloadTrajectory(
   shapes: Shape[],
   sequence?: SequenceItem[],
   filename: string = "trajectory.pp",
+  checkpoints?: Checkpoint[],
 ): void {
   const jsonString = JSON.stringify(
-    { startPoint, lines, shapes, sequence },
+    { startPoint, lines, shapes, sequence, checkpoints },
     null,
     2,
   );
@@ -205,5 +207,6 @@ async function compressImage(
       }
     };
     img.src = base64Data;
-  });
+  }
+);
 }

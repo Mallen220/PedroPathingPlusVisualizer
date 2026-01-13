@@ -15,14 +15,7 @@ import {
   checkpointsStore,
 } from "../lib/projectStore";
 import { loadTrajectoryFromFile, downloadTrajectory } from "./index";
-import type {
-  Line,
-  Point,
-  SequenceItem,
-  Settings,
-  Shape,
-  Checkpoint,
-} from "../types";
+import type { Line, Point, SequenceItem, Settings, Shape, Checkpoint } from "../types";
 import { makeId } from "./nameGenerator";
 
 interface ExtendedElectronAPI {
@@ -344,6 +337,7 @@ export function saveFileAs() {
     get(shapesStore),
     get(sequenceStore),
     `${filename}.pp`,
+    get(checkpointsStore),
   );
 }
 
@@ -406,6 +400,7 @@ export async function exportAsPP() {
     get(shapesStore),
     get(sequenceStore),
     defaultName,
+    get(checkpointsStore),
   );
 }
 
