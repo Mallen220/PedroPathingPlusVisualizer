@@ -1,3 +1,7 @@
+## 1.6.1 (2026-01-13)
+
+- Overhauled the paths tab to match other sections and be much cleaner and more intuitive. Better support on smaller screens. Improved command palette with file access and setting commands. More keybind shortcuts. Added Robot Profile Manager feature, allowing users to have multiple robots saved. Add confirm step to delete buttons. Add GitHub Actions release workflow for all platforms to try to fix broken Linux support. 
+
 ## 1.6.0 (2026-01-12)
 
 - Add Path Statistics dialog and integration. Add support for 'Rotate' sequence items that use PedroPathings turnto() method, including keybind, event marker, and sequential command support. Add Velocity Heatmap visualization in settings. Refactored event markers into global event markers for a better user experience and updated the obstacles UI to match, both are now in the control tab’s field tab. Reverse quality slider direction in ExportGifDialog. Add support for opening external links in default browser instead of Electron. Fix animation export cancellation support. Remove frame cap for GIF/APNG export and improve timing. Always new keybinds. Add "What's New" dialog for first launch and docs (Shift + N to open). Updated with support for PedroPathingPlus v1.0.6. Unify UI colors for event types: Path (Green), Wait (Amber), Rotate (Pink). Dramatically improve timeline visualizer with event markers, wait highlights, and rotate markers.
