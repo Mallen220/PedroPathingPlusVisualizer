@@ -109,6 +109,16 @@ function addToRecentFiles(path: string, settings?: Settings) {
 }
 
 export async function loadRecentFile(path: string) {
+  // Autosave on Close Logic
+  const settings = get(settingsStore);
+  if (
+    settings.autosaveMode === "close" &&
+    get(isUnsaved) &&
+    get(currentFilePath)
+  ) {
+    await saveProject();
+  }
+
   const electronAPI = getElectronAPI();
   if (!electronAPI || !electronAPI.readFile) {
     alert("Cannot load files in this environment");
@@ -390,6 +400,16 @@ export async function exportAsPP() {
 }
 
 export async function handleExternalFileOpen(filePath: string) {
+  // Autosave on Close Logic
+  const settings = get(settingsStore);
+  if (
+    settings.autosaveMode === "close" &&
+    get(isUnsaved) &&
+    get(currentFilePath)
+  ) {
+    await saveProject();
+  }
+
   const electronAPI = getElectronAPI();
   if (!electronAPI || !electronAPI.readFile) return;
 
@@ -479,6 +499,16 @@ export async function handleExternalFileOpen(filePath: string) {
 }
 
 export async function loadFile(evt: Event) {
+  // Autosave on Close Logic
+  const settings = get(settingsStore);
+  if (
+    settings.autosaveMode === "close" &&
+    get(isUnsaved) &&
+    get(currentFilePath)
+  ) {
+    await saveProject();
+  }
+
   const electronAPI = getElectronAPI();
   const elem = evt.target as HTMLInputElement;
   const file = elem.files?.[0];
