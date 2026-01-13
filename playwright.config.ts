@@ -1,15 +1,16 @@
-import { defineConfig } from '@playwright/test';
+// Copyright 2026 Matthew Allen. Licensed under the Apache License, Version 2.0.
+import { defineConfig } from "@playwright/test";
 
 export default defineConfig({
-  testDir: './e2e',
+  testDir: "./e2e",
   timeout: 180000,
   expect: {
     timeout: 10000,
   },
-  reporter: 'html',
+  reporter: "html",
   use: {
-    trace: 'on-first-retry',
-    screenshot: 'only-on-failure',
+    trace: "on-first-retry",
+    screenshot: "only-on-failure",
     actionTimeout: 120000,
     navigationTimeout: 120000,
   },

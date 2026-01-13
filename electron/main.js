@@ -205,10 +205,10 @@ const startServer = async () => {
   console.log("Serving static files from:", distPath);
   console.log("__dirname:", __dirname);
   try {
-      const files = await fs.readdir(distPath);
-      console.log("Files in distPath:", files);
+    const files = await fs.readdir(distPath);
+    console.log("Files in distPath:", files);
   } catch (e) {
-      console.error("Error reading distPath:", e);
+    console.error("Error reading distPath:", e);
   }
 
   // Serve static files
