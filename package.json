@@ -127,7 +127,6 @@
       "perMachine": true
     },
     "linux": {
-      "productName": "PedroPathingVisualizer",
       "executableName": "pedro-pathing-visualizer",
       "target": [
         "AppImage",
@@ -136,6 +135,9 @@
       "icon": "build/icon.png",
       "category": "Development",
       "maintainer": "Matthew Allen <allenmc220@gmail.com>"
+    },
+    "deb": {
+      "packageName": "pedro-pathing-visualizer"
     },
     "fileAssociations": [
       {
