@@ -4,12 +4,19 @@ on:
   push:
     tags:
       - "v*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Release tag to build (e.g., v1.6.1)'
+        required: true
+        default: ''
 
 permissions:
   contents: write
+  packages: write
 
 env:
-  TAG_NAME: ${{ github.ref_name }}
+  TAG_NAME: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.tag || github.ref_name }}
 
 jobs:
   prepare-release:
