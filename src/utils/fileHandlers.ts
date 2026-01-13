@@ -116,7 +116,15 @@ export async function loadRecentFile(path: string) {
     get(isUnsaved) &&
     get(currentFilePath)
   ) {
-    await saveProject();
+    await saveProject(
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      false,
+      { quiet: true },
+    );
   }
 
   const electronAPI = getElectronAPI();
@@ -157,6 +165,7 @@ async function performSave(
   sequence: SequenceItem[],
   shapes: Shape[],
   targetPath: string | undefined,
+  options: { quiet?: boolean } = {},
 ) {
   const electronAPI = getElectronAPI();
   try {
@@ -233,11 +242,13 @@ async function performSave(
         currentFilePath.set(result.filepath);
         addToRecentFiles(result.filepath, settings);
         isUnsaved.set(false);
-        notification.set({
-          message: `Project saved to ${result.filepath}`,
-          type: "success",
-          timeout: 3000,
-        });
+        if (!options.quiet) {
+          notification.set({
+            message: `Project saved to ${result.filepath}`,
+            type: "success",
+            timeout: 3000,
+          });
+        }
         return true;
       } else {
         if (result.error !== "canceled") {
@@ -271,11 +282,13 @@ async function performSave(
       currentFilePath.set(targetPath);
       addToRecentFiles(targetPath, settings);
       isUnsaved.set(false);
-      notification.set({
-        message: `Project saved to ${targetPath}`,
-        type: "success",
-        timeout: 3000,
-      });
+      if (!options.quiet) {
+        notification.set({
+          message: `Project saved to ${targetPath}`,
+          type: "success",
+          timeout: 3000,
+        });
+      }
       return true;
     }
 
@@ -298,7 +311,17 @@ export async function saveProject(
   sequence?: SequenceItem[],
   shapes?: Shape[],
   saveAs: boolean = false,
+  options: { quiet?: boolean } = {},
 ) {
+  // If called with just one argument that happens to be options (common if optional args are skipped)
+  // This signature is getting messy. Let's fix usage in calls instead or detect it.
+  // Actually, standard usage in App.svelte is saveProject().
+  // If I change signature, I must be careful.
+  // Let's support an overload-like approach or just named args in future.
+  // For now, let's assume if the first arg is an object with 'quiet', it's options.
+  // BUT the first arg is Point.
+  // To avoid breaking changes, let's append options at the end.
+
   const electronAPI = getElectronAPI();
   // If arguments are missing, grab from stores (UI behavior)
   const sp = startPoint || get(startPointStore);
@@ -317,7 +340,7 @@ export async function saveProject(
     return true;
   }
 
-  return await performSave(sp, ln, st, seq, sh, targetPath);
+  return await performSave(sp, ln, st, seq, sh, targetPath, options);
 }
 
 export function saveFileAs() {
@@ -407,7 +430,15 @@ export async function handleExternalFileOpen(filePath: string) {
     get(isUnsaved) &&
     get(currentFilePath)
   ) {
-    await saveProject();
+    await saveProject(
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      false,
+      { quiet: true },
+    );
   }
 
   const electronAPI = getElectronAPI();
@@ -506,7 +537,15 @@ export async function loadFile(evt: Event) {
     get(isUnsaved) &&
     get(currentFilePath)
   ) {
-    await saveProject();
+    await saveProject(
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      false,
+      { quiet: true },
+    );
   }
 
   const electronAPI = getElectronAPI();

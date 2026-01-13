@@ -45,7 +45,15 @@ export async function handleResetPathWithConfirmation(
     get(isUnsaved) &&
     get(currentFilePath)
   ) {
-    await saveProject();
+    await saveProject(
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      false,
+      { quiet: true },
+    );
   }
 
   const lines = get(linesStore);

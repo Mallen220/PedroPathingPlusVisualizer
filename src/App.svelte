@@ -126,7 +126,9 @@
   function performAutosave() {
     const path = get(currentFilePath);
     if (path && get(isUnsaved)) {
-      saveProject();
+      saveProject(undefined, undefined, undefined, undefined, undefined, false, {
+        quiet: true,
+      });
       console.log("Autosaved project (time-based)");
     }
   }
@@ -302,7 +304,15 @@
     if (isLoaded && settings?.autosaveMode === "change") {
       const path = get(currentFilePath);
       if (path) {
-        saveProject();
+        saveProject(
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          false,
+          { quiet: true },
+        );
         console.log("Autosaved project (on change)");
       }
     }
