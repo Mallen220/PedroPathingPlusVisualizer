@@ -159,17 +159,18 @@ jobs:
 
       - name: Build (Mac)
         run: |
+          echo "Building macOS packages..."
           npx electron-builder --mac --x64 --arm64 --publish never -c.mac.identity=null
+          echo "Build complete. Checking release directory..."
+          ls -la release/ || echo "release directory not found"
+          find release -name "*.dmg" | head -10
 
       - name: Upload artifacts (Mac)
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          echo "Listing all files in dist directory:"
-          find dist -type f | head -20
-          echo ""
           echo "Uploading .dmg files:"
-          find dist -name "*.dmg" -type f | while read file; do
+          find release -name "*.dmg" -type f | while read file; do
             echo "Uploading: $file"
             gh release upload "$TAG_NAME" "$file" --clobber || echo "Failed to upload $file"
           done
@@ -190,18 +191,19 @@ jobs:
 
       - name: Build (Windows)
         run: |
+          echo "Building Windows packages..."
           npx electron-builder --win --x64 --publish never
+          echo "Build complete. Checking release directory..."
+          ls release/ || echo "release directory not found"
+        shell: bash
 
       - name: Upload artifacts (Windows)
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         shell: bash
         run: |
-          echo "Listing all files in dist directory:"
-          find dist -type f | head -20
-          echo ""
           echo "Uploading .exe files:"
-          find dist -name "*.exe" -type f | while read file; do
+          find release -name "*.exe" -type f | while read file; do
             echo "Uploading: $file"
             gh release upload "$TAG_NAME" "$file" --clobber || echo "Failed to upload $file"
           done
@@ -233,17 +235,18 @@ jobs:
 
       - name: Build (Linux)
         run: |
+          echo "Building Linux packages..."
           npx electron-builder --linux --x64 --arm64 --publish never
+          echo "Build complete. Checking release directory..."
+          ls -la release/ || echo "release directory not found"
+          find release -name "*.AppImage" -o -name "*.deb" | head -10
 
       - name: Upload artifacts (Linux)
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          echo "Listing all files in dist directory:"
-          find dist -type f | head -20
-          echo ""
           echo "Uploading .AppImage and .deb files:"
-          find dist -type f \( -name "*.AppImage" -o -name "*.deb" \) | while read file; do
+          find release -type f \( -name "*.AppImage" -o -name "*.deb" \) | while read file; do
             echo "Uploading: $file"
             gh release upload "$TAG_NAME" "$file" --clobber || echo "Failed to upload $file"
           done
