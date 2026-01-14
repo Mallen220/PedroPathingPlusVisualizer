@@ -536,6 +536,7 @@ export const DEFAULT_SETTINGS: Settings = {
   showVelocityHeatmap: false,
   showGhostPaths: false,
   showOnionLayers: false,
+  onionSkinCurrentPathOnly: false,
   onionLayerSpacing: 6, // inches between each robot body trace
   optimizationIterations: 300,
   optimizationPopulationSize: 100,
