@@ -268,6 +268,9 @@
         console.error("Error opening dropped file:", err);
         alert("Failed to open file: " + err);
       }
+    }
+  }
+
   // --- Autosave Logic ---
   let autosaveIntervalId: any = null;
 
