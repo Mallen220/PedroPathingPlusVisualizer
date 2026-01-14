@@ -117,6 +117,45 @@
     document.removeEventListener("click", handleLinkClick);
   });
 
+  function handleDragOver(e: DragEvent) {
+    e.preventDefault();
+  }
+
+  async function handleDrop(e: DragEvent) {
+    e.preventDefault();
+    if (e.dataTransfer && e.dataTransfer.files.length > 0) {
+      const file = e.dataTransfer.files[0];
+      if (
+        file.name.endsWith(".pp") &&
+        (file as any).path &&
+        electronAPI /* Only if running in Electron */
+      ) {
+        const path = (file as any).path;
+
+        if ($isUnsaved) {
+          if (
+            confirm(
+              "You have unsaved changes. Press OK to save them before opening. Press Cancel to proceed without saving.",
+            )
+          ) {
+            const saved = await saveProject();
+            if (!saved) return; // Save failed or cancelled
+          } else {
+            if (
+              !confirm(
+                "This will discard your unsaved changes. Are you sure you want to open the new file?",
+              )
+            ) {
+              return;
+            }
+          }
+        }
+
+        handleExternalFileOpen(path);
+      }
+    }
+  }
+
   // --- Layout State ---
   let showSidebar = true;
   // DEBUG: force open Whats New during development to validate feature loading
@@ -682,6 +721,8 @@
 <svelte:window
   bind:innerWidth
   bind:innerHeight
+  on:dragover={handleDragOver}
+  on:drop={handleDrop}
   on:mouseup={stopResize}
   on:mousemove={(e) => {
     if (resizeMode) {
