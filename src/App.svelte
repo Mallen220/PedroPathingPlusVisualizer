@@ -157,13 +157,25 @@
       const file = e.dataTransfer.files[0];
       // Refresh electronAPI reference from window to ensure it's available
       const api = (window as any).electronAPI;
-      if (
-        file.name.endsWith(".pp") &&
-        (file as any).path &&
-        api /* Only if running in Electron */
-      ) {
-        const path = (file as any).path;
 
+      if (!api) return;
+
+      // Case-insensitive check for .pp extension
+      if (!file.name.toLowerCase().endsWith(".pp")) {
+        alert("Please drop a .pp file.");
+        return;
+      }
+
+      if (!(file as any).path) {
+        alert(
+          "Cannot determine file path. If you are running in a browser, this feature is not supported.",
+        );
+        return;
+      }
+
+      const path = (file as any).path;
+
+      try {
         if (get(isUnsaved)) {
           if (
             confirm(
@@ -184,6 +196,9 @@
         }
 
         await handleExternalFileOpen(path);
+      } catch (err) {
+        console.error("Error opening dropped file:", err);
+        alert("Failed to open file: " + err);
       }
     }
   }
