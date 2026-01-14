@@ -575,12 +575,30 @@
 
   // Onion Layers
   $: onionLayerElements = (() => {
+    // Reference selectedLineId to trigger updates when selection changes
+    const currentSelectedId = $selectedLineId;
     let onionLayers: Path[] = [];
     if (settings.showOnionLayers && lines.length > 0) {
       const spacing = settings.onionLayerSpacing || 6;
+
+      let targetLines = lines;
+      let targetStartPoint = startPoint;
+
+      // If "Current Path Only" is enabled AND we have a selected line, filter the lines
+      if (settings.onionSkinCurrentPathOnly && currentSelectedId) {
+        const idx = lines.findIndex((l) => l.id === currentSelectedId);
+        if (idx !== -1) {
+          targetLines = [lines[idx]];
+          // Determine the start point for this specific line segment
+          // If idx is 0, startPoint is the global startPoint
+          // Otherwise, it is the endPoint of the previous line
+          targetStartPoint = idx === 0 ? startPoint : lines[idx - 1].endPoint;
+        }
+      }
+
       const layers = generateOnionLayers(
-        startPoint,
-        lines,
+        targetStartPoint,
+        targetLines,
         settings.rLength,
         settings.rWidth,
         spacing,
