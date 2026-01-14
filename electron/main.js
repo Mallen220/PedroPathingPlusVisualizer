@@ -660,8 +660,9 @@ ipcMain.handle("file:get-directory", async () => {
     return defaultDir;
   } catch {
     // Create directory if it doesn't exist
-    await fs.mkdir(defaultDir, { recursive: true });
-    return defaultDir;
+    // await fs.mkdir(defaultDir, { recursive: true });
+    // return defaultDir;
+    return null;
   }
 });
 
