@@ -52,6 +52,7 @@
     BasePoint,
     SequenceItem,
   } from "../../types";
+  import { EVENT_MARKER_COLORS } from "../../config/colors";
   import MathTools from "../MathTools.svelte";
   import FieldCoordinates from "./FieldCoordinates.svelte";
   import type { Path } from "two.js/src/path";
@@ -173,9 +174,9 @@
     type?: string,
     defaultColor: string = "#a78bfa",
   ): string {
-    if (type === "intake") return "#22c55e";
-    if (type === "score") return "#eab308";
-    if (type === "custom") return "#3b82f6";
+    if (type && type in EVENT_MARKER_COLORS) {
+      return (EVENT_MARKER_COLORS as any)[type];
+    }
     return defaultColor;
   }
 

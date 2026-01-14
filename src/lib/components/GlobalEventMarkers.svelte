@@ -13,6 +13,10 @@
     selectedPointId,
     hoveredMarkerId,
   } from "../../stores";
+  import {
+    EVENT_MARKER_COLORS,
+    MARKER_TYPE_OPTIONS,
+  } from "../../config/colors";
 
   export let sequence: SequenceItem[];
   export let lines: Line[];
@@ -323,6 +327,13 @@
 
     updateMarkerPosition(marker, newVal, true);
   }
+
+  function handleTypeChange(marker: GlobalMarker, newType: string) {
+    marker.ref.type = newType as any;
+    // Trigger reactivity
+    if (marker.parentType === "path") lines = [...lines];
+    else sequence = [...sequence];
+  }
 </script>
 
 <div
@@ -351,7 +362,28 @@
           >
             <div class="flex items-center justify-between gap-2">
               <div class="flex items-center gap-2 flex-1">
-                <div class="w-2 h-2 rounded-full bg-purple-500 shrink-0"></div>
+                <!-- Type Indicator / Selector -->
+                <div class="relative group shrink-0">
+                  <div
+                    class="w-3 h-3 rounded-full cursor-pointer transition-colors border border-black/10 dark:border-white/10"
+                    style="background-color: {EVENT_MARKER_COLORS[
+                      marker.ref.type || 'default'
+                    ]}"
+                    title="Change Type"
+                  ></div>
+                  <select
+                    class="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                    value={marker.ref.type || "default"}
+                    on:change={(e) =>
+                      handleTypeChange(marker, e.currentTarget.value)}
+                    aria-label="Marker type"
+                  >
+                    {#each MARKER_TYPE_OPTIONS as option}
+                      <option value={option.value}>{option.label}</option>
+                    {/each}
+                  </select>
+                </div>
+
                 <input
                   type="text"
                   aria-label="Marker name"
