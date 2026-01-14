@@ -55,7 +55,8 @@ select_asset_by_pattern() {
         echo ""; return
     fi
     while IFS= read -r line; do
-        # skip empty lines
+        # skip empty lines and trim whitespace
+        line=$(echo "$line" | xargs)
         [ -z "$line" ] && continue
         urls+=("$line")
     done <<< "$url_output"
@@ -65,7 +66,8 @@ select_asset_by_pattern() {
     fi
 
     if [ ${#urls[@]} -eq 1 ]; then
-        echo "${urls[0]}"; return
+        echo "${urls[0]}" | xargs
+        return
     fi
 
     # Determine architecture preferences
@@ -138,7 +140,7 @@ select_asset_by_pattern() {
         if [[ "$sel" == "A" || "$sel" == "a" ]]; then
             if [ -n "$auto_match_url" ]; then
                 print_status "Auto-selected: $auto_match_name" >&2
-                echo "$auto_match_url"
+                echo "$auto_match_url" | xargs
                 return
             else
                 print_error "No suitable asset found for $arch_display" >&2
@@ -149,15 +151,124 @@ select_asset_by_pattern() {
         if printf "%s" "$sel" | grep -Eq "^[0-9]+$"; then
             if [ "$sel" -eq 0 ]; then
                 read -p "Enter full download URL: " manual < /dev/tty
-                echo "$manual"
+                echo "$manual" | xargs
                 return
             elif [ "$sel" -ge 1 ] && [ "$sel" -lt "$i" ]; then
-                echo "${urls[$((sel-1))]}"
+                echo "${urls[$((sel-1))]}" | xargs
                 return
             fi
         fi
         echo "Invalid selection." >&2
     done
+}
+
+install_dependencies() {
+    print_info "Checking for required system dependencies..."
+    if command -v apt-get &> /dev/null; then
+        # Ubuntu/Debian
+        deps=()
+        
+        # Check for libfuse2 (needed for AppImage on Ubuntu 22.04+)
+        if ! dpkg -l | grep -q libfuse2; then
+            deps+=("libfuse2")
+        fi
+
+        # Check for zlib1g (usually present, but user reported error)
+        if ! dpkg -l | grep -q zlib1g; then
+            deps+=("zlib1g")
+        fi
+        
+        if [ ${#deps[@]} -gt 0 ]; then
+            print_warning "Missing dependencies: ${deps[*]}"
+            print_status "Installing missing dependencies (requires sudo)..."
+            sudo apt-get update
+            sudo apt-get install -y "${deps[@]}"
+        else
+            print_status "Dependencies met."
+        fi
+    else
+        print_warning "Package manager not detected or supported for auto-dependency installation. Ensure libfuse2 and zlib1g are installed."
+    fi
+}
+
+install_icon() {
+    ICON_DIR="$HOME/.local/share/icons/hicolor/512x512/apps"
+    mkdir -p "$ICON_DIR"
+    ICON_PATH="$ICON_DIR/pedro-pathing-visualizer.png"
+    
+    # URL to the icon in the repo
+    ICON_URL="https://raw.githubusercontent.com/Mallen220/PedroPathingVisualizer/main/build/icon.png"
+    
+    print_info "Downloading icon..."
+    if curl -L -s -o "$ICON_PATH" "$ICON_URL"; then
+        print_status "Icon installed to $ICON_PATH"
+    else
+        print_warning "Failed to download icon. Desktop entry might be missing the icon."
+    fi
+}
+
+patch_deb_desktop_file() {
+    # Fix for Ubuntu 24.04 sandboxing crash and path quoting: 
+    # Rewrite the Exec line to be properly quoted and include --no-sandbox
+    print_info "Patching installed desktop file for compatibility..."
+    
+    # Look for the desktop file installed by the deb
+    # usually in /usr/share/applications/pedro-pathing-visualizer.desktop
+    DESKTOP_FILE=$(grep -l "Pedro Pathing Visualizer" /usr/share/applications/*.desktop 2>/dev/null | head -n 1)
+    
+    if [ -f "$DESKTOP_FILE" ]; then
+        print_status "Found desktop file at $DESKTOP_FILE"
+        
+        # Read the current Exec line
+        # e.g., Exec=/opt/Pedro Pathing Visualizer/pedro-pathing-visualizer %U
+        current_exec=$(grep "^Exec=" "$DESKTOP_FILE" | cut -d= -f2-)
+        
+        # Check if already patched with --no-sandbox
+        if [[ "$current_exec" != *"--no-sandbox"* ]]; then
+            print_info "Adding --no-sandbox flag and fixing quotes..."
+            
+            # Extract the executable path. 
+            # We assume the last part "%U" or similar arguments might exist.
+            # We want to identify the main executable path.
+            # A simple heuristic: everything before " %U" or just the whole line if no args.
+            # But the issue is specifically spaces in the path not being quoted.
+            
+            # Since we know the install path is likely "/opt/Pedro Pathing Visualizer/pedro-pathing-visualizer"
+            # We can try to construct a safe Exec string.
+            
+            # Let's rely on finding the 'pedro-pathing-visualizer' binary path.
+            # If the current line is: /opt/Pedro Pathing Visualizer/pedro-pathing-visualizer %U
+            # We want: "/opt/Pedro Pathing Visualizer/pedro-pathing-visualizer" --no-sandbox %U
+            
+            # Strip existing arguments like %U
+            clean_path=$(echo "$current_exec" | sed 's/ %U//g' | sed 's/ --no-sandbox//g')
+            
+            # Remove any existing quotes to start fresh
+            clean_path=$(echo "$clean_path" | tr -d '"')
+            
+            # Construct new Exec line
+            new_exec="Exec=\"$clean_path\" --no-sandbox %U"
+            
+            # Escape quotes for sed
+            escaped_new_exec=$(echo "$new_exec" | sed 's/"/\\"/g')
+            
+            # Replace the entire Exec line using sudo sed
+            # We use a temporary file to avoid complex escaping issues with in-place sed
+            tmp_desktop=$(mktemp)
+            cp "$DESKTOP_FILE" "$tmp_desktop"
+            sed "s|^Exec=.*|$new_exec|" "$tmp_desktop" > "$tmp_desktop.new"
+            
+            # Move it back with sudo
+            sudo mv "$tmp_desktop.new" "$DESKTOP_FILE"
+            rm "$tmp_desktop"
+            
+            print_status "Patched desktop file Exec line."
+        else
+            print_status "Desktop file already patched."
+        fi
+    else
+        print_warning "Could not find installed .desktop file to patch. You may need to launch with --no-sandbox manually."
+    fi
 }
 
 install_mac() {
@@ -257,6 +368,8 @@ install_mac() {
 install_linux() {
     print_header "Starting Linux Installation..."
 
+    install_dependencies
+
     # Try to find .deb, .AppImage, or .tar.gz; prefer architecture-matching debs for x86_64
     arch=$(uname -m)
     candidate_url=""
@@ -316,24 +429,29 @@ install_linux() {
         print_status "Making executable..."
         chmod +x "$APP_PATH"
 
+        install_icon
+
         # Optional: Create Desktop Entry
         if [ -d "$HOME/.local/share/applications" ]; then
             print_info "Creating desktop entry..."
             cat > "$HOME/.local/share/applications/pedro-visualizer.desktop" << EOL
 [Desktop Entry]
 Name=Pedro Pathing Visualizer
-Exec=$APP_PATH
-Icon=utilities-terminal
+Exec="$APP_PATH" --no-sandbox
+Icon=pedro-pathing-visualizer
 Type=Application
 Categories=Development;
 Comment=Visualizer for Pedro Pathing
 Terminal=false
+StartupWMClass=pedro-pathing-visualizer
 EOL
             print_status "Desktop shortcut created."
         fi
 
         print_status "Installation Complete!"
         echo "Run it via: $APP_PATH"
+        echo "Note: '--no-sandbox' flag added to desktop entry to ensure compatibility with newer Ubuntu versions."
+
     elif [[ "$lower" == *.deb ]]; then
         TMP_DEB="/tmp/$fname"
         print_info "Downloading .deb to $TMP_DEB..."
@@ -341,10 +459,19 @@ EOL
             print_error "Download failed. Aborting."
             exit 1
         fi
+        
         print_status "Installing via dpkg..."
         sudo dpkg -i "$TMP_DEB" || (print_warning "dpkg returned errors; attempting to fix with apt-get -f install" && sudo apt-get -f install -y)
+        
+        # Ensure icon is installed for local user just in case
+        install_icon
+        
+        # Patch the installed .desktop file
+        patch_deb_desktop_file
+
         rm -f "$TMP_DEB"
         print_status "Installation Complete! Launch from your applications menu."
+        
     elif [[ "$lower" == *.tar.gz ]]; then
         TMP_TAR="/tmp/$fname"
         DEST_DIR="$INSTALL_DIR/pedro-pathing-visualizer"
