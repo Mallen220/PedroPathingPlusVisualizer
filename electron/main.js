@@ -646,12 +646,6 @@ ipcMain.handle("file:get-directory", async () => {
   const defaultDir = path.join(
     process.env.HOME,
     "Documents",
-    "GitHub",
-    "BBots2025-26",
-    "TeamCode",
-    "src",
-    "main",
-    "assets",
     "AutoPaths",
   );
 
