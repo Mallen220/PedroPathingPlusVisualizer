@@ -9,6 +9,7 @@
     updateLinkedWaits,
   } from "../../utils/pointLinking";
   import { tooltipPortal } from "../actions/portal";
+  import EventMarkersSection from "./EventMarkersSection.svelte";
 
   export let wait: SequenceWaitItem;
   export let sequence: SequenceItem[];
@@ -317,6 +318,12 @@
           />
         </div>
       </div>
+
+      <EventMarkersSection
+        bind:markers={wait.eventMarkers}
+        recordChange={() => recordChange && recordChange()}
+        locked={wait.locked}
+      />
 
       <!-- Action Bar -->
       <div

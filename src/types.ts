@@ -45,6 +45,8 @@ export interface EventMarker {
   // For rotate-based markers, the id of the rotate in `sequence`
   rotateId?: string;
   parameters?: Record<string, any>;
+  // Semantic type for visualization
+  type?: "default" | "intake" | "score" | "custom";
 }
 
 export interface WaitSegment {

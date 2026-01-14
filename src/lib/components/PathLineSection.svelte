@@ -3,6 +3,7 @@
   import type { Line } from "../../types";
   import { snapToGrid, showGrid, gridSize } from "../../stores";
   import ControlPointsSection from "./ControlPointsSection.svelte";
+  import EventMarkersSection from "./EventMarkersSection.svelte";
   import HeadingControls from "./HeadingControls.svelte";
   import ColorPicker from "./ColorPicker.svelte";
   import { selectedLineId, selectedPointId, focusRequest } from "../../stores";
@@ -400,6 +401,12 @@
         lineIdx={idx}
         bind:collapsed={collapsedControlPoints}
         {recordChange}
+      />
+
+      <EventMarkersSection
+        bind:markers={line.eventMarkers}
+        {recordChange}
+        locked={line.locked}
       />
 
       <!-- Action Bar -->

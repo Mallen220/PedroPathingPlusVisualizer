@@ -9,6 +9,7 @@
     updateLinkedRotations,
   } from "../../utils/pointLinking";
   import { tooltipPortal } from "../actions/portal";
+  import EventMarkersSection from "./EventMarkersSection.svelte";
 
   export let rotate: SequenceRotateItem;
   export let sequence: SequenceItem[];
@@ -337,6 +338,12 @@
           />
         </div>
       </div>
+
+      <EventMarkersSection
+        bind:markers={rotate.eventMarkers}
+        recordChange={() => recordChange && recordChange()}
+        locked={rotate.locked}
+      />
 
       <!-- Action Bar -->
       <div

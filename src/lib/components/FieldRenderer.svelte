@@ -169,6 +169,16 @@
     }
   }
 
+  function getMarkerColor(
+    type?: string,
+    defaultColor: string = "#a78bfa",
+  ): string {
+    if (type === "intake") return "#22c55e";
+    if (type === "score") return "#eab308";
+    if (type === "custom") return "#3b82f6";
+    return defaultColor;
+  }
+
   // Helper to transform mouse coordinates based on rotation
   function getTransformedCoordinates(
     clientX: number,
@@ -744,7 +754,8 @@
         let grp = new Two.Group();
         grp.id = `event-${idx}-${evIdx}`;
         let circle = new Two.Circle(px, py, uiLength(1.8));
-        circle.fill = "#a78bfa";
+
+        circle.fill = getMarkerColor(ev.type, "#a78bfa");
         circle.noStroke();
         grp.add(circle);
         twoMarkers.push(grp);
@@ -791,7 +802,7 @@
             markerCircle.stroke = "#fffbeb";
             markerCircle.linewidth = uiLength(0.6);
           } else {
-            markerCircle.fill = "#8b5cf6";
+            markerCircle.fill = getMarkerColor(event.type, "#8b5cf6");
             markerCircle.stroke = "#ffffff";
             markerCircle.linewidth = uiLength(0.3);
           }
@@ -840,7 +851,7 @@
             markerCircle.stroke = "#fffbeb";
             markerCircle.linewidth = uiLength(0.6);
           } else {
-            markerCircle.fill = "#06b6d4";
+            markerCircle.fill = getMarkerColor(event.type, "#06b6d4");
             markerCircle.stroke = "#ffffff";
             markerCircle.linewidth = uiLength(0.3);
           }
