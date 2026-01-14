@@ -44,6 +44,8 @@
     ensureSequenceConsistency,
   } from "./lib/projectStore";
 
+  import { resetPath } from "./utils/projectLifecycle";
+
   // Utils
   import { createAnimationController } from "./utils/animation";
   import {
@@ -268,6 +270,9 @@
         console.error("Error opening dropped file:", err);
         alert("Failed to open file: " + err);
       }
+    }
+  }
+
   // --- Autosave Logic ---
   let autosaveIntervalId: any = null;
 
@@ -485,6 +490,65 @@
     } else {
       saveProject();
     }
+  }
+
+  async function handleResetProject() {
+    const api = (window as any).electronAPI;
+    if (get(isUnsaved)) {
+      if (
+        confirm(
+          "You have unsaved changes. Press OK to save them before resetting. Press Cancel to proceed without saving."
+        )
+      ) {
+        // Check if we need to name the file (new file)
+        const currentPath = get(currentFilePath);
+        let success = false;
+
+        if (!currentPath && api && api.getSavedDirectory) {
+          // Try to use default directory + prompt
+          const savedDir = await api.getSavedDirectory();
+          if (savedDir) {
+            const name = await openSaveNamePrompt();
+            if (name) {
+              const sep = savedDir.includes("\\") ? "\\" : "/";
+              const cleanDir = savedDir.endsWith(sep)
+                ? savedDir.slice(0, -1)
+                : savedDir;
+              const fullPath = `${cleanDir}${sep}${name}.pp`;
+              success = await saveProject(
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                false,
+                fullPath
+              );
+            } else {
+              // User cancelled name input
+              return;
+            }
+          } else {
+            success = await saveProject();
+          }
+        } else {
+          success = await saveProject();
+        }
+
+        if (!success) return; // Save failed or cancelled
+      } else {
+        if (
+          !confirm(
+            "This will discard your unsaved changes. Are you sure you want to reset?"
+          )
+        ) {
+          return;
+        }
+      }
+    }
+
+    resetPath();
+    recordChange();
   }
 
   function undoAction() {
@@ -941,6 +1005,7 @@
 
 <KeyboardShortcuts
   saveProject={handleSaveProject}
+  resetProject={handleResetProject}
   {saveFileAs}
   {exportGif}
   {undoAction}
@@ -1040,6 +1105,7 @@
       bind:showSidebar
       bind:isLargeScreen
       saveProject={handleSaveProject}
+      resetProject={handleResetProject}
       {saveFileAs}
       {exportGif}
       {undoAction}

@@ -16,7 +16,6 @@
     showFileManager,
   } from "../stores";
   import { getRandomColor } from "../utils";
-  import { handleResetPathWithConfirmation } from "../utils/projectLifecycle";
   import FileManager from "./FileManager.svelte";
   import SettingsDialog from "./components/SettingsDialog.svelte";
   import KeyboardShortcutsDialog from "./components/KeyboardShortcutsDialog.svelte";
@@ -40,6 +39,7 @@
   export let isLargeScreen = true;
 
   export let saveProject: () => any;
+  export let resetProject: () => any;
   export let saveFileAs: () => any;
   export let exportGif: () => any;
   export let undoAction: () => any;
@@ -790,7 +790,7 @@
       <button
         title="Delete/Reset path"
         aria-label="Delete or Reset path"
-        on:click={() => handleResetPathWithConfirmation(recordChange)}
+        on:click={() => resetProject()}
         class="relative group p-2 rounded-md hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-600 dark:text-neutral-300 transition-colors"
       >
         <svg
