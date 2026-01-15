@@ -18,7 +18,7 @@
   import { tick, onMount } from "svelte";
   import { get } from "svelte/store";
   import { loadSettings, saveSettings } from "../../utils/settingsPersistence";
-  import { customExportersStore } from "../pluginsStore.ts";
+  import { customExportersStore } from "../pluginsStore";
 
   export let isOpen = false;
   export let startPoint: Point;
@@ -219,8 +219,6 @@
         else filename = "AutoPath.java";
       } else if (exportFormat === "points") {
         filename = "points.txt";
-      } else if (exportFormat === "json") {
-        filename = "trajectory.pp";
       }
       a.download = filename;
       document.body.appendChild(a);
@@ -244,12 +242,6 @@
         defaultName = "points.txt";
         extensions = ["txt"];
         nameFilter = "Text File";
-      } else if (exportFormat === "json") {
-        defaultName = "trajectory.json"; // Or .pp if user wants raw project
-        // But for generic save, maybe .json is better if it is just json.
-        // The Download as .pp button is separate.
-        extensions = ["json"];
-        nameFilter = "JSON File";
       }
 
       const filePath = await electronAPI.showSaveDialog({

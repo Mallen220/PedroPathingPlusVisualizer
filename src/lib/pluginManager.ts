@@ -4,8 +4,10 @@ import {
   pluginsStore,
   customExportersStore,
   themesStore,
+  type PluginInfo,
+  type CustomExporter,
+  type CustomTheme,
 } from "./pluginsStore";
-import type { PluginInfo, CustomExporter } from "./pluginsStore";
 import {
   startPointStore,
   linesStore,
@@ -14,9 +16,16 @@ import {
 } from "./projectStore";
 
 export class PluginManager {
+  private static allExporters: CustomExporter[] = [];
+  private static allThemes: CustomTheme[] = [];
+
   static async init() {
     const electronAPI = (window as any).electronAPI;
     if (!electronAPI || !electronAPI.listPlugins) return;
+
+    // Reset internal lists
+    this.allExporters = [];
+    this.allThemes = [];
 
     try {
       const files = await electronAPI.listPlugins();
@@ -26,33 +35,76 @@ export class PluginManager {
         try {
           const code = await electronAPI.readPlugin(file);
           this.executePlugin(file, code);
-          plugins.push({ name: file, loaded: true });
+
+          const enabled = this.getEnabledState(file);
+          plugins.push({ name: file, loaded: true, enabled });
         } catch (error) {
           console.error(`Failed to load plugin ${file}:`, error);
-          plugins.push({ name: file, loaded: false, error: String(error) });
+          plugins.push({
+            name: file,
+            loaded: false,
+            error: String(error),
+            enabled: false,
+          });
         }
       }
       pluginsStore.set(plugins);
+      this.refreshActiveResources();
     } catch (err) {
       console.error("Failed to init plugins:", err);
     }
+  }
+
+  private static getEnabledState(name: string): boolean {
+    try {
+      const key = `plugin_enabled_${name}`;
+      const val = localStorage.getItem(key);
+      return val === null ? true : val === "true";
+    } catch {
+      return true;
+    }
+  }
+
+  static togglePlugin(name: string, enabled: boolean) {
+    try {
+      localStorage.setItem(`plugin_enabled_${name}`, String(enabled));
+    } catch {}
+
+    pluginsStore.update((plugins) =>
+      plugins.map((p) => (p.name === name ? { ...p, enabled } : p)),
+    );
+
+    this.refreshActiveResources();
+  }
+
+  private static refreshActiveResources() {
+    const plugins = get(pluginsStore);
+    const enabledPlugins = new Set(
+      plugins.filter((p) => p.enabled).map((p) => p.name),
+    );
+
+    const activeExporters = this.allExporters.filter(
+      (e) => e.pluginName && enabledPlugins.has(e.pluginName),
+    );
+    customExportersStore.set(activeExporters);
+
+    const activeThemes = this.allThemes.filter(
+      (t) => t.pluginName && enabledPlugins.has(t.pluginName),
+    );
+    themesStore.set(activeThemes);
   }
 
   static executePlugin(filename: string, code: string) {
     // Restricted API exposed to plugins
     const pedroAPI = {
       registerExporter: (name: string, handler: (data: any) => string) => {
-        customExportersStore.update((exporters) => {
-          // Remove existing if any (override)
-          const filtered = exporters.filter((e) => e.name !== name);
-          return [...filtered, { name, handler }];
-        });
+        // Add to internal list
+        this.allExporters = this.allExporters.filter((e) => e.name !== name); // unique by name
+        this.allExporters.push({ name, handler, pluginName: filename });
       },
       registerTheme: (name: string, css: string) => {
-        themesStore.update((themes) => {
-          const filtered = themes.filter((t) => t.name !== name);
-          return [...filtered, { name, css }];
-        });
+        this.allThemes = this.allThemes.filter((t) => t.name !== name);
+        this.allThemes.push({ name, css, pluginName: filename });
       },
       getData: () => {
         // Expose current state read-only
@@ -83,6 +135,7 @@ export class PluginManager {
   }
 
   static async reloadPlugins() {
+    // Reset stores and re-init
     customExportersStore.set([]);
     themesStore.set([]);
     await this.init();

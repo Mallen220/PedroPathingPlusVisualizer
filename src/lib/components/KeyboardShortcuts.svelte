@@ -1465,11 +1465,7 @@
       category: "View",
       action: () => {
         settingsStore.update((s) => {
-          const themes: ("light" | "dark" | "auto")[] = [
-            "light",
-            "dark",
-            "auto",
-          ];
+          const themes: string[] = ["light", "dark", "auto"];
           const currentIndex = themes.indexOf(s.theme);
           const nextIndex = (currentIndex + 1) % themes.length;
           return { ...s, theme: themes[nextIndex] };

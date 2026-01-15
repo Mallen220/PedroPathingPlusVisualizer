@@ -5,16 +5,19 @@ export interface PluginInfo {
   name: string;
   loaded: boolean;
   error?: string;
+  enabled: boolean;
 }
 
 export interface CustomExporter {
   name: string;
   handler: (data: any) => string;
+  pluginName?: string;
 }
 
 export interface CustomTheme {
   name: string;
   css: string;
+  pluginName?: string;
 }
 
 export const pluginsStore = writable<PluginInfo[]>([]);

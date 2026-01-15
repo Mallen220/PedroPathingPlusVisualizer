@@ -12,8 +12,8 @@
   import type { Settings } from "../../types";
   import KeyboardShortcutsDialog from "./KeyboardShortcutsDialog.svelte";
   import RobotProfileManager from "./settings/RobotProfileManager.svelte";
-  import { PluginManager } from "../pluginManager.ts";
-  import { pluginsStore, themesStore } from "../pluginsStore.ts";
+import { PluginManager } from "../pluginManager";
+import { pluginsStore, themesStore } from "../pluginsStore";
 
   export let isOpen = false;
   export let settings: Settings = { ...DEFAULT_SETTINGS };
@@ -1577,9 +1577,27 @@
                     <li
                       class="text-sm flex justify-between items-center bg-white dark:bg-neutral-900 p-2 rounded border border-neutral-200 dark:border-neutral-800"
                     >
-                      <span class="truncate max-w-[200px]" title={plugin.name}
-                        >{plugin.name}</span
+                      <div
+                        class="flex items-center gap-2 overflow-hidden flex-1 mr-2"
                       >
+                        <input
+                          type="checkbox"
+                          checked={plugin.enabled}
+                          on:change={(e) =>
+                            PluginManager.togglePlugin(
+                              plugin.name,
+                              e.currentTarget.checked,
+                            )}
+                          class="w-4 h-4 rounded border-neutral-300 dark:border-neutral-600 text-purple-600 focus:ring-purple-500 cursor-pointer flex-shrink-0"
+                          title={plugin.enabled
+                            ? "Disable Plugin"
+                            : "Enable Plugin"}
+                        />
+                        <span class="truncate" title={plugin.name}
+                          >{plugin.name}</span
+                        >
+                      </div>
+
                       {#if plugin.loaded}
                         <span class="text-green-500 text-xs font-medium"
                           >Loaded</span
