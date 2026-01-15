@@ -1075,7 +1075,7 @@
   />
 {/if}
 
-<WhatsNewDialog show={showWhatsNew} bind:setupMode on:close={closeWhatsNew} />
+<WhatsNewDialog bind:show={showWhatsNew} bind:setupMode on:close={closeWhatsNew} />
 <NotificationToast />
 
 <SaveNameDialog

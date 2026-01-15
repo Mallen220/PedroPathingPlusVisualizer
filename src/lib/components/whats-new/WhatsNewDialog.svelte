@@ -229,6 +229,7 @@
   }
 
   function close() {
+    show = false;
     dispatch("close");
   }
 
