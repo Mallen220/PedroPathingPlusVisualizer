@@ -30,8 +30,10 @@
   import OptimizationDialog from "./components/OptimizationDialog.svelte";
   import GlobalEventMarkers from "./components/GlobalEventMarkers.svelte";
   import WaypointTable from "./components/WaypointTable.svelte";
+  import PathAnalysisDialog from "./components/PathAnalysisDialog.svelte";
   import { calculatePathTime } from "../utils";
   import { validatePath } from "../utils/validation";
+  import { analyzePath, type PathAnalysisReport } from "../utils/pathAnalyzer";
   import { selectedLineId, selectedPointId } from "../stores";
   import { tick } from "svelte";
   import { slide } from "svelte/transition";
@@ -67,6 +69,8 @@
 
   let optimizationOpen = false;
   export let statsOpen = false;
+  let analysisOpen = false;
+  let analysisReport: PathAnalysisReport | null = null;
   let waypointTableRef: any = null;
 
   // Field panel optimizer reference and bound runtime state
@@ -236,7 +240,12 @@
   }
 
   function handleValidate() {
-    validatePath(startPoint, lines, settings, sequence, shapes);
+    // Run full analysis
+    analysisReport = analyzePath(startPoint, lines, settings, sequence, shapes);
+    analysisOpen = true;
+    // Also run simple validation for compatibility if needed, but analysis covers it.
+    // Use silent mode so we don't duplicate notifications
+    validatePath(startPoint, lines, settings, sequence, shapes, true);
   }
 
   export let activeTab: "path" | "field" | "table" = "path";
@@ -1317,6 +1326,12 @@
         />
       </div>
     {/if}
+
+    <PathAnalysisDialog
+      bind:isOpen={analysisOpen}
+      report={analysisReport}
+      onClose={() => (analysisOpen = false)}
+    />
 
     {#if activeTab === "path"}
       <div class="w-full flex flex-col gap-4 p-4 pb-32">
