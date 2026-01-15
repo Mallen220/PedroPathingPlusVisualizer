@@ -978,6 +978,9 @@
     return Math.max(100, Math.min(avW, avH));
   })();
 
+  $: fieldRenderWidth = $isPresentationMode ? mainContentWidth : fieldDrawSize;
+  $: fieldRenderHeight = $isPresentationMode ? mainContentHeight : fieldDrawSize;
+
   // Compute a target height for the field container so it can animate smoothly
   // when the sidebar (control tab) opens/closes in vertical mode
   $: fieldContainerTargetHeight = (() => {
@@ -1232,8 +1235,8 @@
       >
         <FieldRenderer
           bind:this={fieldRenderer}
-          width={fieldDrawSize}
-          height={fieldDrawSize}
+          width={fieldRenderWidth}
+          height={fieldRenderHeight}
           {timePrediction}
           {previewOptimizedLines}
           {onRecordChange}

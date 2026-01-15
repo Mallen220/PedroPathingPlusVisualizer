@@ -89,19 +89,20 @@
   $: zoom = $fieldZoom;
   $: pan = $fieldPan;
   $: scaleFactor = zoom;
+  $: baseSize = Math.min(width, height);
   $: x = d3
     .scaleLinear()
     .domain([0, FIELD_SIZE])
     .range([
-      width / 2 - (width * scaleFactor) / 2 + pan.x,
-      width / 2 + (width * scaleFactor) / 2 + pan.x,
+      width / 2 - (baseSize * scaleFactor) / 2 + pan.x,
+      width / 2 + (baseSize * scaleFactor) / 2 + pan.x,
     ]);
   $: y = d3
     .scaleLinear()
     .domain([0, FIELD_SIZE])
     .range([
-      height / 2 + (height * scaleFactor) / 2 + pan.y,
-      height / 2 - (height * scaleFactor) / 2 + pan.y,
+      height / 2 + (baseSize * scaleFactor) / 2 + pan.y,
+      height / 2 - (baseSize * scaleFactor) / 2 + pan.y,
     ]);
 
   function zoomTo(newZoom: number, focus?: { x: number; y: number }) {
@@ -110,18 +111,35 @@
     // Compute field coordinates at the focus point using current scales
     const fieldX = x.invert(fx);
     const fieldY = y.invert(fy);
-    const pan = computePanForZoom({
-      width,
-      height,
-      fieldSize: FIELD_SIZE,
-      newZoom,
-      focusScreenX: fx,
-      focusScreenY: fy,
-      fieldX,
-      fieldY,
-    });
+    // Use baseSize (min dimension) for consistent zoom calculation logic if assumed square field mapping
+    // But computePanForZoom expects width/height of viewport?
+    // Let's stick to using the actual viewport dimensions for zoomTo focus point calculations.
+    // However, the field scaling is driven by baseSize.
+    // We need to check computePanForZoom implementation. Assuming it works with current x/y scales inversions.
+    // Actually, computePanForZoom needs to know the "fieldDrawSize" effectively.
+    // But if we use x.invert / y.invert correctly, we get field coords.
+    // The pan calculation might need adjustment if it assumes width==height==fieldSize.
+    // Let's rely on x/y inversion which accounts for baseSize.
+
+    // Re-implement simplified pan calculation here since computePanForZoom might be rigid.
+    // Target: at newZoom, (fieldX, fieldY) should be at (fx, fy).
+    // x_new(fieldX) = width/2 + (fieldX_norm - 0.5) * baseSize * newZoom + newPanX = fx
+    // where fieldX_norm = fieldX / FIELD_SIZE (approx, ignoring domain start).
+    // Actually simpler:
+    // current: x(fieldX) = width/2 + offset_x + pan.x = fx
+    // target:  x_new(fieldX) = width/2 + offset_x_new + newPanX = fx
+    // offset_x = (fieldX mapped to centered 0-based scaled coord)
+    // Let's trust the existing helper if it is generic enough, or recalculate manually.
+
+    // Manual calculation to be safe with non-square viewport:
+    // fx = width/2 + (fieldX/FIELD_SIZE - 0.5) * baseSize * newZoom + newPanX
+    // newPanX = fx - width/2 - (fieldX/FIELD_SIZE - 0.5) * baseSize * newZoom
+
+    const newPanX = fx - width/2 - (fieldX/FIELD_SIZE - 0.5) * baseSize * newZoom;
+    const newPanY = fy - height/2 - (0.5 - fieldY/FIELD_SIZE) * baseSize * newZoom;
+
     fieldZoom.set(Number(newZoom.toFixed(2)));
-    fieldPan.set(pan);
+    fieldPan.set({x: newPanX, y: newPanY});
   }
 
   function handleWheel(e: WheelEvent) {
@@ -149,7 +167,7 @@
 
   // Visual Scale (Pixels per Inch at 1x Zoom)
   // Used for UI elements (points, markers) so they don't grow when zooming in
-  $: ppI = width / FIELD_SIZE;
+  $: ppI = baseSize / FIELD_SIZE;
   $: uiLength = (inches: number) => inches * ppI;
 
   // Derived Values from Stores
@@ -1441,7 +1459,7 @@
 </script>
 
 <div
-  class="relative aspect-square"
+  class="relative"
   style={`width: ${width}px; height: ${height}px;`}
   bind:this={wrapperDiv}
   on:wheel={(e) => handleWheel(e)}
