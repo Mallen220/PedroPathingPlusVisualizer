@@ -87,6 +87,7 @@
   function handleAngularVelocityInput(e: Event) {
     const target = e.target as HTMLInputElement;
     settings.aVelocity = parseFloat(target.value) * Math.PI;
+    settings = { ...settings };
   }
 
   function handleAngularVelocityChange(e: Event) {
