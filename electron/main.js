@@ -968,3 +968,47 @@ ipcMain.handle("file:exists", async (event, filePath) => {
     return false;
   }
 });
+
+// Plugin System IPC Handlers
+const getPluginsDirectory = () => {
+  return path.join(app.getPath("userData"), "plugins");
+};
+
+ipcMain.handle("plugins:list", async () => {
+  const pluginsDir = getPluginsDirectory();
+  try {
+    await fs.mkdir(pluginsDir, { recursive: true });
+    const files = await fs.readdir(pluginsDir);
+    return files.filter((f) => f.endsWith(".js"));
+  } catch (error) {
+    console.error("Error listing plugins:", error);
+    return [];
+  }
+});
+
+ipcMain.handle("plugins:read", async (event, filename) => {
+  const pluginsDir = getPluginsDirectory();
+  // Security check: ensure filename doesn't contain path separators to prevent traversal
+  if (filename.includes("/") || filename.includes("\\")) {
+    throw new Error("Invalid plugin filename");
+  }
+  const filePath = path.join(pluginsDir, filename);
+  try {
+    return await fs.readFile(filePath, "utf-8");
+  } catch (error) {
+    console.error("Error reading plugin:", error);
+    throw error;
+  }
+});
+
+ipcMain.handle("plugins:open-folder", async () => {
+  const pluginsDir = getPluginsDirectory();
+  try {
+    await fs.mkdir(pluginsDir, { recursive: true });
+    await shell.openPath(pluginsDir);
+    return true;
+  } catch (error) {
+    console.error("Error opening plugins folder:", error);
+    return false;
+  }
+});
