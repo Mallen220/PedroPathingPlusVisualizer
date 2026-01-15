@@ -541,7 +541,7 @@ export const DEFAULT_KEY_BINDINGS: KeyBinding[] = [
 export const DEFAULT_SETTINGS: Settings = {
   xVelocity: 30,
   yVelocity: 30,
-  aVelocity: Math.PI,
+  aVelocity: Math.PI / 2, // 90 deg/s
   kFriction: 0.4,
   rLength: DEFAULT_ROBOT_LENGTH,
   rWidth: DEFAULT_ROBOT_WIDTH,
@@ -549,6 +549,7 @@ export const DEFAULT_SETTINGS: Settings = {
   maxVelocity: 40,
   maxAcceleration: 30,
   maxDeceleration: 30,
+  maxAngularAcceleration: 0, // 0 = Auto-calculate from linear acceleration
   fieldMap: "decode.webp",
   fieldRotation: 0,
   robotImage: "/robot.png",
