@@ -50,6 +50,12 @@
   import { resetPath } from "./utils/projectLifecycle";
 
   // Utils
+  import { mirrorPathData } from "./utils/pathTransform";
+  import {
+    generateJavaCode,
+    generatePointsArray,
+    generateSequentialCommandCode,
+  } from "./utils/codeExporter";
   import { createAnimationController } from "./utils/animation";
   import {
     calculatePathTime,
@@ -65,6 +71,7 @@
     loadRecentFile,
     exportAsPP,
     handleExternalFileOpen,
+    loadProjectData,
   } from "./utils/fileHandlers";
   import { scanEventsInDirectory } from "./utils/eventScanner";
 
@@ -93,6 +100,9 @@
     openExternal?: (url: string) => Promise<boolean>;
     getPathForFile?: (file: File) => string;
     getSavedDirectory?: () => Promise<string>;
+    onHeadlessExport?: (callback: (options: any) => void) => void;
+    sendHeadlessExportDone?: (result: { content: string }) => Promise<void>;
+    sendHeadlessExportError?: (error: string) => Promise<void>;
   }
   const electronAPI = (window as any).electronAPI as ElectronAPI | undefined;
 
@@ -756,6 +766,69 @@
       // Signal main process that we are ready to receive file paths
       if (electronAPI.rendererReady) {
         electronAPI.rendererReady();
+      }
+
+      if (electronAPI.onHeadlessExport) {
+        electronAPI.onHeadlessExport(async (options) => {
+          try {
+            const { filePath, format, flip, content } = options;
+            if (!content) {
+              throw new Error("No content provided");
+            }
+
+            let data = JSON.parse(content);
+
+            if (flip) {
+              data = mirrorPathData(data);
+            }
+
+            // Load data into stores to normalize and restore linked names
+            loadProjectData(data);
+
+            // Get normalized data from stores
+            const sp = get(startPointStore);
+            const ln = get(linesStore);
+            const seq = get(sequenceStore);
+
+            let result = "";
+            if (format === "java") {
+              result = await generateJavaCode(sp, ln, true, seq);
+            } else if (format === "points") {
+              result = generatePointsArray(sp, ln);
+            } else if (format === "sequential") {
+              result = await generateSequentialCommandCode(
+                sp,
+                ln,
+                filePath,
+                seq,
+              );
+            } else if (format === "json" || format === "pp") {
+              result = JSON.stringify(
+                {
+                  startPoint: sp,
+                  lines: ln,
+                  settings: get(settingsStore),
+                  sequence: seq,
+                  shapes: get(shapesStore),
+                },
+                null,
+                2,
+              );
+            } else {
+              throw new Error(`Unknown format: ${format}`);
+            }
+
+            if (electronAPI.sendHeadlessExportDone) {
+              await electronAPI.sendHeadlessExportDone({ content: result });
+            }
+          } catch (err) {
+            if (electronAPI && electronAPI.sendHeadlessExportError) {
+              await electronAPI.sendHeadlessExportError(
+                (err as Error).message || String(err),
+              );
+            }
+          }
+        });
       }
 
       if (electronAPI.onAppCloseRequested) {

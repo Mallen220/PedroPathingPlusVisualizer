@@ -55,6 +55,18 @@ contextBridge.exposeInMainWorld("electronAPI", {
   onOpenFilePath: (callback) =>
     ipcRenderer.on("open-file-path", (_event, filePath) => callback(filePath)),
 
+  // Headless export listener
+  onHeadlessExport: (callback) =>
+    ipcRenderer.on("headless-export", (_event, options) => callback(options)),
+
+  // Headless export done signal
+  sendHeadlessExportDone: (result) =>
+    ipcRenderer.invoke("headless-export-done", result),
+
+  // Headless export error signal
+  sendHeadlessExportError: (error) =>
+    ipcRenderer.invoke("headless-export-error", error),
+
   // App close request listener
   onAppCloseRequested: (callback) =>
     ipcRenderer.on("app-close-requested", (_event) => callback()),

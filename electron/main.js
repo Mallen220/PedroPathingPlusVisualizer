@@ -67,75 +67,151 @@ app.on("open-file", (event, path) => {
   handleOpenedFile(path);
 });
 
+// Headless Export State
+let isHeadless = false;
+let exportOptions = null;
+
+// Check for headless export command
+const exportIndex = process.argv.indexOf("export");
+if (exportIndex !== -1) {
+  isHeadless = true;
+  // Parse arguments
+  const args = process.argv.slice(exportIndex + 1);
+
+  // Find input file (first non-flag argument)
+  const inputIndex = args.findIndex((a) => !a.startsWith("-"));
+  const filePath = inputIndex !== -1 ? args[inputIndex] : null;
+
+  if (!filePath) {
+    console.error("Error: Input file required for export.");
+    app.quit(); // We will quit in ready, but just in case
+  } else {
+    // Parse options
+    let format = "java";
+    const formatIndex = args.indexOf("--format");
+    if (formatIndex !== -1 && args[formatIndex + 1]) {
+      format = args[formatIndex + 1];
+    }
+
+    const flip = args.includes("--flip") || args.includes("--mirror");
+
+    let output = null;
+    const outputIndex = args.indexOf("--output");
+    if (outputIndex !== -1 && args[outputIndex + 1]) {
+      output = path.resolve(process.cwd(), args[outputIndex + 1]);
+    } else {
+      // Default output
+      const resolvedPath = path.resolve(process.cwd(), filePath);
+      const parsed = path.parse(resolvedPath);
+      // Determine extension
+      let ext = ".java";
+      if (format === "points") ext = ".txt";
+      if (format === "json" || format === "pp") ext = ".pp";
+
+      output = path.join(parsed.dir, `${parsed.name}_export${ext}`);
+    }
+
+    exportOptions = {
+      filePath: path.resolve(process.cwd(), filePath),
+      format,
+      output,
+      flip,
+    };
+  }
+}
+
 // Single Instance Lock
 const gotTheLock = app.requestSingleInstanceLock();
 
-if (!gotTheLock) {
+if (!gotTheLock && !isHeadless) {
   app.quit();
 } else {
-  app.on("second-instance", (event, commandLine, workingDirectory) => {
-    // Someone tried to run a second instance. Prefer focusing an existing window
-    // to avoid racing with the local server or creating orphan windows.
-    try {
-      const focused = BrowserWindow.getFocusedWindow();
-      if (focused) {
-        if (focused.isMinimized()) focused.restore();
-        focused.focus();
-      } else if (windows.size > 0) {
-        const arr = Array.from(windows);
-        const last = arr[arr.length - 1];
-        if (last) {
-          if (last.isMinimized()) last.restore();
-          last.focus();
+  // Only enforce single instance for GUI mode
+  if (!isHeadless) {
+    app.on("second-instance", (event, commandLine, workingDirectory) => {
+      // Ignore headless export commands
+      if (commandLine.includes("export")) return;
+
+      // Someone tried to run a second instance. Prefer focusing an existing window
+      // to avoid racing with the local server or creating orphan windows.
+      try {
+        const focused = BrowserWindow.getFocusedWindow();
+        if (focused) {
+          if (focused.isMinimized()) focused.restore();
+          focused.focus();
+        } else if (windows.size > 0) {
+          const arr = Array.from(windows);
+          const last = arr[arr.length - 1];
+          if (last) {
+            if (last.isMinimized()) last.restore();
+            last.focus();
+          } else {
+            createWindow();
+          }
         } else {
           createWindow();
         }
-      } else {
+
+        // Check for file arguments in the second instance command line
+        // Windows/Linux: The file path is usually the last argument or specifically passed
+        const lastArg = commandLine[commandLine.length - 1];
+        if (lastArg && lastArg.endsWith(".pp")) {
+          handleOpenedFile(lastArg);
+        }
+      } catch (err) {
+        console.error("Error in second-instance handler:", err);
         createWindow();
       }
-
-      // Check for file arguments in the second instance command line
-      // Windows/Linux: The file path is usually the last argument or specifically passed
-      const lastArg = commandLine[commandLine.length - 1];
-      if (lastArg && lastArg.endsWith(".pp")) {
-        handleOpenedFile(lastArg);
-      }
-    } catch (err) {
-      console.error("Error in second-instance handler:", err);
-      createWindow();
-    }
-  });
+    });
+  }
 
   // App initialization
   app.on("ready", async () => {
-    // Check for file arguments on initial launch (Windows/Linux)
-    if (process.platform !== "darwin" && process.argv.length >= 2) {
-      const lastArg = process.argv[process.argv.length - 1];
-      if (lastArg && lastArg.endsWith(".pp")) {
-        pendingFilePath = lastArg;
+    if (isHeadless) {
+      if (!exportOptions) {
+        app.quit();
+        return;
       }
-    }
 
-    await startServer();
-    createWindow();
-    createMenu();
-    updateDockMenu();
-    updateJumpList();
+      // Read file content here to pass to renderer
+      try {
+        const content = await fs.readFile(exportOptions.filePath, "utf-8");
+        exportOptions.content = content;
+      } catch (err) {
+        console.error("Error reading input file:", err);
+        app.quit();
+        return;
+      }
 
-    // Check for updates (only once)
-    // We pass the first window for dialogs if needed, or handle it inside AppUpdater
-    // Since AppUpdater takes a window in constructor, let's defer it or pick the first one.
-    // For now, let's attach it to the first window created.
-    setTimeout(() => {
-      if (windows.size > 0) {
-        // Use the first available window
-        const firstWindow = windows.values().next().value;
-        if (!appUpdater) {
-          appUpdater = new AppUpdater(firstWindow);
+      await startServer();
+      createWindow(true); // Headless mode
+    } else {
+      // Check for file arguments on initial launch (Windows/Linux)
+      if (process.platform !== "darwin" && process.argv.length >= 2) {
+        const lastArg = process.argv[process.argv.length - 1];
+        if (lastArg && lastArg.endsWith(".pp")) {
+          pendingFilePath = lastArg;
         }
-        appUpdater.checkForUpdates();
       }
-    }, 3000);
+
+      await startServer();
+      createWindow();
+      createMenu();
+      updateDockMenu();
+      updateJumpList();
+
+      // Check for updates (only once)
+      setTimeout(() => {
+        if (windows.size > 0) {
+          // Use the first available window
+          const firstWindow = windows.values().next().value;
+          if (!appUpdater) {
+            appUpdater = new AppUpdater(firstWindow);
+          }
+          appUpdater.checkForUpdates();
+        }
+      }, 3000);
+    }
   });
 }
 
@@ -259,10 +335,11 @@ const startServer = async () => {
   await tryListenOnPortRange(serverPort, 100);
 };
 
-const createWindow = async () => {
+const createWindow = async (headless = false) => {
   let newWindow = new BrowserWindow({
     width: 1360,
     height: 800,
+    show: !headless,
     title: "Pedro Pathing Visualizer",
     webPreferences: {
       nodeIntegration: false, // Security: Sandbox the web code
@@ -647,11 +724,34 @@ const saveDirectorySettings = async (settings) => {
 // Add handler for renderer ready signal
 ipcMain.handle("renderer-ready", async (event) => {
   const win = BrowserWindow.fromWebContents(event.sender);
-  if (pendingFilePath) {
+  if (isHeadless && exportOptions) {
+    win.webContents.send("headless-export", exportOptions);
+  } else if (pendingFilePath) {
     win.webContents.send("open-file-path", pendingFilePath);
     pendingFilePath = null;
   }
   return true;
+});
+
+// Headless export handlers
+ipcMain.handle("headless-export-done", async (event, { content }) => {
+  try {
+    if (exportOptions && exportOptions.output) {
+      await fs.writeFile(exportOptions.output, content, "utf-8");
+      console.log(`Export successful: ${exportOptions.output}`);
+    } else {
+      console.log(content);
+    }
+    app.quit();
+  } catch (err) {
+    console.error("Export write error:", err);
+    app.exit(1);
+  }
+});
+
+ipcMain.handle("headless-export-error", async (event, error) => {
+  console.error("Export error from renderer:", error);
+  app.exit(1);
 });
 
 // Open a URL in the default system browser (called from renderer via preload)
