@@ -14,6 +14,7 @@
     showSettings,
     exportDialogState,
     showFileManager,
+    gitStatusStore,
   } from "../stores";
   import { getRandomColor } from "../utils";
   import FileManager from "./FileManager.svelte";
@@ -228,6 +229,26 @@
           <span class="truncate max-w-[200px]"
             >{$currentFilePath.split(/[\\/]/).pop()}</span
           >
+            {#if $gitStatusStore[$currentFilePath] && $gitStatusStore[$currentFilePath] !== "clean"}
+              <div
+                class="ml-2 text-[10px] font-bold px-1.5 py-0.5 rounded border
+                {$gitStatusStore[$currentFilePath] === 'modified'
+                  ? 'bg-amber-100 border-amber-200 text-amber-700 dark:bg-amber-900/50 dark:border-amber-700 dark:text-amber-300'
+                  : $gitStatusStore[$currentFilePath] === 'staged'
+                    ? 'bg-green-100 border-green-200 text-green-700 dark:bg-green-900/50 dark:border-green-700 dark:text-green-300'
+                    : 'bg-neutral-100 border-neutral-200 text-neutral-600 dark:bg-neutral-700 dark:border-neutral-600 dark:text-neutral-300'}"
+                title={$gitStatusStore[$currentFilePath]
+                  .charAt(0)
+                  .toUpperCase() +
+                  $gitStatusStore[$currentFilePath].slice(1)}
+              >
+                {$gitStatusStore[$currentFilePath] === "modified"
+                  ? "M"
+                  : $gitStatusStore[$currentFilePath] === "staged"
+                    ? "S"
+                    : "U"}
+              </div>
+            {/if}
           {#if $isUnsaved}
             <span class="text-amber-500 font-bold ml-1" title="Unsaved changes"
               >*</span
