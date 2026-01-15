@@ -401,9 +401,29 @@
                 >
                   {file.name.replace(/\.pp$/, "")}
                 </span>
-                {#if file.error}
-                  <span class="text-xs text-red-500">⚠</span>
-                {/if}
+                <div class="flex items-center gap-1">
+                  {#if file.gitStatus && file.gitStatus !== "clean"}
+                    <div
+                      class="text-[10px] font-bold px-1.5 py-0.5 rounded border
+                      {file.gitStatus === 'modified'
+                        ? 'bg-amber-100 border-amber-200 text-amber-700 dark:bg-amber-900/50 dark:border-amber-700 dark:text-amber-300'
+                        : file.gitStatus === 'staged'
+                          ? 'bg-green-100 border-green-200 text-green-700 dark:bg-green-900/50 dark:border-green-700 dark:text-green-300'
+                          : 'bg-neutral-100 border-neutral-200 text-neutral-600 dark:bg-neutral-700 dark:border-neutral-600 dark:text-neutral-300'}"
+                      title={file.gitStatus.charAt(0).toUpperCase() +
+                        file.gitStatus.slice(1)}
+                    >
+                      {file.gitStatus === "modified"
+                        ? "M"
+                        : file.gitStatus === "staged"
+                          ? "S"
+                          : "U"}
+                    </div>
+                  {/if}
+                  {#if file.error}
+                    <span class="text-xs text-red-500">⚠</span>
+                  {/if}
+                </div>
               </div>
               <div
                 class="flex items-center gap-2 text-xs text-neutral-500 dark:text-neutral-400"

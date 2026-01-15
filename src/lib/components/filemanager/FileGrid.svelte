@@ -388,6 +388,26 @@
         >
           <!-- Icon / Preview -->
           <div class="mb-2 relative">
+            <!-- Git Status Badge -->
+            {#if file.gitStatus && file.gitStatus !== "clean"}
+              <div
+                class="absolute top-1 left-1 z-10 px-1.5 py-0.5 text-[10px] font-bold rounded shadow-sm border
+                  {file.gitStatus === 'modified'
+                  ? 'bg-amber-100 border-amber-200 text-amber-700 dark:bg-amber-900/80 dark:border-amber-700/50 dark:text-amber-300'
+                  : file.gitStatus === 'staged'
+                    ? 'bg-green-100 border-green-200 text-green-700 dark:bg-green-900/80 dark:border-green-700/50 dark:text-green-300'
+                    : 'bg-neutral-100 border-neutral-200 text-neutral-600 dark:bg-neutral-700 dark:border-neutral-600 dark:text-neutral-300'}"
+                title={file.gitStatus.charAt(0).toUpperCase() +
+                  file.gitStatus.slice(1)}
+              >
+                {file.gitStatus === "modified"
+                  ? "M"
+                  : file.gitStatus === "staged"
+                    ? "S"
+                    : "U"}
+              </div>
+            {/if}
+
             {#if previews[file.path]?.startPoint}
               <PathPreview
                 startPoint={previews[file.path]?.startPoint || {

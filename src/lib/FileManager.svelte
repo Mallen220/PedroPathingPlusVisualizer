@@ -40,6 +40,7 @@
     fileManagerSessionState,
     fileManagerNewFileMode,
     currentDirectoryStore,
+    gitStatusStore,
   } from "../stores";
   import { settingsStore } from "./projectStore";
   import { saveProject } from "../utils/fileHandlers";
@@ -251,6 +252,26 @@
 
     try {
       const allFiles = await electronAPI.listFiles(currentDirectory);
+      // Update Git Status Store
+      const statusMap: Record<string, string> = {};
+      allFiles.forEach((f) => {
+        if (f.gitStatus && f.gitStatus !== "clean") {
+          statusMap[f.path] = f.gitStatus;
+        }
+      });
+      gitStatusStore.update((store) => {
+        const newStore = { ...store };
+        // Remove entries that are in the current directory but are now clean
+        allFiles.forEach((f) => {
+          if (newStore[f.path] && !statusMap[f.path]) {
+            delete newStore[f.path];
+          }
+        });
+        // Add/Update new statuses
+        Object.assign(newStore, statusMap);
+        return newStore;
+      });
+
       files = allFiles
         .map((file) => ({
           ...file,

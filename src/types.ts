@@ -208,6 +208,7 @@ export interface FileInfo {
   size: number;
   modified: Date;
   error?: string;
+  gitStatus?: "modified" | "staged" | "untracked" | "ignored" | "clean";
 }
 
 export interface CollisionMarker {
