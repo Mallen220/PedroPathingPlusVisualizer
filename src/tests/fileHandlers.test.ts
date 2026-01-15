@@ -25,7 +25,7 @@ vi.mock("../stores", async () => {
     isUnsaved: writable(false),
     notification: writable(null),
     projectMetadataStore: writable({}),
-    // settingsStore removed from here as it should be in projectStore
+    currentDirectoryStore: writable(null),
   };
 });
 
