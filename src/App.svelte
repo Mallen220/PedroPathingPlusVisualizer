@@ -67,6 +67,7 @@
     handleExternalFileOpen,
   } from "./utils/fileHandlers";
   import { scanEventsInDirectory } from "./utils/eventScanner";
+  import { PluginManager } from "./lib/pluginManager";
 
   // Types
   import type { Settings } from "./types";
@@ -635,6 +636,9 @@
 
   // --- Initialization ---
   onMount(async () => {
+    // Initialize Plugins
+    await PluginManager.init();
+
     // Load Settings
     const savedSettings = await loadSettings();
     settingsStore.set({ ...savedSettings });
