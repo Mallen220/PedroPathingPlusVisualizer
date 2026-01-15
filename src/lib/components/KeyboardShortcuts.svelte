@@ -65,6 +65,7 @@
   export let activeControlTab: "path" | "field" | "table" = "path";
   export let toggleStats: () => void = () => {};
   export let toggleSidebar: () => void = () => {};
+  export let fieldRenderer: any = null;
 
   // Optional callback provided by App.svelte to open the What's New dialog
   export let openWhatsNew: () => void;
@@ -1159,6 +1160,44 @@
      }
   }
 
+  function resetStartPoint() {
+    if (startPoint.locked) return;
+    const def = getDefaultStartPoint();
+    startPointStore.set(def);
+    recordChange();
+  }
+
+  function panToStart() {
+    if (fieldRenderer && fieldRenderer.panToField) {
+      fieldRenderer.panToField(startPoint.x, startPoint.y);
+    } else {
+      // Fallback
+      resetZoom();
+    }
+  }
+
+  function panToEnd() {
+     if(lines.length > 0) {
+         const lastLineIdx = lines.length - 1;
+         const endPoint = lines[lastLineIdx].endPoint;
+         if (fieldRenderer && fieldRenderer.panToField) {
+           fieldRenderer.panToField(endPoint.x, endPoint.y);
+         } else {
+           // Fallback
+           selectedPointId.set(`point-${lastLineIdx+1}-0`);
+           selectedLineId.set(lines[lastLineIdx].id!);
+         }
+     }
+  }
+
+  function selectLast() {
+    if(lines.length > 0) {
+         const lastLineIdx = lines.length - 1;
+         selectedPointId.set(`point-${lastLineIdx+1}-0`);
+         selectedLineId.set(lines[lastLineIdx].id!);
+    }
+  }
+
   function copyPathJson() {
       const data = {
           startPoint,
@@ -1321,7 +1360,12 @@
     exportPP: () => exportDialogState.set({ isOpen: true, format: "json" }),
     // New Actions
     snapSelection: () => snapSelection(),
+    resetStartPoint: () => resetStartPoint(),
+    panToStart: () => panToStart(),
+    panToEnd: () => panToEnd(),
+    selectLast: () => selectLast(),
     copyPathJson: () => copyPathJson(),
+    toggleDebugSequence: () => settingsStore.update(s => ({...s, showDebugSequence: !((s as any).showDebugSequence)})),
     toggleFieldBoundaries: () => settingsStore.update(s => ({...s, validateFieldBoundaries: !s.validateFieldBoundaries})),
     toggleDragRestriction: () => settingsStore.update(s => ({...s, restrictDraggingToField: !s.restrictDraggingToField})),
     setTheme: (theme: any) => settingsStore.update(s => ({...s, theme})),
@@ -1335,7 +1379,7 @@
        if (openWhatsNew) openWhatsNew();
     },
     reportIssue: () => {
-       const url = 'https://github.com/pedro-pathing/pedro-pathing/issues';
+       const url = 'https://github.com/Mallen220/PedroPathingVisualizer/issues';
        // @ts-ignore
        if (window.electronAPI && window.electronAPI.openExternal) {
            // @ts-ignore
@@ -1409,8 +1453,13 @@
     },
     // New Commands
     { id: 'zoom-fit', label: 'Zoom to Fit', category: 'View', action: (actions as any).zoomReset },
+    { id: 'show-debug', label: 'Show/Hide Debug Sequence', category: 'View', action: (actions as any).toggleDebugSequence },
     { id: 'toggle-bounds', label: 'Toggle Field Boundaries', category: 'View', action: (actions as any).toggleFieldBoundaries },
     { id: 'toggle-drag', label: 'Toggle Drag Restriction', category: 'View', action: (actions as any).toggleDragRestriction },
+    { id: 'pan-start', label: 'Pan to Start Point', category: 'View', action: (actions as any).panToStart },
+    { id: 'pan-end', label: 'Pan to End Point', category: 'View', action: (actions as any).panToEnd },
+    { id: 'select-last', label: 'Select Last Point', category: 'Editing', action: (actions as any).selectLast },
+    { id: 'reset-start', label: 'Reset Start Point', category: 'Editing', action: (actions as any).resetStartPoint },
     { id: 'snap-select', label: 'Snap Selection to Grid', category: 'Editing', action: (actions as any).snapSelection },
     { id: 'copy-json', label: 'Copy Path JSON to Clipboard', category: 'Export', action: (actions as any).copyPathJson },
     { id: 'theme-light', label: 'Set Theme: Light', category: 'Settings', action: () => (actions as any).setTheme('light') },
