@@ -139,6 +139,42 @@ The visualizer provides flexible export capabilities to suit your team's workflo
 2.  **Sequential Commands**: Exports code formatted for command-based frameworks, integrating paths with your subsystems.
 3.  **JSON / Text**: Raw data export for custom parsers or debugging.
 
+## 💻 Headless Export (CLI)
+
+The application supports a headless mode for generating code from the command line, enabling CI/CD integration.
+
+### Usage
+
+```bash
+# General Syntax
+[executable] export <input-file.pp> [options]
+
+# Options
+--format <format>   # java (default), points, sequential, json, pp
+--output <file>     # Output file path
+--flip, --mirror    # Mirror path (e.g., for opposite alliance)
+--help, -h          # Show help message
+```
+
+### Examples
+
+**macOS:**
+```bash
+# Note: Point to the inner executable inside the .app bundle
+/Applications/Pedro\ Pathing\ Visualizer.app/Contents/MacOS/Pedro\ Pathing\ Visualizer export myPath.pp --format java
+```
+
+**Windows:**
+```bash
+# Assuming installed to default location or portable exe
+"C:\Users\You\AppData\Local\Programs\pedro-pathing-visualizer\Pedro Pathing Visualizer.exe" export myPath.pp --flip
+```
+
+**Linux:**
+```bash
+./pedro-pathing-visualizer.AppImage export myPath.pp --format sequential --output ./AutoPath.java
+```
+
 ## 🔧 Troubleshooting
 
 ### **macOS**

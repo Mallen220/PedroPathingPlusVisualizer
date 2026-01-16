@@ -78,13 +78,36 @@ if (exportIndex !== -1) {
   // Parse arguments
   const args = process.argv.slice(exportIndex + 1);
 
+  // Check for help
+  if (args.includes("--help") || args.includes("-h")) {
+    console.log(`
+Pedro Pathing Visualizer - Headless Export CLI
+
+Usage:
+  [executable] export <input-file.pp> [options]
+
+Options:
+  --format <format>   Export format: java (default), points, sequential, json, pp
+  --output <file>     Output file path (default: input file name + _export + extension)
+  --flip, --mirror    Mirror the path data (e.g., for opposite alliance)
+  --help, -h          Show this help message
+
+Examples:
+  export myPath.pp
+  export myPath.pp --format java --output ./commands/AutoPath.java
+  export myPath.pp --flip --format sequential
+`);
+    process.exit(0);
+  }
+
   // Find input file (first non-flag argument)
   const inputIndex = args.findIndex((a) => !a.startsWith("-"));
   const filePath = inputIndex !== -1 ? args[inputIndex] : null;
 
   if (!filePath) {
     console.error("Error: Input file required for export.");
-    app.quit(); // We will quit in ready, but just in case
+    console.error("Use --help for usage information.");
+    app.exit(1);
   } else {
     // Parse options
     let format = "java";
