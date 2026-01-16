@@ -778,7 +778,7 @@
         const point = ev.atPoint;
         seqWait.eventMarkers.forEach((event: any, eventIdx: number) => {
           const isHovered = $hoveredMarkerId === event.id;
-          const radiusMult = isHovered ? 1.3 : 0.8;
+          const radiusMult = isHovered ? 1.3 : 0.9;
 
           const markerGroup = new Two.Group();
           markerGroup.id = `wait-event-${ev.waitId}-${eventIdx}`;
@@ -827,7 +827,7 @@
         const point = ev.atPoint;
         seqRotate.eventMarkers.forEach((event: any, eventIdx: number) => {
           const isHovered = $hoveredMarkerId === event.id;
-          const radiusMult = isHovered ? 1.3 : 0.8;
+          const radiusMult = isHovered ? 1.3 : 0.9;
 
           const markerGroup = new Two.Group();
           markerGroup.id = `rotate-event-${ev.waitId}-${eventIdx}`;
