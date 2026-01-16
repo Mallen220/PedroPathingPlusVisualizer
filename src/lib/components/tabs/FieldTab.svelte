@@ -88,7 +88,7 @@
   }
 
   export function applyOptimization() {
-     if (optDialogRef && optDialogRef.handleApply) {
+    if (optDialogRef && optDialogRef.handleApply) {
       try {
         optDialogRef.handleApply();
       } catch (e) {
@@ -108,7 +108,7 @@
   }
 
   export function retryOptimization() {
-     if (optDialogRef && optDialogRef.startOptimization) {
+    if (optDialogRef && optDialogRef.startOptimization) {
       try {
         optDialogRef.startOptimization();
       } catch (e) {
@@ -118,14 +118,13 @@
   }
 
   export function getOptimizationStatus() {
-     return {
-        isOpen: optimizationOpen,
-        isRunning: optIsRunning,
-        optimizedLines: optOptimizedLines,
-        optimizationFailed: optFailed,
-      };
+    return {
+      isOpen: optimizationOpen,
+      isRunning: optIsRunning,
+      optimizedLines: optOptimizedLines,
+      optimizationFailed: optFailed,
+    };
   }
-
 </script>
 
 <div class="p-4 w-full flex flex-col gap-6">
