@@ -9,6 +9,7 @@ declare global {
       writeFile: (filePath: string, content: string) => Promise<boolean>;
       deleteFile: (filePath: string) => Promise<boolean>;
       fileExists: (filePath: string) => Promise<boolean>;
+      gitShow: (filePath: string) => Promise<string | null>;
       getSavedDirectory: () => Promise<string>;
       createDirectory: (dirPath: string) => Promise<boolean>;
       getDirectoryStats: (dirPath: string) => Promise<any>;

@@ -581,6 +581,7 @@
     x={contextMenu.x}
     y={contextMenu.y}
     fileName={contextMenu.file.name}
+    gitStatus={contextMenu.file.gitStatus}
     on:close={() => (contextMenu = null)}
     on:action={(e) => handleMenuAction(e.detail)}
   />

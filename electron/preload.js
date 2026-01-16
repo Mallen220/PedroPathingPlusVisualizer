@@ -15,6 +15,7 @@ contextBridge.exposeInMainWorld("electronAPI", {
     ipcRenderer.invoke("file:write", filePath, content),
   deleteFile: (filePath) => ipcRenderer.invoke("file:delete", filePath),
   fileExists: (filePath) => ipcRenderer.invoke("file:exists", filePath),
+  gitShow: (filePath) => ipcRenderer.invoke("file:git-show", filePath),
 
   // Directory settings operations
   getDirectorySettings: () => ipcRenderer.invoke("directory:get-settings"),

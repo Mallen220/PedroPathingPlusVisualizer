@@ -990,6 +990,26 @@ ipcMain.handle("file:rename", async (event, oldPath, newPath) => {
   }
 });
 
+ipcMain.handle("file:git-show", async (event, filePath) => {
+  try {
+    const dir = path.dirname(filePath);
+    const git = simpleGit(dir);
+    if (await git.checkIsRepo()) {
+      const rootDir = await git.revparse(["--show-toplevel"]);
+      // Git expects forward slashes even on Windows for the path spec
+      const relativePath = path
+        .relative(rootDir.trim(), filePath)
+        .replace(/\\/g, "/");
+      const content = await git.show([`HEAD:${relativePath}`]);
+      return content;
+    }
+    return null;
+  } catch (error) {
+    console.warn("Error running git show:", error);
+    return null;
+  }
+});
+
 ipcMain.handle("file:list", async (event, directory) => {
   // Validate input
   if (!directory || typeof directory !== "string" || directory.trim() === "") {
