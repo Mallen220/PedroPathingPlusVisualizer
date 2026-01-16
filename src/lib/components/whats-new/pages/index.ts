@@ -25,7 +25,7 @@ import optimizationContent from "./optimization.md?raw";
 // @ts-ignore
 import pedroPathingPlusContent from "./pedro-pathing-plus.md?raw";
 // @ts-ignore
-import pluginsContent from "./plugins.md?raw";
+import robotProfilesContent from "./robot-profiles.md?raw";
 
 export interface Page {
   id: string;
@@ -67,12 +67,12 @@ export const pages: Page[] = [
     icon: "sparkles",
   },
   {
-    id: "plugins",
-    title: "Plugins",
-    description: "Learn how to extend the Pedro Pathing library with plugins.",
+    id: "robot-profiles",
+    title: "Robot Profiles",
+    description: "Manage multiple robot configurations and settings.",
     type: "page",
-    content: pluginsContent,
-    icon: "cube",
+    content: robotProfilesContent,
+    icon: "cog",
   },
   {
     id: "getting-started",
