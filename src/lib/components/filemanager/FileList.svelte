@@ -13,6 +13,7 @@
   export let selectedFilePath: string | null = null;
   export let sortMode: "name" | "date" = "name";
   export let renamingFile: FileInfo | null = null;
+  export let showGitStatus = true;
 
   const dispatch = createEventDispatcher<{
     select: FileInfo;
@@ -402,9 +403,9 @@
                   {file.name.replace(/\.pp$/, "")}
                 </span>
                 <div class="flex items-center gap-1">
-                  {#if file.gitStatus && file.gitStatus !== "clean"}
+                  {#if showGitStatus && file.gitStatus && file.gitStatus !== "clean"}
                     <div
-                      class="text-[10px] font-bold px-1.5 py-0.5 rounded border
+                      class="flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded border
                       {file.gitStatus === 'modified'
                         ? 'bg-amber-100 border-amber-200 text-amber-700 dark:bg-amber-900/50 dark:border-amber-700 dark:text-amber-300'
                         : file.gitStatus === 'staged'

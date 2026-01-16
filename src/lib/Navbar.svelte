@@ -229,7 +229,7 @@
           <span class="truncate max-w-[200px]"
             >{$currentFilePath.split(/[\\/]/).pop()}</span
           >
-            {#if $gitStatusStore[$currentFilePath] && $gitStatusStore[$currentFilePath] !== "clean"}
+            {#if settings.gitIntegration && $gitStatusStore[$currentFilePath] && $gitStatusStore[$currentFilePath] !== "clean"}
               <div
                 class="ml-2 text-[10px] font-bold px-1.5 py-0.5 rounded border
                 {$gitStatusStore[$currentFilePath] === 'modified'
