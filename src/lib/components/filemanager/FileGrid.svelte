@@ -11,6 +11,7 @@
   export let sortMode: "name" | "date" = "name";
   export let renamingFile: FileInfo | null = null;
   export let fieldImage: string | null = null;
+  export let showGitStatus = true;
 
   const dispatch = createEventDispatcher<{
     select: FileInfo;
@@ -389,20 +390,26 @@
           <!-- Icon / Preview -->
           <div class="mb-2 relative">
             <!-- Git Status Badge -->
-            {#if file.gitStatus && file.gitStatus !== "clean"}
+            {#if showGitStatus && file.gitStatus && file.gitStatus !== "clean"}
               <div
-                class="absolute top-1 left-1 z-10 p-1 rounded-full shadow-sm border
+                class="group/tooltip absolute top-1 left-1 z-10 p-1 rounded-full shadow-sm border cursor-help
                   {file.gitStatus === 'modified'
                   ? 'bg-amber-100 border-amber-200 text-amber-700 dark:bg-amber-900/80 dark:border-amber-700/50 dark:text-amber-300'
                   : file.gitStatus === 'staged'
                     ? 'bg-green-100 border-green-200 text-green-700 dark:bg-green-900/80 dark:border-green-700/50 dark:text-green-300'
                     : 'bg-neutral-100 border-neutral-200 text-neutral-600 dark:bg-neutral-700 dark:border-neutral-600 dark:text-neutral-300'}"
-                title={file.gitStatus === 'modified'
-                  ? 'Git: Modified (Unstaged Changes)'
-                  : file.gitStatus === 'staged'
-                    ? 'Git: Staged (Ready to Commit)'
-                    : 'Git: Untracked (New File)'}
               >
+                <!-- Custom Tooltip -->
+                <div
+                  class="absolute left-0 bottom-full mb-1 w-max px-2 py-1 text-[10px] font-medium text-white bg-neutral-800 rounded shadow-lg opacity-0 group-hover/tooltip:opacity-100 transition-opacity pointer-events-none z-20"
+                >
+                  {file.gitStatus === 'modified'
+                    ? 'Git: Modified (Unstaged Changes)'
+                    : file.gitStatus === 'staged'
+                      ? 'Git: Staged (Ready to Commit)'
+                      : 'Git: Untracked (New File)'}
+                </div>
+
                 {#if file.gitStatus === 'modified'}
                   <!-- Pencil Icon -->
                   <svg

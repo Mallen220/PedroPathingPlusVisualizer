@@ -253,24 +253,26 @@
     try {
       const allFiles = await electronAPI.listFiles(currentDirectory);
       // Update Git Status Store
-      const statusMap: Record<string, string> = {};
-      allFiles.forEach((f) => {
-        if (f.gitStatus && f.gitStatus !== "clean") {
-          statusMap[f.path] = f.gitStatus;
-        }
-      });
-      gitStatusStore.update((store) => {
-        const newStore = { ...store };
-        // Remove entries that are in the current directory but are now clean
+      if (settings.gitIntegration) {
+        const statusMap: Record<string, string> = {};
         allFiles.forEach((f) => {
-          if (newStore[f.path] && !statusMap[f.path]) {
-            delete newStore[f.path];
+          if (f.gitStatus && f.gitStatus !== "clean") {
+            statusMap[f.path] = f.gitStatus;
           }
         });
-        // Add/Update new statuses
-        Object.assign(newStore, statusMap);
-        return newStore;
-      });
+        gitStatusStore.update((store) => {
+          const newStore = { ...store };
+          // Remove entries that are in the current directory but are now clean
+          allFiles.forEach((f) => {
+            if (newStore[f.path] && !statusMap[f.path]) {
+              delete newStore[f.path];
+            }
+          });
+          // Add/Update new statuses
+          Object.assign(newStore, statusMap);
+          return newStore;
+        });
+      }
 
       files = allFiles
         .map((file) => ({
@@ -1006,6 +1008,7 @@
         selectedFilePath={selectedFile?.path ?? null}
         {sortMode}
         fieldImage={settings.fieldMap}
+        showGitStatus={settings.gitIntegration}
         on:select={(e) => (selectedFile = e.detail)}
         on:open={(e) => loadFile(e.detail)}
         on:menu-action={handleMenuAction}
