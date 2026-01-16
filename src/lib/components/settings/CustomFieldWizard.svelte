@@ -200,10 +200,11 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
                 <div class="w-full max-w-sm mb-4">
-                    <label class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
+                    <label for="mapName" class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
                         Map Name
                     </label>
                     <input
+                        id="mapName"
                         type="text"
                         bind:value={mapName}
                         placeholder="e.g. My Practice Field"
@@ -263,12 +264,12 @@
 
                             <div class="space-y-3">
                                 <div>
-                                    <label class="block text-xs font-medium text-neutral-500 dark:text-neutral-400">Field X (inches)</label>
-                                    <input type="number" bind:value={w1.x} class="w-full px-3 py-2 rounded border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800" />
+                                    <label for="w1-x" class="block text-xs font-medium text-neutral-500 dark:text-neutral-400">Field X (inches)</label>
+                                    <input id="w1-x" type="number" bind:value={w1.x} class="w-full px-3 py-2 rounded border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800" />
                                 </div>
                                 <div>
-                                    <label class="block text-xs font-medium text-neutral-500 dark:text-neutral-400">Field Y (inches)</label>
-                                    <input type="number" bind:value={w1.y} class="w-full px-3 py-2 rounded border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800" />
+                                    <label for="w1-y" class="block text-xs font-medium text-neutral-500 dark:text-neutral-400">Field Y (inches)</label>
+                                    <input id="w1-y" type="number" bind:value={w1.y} class="w-full px-3 py-2 rounded border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800" />
                                 </div>
                                 {#if p1}
                                     <div class="text-xs text-green-600 dark:text-green-400 font-medium">Point 1 set at ({Math.round(p1.x)}, {Math.round(p1.y)}) px</div>
@@ -284,12 +285,12 @@
 
                             <div class="space-y-3">
                                 <div>
-                                    <label class="block text-xs font-medium text-neutral-500 dark:text-neutral-400">Field X (inches)</label>
-                                    <input type="number" bind:value={w2.x} class="w-full px-3 py-2 rounded border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800" />
+                                    <label for="w2-x" class="block text-xs font-medium text-neutral-500 dark:text-neutral-400">Field X (inches)</label>
+                                    <input id="w2-x" type="number" bind:value={w2.x} class="w-full px-3 py-2 rounded border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800" />
                                 </div>
                                 <div>
-                                    <label class="block text-xs font-medium text-neutral-500 dark:text-neutral-400">Field Y (inches)</label>
-                                    <input type="number" bind:value={w2.y} class="w-full px-3 py-2 rounded border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800" />
+                                    <label for="w2-y" class="block text-xs font-medium text-neutral-500 dark:text-neutral-400">Field Y (inches)</label>
+                                    <input id="w2-y" type="number" bind:value={w2.y} class="w-full px-3 py-2 rounded border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800" />
                                 </div>
                                 {#if p2}
                                     <div class="text-xs text-green-600 dark:text-green-400 font-medium">Point 2 set at ({Math.round(p2.x)}, {Math.round(p2.y)}) px</div>
@@ -302,8 +303,9 @@
                          <div class="p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
                             <h3 class="font-bold text-green-900 dark:text-green-100 mb-2">Step 4: Review</h3>
 
-                            {#if calculateConfig()}
+                            {#if calculateConfig() !== null}
                                 {@const res = calculateConfig()}
+                                {#if res !== null}
                                 <div class="space-y-2 text-sm">
                                     <p><strong>Image Dimensions:</strong> {fmt(res.width)}" x {fmt(res.height)}"</p>
                                     <p><strong>Top-Left Position:</strong> ({fmt(res.x)}", {fmt(res.y)}")</p>
@@ -331,6 +333,7 @@
                                         <p class="text-xs text-neutral-400 mt-1">Dashed box is the 144x144 field.</p>
                                     </div>
                                 </div>
+                                {/if}
                             {:else}
                                 <p class="text-red-500">Error calculating calibration. Points might be too close or invalid.</p>
                             {/if}
