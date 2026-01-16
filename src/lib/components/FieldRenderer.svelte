@@ -1535,19 +1535,37 @@
     style:transform={`rotate(${settings.fieldRotation || 0}deg)`}
     style:transition="transform 0.3s ease-in-out"
   >
-    <img
-      src={settings.fieldMap
-        ? `/fields/${settings.fieldMap}`
-        : "/fields/decode.webp"}
-      alt="Field"
-      class="absolute rounded-lg z-10 max-w-none"
-      style={`top: ${y(FIELD_SIZE)}px; left: ${x(0)}px; width: ${x(FIELD_SIZE) - x(0)}px; height: ${y(0) - y(FIELD_SIZE)}px;`}
-      draggable="false"
-      on:error={(e) => {
-        // @ts-ignore
-        e.target.src = "/fields/decode.webp";
-      }}
-    />
+    {#if settings.customMaps?.some(m => m.id === settings.fieldMap)}
+      {@const activeMap = settings.customMaps.find(m => m.id === settings.fieldMap)}
+      {#if activeMap}
+        <img
+          src={activeMap.imageData}
+          alt="Custom Field"
+          class="absolute z-10 max-w-none"
+          style={`
+              left: ${x(activeMap.x)}px;
+              top: ${y(activeMap.y)}px;
+              width: ${x(activeMap.x + activeMap.width) - x(activeMap.x)}px;
+              height: ${y(activeMap.y - activeMap.height) - y(activeMap.y)}px;
+          `}
+          draggable="false"
+        />
+      {/if}
+    {:else}
+      <img
+        src={settings.fieldMap && !settings.fieldMap.includes("custom") // Safe fallback check
+          ? `/fields/${settings.fieldMap}`
+          : "/fields/decode.webp"}
+        alt="Field"
+        class="absolute rounded-lg z-10 max-w-none"
+        style={`top: ${y(FIELD_SIZE)}px; left: ${x(0)}px; width: ${x(FIELD_SIZE) - x(0)}px; height: ${y(0) - y(FIELD_SIZE)}px;`}
+        draggable="false"
+        on:error={(e) => {
+          // @ts-ignore
+          e.target.src = "/fields/decode.webp";
+        }}
+      />
+    {/if}
     <MathTools {x} {y} {twoElement} {robotXY} />
     <img
       src={settings.robotImage || "/robot.png"}
