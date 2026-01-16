@@ -156,6 +156,7 @@
         aria-label="Playback speeds"
         class="absolute right-0 bottom-full mb-2 w-36 rounded-md bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 shadow-lg z-50 overflow-hidden"
         on:click|stopPropagation
+        on:keydown|stopPropagation
         use:menuNavigation
         on:close={() => (showSpeedMenu = false)}
         in:fly={{ y: 8, duration: 160, easing: cubicInOut }}

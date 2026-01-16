@@ -518,6 +518,7 @@
         <div
           bind:this={viewOptionsRef}
           on:click|stopPropagation
+          on:keydown|stopPropagation
           use:menuNavigation
           on:close={() => (viewOptionsOpen = false)}
           role="menu"
