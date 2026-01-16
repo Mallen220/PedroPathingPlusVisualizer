@@ -730,6 +730,7 @@ export const DEFAULT_SETTINGS: Settings = {
   optimizationMutationStrength: 6.0,
   validateFieldBoundaries: true,
   restrictDraggingToField: true,
+  customMaps: [],
   keyBindings: DEFAULT_KEY_BINDINGS,
   recentFiles: [],
   lastSeenVersion: "",
