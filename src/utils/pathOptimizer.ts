@@ -381,6 +381,7 @@ export class PathOptimizer {
       // Robot must be strictly INSIDE at least one keep-in zone
       if (!isColliding && this.activeKeepInZones.length > 0) {
         // Recalculate corners WITHOUT safety margin
+        // Pass full dimensions; getRobotCorners expects full length and calculates extents
         const rawCorners = getRobotCorners(
           x,
           y,

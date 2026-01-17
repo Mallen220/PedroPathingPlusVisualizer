@@ -591,7 +591,7 @@
         if (shape.type === "keep-in") {
           shapeElement.stroke = shape.color;
           shapeElement.fill = shape.color;
-          shapeElement.opacity = 0.04; // Very low occupancy fill ~4%
+          shapeElement.opacity = 0.1; // Low occupancy fill 10%
           shapeElement.linewidth = uiLength(1.0);
           shapeElement.dashes = [uiLength(4), uiLength(4)]; // Dashed lines
         } else {
@@ -1931,8 +1931,8 @@ left: ${x(robotXY.x)}px; transform: translate(-50%, -50%) rotate(${robotHeading}
 </div>
 
 <style>
-  /* Ensure collision markers do not block pointer events so users can click through them */
-  :global(#collision-group, #collision-group *) {
+  /* Ensure collision markers and shapes do not block pointer events so users can click through them */
+  :global(#collision-group, #collision-group *, #shape-group, #shape-group *) {
     pointer-events: none !important;
   }
 </style>
