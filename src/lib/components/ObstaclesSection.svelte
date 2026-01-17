@@ -103,10 +103,6 @@
                   bind:value={shape.type}
                   class="h-7 text-xs rounded-md border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 px-1 focus:outline-none focus:ring-1 focus:ring-purple-500"
                   disabled={shape.locked ?? false}
-                  on:change={() => {
-                    // Initialize default if needed, though bind should handle it
-                    if (!shape.type) shape.type = "obstacle";
-                  }}
                 >
                   <option value="obstacle">Obstacle</option>
                   <option value="keep-in">Keep-In</option>
