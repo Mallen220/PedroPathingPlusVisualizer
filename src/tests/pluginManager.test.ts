@@ -15,6 +15,7 @@ describe("PluginManager", () => {
     pluginsStore.set([]);
     themesStore.set([]);
     vi.clearAllMocks();
+    localStorage.clear();
   });
 
   it("should load plugins from electronAPI", async () => {
@@ -30,6 +31,7 @@ describe("PluginManager", () => {
       readPlugin: mockReadPlugin,
     };
 
+    localStorage.setItem("plugin_enabled_test-plugin.js", "true");
     await PluginManager.init();
 
     expect(mockListPlugins).toHaveBeenCalled();
@@ -81,6 +83,7 @@ describe("PluginManager", () => {
       readPlugin: mockReadPlugin,
     };
 
+    localStorage.setItem("plugin_enabled_Example-pink-theme.js", "true");
     await PluginManager.init();
 
     const themes = get(themesStore);
