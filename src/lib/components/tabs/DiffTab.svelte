@@ -99,7 +99,12 @@
                             </svg>
                         </div>
                         <div class="flex-1">
-                            <p class="text-sm font-semibold text-neutral-900 dark:text-neutral-100 mb-2">Event Changed</p>
+                            <div class="flex items-center gap-2 mb-2">
+                                <p class="text-sm font-semibold text-neutral-900 dark:text-neutral-100">{item.name}</p>
+                                {#if item.parentName}
+                                    <span class="text-xs text-neutral-400 dark:text-neutral-500">in {item.parentName}</span>
+                                {/if}
+                            </div>
                             {#if item.details && item.details.length > 0}
                                 <div class="grid grid-cols-[auto_1fr_auto_1fr] gap-x-3 gap-y-2 items-center text-xs">
                                     {#each item.details as detail}

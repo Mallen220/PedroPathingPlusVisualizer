@@ -30,6 +30,7 @@ export interface EventChangeDetail {
 export interface EventChange {
   id: string;
   name: string;
+  parentName?: string;
   changeType: "added" | "removed" | "changed";
   description: string;
   details?: EventChangeDetail[];
@@ -227,6 +228,7 @@ function computeDiff(current: ProjectData, old: ProjectData): DiffResult {
       result.eventDiff.push({
         id,
         name: m.name,
+        parentName: m.parentName,
         changeType: "added",
         description: `Added "${m.name}" to ${m.parentName} at ${(m.position * 100).toFixed(0)}%`
       });
@@ -264,6 +266,7 @@ function computeDiff(current: ProjectData, old: ProjectData): DiffResult {
         result.eventDiff.push({
           id,
           name: m.name,
+          parentName: m.parentName,
           changeType: "changed",
           description: `Changed "${oldM.name}": ${changes.join(", ")}`,
           details,
@@ -278,6 +281,7 @@ function computeDiff(current: ProjectData, old: ProjectData): DiffResult {
       result.eventDiff.push({
         id,
         name: m.name,
+        parentName: m.parentName,
         changeType: "removed",
         description: `Removed "${m.name}" from ${m.parentName}`
       });
