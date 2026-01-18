@@ -1,4 +1,6 @@
-pedro.registerTheme("Pink Plugin Theme", `
+pedro.registerTheme(
+  "Pink Plugin Theme",
+  `
 /* Global Backgrounds */
 html.dark body,
 html.dark .bg-neutral-900,
@@ -83,4 +85,5 @@ html.dark .dark\\:text-neutral-500 {
     background-color: #fce7f3;
     color: #831843;
 }
-`);
+`,
+);

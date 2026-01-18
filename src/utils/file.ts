@@ -1,5 +1,12 @@
 // Copyright 2026 Matthew Allen. Licensed under the Apache License, Version 2.0.
-import type { Point, Line, Shape, SequenceItem, Settings } from "../types";
+import type {
+  Point,
+  Line,
+  Shape,
+  SequenceItem,
+  Settings,
+  Annotation,
+} from "../types";
 
 /**
  * File save/load utilities for the visualizer
@@ -11,6 +18,7 @@ export interface SaveData {
   shapes?: Shape[];
   settings?: any;
   sequence?: SequenceItem[];
+  annotations?: Annotation[];
 }
 
 /**
@@ -21,10 +29,11 @@ export function downloadTrajectory(
   lines: Line[],
   shapes: Shape[],
   sequence?: SequenceItem[],
+  annotations?: Annotation[],
   filename: string = "trajectory.pp",
 ): void {
   const jsonString = JSON.stringify(
-    { startPoint, lines, shapes, sequence },
+    { startPoint, lines, shapes, sequence, annotations },
     null,
     2,
   );
@@ -49,10 +58,11 @@ export function downloadTrajectoryAsText(
   lines: Line[],
   shapes: Shape[],
   sequence: SequenceItem[],
+  annotations?: Annotation[],
   filename: string = "trajectory.txt",
 ): void {
   const jsonString = JSON.stringify(
-    { startPoint, lines, shapes, sequence },
+    { startPoint, lines, shapes, sequence, annotations },
     null,
     2,
   );

@@ -14,9 +14,17 @@ import {
   shapesStore,
   sequenceStore,
   settingsStore,
+  annotationsStore,
 } from "../lib/projectStore";
 import { loadTrajectoryFromFile, downloadTrajectory } from "./index";
-import type { Line, Point, SequenceItem, Settings, Shape } from "../types";
+import type {
+  Line,
+  Point,
+  SequenceItem,
+  Settings,
+  Shape,
+  Annotation,
+} from "../types";
 import { makeId } from "./nameGenerator";
 
 interface ExtendedElectronAPI {
@@ -94,6 +102,7 @@ export function loadProjectData(data: any) {
     sequenceStore.set(seq);
   }
   if (data.shapes) shapesStore.set(data.shapes);
+  if (data.annotations) annotationsStore.set(data.annotations);
 }
 
 function addToRecentFiles(path: string, settings?: Settings) {
@@ -167,6 +176,7 @@ async function performSave(
   settings: Settings,
   sequence: SequenceItem[],
   shapes: Shape[],
+  annotations: Annotation[],
   targetPath: string | undefined,
   options: { quiet?: boolean } = {},
 ) {
@@ -230,6 +240,7 @@ async function performSave(
       settings,
       sequence: sequenceToSave,
       shapes,
+      annotations,
     };
 
     const jsonString = JSON.stringify(projectData, null, 2);
@@ -317,6 +328,7 @@ export async function saveProject(
   settings?: Settings,
   sequence?: SequenceItem[],
   shapes?: Shape[],
+  annotations?: Annotation[],
   saveAs: boolean = false,
   specificPath?: string,
   options: { quiet?: boolean } = {},
@@ -337,6 +349,7 @@ export async function saveProject(
   const st = settings || get(settingsStore);
   const seq = sequence || get(sequenceStore);
   const sh = shapes || get(shapesStore);
+  const an = annotations || get(annotationsStore);
 
   let targetPath = specificPath || get(currentFilePath) || undefined;
   if (saveAs) {
@@ -348,7 +361,7 @@ export async function saveProject(
     return true;
   }
 
-  return await performSave(sp, ln, st, seq, sh, targetPath, options);
+  return await performSave(sp, ln, st, seq, sh, an, targetPath, options);
 }
 
 export function saveFileAs() {
@@ -365,6 +378,7 @@ export function saveFileAs() {
     get(linesStore),
     get(shapesStore),
     get(sequenceStore),
+    get(annotationsStore),
     `${filename}.pp`,
   );
 }
@@ -386,6 +400,7 @@ export async function exportAsPP() {
       lines: get(linesStore),
       shapes: get(shapesStore),
       sequence: get(sequenceStore),
+      annotations: get(annotationsStore),
     },
     null,
     2,
@@ -426,6 +441,7 @@ export async function exportAsPP() {
     get(linesStore),
     get(shapesStore),
     get(sequenceStore),
+    get(annotationsStore),
     defaultName,
   );
 }

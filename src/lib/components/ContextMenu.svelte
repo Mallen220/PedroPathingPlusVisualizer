@@ -1,107 +1,98 @@
-<!-- Copyright 2026 Matthew Allen. Licensed under the Apache License, Version 2.0. -->
+<!-- src/lib/components/ContextMenu.svelte -->
 <script lang="ts">
-  import { createEventDispatcher, onMount } from "svelte";
+  import { onMount, tick } from "svelte";
   import { fade } from "svelte/transition";
+  import { portal } from "../actions/portal";
 
   export let x: number;
   export let y: number;
   export let items: {
     label: string;
-    action?: string;
-    onClick?: () => void;
-    icon?: any; // Component or string if needed, but for now we assume icon slot or internal icon logic
-    separator?: boolean;
-    danger?: boolean;
-    disabled?: boolean;
-  }[] = [];
+    action: () => void;
+    icon?: string;
+    destructive?: boolean;
+  }[];
+  export let onClose: () => void;
 
-  const dispatch = createEventDispatcher<{
-    close: void;
-    action: string; // fallback if onClick is not provided
-  }>();
-
-  let menuElement: HTMLDivElement;
-
-  function handleClickOutside(event: MouseEvent) {
-    if (menuElement && !menuElement.contains(event.target as Node)) {
-      dispatch("close");
-    }
-  }
-
-  function portal(node: HTMLElement) {
-    document.body.appendChild(node);
-    return {
-      destroy() {
-        if (node.parentNode) {
-          node.parentNode.removeChild(node);
-        }
-      },
-    };
-  }
-
-  // Adjust position if it goes off screen
+  let menuRef: HTMLDivElement;
   let adjustedX = x;
   let adjustedY = y;
 
-  onMount(() => {
-    if (menuElement) {
-      const rect = menuElement.getBoundingClientRect();
-      const viewportWidth = window.innerWidth;
-      const viewportHeight = window.innerHeight;
+  async function adjustPosition() {
+    await tick();
+    if (!menuRef) return;
+    const rect = menuRef.getBoundingClientRect();
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
 
-      if (x + rect.width > viewportWidth) {
-        adjustedX = x - rect.width;
-      }
-      if (y + rect.height > viewportHeight) {
-        adjustedY = y - rect.height;
-      }
+    if (x + rect.width > viewportWidth) {
+      adjustedX = viewportWidth - rect.width - 8;
+    } else {
+      adjustedX = x;
     }
 
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  });
-
-  function handleItemClick(item: any) {
-    if (item.disabled) return;
-    if (item.onClick) {
-      item.onClick();
-    } else if (item.action) {
-      dispatch("action", item.action);
+    if (y + rect.height > viewportHeight) {
+      adjustedY = viewportHeight - rect.height - 8;
+    } else {
+      adjustedY = y;
     }
-    dispatch("close");
   }
+
+  $: {
+    if (x || y) adjustPosition();
+  }
+
+  function handleClickOutside(event: MouseEvent) {
+    if (menuRef && !menuRef.contains(event.target as Node)) {
+      onClose();
+    }
+  }
+
+  onMount(() => {
+    adjustPosition();
+    // Slight delay to prevent immediate closing if triggered by click
+    setTimeout(() => {
+      document.addEventListener("click", handleClickOutside);
+      document.addEventListener("contextmenu", handleClickOutside);
+      window.addEventListener("scroll", onClose, true);
+      window.addEventListener("resize", onClose);
+    }, 50);
+
+    return () => {
+      document.removeEventListener("click", handleClickOutside);
+      document.removeEventListener("contextmenu", handleClickOutside);
+      window.removeEventListener("scroll", onClose, true);
+      window.removeEventListener("resize", onClose);
+    };
+  });
 </script>
 
 <div
+  bind:this={menuRef}
   use:portal
-  bind:this={menuElement}
-  class="fixed z-[9999] min-w-[180px] py-1 bg-white dark:bg-neutral-800 rounded-lg shadow-xl border border-neutral-200 dark:border-neutral-700 text-sm select-none"
-  style="top: {adjustedY}px; left: {adjustedX}px;"
+  class="fixed z-[9999] bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-lg shadow-xl py-1 min-w-[160px] flex flex-col"
+  style="left: {adjustedX}px; top: {adjustedY}px;"
   transition:fade={{ duration: 100 }}
+  on:contextmenu|preventDefault
   role="menu"
   tabindex="-1"
 >
   {#each items as item}
-    {#if item.separator}
-      <div class="h-px bg-neutral-200 dark:bg-neutral-700 my-1"></div>
-    {:else}
-      <button
-        on:click={() => handleItemClick(item)}
-        class="w-full text-left px-4 py-2 hover:bg-neutral-100 dark:hover:bg-neutral-700 flex items-center gap-2 {item.danger
-          ? 'text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20'
-          : 'text-neutral-700 dark:text-neutral-200'} {item.disabled
-          ? 'opacity-50 cursor-not-allowed'
-          : ''}"
-        disabled={item.disabled}
-        role="menuitem"
-      >
-        {#if item.icon}
-          {#if typeof item.icon === "object" || typeof item.icon === "function"}
-            <svelte:component this={item.icon} class="size-4" />
-          {/if}
-        {/if}
-        {item.label}
-      </button>
-    {/if}
+    <button
+      class="px-4 py-2 text-sm text-left hover:bg-neutral-100 dark:hover:bg-neutral-700 flex items-center gap-2 transition-colors
+      {item.destructive
+        ? 'text-red-600 dark:text-red-400'
+        : 'text-neutral-700 dark:text-neutral-200'}"
+      on:click={(e) => {
+        e.stopPropagation();
+        item.action();
+        onClose();
+      }}
+    >
+      {#if item.icon}
+        {@html item.icon}
+      {/if}
+      {item.label}
+    </button>
   {/each}
 </div>

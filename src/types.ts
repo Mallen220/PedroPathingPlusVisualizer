@@ -247,3 +247,12 @@ export interface Notification {
   actionLabel?: string;
   action?: () => void;
 }
+
+export interface Annotation {
+  id: string;
+  x: number; // inches
+  y: number; // inches
+  text: string;
+  color: string;
+  minimized?: boolean;
+}
