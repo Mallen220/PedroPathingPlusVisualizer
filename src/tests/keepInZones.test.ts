@@ -179,6 +179,7 @@ describe("PathOptimizer Keep-In Zones", () => {
         color: "green",
         fillColor: "green",
         type: "keep-in",
+        visible: true,
       },
       {
         id: "zoneB",
@@ -191,6 +192,7 @@ describe("PathOptimizer Keep-In Zones", () => {
         color: "green",
         fillColor: "green",
         type: "keep-in",
+        visible: true,
       },
     ];
 
