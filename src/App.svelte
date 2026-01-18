@@ -745,8 +745,9 @@
       } else {
         // Check for What's New
         const currentVersion = pkg.version;
-        const lastSeen = get(settingsStore).lastSeenVersion;
-        const hasSeenTutorial = localStorage.getItem("hasSeenTutorial");
+        const s = get(settingsStore);
+        const lastSeen = s.lastSeenVersion;
+        const hasSeenTutorial = s.hasSeenOnboarding;
 
         // If version mismatch or never seen, show dialog
         // But only if we have already seen the tutorial (otherwise tutorial runs first)
