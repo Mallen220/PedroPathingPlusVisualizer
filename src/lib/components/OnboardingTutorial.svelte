@@ -6,6 +6,9 @@
 
   export let whatsNewOpen = false;
 
+  // Dev flag to force start tutorial
+  const FORCE_START_DEV = false;
+
   // Use a customized theme for the driver.js overlay
   const driverObj = driver({
     showProgress: true,
@@ -22,6 +25,16 @@
           description:
             "This is your main workspace. Here you can visualize your robot's path and field obstacles. Double-click to add points.",
           side: "left",
+          align: "start",
+        },
+      },
+      {
+        element: "#file-manager-btn",
+        popover: {
+          title: "File Manager",
+          description:
+            "Open the File Manager to browse, organize, and open your saved projects.",
+          side: "bottom",
           align: "start",
         },
       },
@@ -116,12 +129,11 @@
     }
   }
 
-  onMount(() => {
-    // We'll handle the auto-start in the reactive statement below
-  });
-
   $: {
-    if (!whatsNewOpen) {
+    // Check dev flag or logic
+    if (FORCE_START_DEV && !$startTutorial) {
+      setTimeout(() => startTutorial.set(true), 500);
+    } else if (!whatsNewOpen) {
       const hasSeen = localStorage.getItem("hasSeenTutorial");
       if (!hasSeen && !$startTutorial) {
         // Small delay to ensure UI is ready

@@ -186,6 +186,7 @@
   <div class="flex items-center gap-4">
     <!-- Menu Button (Mobile/Sidebar toggle for consistency if desired, or just File Manager) -->
     <button
+      id="file-manager-btn"
       title="Open File Manager"
       aria-label="Open File Manager"
       on:click={() => showFileManager.set(true)}
