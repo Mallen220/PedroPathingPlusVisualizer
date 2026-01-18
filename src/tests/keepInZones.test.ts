@@ -206,9 +206,17 @@ describe("PathOptimizer Keep-In Zones", () => {
 
     const collisions = optimizer.getCollisions();
 
-    // Should have collisions - robot can't transition from zone A to zone B through a gap
-    // The collision happens when the robot first extends beyond zone A boundaries
+    // Should have collisions in the gap
+    // Collision might start before 40 (due to robot width) and end after 60
     expect(collisions.length).toBeGreaterThan(0);
-    expect(collisions.some((c) => c.type === "keep-in")).toBe(true);
+    expect(
+      collisions.some(
+        (c) =>
+          c.type === "keep-in" &&
+          // Check for overlap with the gap [40, 60]
+          c.x < 60 &&
+          (c.endX ?? c.x) > 40,
+      ),
+    ).toBe(true);
   });
 });
