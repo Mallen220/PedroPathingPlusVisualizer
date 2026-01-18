@@ -643,28 +643,23 @@
         grp.add(circle);
 
         if (isHovered) {
-             const text = new Two.Text(label, x(pos.x), y(pos.y) - uiLength(3));
-             text.fill = "white"; // Dark mode friendly? or switch based on theme
-             // Actually, Two.js text rendering might be tricky with themes.
-             // Let's stick to simple tooltips via DOM or just the name.
-             // But for now, we rely on the `hoveredMarkerId` logic to just highlight.
-             // The user said "Hovering over the points should show the name."
-             // Standard FieldRenderer doesn't seem to show names on hover, just highlights?
-             // Ah, `FieldCoordinates.svelte` or `MathTools`?
-             // Wait, `FieldRenderer` sets `hoveredMarkerId`. Where is it used?
-             // It's exported from stores. Other components might use it.
-             // But if I want to show name ON FIELD, I might need to add text here.
-             // Let's add a text label that appears on hover.
+          const text = new Two.Text(label, x(pos.x), y(pos.y) - uiLength(3));
+          text.fill = "white"; // Dark mode friendly? or switch based on theme
 
-             // Background for text
-             const textMetrics = { width: label.length * 8, height: 14 }; // Approx
-             const bg = new Two.Rectangle(x(pos.x), y(pos.y) - uiLength(3), uiLength(textMetrics.width/ppI), uiLength(1));
-             // Two.Text is easier.
-             text.weight = 700;
-             text.size = uiLength(1.5);
-             text.stroke = "black";
-             text.linewidth = 2;
-             grp.add(text);
+          // Background for text
+          const textMetrics = { width: label.length * 8, height: 14 }; // Approx
+          const bg = new Two.Rectangle(
+            x(pos.x),
+            y(pos.y) - uiLength(3),
+            uiLength(textMetrics.width / ppI),
+            uiLength(1),
+          );
+          // Two.Text is easier.
+          text.weight = 700;
+          text.size = uiLength(1.5);
+          text.stroke = "black";
+          text.linewidth = 2;
+          grp.add(text);
         }
 
         return grp;
@@ -684,9 +679,13 @@
         const oldPos = oldMap.get(change.id);
         const newPos = currentMap.get(change.id);
         if (oldPos)
-          elems.push(createMarker(oldPos, "#ef4444", change.name + " (Old)", "old"));
+          elems.push(
+            createMarker(oldPos, "#ef4444", change.name + " (Old)", "old"),
+          );
         if (newPos)
-          elems.push(createMarker(newPos, "#22c55e", change.name + " (New)", "new"));
+          elems.push(
+            createMarker(newPos, "#22c55e", change.name + " (New)", "new"),
+          );
 
         // Optional: Draw arrow connecting them
         if (oldPos && newPos) {
@@ -1251,7 +1250,7 @@
     }
 
     if (isDiffMode) {
-        diffEventMarkerElements.forEach(el => eventGroup.add(el));
+      diffEventMarkerElements.forEach((el) => eventGroup.add(el));
     }
 
     two.add(shapeGroup);
@@ -1516,18 +1515,14 @@
           // Lookup actual event ID for hover highlighting
           let actualHoverId = null;
           if (currentElem.startsWith("diff-event-")) {
-              // diff-event-{id}-{suffix}
-              // We need the ID. The ID is the 3rd part onwards... wait.
-              // ID might contain dashes.
-              // ID logic: `${parentName}-${m.name}-${m.position}`.
-              // So split by '-'.
-              // We know suffix is last ('old' or 'new').
-              const parts = currentElem.split("-");
-              const suffix = parts.pop(); // remove suffix
-              // Remove 'diff' and 'event'
-              parts.shift(); // diff
-              parts.shift(); // event
-              actualHoverId = parts.join("-");
+            // diff-event-{id}-{suffix}
+
+            const parts = currentElem.split("-");
+            const suffix = parts.pop(); // remove suffix
+            // Remove 'diff' and 'event'
+            parts.shift(); // diff
+            parts.shift(); // event
+            actualHoverId = parts.join("-");
           } else if (currentElem.startsWith("event-")) {
             const parts = currentElem.split("-");
             // event-{lineIdx}-{evIdx}
