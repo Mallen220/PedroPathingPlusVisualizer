@@ -104,10 +104,7 @@ type SequenceRotateItem = {
   _linkedName?: string; // Metadata for linked names
 };
 
-type SequenceItem =
-  | SequencePathItem
-  | SequenceWaitItem
-  | SequenceRotateItem;
+type SequenceItem = SequencePathItem | SequenceWaitItem | SequenceRotateItem;
 
 interface KeyBinding {
   id: string;
@@ -388,7 +385,6 @@ interface PedroAPI {
     get: (store: Writable<any>) => any;
   };
 }
-
 
 export {};
 
