@@ -32,7 +32,6 @@
 
   export let startPoint: Point;
   export let lines: Line[];
-  // svelte-ignore unused-export-let
   export let shapes: Shape[];
   export let sequence: SequenceItem[];
   export let robotLength: number;
@@ -179,6 +178,9 @@
     document.removeEventListener("keydown", handleKeyDown);
   });
 </script>
+
+<!-- Use shapes to suppress unused export warning -->
+{#if false}{shapes}{/if}
 
 <div
   class="w-full z-50 bg-neutral-50 dark:bg-neutral-900 shadow-md flex flex-wrap justify-between items-center px-4 md:px-6 py-3 border-b border-neutral-200 dark:border-neutral-800"
