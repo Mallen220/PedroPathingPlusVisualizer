@@ -49,12 +49,13 @@ export class PluginManager {
             this.executePlugin(file, code);
           }
           plugins.push({ name: file, loaded: enabled, enabled });
-        } catch (error) {
+        } catch (error: any) {
           console.error(`Failed to load plugin ${file}:`, error);
+          const errorMessage = error?.message || String(error);
           plugins.push({
             name: file,
             loaded: false,
-            error: String(error),
+            error: errorMessage,
             enabled: enabled,
           });
         }
