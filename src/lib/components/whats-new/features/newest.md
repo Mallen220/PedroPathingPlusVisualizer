@@ -2,6 +2,27 @@
 
 ## **Features:**
 
+### **Robot Profiles**
+
+Easily manage multiple robot configurations.
+
+- **Save & Load:** Store different robot settings (dimensions, velocity, acceleration) and switch between them instantly.
+- **Quick Apply:** Apply a profile to override your current settings.
+
+### **Custom Field Maps**
+
+Bring your own field environment into the app.
+
+- **Upload & Calibrate:** Upload a custom image and calibrate it using two reference points.
+- **Visual Context:** See your paths overlaid on your specific practice field or game environment.
+
+### **Unsaved Changes Protection**
+
+Never lose your work again.
+
+- **Safety Prompts:** Receive a warning if you try to leave or close the app with unsaved changes.
+- **Discard or Save:** Choose to save your work or discard changes.
+
 ### **Interactive Onboarding**
 
 New to the application? Our new interactive tutorial guides you through the basics of creating and managing paths.
