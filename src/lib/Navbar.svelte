@@ -26,13 +26,8 @@
   import { customExportersStore } from "./pluginsStore";
   import { navbarActionRegistry } from "./registries";
   import { menuNavigation } from "./actions/menuNavigation";
-
-  // svelte-ignore unused-export-let
-  // export let loadFile: (evt: any) => any;
-
   export let startPoint: Point;
   export let lines: Line[];
-  export let shapes: Shape[];
   export let sequence: SequenceItem[];
   export let robotLength: number;
   export let robotWidth: number;
@@ -178,9 +173,6 @@
     document.removeEventListener("keydown", handleKeyDown);
   });
 </script>
-
-<!-- Use shapes to suppress unused export warning -->
-{#if false}{shapes}{/if}
 
 <div
   class="w-full z-50 bg-neutral-50 dark:bg-neutral-900 shadow-md flex flex-wrap justify-between items-center px-4 md:px-6 py-3 border-b border-neutral-200 dark:border-neutral-800"
