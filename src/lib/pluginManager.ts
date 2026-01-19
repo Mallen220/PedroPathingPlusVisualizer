@@ -15,6 +15,7 @@ import {
   tabRegistry,
   navbarActionRegistry,
   hookRegistry,
+  fieldContextMenuRegistry,
 } from "./registries";
 import * as ts from "typescript";
 
@@ -38,19 +39,21 @@ export class PluginManager {
       const plugins: PluginInfo[] = [];
 
       for (const file of files) {
-        try {
-          const code = await electronAPI.readPlugin(file);
-          this.executePlugin(file, code);
+        const enabled = this.getEnabledState(file);
 
-          const enabled = this.getEnabledState(file);
-          plugins.push({ name: file, loaded: true, enabled });
+        try {
+          if (enabled) {
+            const code = await electronAPI.readPlugin(file);
+            this.executePlugin(file, code);
+          }
+          plugins.push({ name: file, loaded: enabled, enabled });
         } catch (error) {
           console.error(`Failed to load plugin ${file}:`, error);
           plugins.push({
             name: file,
             loaded: false,
             error: String(error),
-            enabled: false,
+            enabled: enabled,
           });
         }
       }
@@ -81,7 +84,8 @@ export class PluginManager {
       plugins.map((p) => (p.name === name ? { ...p, enabled } : p)),
     );
 
-    this.refreshActiveResources();
+    // Reload all plugins to ensure proper cleanup/registration
+    this.reloadPlugins();
   }
 
   private static refreshActiveResources() {
@@ -145,6 +149,7 @@ export class PluginManager {
         tabs: tabRegistry,
         navbarActions: navbarActionRegistry,
         hooks: hookRegistry,
+        contextMenuItems: fieldContextMenuRegistry,
       },
       stores: {
         project: projectStore,
@@ -174,6 +179,14 @@ export class PluginManager {
     // Reset stores and re-init
     customExportersStore.set([]);
     themesStore.set([]);
+
+    // Clear registries
+    componentRegistry.reset();
+    tabRegistry.reset();
+    navbarActionRegistry.reset();
+    hookRegistry.reset();
+    fieldContextMenuRegistry.reset();
+
     await this.init();
   }
 }

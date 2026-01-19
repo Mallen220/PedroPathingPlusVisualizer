@@ -94,6 +94,35 @@ const createNavbarActionRegistry = () => {
 
 export const navbarActionRegistry = createNavbarActionRegistry();
 
+// --- Field Context Menu Registry ---
+export interface ContextMenuItem {
+  id: string;
+  label: string;
+  icon?: string;
+  onClick: (args: { x: number; y: number }) => void;
+  condition?: (args: { x: number; y: number }) => boolean;
+}
+
+const createFieldContextMenuRegistry = () => {
+  const { subscribe, update, set } = writable<ContextMenuItem[]>([]);
+
+  return {
+    subscribe,
+    register: (item: ContextMenuItem) => {
+      update((items) => {
+        const filtered = items.filter((i) => i.id !== item.id);
+        return [...filtered, item];
+      });
+    },
+    unregister: (id: string) => {
+      update((items) => items.filter((i) => i.id !== id));
+    },
+    reset: () => set([]),
+  };
+};
+
+export const fieldContextMenuRegistry = createFieldContextMenuRegistry();
+
 // --- Hook Registry ---
 // Allows registering callbacks for specific named events (hooks).
 // e.g., "onSave", "onLoad", "onProjectReset"
@@ -122,6 +151,7 @@ const createHookRegistry = () => {
       }
     },
     clear: () => hooks.clear(),
+    reset: () => hooks.clear(), // Alias for consistency
   };
 };
 
