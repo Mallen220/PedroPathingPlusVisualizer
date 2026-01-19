@@ -78,4 +78,5 @@ contextBridge.exposeInMainWorld("electronAPI", {
   listPlugins: () => ipcRenderer.invoke("plugins:list"),
   readPlugin: (filename) => ipcRenderer.invoke("plugins:read", filename),
   openPluginsFolder: () => ipcRenderer.invoke("plugins:open-folder"),
+  transpilePlugin: (code) => ipcRenderer.invoke("plugins:transpile", code),
 });

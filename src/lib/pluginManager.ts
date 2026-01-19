@@ -17,7 +17,6 @@ import {
   hookRegistry,
   fieldContextMenuRegistry,
 } from "./registries";
-import * as ts from "typescript";
 
 const { startPointStore, linesStore, shapesStore, sequenceStore } =
   projectStore;
@@ -43,7 +42,10 @@ export class PluginManager {
 
         try {
           if (enabled) {
-            const code = await electronAPI.readPlugin(file);
+            let code = await electronAPI.readPlugin(file);
+            if (file.endsWith(".ts")) {
+              code = await electronAPI.transpilePlugin(code);
+            }
             this.executePlugin(file, code);
           }
           plugins.push({ name: file, loaded: enabled, enabled });
@@ -107,21 +109,6 @@ export class PluginManager {
 
   static executePlugin(filename: string, code: string) {
     let codeToExecute = code;
-
-    // Transpile TypeScript if needed
-    if (filename.endsWith(".ts")) {
-      try {
-        const result = ts.transpileModule(code, {
-          compilerOptions: {
-            target: ts.ScriptTarget.ES2020,
-            module: ts.ModuleKind.None,
-          },
-        });
-        codeToExecute = result.outputText;
-      } catch (e) {
-        throw new Error(`Transpilation failed: ${e}`);
-      }
-    }
 
     // Restricted API exposed to plugins
     const pedroAPI = {
