@@ -10,6 +10,7 @@
   import { onMount } from "svelte";
   import { getAngularDifference } from "../../utils/math";
   import { notification } from "../../stores";
+  import SimpleChart from "./SimpleChart.svelte";
 
   export let startPoint: Point;
   export let lines: Line[];
@@ -56,9 +57,12 @@
     maxLinearVelocity: number;
     maxAngularVelocity: number;
     segments: SegmentStat[];
+    velocityData: { time: number; value: number }[];
+    angularVelocityData: { time: number; value: number }[];
   }
 
   let pathStats: PathStats | null = null;
+  let activeTab: "summary" | "graphs" = "summary";
 
   $: if (isOpen && lines && sequence && settings) {
     calculateStats();
@@ -72,6 +76,10 @@
     let segments: SegmentStat[] = [];
     let maxLinearVelocity = 0;
     let maxAngularVelocity = 0;
+
+    // Data for charts
+    let velocityData: { time: number; value: number }[] = [];
+    let angularVelocityData: { time: number; value: number }[] = [];
 
     let currentHeading =
       startPoint.heading === "linear"
@@ -114,6 +122,16 @@
     let _maxLin = 0;
     let _maxAng = 0;
 
+    // Helper to add data point to charts
+    // Avoid duplicate time points if possible, or just push
+    const addDataPoint = (t: number, vLin: number, vAng: number) => {
+      velocityData.push({ time: t, value: vLin });
+      angularVelocityData.push({ time: t, value: vAng });
+    };
+
+    // Ensure start at 0
+    addDataPoint(0, 0, 0);
+
     sequence.forEach((item) => {
       // Handle Wait Item
       if (item.kind === "wait") {
@@ -130,6 +148,15 @@
 
         // If not found (e.g. 0 duration), we still want to show the row if it exists in sequence
         const duration = event ? event.duration : item.durationMs / 1000; // Fallback to item duration
+
+        // Add Wait Data (Velocity 0)
+        if (duration > 0 && event) {
+          const startTime = event.startTime;
+          const endTime = event.endTime;
+          // Add points to flatten the graph during wait
+          addDataPoint(startTime, 0, 0);
+          addDataPoint(endTime, 0, 0);
+        }
 
         segments.push({
           name: item.name || "Wait",
@@ -167,8 +194,21 @@
               (event as any).targetHeading,
             ),
           );
-          maxAngVel = (diff * (Math.PI / 180)) / event.duration;
+          // Simplified Profile for Rotation (Trapezoid/Triangle)
+          // We can't easily reconstruct exact profile without duplicating logic,
+          // but we can approximate or just show average.
+          // Or better, assume maxAngVel reached if duration allows.
+          // Let's just use the average for now or 0 start/end peak middle.
+          maxAngVel = (diff * (Math.PI / 180)) / event.duration; // Average
           degrees = diff;
+
+          const startTime = event.startTime;
+          const endTime = event.endTime;
+          // Simple trapezoid approx for visualization
+          addDataPoint(startTime, 0, 0);
+          addDataPoint(startTime + duration * 0.1, 0, maxAngVel);
+          addDataPoint(endTime - duration * 0.1, 0, maxAngVel);
+          addDataPoint(endTime, 0, 0);
         }
 
         segments.push({
@@ -230,21 +270,34 @@
       if (event.motionProfile && analysis.steps.length > 0) {
         const profile = event.motionProfile;
         const headingProfile = event.headingProfile;
+        const velocityProfile = event.velocityProfile; // Use this if available!
 
         // Limit loop to min of both
         const len = Math.min(profile.length - 1, analysis.steps.length);
 
         for (let i = 0; i < len; i++) {
-          const dt = profile[i + 1] - profile[i];
-          if (dt > 1e-6) {
-            // Linear Velocity
-            const step = analysis.steps[i];
-            const vLin = step.deltaLength / dt;
-            if (vLin > segMaxLin) segMaxLin = vLin;
+          const t = event.startTime + profile[i];
 
-            // Angular Velocity
-            // Use headingProfile if available to capture linear interpolation rotation
-            let vAng = 0;
+          // Linear Velocity
+          // Use velocityProfile if available (more accurate from motion profile gen)
+          let vLin = 0;
+          if (velocityProfile && velocityProfile.length > i) {
+            vLin = velocityProfile[i];
+          } else {
+            // Fallback: derive from distance/time
+            const dt = profile[i + 1] - profile[i];
+            if (dt > 1e-6) {
+              const step = analysis.steps[i];
+              vLin = step.deltaLength / dt;
+            }
+          }
+          if (vLin > segMaxLin) segMaxLin = vLin;
+
+          // Angular Velocity
+          let vAng = 0;
+          const dt = profile[i + 1] - profile[i];
+
+          if (dt > 1e-6) {
             if (headingProfile && headingProfile.length > i + 1) {
               const h1 = headingProfile[i];
               const h2 = headingProfile[i + 1];
@@ -252,28 +305,36 @@
               vAng = (diff * (Math.PI / 180)) / dt; // rad/s
               segDegrees += diff;
             } else {
-              // Fallback to geometric rotation only
+              const step = analysis.steps[i];
               vAng = (step.rotation * (Math.PI / 180)) / dt;
               segDegrees += step.rotation;
             }
-            if (vAng > segMaxAng) segMaxAng = vAng;
           }
+
+          if (vAng > segMaxAng) segMaxAng = vAng;
+
+          addDataPoint(t, vLin, vAng);
         }
+        // Add end point
+        addDataPoint(event.endTime, 0, 0); // Assume stop at end of path segment if continuity isn't guaranteed?
+        // Actually, continuity is guaranteed if not stopping.
+        // But for visualization, let's trust the profile.
       } else {
         // Fallback if no profile
         const dt = event.duration;
         if (dt > 0) {
           segMaxLin = analysis.length / dt;
           segMaxAng = (analysis.netRotation * (Math.PI / 180)) / dt;
+
+          // Flat line for fallback
+          addDataPoint(event.startTime, segMaxLin, segMaxAng);
+          addDataPoint(event.endTime, segMaxLin, segMaxAng);
         }
 
         // Approx degrees turned from analysis
-        // For tangential, tangentRotation is the total accumulated rotation.
-        // For others, we approximate based on heading difference
         if (line.endPoint.heading === "tangential") {
           segDegrees = analysis.tangentRotation;
         } else {
-          // Linear or Constant
           segDegrees = Math.abs(analysis.netRotation);
         }
       }
@@ -303,6 +364,8 @@
       maxLinearVelocity: _maxLin,
       maxAngularVelocity: _maxAng,
       segments: segments,
+      velocityData,
+      angularVelocityData,
     };
   }
 
@@ -336,14 +399,35 @@
   >
     <!-- Header -->
     <div
-      class="flex items-center justify-between p-4 border-b border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-900/50"
+      class="flex items-center justify-between p-4 border-b border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-900/50 flex-shrink-0"
     >
-      <h2
-        id="stats-title"
-        class="text-lg font-semibold text-neutral-900 dark:text-white"
-      >
-        Path Statistics
-      </h2>
+      <div class="flex items-center gap-4">
+        <h2
+          id="stats-title"
+          class="text-lg font-semibold text-neutral-900 dark:text-white"
+        >
+          Path Statistics
+        </h2>
+
+        <!-- Tabs -->
+        <div
+          class="flex bg-neutral-200 dark:bg-neutral-700 rounded-lg p-1 text-xs font-medium"
+        >
+          <button
+            class={`px-3 py-1 rounded-md transition-all ${activeTab === "summary" ? "bg-white dark:bg-neutral-600 shadow-sm text-neutral-900 dark:text-white" : "text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300"}`}
+            on:click={() => (activeTab = "summary")}
+          >
+            Summary
+          </button>
+          <button
+            class={`px-3 py-1 rounded-md transition-all ${activeTab === "graphs" ? "bg-white dark:bg-neutral-600 shadow-sm text-neutral-900 dark:text-white" : "text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300"}`}
+            on:click={() => (activeTab = "graphs")}
+          >
+            Graphs
+          </button>
+        </div>
+      </div>
+
       <div class="flex items-center gap-2">
         <button
           on:click={copyToMarkdown}
@@ -389,126 +473,185 @@
       </div>
     </div>
 
-    <!-- Summary Cards -->
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 p-4">
-      <div
-        class="bg-neutral-100 dark:bg-neutral-700/50 p-3 rounded-lg flex flex-col items-center justify-center text-center"
-      >
-        <span
-          class="text-xs text-neutral-500 dark:text-neutral-400 uppercase tracking-wide"
-          >Total Time</span
-        >
-        <span class="text-xl font-bold text-neutral-900 dark:text-white mt-1">
-          {formatTime(pathStats.totalTime)}
-        </span>
-      </div>
-      <div
-        class="bg-neutral-100 dark:bg-neutral-700/50 p-3 rounded-lg flex flex-col items-center justify-center text-center"
-      >
-        <span
-          class="text-xs text-neutral-500 dark:text-neutral-400 uppercase tracking-wide"
-          >Distance</span
-        >
-        <span class="text-xl font-bold text-neutral-900 dark:text-white mt-1">
-          {pathStats.totalDistance.toFixed(1)}"
-        </span>
-      </div>
-      <div
-        class="bg-neutral-100 dark:bg-neutral-700/50 p-3 rounded-lg flex flex-col items-center justify-center text-center"
-      >
-        <span
-          class="text-xs text-neutral-500 dark:text-neutral-400 uppercase tracking-wide"
-          >Max Vel</span
-        >
-        <span class="text-xl font-bold text-neutral-900 dark:text-white mt-1">
-          {pathStats.maxLinearVelocity.toFixed(1)} in/s
-        </span>
-      </div>
-      <div
-        class="bg-neutral-100 dark:bg-neutral-700/50 p-3 rounded-lg flex flex-col items-center justify-center text-center"
-      >
-        <span
-          class="text-xs text-neutral-500 dark:text-neutral-400 uppercase tracking-wide"
-          >Max Ang Vel</span
-        >
-        <span class="text-xl font-bold text-neutral-900 dark:text-white mt-1">
-          {pathStats.maxAngularVelocity.toFixed(1)} rad/s
-        </span>
-      </div>
-    </div>
-
-    <!-- Table Header (desktop only) -->
-    <div
-      class="hidden sm:grid grid-cols-12 gap-2 px-6 py-2 bg-neutral-100 dark:bg-neutral-900/30 border-y border-neutral-200 dark:border-neutral-700 text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider"
-    >
-      <div class="col-span-3">Segment</div>
-      <div class="col-span-2 text-right">Length</div>
-      <div class="col-span-2 text-right">Time</div>
-      <div class="col-span-2 text-right">Max V</div>
-      <div class="col-span-2 text-right">Max ω</div>
-      <div class="col-span-1 text-right">Deg</div>
-    </div>
-
-    <!-- Scrollable List -->
-    <div class="overflow-y-auto flex-1 p-2">
-      <div class="flex flex-col gap-1">
-        {#each pathStats.segments as seg}
+    <!-- Content Area -->
+    <div class="flex-1 overflow-hidden flex flex-col min-h-0">
+      <!-- Summary Tab -->
+      {#if activeTab === "summary"}
+        <!-- Summary Cards -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 flex-shrink-0">
           <div
-            class="grid grid-cols-1 sm:grid-cols-12 gap-2 px-4 py-3 rounded-lg hover:bg-neutral-50 dark:hover:bg-neutral-700/30 transition-colors items-start text-sm"
+            class="bg-neutral-100 dark:bg-neutral-700/50 p-3 rounded-lg flex flex-col items-center justify-center text-center"
           >
-            <div
-              class="col-span-1 sm:col-span-3 flex items-center gap-2 truncate"
+            <span
+              class="text-xs text-neutral-500 dark:text-neutral-400 uppercase tracking-wide"
+              >Total Time</span
             >
-              <div
-                class="w-3 h-3 rounded-full flex-none"
-                style="background-color: {seg.color}"
-              ></div>
-              <span
-                class="font-medium text-neutral-900 dark:text-neutral-200 truncate"
-                >{seg.name}</span
-              >
-            </div>
-
-            <!-- Compact metrics for small screens -->
-            <div
-              class="sm:hidden mt-2 w-full text-sm text-neutral-600 dark:text-neutral-400 flex flex-wrap gap-2"
+            <span
+              class="text-xl font-bold text-neutral-900 dark:text-white mt-1"
             >
-              <div class="flex-1">Len: {seg.length.toFixed(1)}"</div>
-              <div class="flex-1">Time: {seg.time.toFixed(2)}s</div>
-              <div class="flex-1">Max V: {seg.maxVel.toFixed(1)}</div>
-              <div class="flex-1">ω: {seg.maxAngVel.toFixed(1)}</div>
-              <div class="flex-1">Deg: {seg.degrees.toFixed(1)}°</div>
-            </div>
-
-            <!-- Desktop metrics -->
-            <div
-              class="hidden sm:block sm:col-span-2 text-right text-neutral-600 dark:text-neutral-400"
-            >
-              {seg.length.toFixed(1)}"
-            </div>
-            <div
-              class="hidden sm:block sm:col-span-2 text-right text-neutral-600 dark:text-neutral-400"
-            >
-              {seg.time.toFixed(2)}s
-            </div>
-            <div
-              class="hidden sm:block sm:col-span-2 text-right text-neutral-600 dark:text-neutral-400"
-            >
-              {seg.maxVel.toFixed(1)}
-            </div>
-            <div
-              class="hidden sm:block sm:col-span-2 text-right text-neutral-600 dark:text-neutral-400"
-            >
-              {seg.maxAngVel.toFixed(1)}
-            </div>
-            <div
-              class="hidden sm:block sm:col-span-1 text-right text-neutral-600 dark:text-neutral-400"
-            >
-              {seg.degrees.toFixed(1)}°
-            </div>
+              {formatTime(pathStats.totalTime)}
+            </span>
           </div>
-        {/each}
-      </div>
+          <div
+            class="bg-neutral-100 dark:bg-neutral-700/50 p-3 rounded-lg flex flex-col items-center justify-center text-center"
+          >
+            <span
+              class="text-xs text-neutral-500 dark:text-neutral-400 uppercase tracking-wide"
+              >Distance</span
+            >
+            <span
+              class="text-xl font-bold text-neutral-900 dark:text-white mt-1"
+            >
+              {pathStats.totalDistance.toFixed(1)}"
+            </span>
+          </div>
+          <div
+            class="bg-neutral-100 dark:bg-neutral-700/50 p-3 rounded-lg flex flex-col items-center justify-center text-center"
+          >
+            <span
+              class="text-xs text-neutral-500 dark:text-neutral-400 uppercase tracking-wide"
+              >Max Vel</span
+            >
+            <span
+              class="text-xl font-bold text-neutral-900 dark:text-white mt-1"
+            >
+              {pathStats.maxLinearVelocity.toFixed(1)} in/s
+            </span>
+          </div>
+          <div
+            class="bg-neutral-100 dark:bg-neutral-700/50 p-3 rounded-lg flex flex-col items-center justify-center text-center"
+          >
+            <span
+              class="text-xs text-neutral-500 dark:text-neutral-400 uppercase tracking-wide"
+              >Max Ang Vel</span
+            >
+            <span
+              class="text-xl font-bold text-neutral-900 dark:text-white mt-1"
+            >
+              {pathStats.maxAngularVelocity.toFixed(1)} rad/s
+            </span>
+          </div>
+        </div>
+
+        <!-- Table Header (desktop only) -->
+        <div
+          class="hidden sm:grid grid-cols-12 gap-2 px-6 py-2 bg-neutral-100 dark:bg-neutral-900/30 border-y border-neutral-200 dark:border-neutral-700 text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider flex-shrink-0"
+        >
+          <div class="col-span-3">Segment</div>
+          <div class="col-span-2 text-right">Length</div>
+          <div class="col-span-2 text-right">Time</div>
+          <div class="col-span-2 text-right">Max V</div>
+          <div class="col-span-2 text-right">Max ω</div>
+          <div class="col-span-1 text-right">Deg</div>
+        </div>
+
+        <!-- Scrollable List -->
+        <div class="overflow-y-auto flex-1 p-2 min-h-0">
+          <div class="flex flex-col gap-1">
+            {#each pathStats.segments as seg}
+              <div
+                class="grid grid-cols-1 sm:grid-cols-12 gap-2 px-4 py-3 rounded-lg hover:bg-neutral-50 dark:hover:bg-neutral-700/30 transition-colors items-start text-sm"
+              >
+                <div
+                  class="col-span-1 sm:col-span-3 flex items-center gap-2 truncate"
+                >
+                  <div
+                    class="w-3 h-3 rounded-full flex-none"
+                    style="background-color: {seg.color}"
+                  ></div>
+                  <span
+                    class="font-medium text-neutral-900 dark:text-neutral-200 truncate"
+                    >{seg.name}</span
+                  >
+                </div>
+
+                <!-- Compact metrics for small screens -->
+                <div
+                  class="sm:hidden mt-2 w-full text-sm text-neutral-600 dark:text-neutral-400 flex flex-wrap gap-2"
+                >
+                  <div class="flex-1">Len: {seg.length.toFixed(1)}"</div>
+                  <div class="flex-1">Time: {seg.time.toFixed(2)}s</div>
+                  <div class="flex-1">Max V: {seg.maxVel.toFixed(1)}</div>
+                  <div class="flex-1">ω: {seg.maxAngVel.toFixed(1)}</div>
+                  <div class="flex-1">Deg: {seg.degrees.toFixed(1)}°</div>
+                </div>
+
+                <!-- Desktop metrics -->
+                <div
+                  class="hidden sm:block sm:col-span-2 text-right text-neutral-600 dark:text-neutral-400"
+                >
+                  {seg.length.toFixed(1)}"
+                </div>
+                <div
+                  class="hidden sm:block sm:col-span-2 text-right text-neutral-600 dark:text-neutral-400"
+                >
+                  {seg.time.toFixed(2)}s
+                </div>
+                <div
+                  class="hidden sm:block sm:col-span-2 text-right text-neutral-600 dark:text-neutral-400"
+                >
+                  {seg.maxVel.toFixed(1)}
+                </div>
+                <div
+                  class="hidden sm:block sm:col-span-2 text-right text-neutral-600 dark:text-neutral-400"
+                >
+                  {seg.maxAngVel.toFixed(1)}
+                </div>
+                <div
+                  class="hidden sm:block sm:col-span-1 text-right text-neutral-600 dark:text-neutral-400"
+                >
+                  {seg.degrees.toFixed(1)}°
+                </div>
+              </div>
+            {/each}
+          </div>
+        </div>
+
+        <!-- Graphs Tab -->
+      {:else if activeTab === "graphs"}
+        <div class="overflow-y-auto flex-1 p-4 min-h-0 space-y-6">
+          <div
+            class="bg-white dark:bg-neutral-900 rounded-lg border border-neutral-200 dark:border-neutral-700 p-4"
+          >
+            <h3
+              class="text-sm font-semibold mb-2 text-neutral-700 dark:text-neutral-300"
+            >
+              Velocity Profile (in/s)
+            </h3>
+            <SimpleChart
+              data={pathStats.velocityData}
+              color="#3b82f6"
+              label="Velocity"
+              unit="in/s"
+              height={200}
+            />
+          </div>
+
+          <div
+            class="bg-white dark:bg-neutral-900 rounded-lg border border-neutral-200 dark:border-neutral-700 p-4"
+          >
+            <h3
+              class="text-sm font-semibold mb-2 text-neutral-700 dark:text-neutral-300"
+            >
+              Angular Velocity Profile (rad/s)
+            </h3>
+            <SimpleChart
+              data={pathStats.angularVelocityData}
+              color="#d946ef"
+              label="Angular Velocity"
+              unit="rad/s"
+              height={200}
+            />
+          </div>
+
+          <div
+            class="text-xs text-neutral-500 dark:text-neutral-400 text-center italic mt-4"
+          >
+            Graph resolution depends on optimization settings and simulation
+            step size.
+          </div>
+        </div>
+      {/if}
     </div>
   </div>
 {/if}
