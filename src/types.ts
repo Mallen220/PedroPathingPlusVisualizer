@@ -257,6 +257,7 @@ export interface PedroData {
   lines: Line[];
   shapes: Shape[];
   sequence: SequenceItem[];
+  extraData?: Record<string, any>;
 }
 
 // Registry Interfaces
@@ -311,7 +312,7 @@ export interface ProjectStore {
   shapesStore: Writable<Shape[]>;
   sequenceStore: Writable<SequenceItem[]>;
   settingsStore: Writable<any>; // Using any for Settings to avoid circular or huge types for now
-  // ... other stores
+  extraDataStore: Writable<Record<string, any>>;
 }
 
 export interface PedroAPI {
@@ -342,6 +343,7 @@ export interface PedroAPI {
     tabs: Registry<TabDefinition>;
     navbarActions: Registry<NavbarAction>;
     hooks: HookRegistry;
+    contextMenuItems: Registry<any>; // ContextMenuItem
   };
 
   /**

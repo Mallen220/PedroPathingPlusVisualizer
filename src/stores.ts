@@ -80,3 +80,16 @@ export const gitStatusStore = writable<Record<string, string>>({});
 
 // Tutorial Trigger
 export const startTutorial = writable(false);
+
+// Field View State (exposed for plugins)
+export const fieldViewStore = writable<{
+  xScale: (val: number) => number;
+  yScale: (val: number) => number;
+  width: number;
+  height: number;
+}>({
+  xScale: (v) => v,
+  yScale: (v) => v,
+  width: 0,
+  height: 0,
+});
