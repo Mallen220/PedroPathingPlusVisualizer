@@ -18,14 +18,22 @@ const COLORS = ["#fef3c7", "#dcfce7", "#dbeafe", "#fce7f3", "#f3f4f6"]; // yello
 let overlayContainer: HTMLElement | null = null;
 let notesMap = new Map<string, HTMLElement>();
 let currentNotes: StickyNote[] = [];
-let fieldView = { xScale: (v: number) => v, yScale: (v: number) => v, width: 0, height: 0 };
+let fieldView = {
+  xScale: (v: number) => v,
+  yScale: (v: number) => v,
+  width: 0,
+  height: 0,
+};
 let isDragging = false;
 
 // Initialize
-pedro.registries.hooks.register("fieldOverlayInit", (container: HTMLElement) => {
-  overlayContainer = container;
-  renderNotes();
-});
+pedro.registries.hooks.register(
+  "fieldOverlayInit",
+  (container: HTMLElement) => {
+    overlayContainer = container;
+    renderNotes();
+  },
+);
 
 // Context Menu
 pedro.registries.contextMenuItems.register({
@@ -68,7 +76,7 @@ function updateNote(id: string, updates: Partial<StickyNote>) {
   pedro.stores.project.extraDataStore.update((data) => ({
     ...data,
     stickyNotes: (data.stickyNotes || []).map((n: StickyNote) =>
-      n.id === id ? { ...n, ...updates } : n
+      n.id === id ? { ...n, ...updates } : n,
     ),
   }));
 }
@@ -76,7 +84,9 @@ function updateNote(id: string, updates: Partial<StickyNote>) {
 function deleteNote(id: string) {
   pedro.stores.project.extraDataStore.update((data) => ({
     ...data,
-    stickyNotes: (data.stickyNotes || []).filter((n: StickyNote) => n.id !== id),
+    stickyNotes: (data.stickyNotes || []).filter(
+      (n: StickyNote) => n.id !== id,
+    ),
   }));
 }
 
@@ -123,7 +133,8 @@ function createNoteElement(note: StickyNote) {
 
   // Color picker
   const colorBtn = document.createElement("div");
-  colorBtn.className = "w-3 h-3 rounded-full cursor-pointer border border-black/20 hover:scale-110 transition-transform";
+  colorBtn.className =
+    "w-3 h-3 rounded-full cursor-pointer border border-black/20 hover:scale-110 transition-transform";
   colorBtn.title = "Change Color";
   colorBtn.onclick = (e) => {
     e.stopPropagation();
@@ -157,7 +168,8 @@ function createNoteElement(note: StickyNote) {
 
   const title = document.createElement("span");
   title.textContent = "Note";
-  title.className = "text-xs font-semibold text-black/50 uppercase tracking-wider";
+  title.className =
+    "text-xs font-semibold text-black/50 uppercase tracking-wider";
 
   header.appendChild(title);
   header.appendChild(controls);
@@ -215,9 +227,11 @@ function createNoteElement(note: StickyNote) {
         newY = (fieldView.yScale as any).invert(top);
       } else {
         // Fallback
-        const scale = (fieldView.xScale(1) - fieldView.xScale(0));
+        const scale = fieldView.xScale(1) - fieldView.xScale(0);
         newX = (left - fieldView.xScale(0)) / scale;
-        newY = (top - fieldView.yScale(0)) / (fieldView.yScale(1) - fieldView.yScale(0));
+        newY =
+          (top - fieldView.yScale(0)) /
+          (fieldView.yScale(1) - fieldView.yScale(0));
       }
 
       updateNote(note.id, { x: newX, y: newY });

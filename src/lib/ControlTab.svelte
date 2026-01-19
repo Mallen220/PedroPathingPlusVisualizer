@@ -50,7 +50,6 @@
   import { tabRegistry } from "./registries";
   import { diffMode } from "./diffStore";
 
-
   export let percent: number;
   export let playing: boolean;
   export let play: () => any;
