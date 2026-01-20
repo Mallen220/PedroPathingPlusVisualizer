@@ -631,6 +631,8 @@ export function calculatePathTime(
     seq: SequenceItem[],
     contextLines: Line[],
     recursionDepth: number = 0,
+    parentMacroId?: string,
+    parentMacroName?: string,
   ) => {
     if (recursionDepth > 10) {
       console.warn("Max recursion depth reached for macro expansion");
@@ -654,6 +656,8 @@ export function calculatePathTime(
             startTime: currentTime,
             endTime: currentTime + waitSeconds,
             waitId: item.id,
+            macroId: parentMacroId,
+            macroName: parentMacroName,
             startHeading: currentHeading,
             targetHeading: currentHeading,
             atPoint: lastPoint,
@@ -677,6 +681,8 @@ export function calculatePathTime(
             startTime: currentTime,
             endTime: currentTime + rotTime,
             waitId: item.id,
+            macroId: parentMacroId,
+            macroName: parentMacroName,
             startHeading: currentHeading,
             targetHeading: targetHeading,
             atPoint: lastPoint,
@@ -736,6 +742,40 @@ export function calculatePathTime(
               name: `Bridge to ${item.name}`,
             };
 
+            // --- ROTATION CHECK TO FACE BRIDGE ---
+            // Unwind requiredStartHeading relative to currentHeading
+            let requiredStartHeadingRaw = getLineStartHeading(
+              bridgeLine,
+              lastPoint,
+            );
+            let requiredStartHeading = unwrapAngle(
+              requiredStartHeadingRaw,
+              currentHeading,
+            );
+
+            if (!Number.isFinite(requiredStartHeading))
+              requiredStartHeading = currentHeading;
+
+            const diff = Math.abs(currentHeading - requiredStartHeading);
+            if (diff > 0.1) {
+              const rotTime = calculateRotationTime(diff, safeSettings);
+              timeline.push({
+                type: "wait", // Reuse wait type for stationary actions
+                name: `Rotate to ${item.name}`,
+                duration: rotTime,
+                startTime: currentTime,
+                endTime: currentTime + rotTime,
+                startHeading: currentHeading,
+                targetHeading: requiredStartHeading,
+                atPoint: lastPoint,
+                macroId: item.id, // Associate bridge setup with macro
+                macroName: item.name,
+              });
+              currentTime += rotTime;
+              currentHeading = requiredStartHeading;
+            }
+            // -------------------------------------
+
             // Analyze bridge segment
             const bridgeAnalysis = analyzePathSegment(
               lastPoint,
@@ -772,6 +812,8 @@ export function calculatePathTime(
               line: bridgeLine,
               prevPoint: lastPoint,
               name: "Bridge Path",
+              macroId: item.id,
+              macroName: item.name,
             });
             currentTime += bridgeTime;
             lastPoint = bridgeLine.endPoint; // Snap to macro start
@@ -792,7 +834,13 @@ export function calculatePathTime(
                   lineId: ln.id!,
                 })) as SequenceItem[]);
 
-          processSequence(macroSeq, macroData.lines, recursionDepth + 1);
+          processSequence(
+            macroSeq,
+            macroData.lines,
+            recursionDepth + 1,
+            item.id,
+            item.name,
+          );
         }
         return;
       }
@@ -836,6 +884,8 @@ export function calculatePathTime(
           startHeading: currentHeading,
           targetHeading: requiredStartHeading,
           atPoint: prevPoint,
+          macroId: parentMacroId,
+          macroName: parentMacroName,
         });
         currentTime += rotTime;
         currentHeading = requiredStartHeading;
@@ -933,6 +983,8 @@ export function calculatePathTime(
         motionProfile: motionProfile,
         velocityProfile: velocityProfile,
         headingProfile: headingProfile,
+        macroId: parentMacroId,
+        macroName: parentMacroName,
       });
       currentTime += segmentTime;
 

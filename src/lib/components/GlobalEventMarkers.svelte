@@ -41,6 +41,9 @@
   // Reactive list of all markers with global position
   $: allMarkers = getAllMarkers(sequence, lines, draggingMarkerId);
 
+  // Helper: count non-macro items
+  $: nonMacroCount = sequence.filter((s) => s.kind !== "macro").length;
+
   // Compute available events from disk and current project
   $: currentProjectEvents = Array.from(new Set(allMarkers.map((m) => m.name)));
   $: availableEvents = Array.from(
@@ -58,7 +61,11 @@
   ): GlobalMarker[] {
     const markers: GlobalMarker[] = [];
 
+    let virtualIndex = 0;
     seq.forEach((item, index) => {
+      // Ignore macros for global position calculation
+      if (item.kind === "macro") return;
+
       if (item.kind === "path") {
         const line = linesList.find((l) => l.id === (item as any).lineId);
         if (line && line.eventMarkers) {
@@ -67,7 +74,7 @@
               id: m.id,
               originalId: m.id,
               name: m.name,
-              globalPosition: index + m.position,
+              globalPosition: virtualIndex + m.position,
               parentType: "path",
               parentId: line.id!,
               parentIndex: index,
@@ -84,7 +91,7 @@
               id: m.id,
               originalId: m.id,
               name: m.name,
-              globalPosition: index + m.position,
+              globalPosition: virtualIndex + m.position,
               parentType: "wait",
               parentId: wait.id,
               parentIndex: index,
@@ -102,7 +109,7 @@
               id: m.id,
               originalId: m.id,
               name: m.name,
-              globalPosition: index + m.position,
+              globalPosition: virtualIndex + m.position,
               parentType: "rotate",
               parentId: rotate.id,
               parentIndex: index,
@@ -112,6 +119,7 @@
           });
         }
       }
+      virtualIndex++;
     });
 
     // Sort by global position
@@ -231,30 +239,47 @@
     newVal: number,
     clampLocal: boolean,
   ) {
+    // Count non-macro items
+    const nonMacroItems = sequence.filter((i) => i.kind !== "macro");
+    const max = nonMacroItems.length;
+
     // Clamp to valid range
-    const max = sequence.length;
     if (newVal < 0) newVal = 0;
     if (newVal > max) newVal = max;
 
-    // Determine new parent index and local position
-    // Since range is [0, sequence.length], the integer part is the index (clamped to length-1)
-    // However, if value is exactly length, it belongs to last item with pos 1.0
+    // Map virtual index to actual sequence index
+    // Virtual index maps to the Nth non-macro item
+    let virtualIndex = Math.floor(newVal);
+    let newLocalPos = newVal - virtualIndex;
 
-    let newIndex = Math.floor(newVal);
-    let newLocalPos = newVal - newIndex;
-
-    if (newIndex >= sequence.length) {
-      newIndex = sequence.length - 1;
+    // Handle edge case at exactly max
+    if (virtualIndex >= max) {
+      virtualIndex = max - 1;
       newLocalPos = 1.0;
     }
 
+    // Find the actual sequence index corresponding to this virtual index
+    let actualIndex = -1;
+    let currentVirtual = 0;
+
+    for (let i = 0; i < sequence.length; i++) {
+      if (sequence[i].kind === "macro") continue;
+      if (currentVirtual === virtualIndex) {
+        actualIndex = i;
+        break;
+      }
+      currentVirtual++;
+    }
+
+    if (actualIndex === -1) return; // Should not happen given bounds check
+
     // Check if parent changed
-    if (newIndex !== marker.parentIndex) {
+    if (actualIndex !== marker.parentIndex) {
       // Remove from old parent
       removeMarker(marker);
 
       // Add to new parent
-      const newItem = sequence[newIndex];
+      const newItem = sequence[actualIndex];
       const newMarkerData = {
         ...marker.ref,
         position: newLocalPos,
@@ -433,7 +458,7 @@
                 type="range"
                 aria-label="Position for {marker.ref.name}"
                 min="0"
-                max={sequence.length}
+                max={nonMacroCount}
                 step="0.01"
                 value={marker.globalPosition}
                 class="flex-1 slider accent-purple-500"
@@ -452,7 +477,7 @@
                 type="number"
                 aria-label="Position value for {marker.ref.name}"
                 min="0"
-                max={sequence.length}
+                max={nonMacroCount}
                 step="0.01"
                 value={parseFloat(marker.globalPosition.toFixed(2))}
                 class="w-16 px-1 py-0.5 text-xs rounded bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 text-center"

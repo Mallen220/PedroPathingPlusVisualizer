@@ -175,7 +175,7 @@
 
   $: timelineItems = (() => {
     const items: {
-      type: "marker" | "wait" | "rotate" | "dot";
+      type: "marker" | "wait" | "rotate" | "dot" | "macro";
       percent: number;
       durationPercent?: number;
       color?: string;
@@ -194,6 +194,38 @@
     const totalTime = timePrediction.totalTime;
     const timeline = timePrediction.timeline;
     const toPct = (t: number) => (t / totalTime) * 100;
+
+    // Collect macro groups
+    const macroGroups = new Map<
+      string,
+      { startTime: number; endTime: number; name: string }
+    >();
+
+    timeline.forEach((ev) => {
+      if (ev.macroId) {
+        if (!macroGroups.has(ev.macroId)) {
+          macroGroups.set(ev.macroId, {
+            startTime: ev.startTime,
+            endTime: ev.endTime,
+            name: ev.macroName || "Macro",
+          });
+        } else {
+          const g = macroGroups.get(ev.macroId)!;
+          if (ev.startTime < g.startTime) g.startTime = ev.startTime;
+          if (ev.endTime > g.endTime) g.endTime = ev.endTime;
+        }
+      }
+    });
+
+    // Add macro items
+    macroGroups.forEach((g) => {
+      items.push({
+        type: "macro",
+        percent: toPct(g.startTime),
+        durationPercent: toPct(g.endTime - g.startTime),
+        name: g.name,
+      });
+    });
 
     timeline.forEach((ev) => {
       if (ev.type === "travel") {

@@ -209,6 +209,8 @@ export interface TimelineEvent {
   prevPoint?: Point; // The point before this line
   // If this wait came from a sequence wait item, reference it here
   waitId?: string;
+  macroId?: string;
+  macroName?: string;
   startHeading?: number;
   targetHeading?: number;
   atPoint?: BasePoint;

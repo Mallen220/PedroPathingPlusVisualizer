@@ -265,4 +265,73 @@ describe("Time Calculator Extended", () => {
       expect(analysis.minRadius).toBeLessThan(0.001);
     });
   });
+
+  describe("Macro Handling", () => {
+    it("should correctly tag events with macroId and name", () => {
+      const startPoint: Point = { x: 0, y: 0, heading: "constant", degrees: 0 };
+      const lines: Line[] = []; // Main path empty, purely macro
+
+      const macroLines: Line[] = [
+        {
+          id: "ML1",
+          endPoint: { x: 10, y: 0, heading: "constant", degrees: 0 },
+          controlPoints: [],
+          color: "blue",
+        },
+      ];
+
+      // Mock macro data
+      const macros = new Map();
+      macros.set("macro1.pp", {
+        startPoint: { x: 5, y: 5, heading: "constant", degrees: 90 }, // Offset from 0,0
+        lines: macroLines,
+        sequence: [{ kind: "path", lineId: "ML1" }],
+      });
+
+      const sequence: SequenceItem[] = [
+        {
+          kind: "macro",
+          id: "m1",
+          name: "My Macro",
+          filePath: "macro1.pp",
+        },
+      ];
+
+      const result = calculatePathTime(
+        startPoint,
+        lines,
+        defaultSettings,
+        sequence,
+        macros,
+      );
+
+      // Expected events:
+      // 1. Rotate to face Bridge (0,0 -> 5,5 is 45deg). Current 0. Need 45.
+      // 2. Bridge Travel (0,0 -> 5,5).
+      // 3. Rotate to face Macro Start Heading (At 5,5, heading 45. Macro start constant 90). Need 45->90.
+      // 4. Macro Path ML1.
+
+      // Check macro tagging
+      const taggedEvents = result.timeline.filter((e) => e.macroId === "m1");
+      // All generated events (bridge rotation, bridge travel, macro internal rotation, macro path) should be tagged.
+      // Note: The "Rotate to face Bridge" is generated inside the "macro" block in calculatePathTime, so it should be tagged.
+
+      expect(taggedEvents.length).toBeGreaterThan(0);
+      taggedEvents.forEach((e) => {
+        expect(e.macroId).toBe("m1");
+        expect(e.macroName).toBe("My Macro");
+      });
+
+      // Check specific events
+      const rotateToBridge = result.timeline.find(
+        (e) => e.name === "Rotate to My Macro",
+      );
+      expect(rotateToBridge).toBeDefined();
+      expect(rotateToBridge?.macroId).toBe("m1");
+
+      const bridgePath = result.timeline.find((e) => e.name === "Bridge Path");
+      expect(bridgePath).toBeDefined();
+      expect(bridgePath?.macroId).toBe("m1");
+    });
+  });
 });
