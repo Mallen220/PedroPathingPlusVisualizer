@@ -17,6 +17,7 @@ import {
 } from "../config";
 import { getRandomColor } from "../utils";
 import { regenerateProjectMacros } from "./macroUtils";
+import { notification } from "../stores";
 
 export function normalizeLines(input: Line[]): Line[] {
   return (input || []).map((line) => ({
@@ -151,20 +152,29 @@ export function refreshMacros() {
   const hasMacro = sequence.some((s) => s.kind === "macro");
   if (!hasMacro) return;
 
-  const result = regenerateProjectMacros(startPoint, lines, sequence, macros);
+  try {
+    const result = regenerateProjectMacros(startPoint, lines, sequence, macros);
 
-  const oldLinesJson = JSON.stringify(lines);
-  const newLinesJson = JSON.stringify(result.lines);
+    const oldLinesJson = JSON.stringify(lines);
+    const newLinesJson = JSON.stringify(result.lines);
 
-  if (oldLinesJson !== newLinesJson) {
-    linesStore.set(result.lines);
-  }
+    if (oldLinesJson !== newLinesJson) {
+      linesStore.set(result.lines);
+    }
 
-  const oldSeqJson = JSON.stringify(sequence);
-  const newSeqJson = JSON.stringify(result.sequence);
+    const oldSeqJson = JSON.stringify(sequence);
+    const newSeqJson = JSON.stringify(result.sequence);
 
-  if (oldSeqJson !== newSeqJson) {
-    sequenceStore.set(result.sequence);
+    if (oldSeqJson !== newSeqJson) {
+      sequenceStore.set(result.sequence);
+    }
+  } catch (error: any) {
+    console.error("Failed to regenerate macros:", error);
+    notification.set({
+      message: `Macro Error: ${error.message}`,
+      type: "error",
+      timeout: 5000,
+    });
   }
 }
 
@@ -193,6 +203,16 @@ export async function loadMacro(filePath: string, force = false) {
           return newMap;
         });
         console.log(`[projectStore] Loaded macro: ${filePath}`);
+
+        // Recursively load any macros nested within this macro
+        if (data.sequence && data.sequence.length > 0) {
+          data.sequence.forEach((item: SequenceItem) => {
+            if (item.kind === "macro") {
+              loadMacro(item.filePath);
+            }
+          });
+        }
+
         refreshMacros();
       }
     } catch (e) {
