@@ -35,7 +35,23 @@ export function expandMacro(
   prevPoint: Point,
   prevHeading: number,
   macroData: PedroData,
-): { lines: Line[]; sequence: SequenceItem[]; endPoint: Point; endHeading: number } {
+  macrosMap: Map<string, PedroData>,
+  visitedPaths: Set<string>,
+): {
+  lines: Line[];
+  sequence: SequenceItem[];
+  endPoint: Point;
+  endHeading: number;
+} {
+  // Check for recursion loop
+  if (visitedPaths.has(macroItem.filePath)) {
+    throw new Error(`Recursion detected: ${macroItem.filePath}`);
+  }
+
+  // Clone visitedPaths for this branch
+  const nextVisited = new Set(visitedPaths);
+  nextVisited.add(macroItem.filePath);
+
   const generatedLines: Line[] = [];
   const generatedSequence: SequenceItem[] = [];
 
@@ -99,9 +115,7 @@ export function expandMacro(
     });
 
     currentPoint = bridgeLine.endPoint;
-    // Estimate new heading after bridge (simplified, exact calc requires analysis)
-    // For now, we assume the bridge brings us to the target heading/position.
-    // getLineEndHeading handles simple cases.
+    // Estimate new heading after bridge
     currentHeading = getLineEndHeading(bridgeLine, prevPoint);
   } else {
     currentPoint = macroData.startPoint;
@@ -174,15 +188,6 @@ export function expandMacro(
                 // Update state
                 const endHeadingRaw = getLineEndHeading(line, currentPoint);
                 if (line.endPoint.heading === "tangential") {
-                    // For precise tangent heading we need curvature analysis.
-                    // But we can approximate with tangent angle.
-                    // Note: analyzePathSegment tracks accumulation.
-                    // Here we just use the instantaneous tangent at end.
-                    // This might drift from `calculatePathTime` but sufficient for next bridge.
-                    // Wait, `getLineEndHeading` for tangential returns the angle of the last segment.
-                    // This IS the tangent angle.
-                    // `calculatePathTime` uses accumulation to handle winding numbers (> 360).
-                    // `getAngularDifference` helps us unwrap.
                     const tangent = endHeadingRaw;
                     currentHeading = unwrapAngle(tangent, currentHeading);
                 } else if (line.endPoint.heading === "constant") {
@@ -199,6 +204,34 @@ export function expandMacro(
     } else if (item.kind === "rotate") {
         generatedSequence.push({ ...item, id: `macro-${macroItem.id}-${item.id}`, locked: true });
         currentHeading = item.degrees;
+    } else if (item.kind === "macro") {
+        const nestedData = macrosMap.get(item.filePath);
+        if (nestedData) {
+            const nestedId = `macro-${macroItem.id}-${item.id}`;
+            const nestedItem: SequenceMacroItem = {
+              ...item,
+              id: nestedId,
+              locked: true
+            };
+
+            const result = expandMacro(nestedItem, currentPoint, currentHeading, nestedData, macrosMap, nextVisited);
+
+            generatedLines.push(...result.lines);
+
+            const expandedNestedItem: SequenceMacroItem = {
+                ...nestedItem,
+                sequence: result.sequence
+            };
+            generatedSequence.push(expandedNestedItem);
+
+            currentPoint = result.endPoint;
+            currentHeading = result.endHeading;
+        } else {
+            // Missing data for nested macro, push placeholder or skip
+            // We can push it, but it won't have sequence expanded.
+            // When data loads, refreshMacros will re-run.
+            generatedSequence.push({ ...item, id: `macro-${macroItem.id}-${item.id}`, locked: true });
+        }
     }
   });
 
@@ -284,8 +317,15 @@ export function regenerateProjectMacros(
       } else if (item.kind === "macro") {
           const macroData = macrosMap.get(item.filePath);
           if (macroData) {
-              // Expand
-              const result = expandMacro(item, currentPoint, currentHeading, macroData);
+              // Expand with recursion support
+              const result = expandMacro(
+                item,
+                currentPoint,
+                currentHeading,
+                macroData,
+                macrosMap,
+                new Set() // Initial visited paths
+              );
 
               // Add generated lines to master list
               newLines.push(...result.lines);
@@ -301,8 +341,7 @@ export function regenerateProjectMacros(
               currentPoint = result.endPoint;
               currentHeading = result.endHeading;
           } else {
-              // Macro data missing, just push item as is?
-              // Or maybe it's not loaded yet.
+              // Macro data missing, just push item as is
               newSequence.push(item);
           }
       }
