@@ -8,6 +8,7 @@ export type AppState = {
   shapes: Shape[];
   sequence: SequenceItem[];
   settings: Settings;
+  extraData?: Record<string, any>;
 };
 
 function deepClone<T>(obj: T): T {

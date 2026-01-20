@@ -46,6 +46,7 @@
     shapesStore,
     sequenceStore,
     settingsStore,
+    extraDataStore,
     robotXYStore,
     robotHeadingStore,
     percentStore,
@@ -583,6 +584,7 @@
       shapes: get(shapesStore),
       sequence: get(sequenceStore),
       settings: get(settingsStore),
+      extraData: get(extraDataStore),
     };
   }
 
@@ -644,6 +646,7 @@
       linesStore.set(prev.lines);
       shapesStore.set(prev.shapes);
       sequenceStore.set(prev.sequence);
+      if (prev.extraData) extraDataStore.set(prev.extraData);
 
       // Preserve the current onion layer visibility when undoing so that
       // toggling onion layers isn't overwritten by history operations.
@@ -670,6 +673,7 @@
       linesStore.set(next.lines);
       shapesStore.set(next.shapes);
       sequenceStore.set(next.sequence);
+      if (next.extraData) extraDataStore.set(next.extraData);
 
       // Preserve onion layer visibility when redoing as well.
       const currentShowOnion = get(settingsStore).showOnionLayers;
@@ -845,6 +849,17 @@
     await saveSettings(s);
   }, 1000);
   $: if (settings) debouncedSaveSettings(settings);
+
+  // Auto-record extraData changes (e.g. from plugins)
+  let lastExtraDataHash = "";
+  $: {
+    const val = $extraDataStore;
+    const hash = JSON.stringify(val);
+    if (isLoaded && lastExtraDataHash && hash !== lastExtraDataHash) {
+      recordChange();
+    }
+    lastExtraDataHash = hash;
+  }
 
   // --- Animation Logic ---
   $: timePrediction = calculatePathTime(startPoint, lines, settings, sequence);

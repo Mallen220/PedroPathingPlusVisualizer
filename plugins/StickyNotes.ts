@@ -15,6 +15,7 @@ interface StickyNote {
   text: string;
   color: string;
   softLocked?: boolean;
+  minimized?: never; // Deprecated
 }
 
 const DEFAULT_COLOR = "#fef3c7"; // yellow
@@ -131,13 +132,13 @@ function createNoteElement(note: StickyNote) {
   const header = document.createElement("div");
   header.className =
     "flex items-center justify-between px-2 py-1 cursor-move select-none bg-black/5 border-b border-black/10 transition-all duration-200 flex-none";
-  header.style.height = "28px"; // Fixed height for calculation
+  header.style.height = "28px"; // Fixed height
   (div as any)._header = header;
 
   const controls = document.createElement("div");
   controls.className = "flex items-center gap-1.5";
 
-  // Color picker container
+  // Color picker
   const colorContainer = document.createElement("div");
   colorContainer.className = "relative flex items-center justify-center";
 
@@ -146,7 +147,6 @@ function createNoteElement(note: StickyNote) {
   colorInput.className = "absolute opacity-0 w-full h-full cursor-pointer top-0 left-0";
   colorInput.value = note.color;
   colorInput.oninput = (e) => {
-    // Live preview
     div.style.backgroundColor = (e.target as HTMLInputElement).value;
   };
   colorInput.onchange = (e) => {
@@ -162,7 +162,7 @@ function createNoteElement(note: StickyNote) {
   colorContainer.appendChild(colorInput);
 
   // Soft Lock (Minimize) Button
-  // Replaced Lock icon with Minimize-style icon (Minus)
+  // Minus icon for "Compact Mode"
   const lockBtn = document.createElement("button");
   lockBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-3 h-3"><path fill-rule="evenodd" d="M4 10a.75.75 0 0 1 .75-.75h10.5a.75.75 0 0 1 0 1.5H4.75A.75.75 0 0 1 4 10Z" clip-rule="evenodd" /></svg>`;
   lockBtn.className =
@@ -203,15 +203,12 @@ function createNoteElement(note: StickyNote) {
   div.appendChild(header);
 
   // --- Compact/Soft-Lock Handle ---
-  // A small handle in the top-right corner, visible only when softLocked
   const compactHandle = document.createElement("div");
-  // Position it absolute in top right
   compactHandle.className = "absolute top-0 right-0 p-1 cursor-move hidden z-10 opacity-50 hover:opacity-100 transition-opacity";
   compactHandle.title = "Drag to move";
 
   const unlockBtn = document.createElement("button");
-  // Expand/Maximize icon (Arrows out or Plus) - Using simple chevron/expand icon
-  // Revert icon to something indicating "Show Header"
+  // Simple square/maximize icon for restore
   unlockBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-3 h-3"><path fill-rule="evenodd" d="M10 3a.75.75 0 0 1 .75.75v12.5a.75.75 0 0 1-1.5 0V3.75A.75.75 0 0 1 10 3Z" clip-rule="evenodd" /><path fill-rule="evenodd" d="M3.75 10a.75.75 0 0 1 .75-.75h11.5a.75.75 0 0 1 0 1.5H4.5A.75.75 0 0 1 3.75 10Z" clip-rule="evenodd" /></svg>`; // Plus sign
 
   unlockBtn.className = "w-5 h-5 flex items-center justify-center bg-black/10 hover:bg-black/20 rounded shadow-sm backdrop-blur-sm text-black/80";
@@ -233,7 +230,6 @@ function createNoteElement(note: StickyNote) {
   const textarea = document.createElement("textarea");
   textarea.className =
     "w-full h-full p-2 resize-none bg-transparent border-none outline-none text-sm font-sans placeholder-neutral-500/50 flex-1";
-  // Force text color
   textarea.style.color = "#1f2937";
   textarea.placeholder = "Type here...";
   textarea.value = note.text;
@@ -247,9 +243,10 @@ function createNoteElement(note: StickyNote) {
 
   // --- Resize Handle ---
   const resizeHandle = document.createElement("div");
-  resizeHandle.className = "absolute bottom-0 right-0 w-4 h-4 cursor-nwse-resize z-20 hover:bg-black/10 rounded-tl";
-  // Visual indicator (triangle lines)
-  resizeHandle.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-full h-full opacity-30"><path d="M22 22H20V20H22V22ZM22 18H18V22H22V18ZM18 18H16V20H18V18ZM14 20H16V22H14V20ZM22 14H14V18H22V14Z"/></svg>`;
+  // Larger touch target (6x6 = 24px)
+  resizeHandle.className = "absolute bottom-0 right-0 w-6 h-6 cursor-nwse-resize z-20 hover:bg-black/5 rounded-tl-lg flex items-end justify-end p-0.5";
+  // Distinct triangle icon
+  resizeHandle.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4 text-black/30"><path d="M22 22H20V20H22V22ZM22 18H18V22H22V18ZM18 18H16V20H18V18ZM14 20H16V22H14V20ZM22 14H14V18H22V14Z"/></svg>`;
 
   resizeHandle.onmousedown = (e) => {
     e.stopPropagation();
