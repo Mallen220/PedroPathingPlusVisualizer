@@ -118,6 +118,7 @@ export function resetProject() {
     })),
   );
   extraDataStore.set({});
+  macrosStore.set(new Map());
   // We don't reset settings usually, or maybe we do?
   // The original App.svelte reset code:
   // startPoint = getDefaultStartPoint();
@@ -125,6 +126,19 @@ export function resetProject() {
   // sequence = ...
   // shapes = getDefaultShapes();
   // currentFilePath.set(null);
+}
+
+export function updateMacroContent(filePath: string, data: PedroData) {
+  macrosStore.update((map) => {
+    const newMap = new Map(map);
+    // Normalize before storing
+    if (data.lines) {
+      data.lines = normalizeLines(data.lines);
+    }
+    newMap.set(filePath, data);
+    return newMap;
+  });
+  refreshMacros();
 }
 
 export function refreshMacros() {
