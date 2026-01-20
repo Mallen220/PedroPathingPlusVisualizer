@@ -2,6 +2,28 @@
 
 ## **Features:**
 
+### **Sticky Notes**
+
+Collaborate better by placing notes directly on the field.
+
+- **Context Menu:** Right-click anywhere on the field to add a note.
+- **Customizable:** Change colors, minimize notes, and drag them to position.
+- **Persisted:** Notes are saved with your project file.
+
+### **Custom Field Maps**
+
+Import your own field images for custom game elements or practice fields.
+
+- **Calibration Wizard:** Easily upload and calibrate any image using a simple 2-point system.
+- **Visual Validation:** Ensure your map is scaled correctly before using it.
+
+### **Visual Path Statistics**
+
+Get deeper insights into your path's performance with the updated Statistics dialog.
+
+- **Velocity Graphs:** View detailed charts for Linear and Angular Velocity over time.
+- **Summary Metrics:** Quickly check max velocity, total time, and distance.
+
 ### **Interactive Onboarding**
 
 New to the application? Our new interactive tutorial guides you through the basics of creating and managing paths.
@@ -63,5 +85,6 @@ A new view mode designed for showcasing your paths without distractions.
 
 ## **Improvements:**
 
+- **Path Optimization:** The optimizer now respects **Keep-In Zones**, ensuring your path stays within defined boundaries.
 - **Performance:** Major code refactoring for the Control Tab to improve responsiveness and maintainability.
 - **UX Enhancements:** Improved accessibility for delete buttons and section headers, plus a more intuitive Command Palette experience.
