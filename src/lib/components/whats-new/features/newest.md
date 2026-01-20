@@ -2,37 +2,27 @@
 
 ## **Features:**
 
-### **Path Optimization**
+### **Sticky Notes**
 
-Automatically refine your autonomous paths for maximum speed and safety.
+Collaborate better by placing notes directly on the field.
 
-- **Genetic Algorithm:** Uses advanced evolution techniques to find the fastest route while strictly avoiding obstacles.
-- **Customizable Control:** Tune iterations, mutation rates, and population size to balance speed vs. exploration.
-- **Safety First:** Ensures all optimized paths respect your robot's dimensions and defined safety margins.
-
-### **Animation Export**
-
-Share your paths with the world by exporting high-quality animations.
-
-- **GIF & APNG:** Export smooth animations in universal formats.
-- **Full Control:** Customize frame rate, resolution, and quality to get the perfect result.
-- **Instant Preview:** Generate and review your animation before saving.
+- **Context Menu:** Right-click anywhere on the field to add a note.
+- **Customizable:** Change colors, minimize notes, and drag them to position.
+- **Persisted:** Notes are saved with your project file.
 
 ### **Custom Field Maps**
 
-Bring your own field diagrams into the visualizer.
+Import your own field images for custom game elements or practice fields.
 
-- **Easy Import:** Upload any image to use as a field background.
-- **Calibration Wizard:** Simple 2-point calibration ensures your custom map scales perfectly to real-world coordinates.
-- **Visual Validation:** Verify your map alignment with a built-in preview tool.
+- **Calibration Wizard:** Easily upload and calibrate any image using a simple 2-point system.
+- **Visual Validation:** Ensure your map is scaled correctly before using it.
 
-### **Integrated File Manager**
+### **Visual Path Statistics**
 
-Manage your project files without leaving the app.
+Get deeper insights into your path's performance with the updated Statistics dialog.
 
-- **Browse & Search:** Quickly find path files with a powerful search and sortable list or grid views.
-- **Seamless Navigation:** Switch between directories and manage files with an intuitive toolbar.
-- **Smart Context:** Integrated directly with Git status indicators for immediate version control feedback.
+- **Velocity Graphs:** View detailed charts for Linear and Angular Velocity over time.
+- **Summary Metrics:** Quickly check max velocity, total time, and distance.
 
 ### **Interactive Onboarding**
 
@@ -95,5 +85,6 @@ A new view mode designed for showcasing your paths without distractions.
 
 ## **Improvements:**
 
+- **Path Optimization:** The optimizer now respects **Keep-In Zones**, ensuring your path stays within defined boundaries.
 - **Performance:** Major code refactoring for the Control Tab to improve responsiveness and maintainability.
 - **UX Enhancements:** Improved accessibility for delete buttons and section headers, plus a more intuitive Command Palette experience.
