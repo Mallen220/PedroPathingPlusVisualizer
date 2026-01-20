@@ -694,11 +694,43 @@ export function calculatePathTime(
           // Bridge Path Logic
           const dist = getDistance(lastPoint, macroData.startPoint);
           if (dist > 0.1) {
+            // Determine bridge heading based on macro start point preferences
+            let bridgeEndPoint: Point;
+            const target = macroData.startPoint;
+
+            if (target.heading === "constant") {
+              bridgeEndPoint = {
+                x: target.x,
+                y: target.y,
+                heading: "constant",
+                degrees: target.degrees,
+              };
+            } else if (target.heading === "linear") {
+              // Bridge ends where macro starts.
+              // If macro start is linear, it implies it starts at `startDeg`.
+              // So bridge should interpolate to that `startDeg`.
+              bridgeEndPoint = {
+                x: target.x,
+                y: target.y,
+                heading: "linear",
+                startDeg: 0, // Ignored by calculator (uses current)
+                endDeg: target.startDeg,
+              };
+            } else {
+              // Tangential
+              bridgeEndPoint = {
+                x: target.x,
+                y: target.y,
+                heading: "tangential",
+                reverse: target.reverse,
+              };
+            }
+
             // Create a bridge line
             const bridgeLine: Line = {
               id: `bridge-${item.id}`,
               startPoint: lastPoint, // Implicit start
-              endPoint: { ...macroData.startPoint, heading: "tangential", reverse: false },
+              endPoint: bridgeEndPoint,
               controlPoints: [],
               color: "rgba(100, 100, 100, 0.5)", // Ghostly gray
               name: `Bridge to ${item.name}`,
