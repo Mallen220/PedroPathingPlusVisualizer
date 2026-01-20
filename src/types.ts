@@ -95,10 +95,20 @@ export type SequenceRotateItem = {
   _linkedName?: string; // Metadata for linked names
 };
 
+export type SequenceMacroItem = {
+  kind: "macro";
+  id: string; // Unique instance ID
+  filePath: string; // The macro file path
+  name: string;
+  locked?: boolean;
+  eventMarkers?: EventMarker[]; // Maybe macros can have markers too?
+};
+
 export type SequenceItem =
   | SequencePathItem
   | SequenceWaitItem
-  | SequenceRotateItem;
+  | SequenceRotateItem
+  | SequenceMacroItem;
 
 export interface KeyBinding {
   id: string;
@@ -194,6 +204,8 @@ export interface TimelineEvent {
   name?: string;
   waitPosition?: "before" | "after";
   lineIndex?: number; // for travel
+  line?: Line; // The line object itself (useful for macros)
+  prevPoint?: Point; // The point before this line
   // If this wait came from a sequence wait item, reference it here
   waitId?: string;
   startHeading?: number;
