@@ -7,7 +7,7 @@
     SequenceItem,
     SequenceMacroItem,
   } from "../../types";
-  import { loadMacro } from "../../projectStore";
+  import { loadMacro } from "../projectStore";
   import {
     reorderSequence,
     getClosestTarget,

@@ -64,6 +64,7 @@ interface WaitSegment {
 
 interface Line {
   id?: string;
+  startPoint?: Point; // Optional start point for synthetic lines (bridge)
   endPoint: Point;
   controlPoints: ControlPoint[];
   color: string;
@@ -104,7 +105,20 @@ type SequenceRotateItem = {
   _linkedName?: string; // Metadata for linked names
 };
 
-type SequenceItem = SequencePathItem | SequenceWaitItem | SequenceRotateItem;
+type SequenceMacroItem = {
+  kind: "macro";
+  id: string; // Unique instance ID
+  filePath: string; // The macro file path
+  name: string;
+  locked?: boolean;
+  eventMarkers?: EventMarker[]; // Maybe macros can have markers too?
+};
+
+type SequenceItem =
+  | SequencePathItem
+  | SequenceWaitItem
+  | SequenceRotateItem
+  | SequenceMacroItem;
 
 interface KeyBinding {
   id: string;
@@ -200,6 +214,8 @@ interface TimelineEvent {
   name?: string;
   waitPosition?: "before" | "after";
   lineIndex?: number; // for travel
+  line?: Line; // The line object itself (useful for macros)
+  prevPoint?: Point; // The point before this line
   // If this wait came from a sequence wait item, reference it here
   waitId?: string;
   startHeading?: number;
@@ -385,6 +401,7 @@ interface PedroAPI {
     get: (store: Writable<any>) => any;
   };
 }
+
 
 export {};
 
