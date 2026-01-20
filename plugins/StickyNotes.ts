@@ -2,15 +2,18 @@
 
 // Copyright 2026 Matthew Allen. Licensed under the Apache License, Version 2.0.
 
-const NOTE_WIDTH = 160;
+const DEFAULT_WIDTH = 160;
+const MIN_WIDTH = 100;
+const MIN_HEIGHT = 60;
 
 interface StickyNote {
   id: string;
   x: number;
   y: number;
+  width: number;
+  height: number;
   text: string;
   color: string;
-  minimized: boolean;
   softLocked?: boolean;
 }
 
@@ -21,6 +24,7 @@ let notesMap = new Map<string, HTMLElement>();
 let currentNotes: StickyNote[] = [];
 let fieldView = { xScale: (v: number) => v, yScale: (v: number) => v, width: 0, height: 0 };
 let isDragging = false;
+let isResizing = false;
 
 // Initialize
 pedro.registries.hooks.register("fieldOverlayInit", (container: HTMLElement) => {
@@ -46,7 +50,7 @@ pedro.stores.project.extraDataStore.subscribe((data) => {
 
 pedro.stores.app.fieldViewStore.subscribe((view) => {
   fieldView = view;
-  if (!isDragging) updatePositions();
+  if (!isDragging && !isResizing) updatePositions();
 });
 
 function addNote(x: number, y: number) {
@@ -54,9 +58,10 @@ function addNote(x: number, y: number) {
     id: Math.random().toString(36).slice(2),
     x,
     y,
+    width: DEFAULT_WIDTH,
+    height: 120, // Default height
     text: "",
     color: DEFAULT_COLOR,
-    minimized: false,
     softLocked: false
   };
 
@@ -106,23 +111,27 @@ function renderNotes() {
     updateNoteElement(el, note);
   });
 
-  if (!isDragging) updatePositions();
+  if (!isDragging && !isResizing) updatePositions();
 }
 
 function createNoteElement(note: StickyNote) {
   const div = document.createElement("div");
   // Force text-neutral-800 to ensure dark text on light sticky notes regardless of theme
-  // We use style property for color to have high specificity against global dark mode styles
   div.className =
     "absolute shadow-lg rounded flex flex-col overflow-hidden pointer-events-auto transition-shadow hover:shadow-xl border border-black/10";
-  div.style.width = `${NOTE_WIDTH}px`;
   div.style.color = "#1f2937"; // text-neutral-800
+
+  // Apply saved dimensions or defaults
+  const w = note.width || DEFAULT_WIDTH;
+  const h = note.height || 120;
+  div.style.width = `${w}px`;
+  div.style.height = `${h}px`;
 
   // --- Header ---
   const header = document.createElement("div");
   header.className =
-    "flex items-center justify-between px-2 py-1 cursor-move select-none bg-black/5 border-b border-black/10 transition-all duration-200";
-  // Force visible overflow for color picker popup if needed, but we use native picker now
+    "flex items-center justify-between px-2 py-1 cursor-move select-none bg-black/5 border-b border-black/10 transition-all duration-200 flex-none";
+  header.style.height = "28px"; // Fixed height for calculation
   (div as any)._header = header;
 
   const controls = document.createElement("div");
@@ -143,39 +152,27 @@ function createNoteElement(note: StickyNote) {
   colorInput.onchange = (e) => {
     updateNote(note.id, { color: (e.target as HTMLInputElement).value });
   };
-  // Stop propagation on mousedown so we don't drag the note when clicking the picker
   colorInput.onmousedown = (e) => e.stopPropagation();
 
   const colorBtn = document.createElement("div");
   colorBtn.className = "w-3 h-3 rounded-full border border-black/20 hover:scale-110 transition-transform";
   colorBtn.style.backgroundColor = note.color;
-  // We don't attach onclick to colorBtn, the input covers it
 
   colorContainer.appendChild(colorBtn);
   colorContainer.appendChild(colorInput);
 
-  // Soft Lock Button
+  // Soft Lock (Minimize) Button
+  // Replaced Lock icon with Minimize-style icon (Minus)
   const lockBtn = document.createElement("button");
-  lockBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-3 h-3"><path fill-rule="evenodd" d="M10 1a4.5 4.5 0 0 0-4.5 4.5V9H5a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6a2 2 0 0 0-2-2h-.5V5.5A4.5 4.5 0 0 0 10 1Zm3 8V5.5a3 3 0 1 0-6 0V9h6Z" clip-rule="evenodd" /></svg>`;
+  lockBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-3 h-3"><path fill-rule="evenodd" d="M4 10a.75.75 0 0 1 .75-.75h10.5a.75.75 0 0 1 0 1.5H4.75A.75.75 0 0 1 4 10Z" clip-rule="evenodd" /></svg>`;
   lockBtn.className =
     "text-xs w-4 h-4 flex items-center justify-center hover:bg-black/10 rounded text-black/70";
-  // Force color
   lockBtn.style.color = "#374151";
-  lockBtn.title = "Lock (Hide Header)";
+  lockBtn.title = "Compact Mode (Hide Header)";
   lockBtn.onmousedown = (e) => e.stopPropagation();
   lockBtn.onclick = (e) => {
     e.stopPropagation();
     updateNote(note.id, { softLocked: true });
-  };
-
-  // Min/Max Button
-  const minBtn = document.createElement("button");
-  minBtn.className =
-    "text-xs font-bold w-4 h-4 flex items-center justify-center hover:bg-black/10 rounded text-black/70";
-  minBtn.style.color = "#374151";
-  minBtn.onclick = (e) => {
-    e.stopPropagation();
-    updateNote(note.id, { minimized: !note.minimized });
   };
 
   // Close Button
@@ -193,7 +190,6 @@ function createNoteElement(note: StickyNote) {
 
   controls.appendChild(colorContainer);
   controls.appendChild(lockBtn);
-  controls.appendChild(minBtn);
   controls.appendChild(closeBtn);
 
   const title = document.createElement("span");
@@ -214,22 +210,15 @@ function createNoteElement(note: StickyNote) {
   compactHandle.title = "Drag to move";
 
   const unlockBtn = document.createElement("button");
-  // Unlock icon (open lock)
-  unlockBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-3 h-3"><path fill-rule="evenodd" d="M14.5 9a.75.75 0 0 1 .75.75v5.5a.75.75 0 0 1-.75.75h-9a.75.75 0 0 1-.75-.75V9.75a.75.75 0 0 1 .75-.75h12Zm-1.75-4.5a3.25 3.25 0 0 0-6.5 0V8h6.5V4.5Z" clip-rule="evenodd" /></svg>`;
-  // Give it a background so it's visible over text
+  // Expand/Maximize icon (Arrows out or Plus) - Using simple chevron/expand icon
+  // Revert icon to something indicating "Show Header"
+  unlockBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-3 h-3"><path fill-rule="evenodd" d="M10 3a.75.75 0 0 1 .75.75v12.5a.75.75 0 0 1-1.5 0V3.75A.75.75 0 0 1 10 3Z" clip-rule="evenodd" /><path fill-rule="evenodd" d="M3.75 10a.75.75 0 0 1 .75-.75h11.5a.75.75 0 0 1 0 1.5H4.5A.75.75 0 0 1 3.75 10Z" clip-rule="evenodd" /></svg>`; // Plus sign
+
   unlockBtn.className = "w-5 h-5 flex items-center justify-center bg-black/10 hover:bg-black/20 rounded shadow-sm backdrop-blur-sm text-black/80";
   unlockBtn.style.color = "#1f2937";
-  unlockBtn.title = "Unlock Header";
+  unlockBtn.title = "Show Header";
 
-  // Clicking the handle itself allows dragging (handled by mousedown logic below)
-  // Clicking the button specifically should unlock
-  unlockBtn.onmousedown = (e) => {
-      // Allow drag to propagate if it's part of the handle logic, but we want click to unlock
-      // Actually, standard behavior: mousedown starts drag. click triggers action.
-      // We stop propagation of mousedown on the button if we want to prevent drag?
-      // No, we want to allow unlocking.
-      e.stopPropagation();
-  };
+  unlockBtn.onmousedown = (e) => e.stopPropagation();
   unlockBtn.onclick = (e) => {
     e.stopPropagation();
     updateNote(note.id, { softLocked: false });
@@ -243,19 +232,58 @@ function createNoteElement(note: StickyNote) {
   // --- Content ---
   const textarea = document.createElement("textarea");
   textarea.className =
-    "w-full p-2 resize-none bg-transparent border-none outline-none text-sm font-sans placeholder-neutral-500/50";
+    "w-full h-full p-2 resize-none bg-transparent border-none outline-none text-sm font-sans placeholder-neutral-500/50 flex-1";
   // Force text color
   textarea.style.color = "#1f2937";
-  textarea.style.minHeight = "80px";
   textarea.placeholder = "Type here...";
   textarea.value = note.text;
 
   textarea.onchange = (e) => {
     updateNote(note.id, { text: (e.target as HTMLTextAreaElement).value });
   };
-  textarea.onmousedown = (e) => e.stopPropagation(); // Allow text selection without dragging note
+  textarea.onmousedown = (e) => e.stopPropagation();
 
   div.appendChild(textarea);
+
+  // --- Resize Handle ---
+  const resizeHandle = document.createElement("div");
+  resizeHandle.className = "absolute bottom-0 right-0 w-4 h-4 cursor-nwse-resize z-20 hover:bg-black/10 rounded-tl";
+  // Visual indicator (triangle lines)
+  resizeHandle.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-full h-full opacity-30"><path d="M22 22H20V20H22V22ZM22 18H18V22H22V18ZM18 18H16V20H18V18ZM14 20H16V22H14V20ZM22 14H14V18H22V14Z"/></svg>`;
+
+  resizeHandle.onmousedown = (e) => {
+    e.stopPropagation();
+    e.preventDefault();
+    isResizing = true;
+    const startX = e.clientX;
+    const startY = e.clientY;
+    const startW = parseFloat(div.style.width);
+    const startH = parseFloat(div.style.height);
+
+    const onResizeMove = (me: MouseEvent) => {
+      const dx = me.clientX - startX;
+      const dy = me.clientY - startY;
+      const newW = Math.max(MIN_WIDTH, startW + dx);
+      const newH = Math.max(MIN_HEIGHT, startH + dy);
+
+      div.style.width = `${newW}px`;
+      div.style.height = `${newH}px`;
+    };
+
+    const onResizeUp = () => {
+      document.removeEventListener("mousemove", onResizeMove);
+      document.removeEventListener("mouseup", onResizeUp);
+      isResizing = false;
+      const finalW = parseFloat(div.style.width);
+      const finalH = parseFloat(div.style.height);
+      updateNote(note.id, { width: finalW, height: finalH });
+    };
+
+    document.addEventListener("mousemove", onResizeMove);
+    document.addEventListener("mouseup", onResizeUp);
+  };
+
+  div.appendChild(resizeHandle);
 
   // --- Drag Logic ---
   const startDrag = (e: MouseEvent) => {
@@ -306,7 +334,6 @@ function createNoteElement(note: StickyNote) {
   };
 
   header.onmousedown = startDrag;
-  // The compact handle (the container of the unlock button) allows dragging
   compactHandle.onmousedown = startDrag;
 
   return div;
@@ -319,10 +346,12 @@ function updateNoteElement(div: HTMLElement, note: StickyNote) {
   const header = (div as any)._header as HTMLElement;
   const compactHandle = (div as any)._compactHandle as HTMLElement;
 
-  // Find controls in header
-  const minBtn = header.querySelectorAll("button")[1]; // lock[0], min[1], close[2]
   const colorBtn = header.querySelector(".rounded-full") as HTMLElement;
   const colorInput = header.querySelector("input[type=color]") as HTMLInputElement;
+
+  // Resize
+  if (note.width) div.style.width = `${note.width}px`;
+  if (note.height) div.style.height = `${note.height}px`;
 
   // Soft Lock State
   if (note.softLocked) {
@@ -333,17 +362,6 @@ function updateNoteElement(div: HTMLElement, note: StickyNote) {
     header.style.display = "flex";
     compactHandle.style.display = "none";
     div.style.borderTop = "none";
-  }
-
-  // Minimized state
-  if (note.minimized) {
-    textarea.style.display = "none";
-    div.style.height = "auto";
-    if (minBtn) minBtn.textContent = "+";
-  } else {
-    textarea.style.display = "block";
-    div.style.height = "auto";
-    if (minBtn) minBtn.textContent = "−";
   }
 
   // Update controls
