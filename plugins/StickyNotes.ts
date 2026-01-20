@@ -15,7 +15,7 @@ interface StickyNote {
   text: string;
   color: string;
   softLocked?: boolean;
-  minimized?: never; // Deprecated
+  minimized?: never;
 }
 
 const DEFAULT_COLOR = "#fef3c7"; // yellow
@@ -162,7 +162,6 @@ function createNoteElement(note: StickyNote) {
   colorContainer.appendChild(colorInput);
 
   // Soft Lock (Minimize) Button
-  // Minus icon for "Compact Mode"
   const lockBtn = document.createElement("button");
   lockBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-3 h-3"><path fill-rule="evenodd" d="M4 10a.75.75 0 0 1 .75-.75h10.5a.75.75 0 0 1 0 1.5H4.75A.75.75 0 0 1 4 10Z" clip-rule="evenodd" /></svg>`;
   lockBtn.className =
@@ -208,7 +207,6 @@ function createNoteElement(note: StickyNote) {
   compactHandle.title = "Drag to move";
 
   const unlockBtn = document.createElement("button");
-  // Simple square/maximize icon for restore
   unlockBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-3 h-3"><path fill-rule="evenodd" d="M10 3a.75.75 0 0 1 .75.75v12.5a.75.75 0 0 1-1.5 0V3.75A.75.75 0 0 1 10 3Z" clip-rule="evenodd" /><path fill-rule="evenodd" d="M3.75 10a.75.75 0 0 1 .75-.75h11.5a.75.75 0 0 1 0 1.5H4.5A.75.75 0 0 1 3.75 10Z" clip-rule="evenodd" /></svg>`; // Plus sign
 
   unlockBtn.className = "w-5 h-5 flex items-center justify-center bg-black/10 hover:bg-black/20 rounded shadow-sm backdrop-blur-sm text-black/80";
@@ -243,19 +241,23 @@ function createNoteElement(note: StickyNote) {
 
   // --- Resize Handle ---
   const resizeHandle = document.createElement("div");
-  // Larger touch target (6x6 = 24px)
+  // Ensure visual distinctness and z-index.
+  // Using a larger area and placing it explicitly in bottom right.
+  // The 'cursor-nwse-resize' is standard.
   resizeHandle.className = "absolute bottom-0 right-0 w-6 h-6 cursor-nwse-resize z-20 hover:bg-black/5 rounded-tl-lg flex items-end justify-end p-0.5";
-  // Distinct triangle icon
-  resizeHandle.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4 text-black/30"><path d="M22 22H20V20H22V22ZM22 18H18V22H22V18ZM18 18H16V20H18V18ZM14 20H16V22H14V20ZM22 14H14V18H22V14Z"/></svg>`;
+  resizeHandle.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4 text-black/40"><path d="M22 22H20V20H22V22ZM22 18H18V22H22V18ZM18 18H16V20H18V18ZM14 20H16V22H14V20ZM22 14H14V18H22V14Z"/></svg>`;
 
+  // Attach directly to resizing logic
   resizeHandle.onmousedown = (e) => {
     e.stopPropagation();
     e.preventDefault();
     isResizing = true;
     const startX = e.clientX;
     const startY = e.clientY;
-    const startW = parseFloat(div.style.width);
-    const startH = parseFloat(div.style.height);
+    // Use getBoundingClientRect for accuracy
+    const rect = div.getBoundingClientRect();
+    const startW = rect.width;
+    const startH = rect.height;
 
     const onResizeMove = (me: MouseEvent) => {
       const dx = me.clientX - startX;
@@ -271,15 +273,20 @@ function createNoteElement(note: StickyNote) {
       document.removeEventListener("mousemove", onResizeMove);
       document.removeEventListener("mouseup", onResizeUp);
       isResizing = false;
-      const finalW = parseFloat(div.style.width);
-      const finalH = parseFloat(div.style.height);
-      updateNote(note.id, { width: finalW, height: finalH });
+
+      // Save final state
+      const finalRect = div.getBoundingClientRect();
+      updateNote(note.id, { width: finalRect.width, height: finalRect.height });
     };
 
     document.addEventListener("mousemove", onResizeMove);
     document.addEventListener("mouseup", onResizeUp);
   };
 
+  // We append resizeHandle to div. Since div is relative/absolute and has z-index logic if needed,
+  // ensure it sits above textarea.
+  // textarea has no z-index set, default is auto (0).
+  // resizeHandle has z-20. It should be fine.
   div.appendChild(resizeHandle);
 
   // --- Drag Logic ---
