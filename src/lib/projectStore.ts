@@ -16,6 +16,7 @@ import {
   DEFAULT_SETTINGS,
 } from "../config";
 import { getRandomColor } from "../utils";
+import { regenerateProjectMacros } from "./macroUtils";
 
 export function normalizeLines(input: Line[]): Line[] {
   return (input || []).map((line) => ({
@@ -124,10 +125,41 @@ export function resetProject() {
   // currentFilePath.set(null);
 }
 
+export function refreshMacros() {
+  const lines = get(linesStore);
+  const sequence = get(sequenceStore);
+  const startPoint = get(startPointStore);
+  const macros = get(macrosStore);
+
+  // Optimization: Check if any macros exist before doing heavy work
+  const hasMacro = sequence.some((s) => s.kind === "macro");
+  if (!hasMacro) return;
+
+  const result = regenerateProjectMacros(startPoint, lines, sequence, macros);
+
+  const oldLinesJson = JSON.stringify(lines);
+  const newLinesJson = JSON.stringify(result.lines);
+
+  if (oldLinesJson !== newLinesJson) {
+    linesStore.set(result.lines);
+  }
+
+  const oldSeqJson = JSON.stringify(sequence);
+  const newSeqJson = JSON.stringify(result.sequence);
+
+  if (oldSeqJson !== newSeqJson) {
+    sequenceStore.set(result.sequence);
+  }
+}
+
 export async function loadMacro(filePath: string, force = false) {
   // Check if already loaded
   const currentMacros = get(macrosStore);
-  if (!force && currentMacros.has(filePath)) return;
+  if (!force && currentMacros.has(filePath)) {
+    // Even if loaded, we might need to refresh if the sequence has unexpanded macros
+    refreshMacros();
+    return;
+  }
 
   // Use electronAPI to read file
   const api = (window as any).electronAPI;
@@ -145,6 +177,7 @@ export async function loadMacro(filePath: string, force = false) {
           return newMap;
         });
         console.log(`[projectStore] Loaded macro: ${filePath}`);
+        refreshMacros();
       }
     } catch (e) {
       console.error("Failed to load macro:", filePath, e);
@@ -212,6 +245,9 @@ export function loadProjectData(data: any) {
       loadMacro(item.filePath);
     }
   });
+
+  // Refresh macros immediately in case they are already loaded
+  refreshMacros();
 
   // settings are usually loaded separately or merged?
   // In App.svelte loadData does NOT load settings from the file data usually,
