@@ -14,6 +14,7 @@
     type OptimizationResult,
   } from "../../../utils/pathOptimizer";
   import { formatTime } from "../../../utils"; // Assuming formatTime is exported from index or timeCalculator
+  import { CloseIcon, PlayIcon } from "../../../icons";
 
   export let isOpen = false;
   export let startPoint: Point;
@@ -177,20 +178,7 @@
       class="text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300 disabled:opacity-50 disabled:cursor-not-allowed"
       title="Close optimization panel"
     >
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        fill="none"
-        viewBox="0 0 24 24"
-        stroke-width="1.5"
-        stroke="currentColor"
-        class="size-5"
-      >
-        <path
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          d="M6 18 18 6M6 6l12 12"
-        />
-      </svg>
+      <CloseIcon className="size-5" strokeWidth={1.5} />
     </button>
   </div>
 
@@ -327,18 +315,7 @@
       on:click={startOptimization}
       class="w-full px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-md text-sm font-medium transition-colors flex items-center justify-center gap-2"
     >
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        fill="currentColor"
-        viewBox="0 0 24 24"
-        class="size-4"
-      >
-        <path
-          fill-rule="evenodd"
-          d="M4.5 5.653c0-1.427 1.529-2.33 2.779-1.643l11.54 6.347c1.295.712 1.295 2.573 0 3.286L7.28 19.99c-1.25.687-2.779-.217-2.779-1.643V5.653Z"
-          clip-rule="evenodd"
-        />
-      </svg>
+      <PlayIcon className="size-4" />
       Start Optimization
     </button>
   {/if}
