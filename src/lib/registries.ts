@@ -151,3 +151,91 @@ const createHookRegistry = () => {
 };
 
 export const hookRegistry = createHookRegistry();
+
+// --- Dialog Registry ---
+export interface DialogDefinition {
+  id: string;
+  component: any;
+  props?: any;
+  // A dialog can be 'active' by default if registered, or we might need a way to open it.
+  // We'll assume all registered dialogs are rendered by DialogHost, but they might handle their own visibility (isOpen prop).
+  // Or, more likely, plugins register dialogs, and then they can be "opened" by ID?
+  // Let's assume DialogHost renders all registered dialogs, and they start closed or are controlled by store.
+  // Actually, to make it easy for plugins, let's just render them. The plugin can use a store to control visibility inside the component.
+}
+
+const createDialogRegistry = () => {
+  const { subscribe, update, set } = writable<DialogDefinition[]>([]);
+
+  return {
+    subscribe,
+    register: (dialog: DialogDefinition) => {
+      update((dialogs) => {
+        const filtered = dialogs.filter((d) => d.id !== dialog.id);
+        return [...filtered, dialog];
+      });
+    },
+    unregister: (id: string) => {
+      update((dialogs) => dialogs.filter((d) => d.id !== id));
+    },
+    reset: () => set([]),
+  };
+};
+
+export const dialogRegistry = createDialogRegistry();
+
+// --- Timeline Transformer Registry ---
+export type TimelineTransformer = (items: any[], context: any) => any[];
+
+export interface TimelineTransformerEntry {
+  id: string;
+  fn: TimelineTransformer;
+}
+
+const createTimelineTransformerRegistry = () => {
+  const { subscribe, update, set } = writable<TimelineTransformerEntry[]>([]);
+
+  return {
+    subscribe,
+    register: (entry: TimelineTransformerEntry) => {
+      update((entries) => {
+        const filtered = entries.filter((e) => e.id !== entry.id);
+        return [...filtered, entry];
+      });
+    },
+    unregister: (id: string) => {
+      update((entries) => entries.filter((e) => e.id !== id));
+    },
+    reset: () => set([]),
+  };
+};
+
+export const timelineTransformerRegistry = createTimelineTransformerRegistry();
+
+// --- Field Render Registry ---
+export type FieldRenderCallback = (two: any) => void;
+
+export interface FieldRenderEntry {
+  id: string;
+  fn: FieldRenderCallback;
+}
+
+const createFieldRenderRegistry = () => {
+  const { subscribe, update, set } = writable<FieldRenderEntry[]>([]);
+
+  return {
+    subscribe,
+    register: (entry: FieldRenderEntry) => {
+      update((entries) => {
+        const filtered = entries.filter((e) => e.id !== entry.id);
+        return [...filtered, entry];
+      });
+    },
+    unregister: (id: string) => {
+      update((entries) => entries.filter((e) => e.id !== id));
+    },
+    reset: () => set([]),
+  };
+};
+
+export const fieldRenderRegistry = createFieldRenderRegistry();

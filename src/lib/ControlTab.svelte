@@ -47,7 +47,7 @@
   import { tick } from "svelte";
   import PlaybackControls from "./components/PlaybackControls.svelte";
   import { calculatePathTime } from "../utils";
-  import { tabRegistry } from "./registries";
+  import { tabRegistry, timelineTransformerRegistry } from "./registries";
   import { diffMode } from "./diffStore";
 
   export let percent: number;
@@ -289,7 +289,22 @@
       }
     });
 
-    return items;
+    // Apply transformers
+    let transformedItems = items;
+    $timelineTransformerRegistry.forEach((entry) => {
+      try {
+        transformedItems = entry.fn(transformedItems, {
+          timePrediction,
+          sequence,
+          lines,
+          settings,
+        });
+      } catch (e) {
+        console.error(`Error in timeline transformer ${entry.id}:`, e);
+      }
+    });
+
+    return transformedItems;
   })();
 
   // Use the registry for tabs
