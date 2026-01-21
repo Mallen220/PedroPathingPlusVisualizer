@@ -22,6 +22,7 @@
   import PluginManagerDialog from "./lib/components/PluginManagerDialog.svelte";
   import KeyboardShortcutsDialog from "./lib/components/KeyboardShortcutsDialog.svelte";
   import ExportCodeDialog from "./lib/components/ExportCodeDialog.svelte";
+  import DialogHost from "./lib/components/DialogHost.svelte";
 
   // Stores
   import {
@@ -1360,6 +1361,8 @@
   bind:shapes={$shapesStore}
   settings={$settingsStore}
 />
+
+<DialogHost />
 
 <!-- Drag Overlay -->
 {#if isDraggingFile}

@@ -24,6 +24,7 @@
   import {
     hookRegistry,
     fieldContextMenuRegistry,
+    fieldRenderRegistry,
     type ContextMenuItem,
   } from "../registries";
   import ContextMenu from "./ContextMenu.svelte";
@@ -1504,6 +1505,15 @@
     two.add(eventGroup);
     two.add(pointGroup);
     two.add(collisionGroup);
+
+    // Apply custom renderers
+    $fieldRenderRegistry.forEach((entry) => {
+      try {
+        entry.fn(two);
+      } catch (e) {
+        console.error(`Error in field renderer ${entry.id}:`, e);
+      }
+    });
 
     two.update();
   }
