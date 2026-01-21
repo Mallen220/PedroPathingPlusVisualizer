@@ -202,13 +202,14 @@ export interface Shape {
   visible?: boolean;
 }
 
+
 export interface ObstaclePreset {
   id: string;
   name: string;
   shapes: Shape[];
 }
 
-export type TimelineEventType = "travel" | "wait";
+export type TimelineEventType = "travel" | "wait" | "macro";
 
 export interface TimelineEvent {
   type: TimelineEventType;
