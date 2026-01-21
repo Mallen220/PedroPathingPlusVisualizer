@@ -34,14 +34,19 @@
     if (e.key === "Escape") handleCancel();
   }
 
-  $: if (show) {
+  let wasShown = false;
+  $: if (show && !wasShown) {
     name = defaultName;
+    wasShown = true;
     tick().then(() => {
       if (inputElement) {
         inputElement.focus();
         inputElement.select();
       }
     });
+  }
+  $: if (!show) {
+    wasShown = false;
   }
 </script>
 
