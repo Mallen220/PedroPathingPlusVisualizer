@@ -205,6 +205,14 @@ export async function loadMacro(filePath: string, force = false) {
       const data = JSON.parse(content);
       // Validate data
       if (data.startPoint && data.lines) {
+        // Pre-process lines to ensure stable IDs if missing (fix for flickering/UI errors)
+        if (Array.isArray(data.lines)) {
+          data.lines = data.lines.map((l: Line, i: number) => ({
+            ...l,
+            id: l.id || `macro-line-${i}`,
+          }));
+        }
+
         // Normalize lines in macro
         data.lines = normalizeLines(data.lines);
         macrosStore.update((map) => {
@@ -316,6 +324,8 @@ export async function loadProjectData(data: any, projectFilePath?: string) {
               projectFilePath,
               item.filePath,
             );
+            // Update item to use absolute path for the session so it matches macrosStore keys
+            item.filePath = resolved;
             await loadMacro(resolved);
           })(),
         );

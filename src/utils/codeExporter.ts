@@ -902,9 +902,9 @@ import com.pedropathing.paths.PathChain;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 ${imports}
 import org.firstinspires.ftc.robotcore.external.Telemetry;
-import com.pedropathingplus.PedroPathReader;
-import com.pedropathingplus.pathing.ProgressTracker;
-import com.pedropathingplus.pathing.NamedCommands;
+import com.pedropathing.util.PedroPathReader;
+import com.pedropathing.util.ProgressTracker;
+import com.pedropathing.util.NamedCommands;
 import java.io.IOException;
 import ${packageName.split(".").slice(0, 4).join(".")}.Subsystems.Drivetrain;
 

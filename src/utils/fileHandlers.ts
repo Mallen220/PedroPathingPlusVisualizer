@@ -177,6 +177,33 @@ async function performSave(
       }
     });
 
+    // --- PORTABILITY: Relativize Macro Paths ---
+    // Make macro paths relative to the save directory if possible
+    let saveDir = "";
+    if (targetPath) {
+      // Extract directory from targetPath
+      saveDir = targetPath.replace(/[/\\][^/\\]+$/, "");
+    } else {
+      // Fallback to current directory store if available
+      const storedDir = get(currentDirectoryStore);
+      if (storedDir) saveDir = storedDir;
+    }
+
+    if (saveDir) {
+      const normSaveDir = saveDir.replace(/\\/g, "/");
+      sequenceToSave.forEach((item: any) => {
+        if (item.kind === "macro" && item.filePath) {
+          const normPath = item.filePath.replace(/\\/g, "/");
+          // If path starts with saveDir, relativize it
+          if (normPath.startsWith(normSaveDir)) {
+            let rel = normPath.substring(normSaveDir.length);
+            if (rel.startsWith("/")) rel = rel.substring(1);
+            item.filePath = rel;
+          }
+        }
+      });
+    }
+
     // Create the project data structure
     const projectData = {
       version: 1,
