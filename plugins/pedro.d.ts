@@ -211,13 +211,13 @@ interface Shape {
   visible?: boolean;
 }
 
+type TimelineEventType = "travel" | "wait" | "macro";
 interface ObstaclePreset {
   id: string;
   name: string;
   shapes: Shape[];
 }
 
-type TimelineEventType = "travel" | "wait";
 
 interface TimelineEvent {
   type: TimelineEventType;
