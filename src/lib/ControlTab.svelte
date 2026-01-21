@@ -175,7 +175,7 @@
 
   $: timelineItems = (() => {
     const items: {
-      type: "marker" | "wait" | "rotate" | "dot";
+      type: "marker" | "wait" | "rotate" | "dot" | "macro";
       percent: number;
       durationPercent?: number;
       color?: string;
@@ -236,6 +236,15 @@
           durationPercent: durPct,
           name: ev.name || (isRotate ? "Rotate" : "Wait"),
           explicit: isRotate ? explicit : explicit,
+        });
+      } else if (ev.type === "macro") {
+        const startPct = toPct(ev.startTime);
+        const durPct = toPct(ev.duration);
+        items.push({
+          type: "macro",
+          percent: startPct,
+          durationPercent: durPct,
+          name: ev.name || "Macro",
         });
       }
     });

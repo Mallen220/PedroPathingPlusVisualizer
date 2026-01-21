@@ -688,11 +688,27 @@ export function calculatePathTime(
       }
 
       if (item.kind === "macro") {
+        const startTime = currentTime;
+
         // Use the pre-expanded sequence in the item, which refreshMacros has populated.
         // The lines for this macro should already be in contextLines (which are all project lines).
         if (item.sequence && item.sequence.length > 0) {
           processSequence(item.sequence, contextLines, recursionDepth + 1);
         }
+
+        const endTime = currentTime;
+        const duration = endTime - startTime;
+
+        if (duration > 0) {
+          timeline.push({
+            type: "macro",
+            name: item.name || "Macro",
+            duration,
+            startTime,
+            endTime,
+          });
+        }
+
         return;
       }
 
