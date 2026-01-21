@@ -18,6 +18,7 @@ import {
 import { getRandomColor } from "../utils";
 import { regenerateProjectMacros } from "./macroUtils";
 import { notification } from "../stores";
+import { hookRegistry } from "./registries";
 
 export function normalizeLines(input: Line[]): Line[] {
   return (input || []).map((line) => ({
@@ -251,6 +252,8 @@ export async function loadMacro(filePath: string, force = false) {
 }
 
 export async function loadProjectData(data: any, projectFilePath?: string) {
+  await hookRegistry.run("onLoad", data);
+
   const sp = data.startPoint || {
     x: 72,
     y: 72,

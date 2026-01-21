@@ -45,6 +45,7 @@
 import { settingsStore, loadMacro, loadProjectData } from "./projectStore";
   import { saveProject } from "../utils/fileHandlers";
   import { saveAutoPathsDirectory } from "../utils/directorySettings";
+  import { hookRegistry } from "./registries";
   import { mirrorPathData, reversePathData } from "../utils/pathTransform";
   import { scanEventsInDirectory } from "../utils/eventScanner";
 
@@ -569,18 +570,18 @@ import { settingsStore, loadMacro, loadProjectData } from "./projectStore";
 
   async function saveCurrentToFile(targetFile: FileInfo) {
     try {
-      const content = JSON.stringify(
-        {
-          startPoint,
-          lines,
-          shapes,
-          sequence,
-          version: "1.2.1",
-          timestamp: new Date().toISOString(),
-        },
-        null,
-        2,
-      );
+      const data = {
+        startPoint,
+        lines,
+        shapes,
+        sequence,
+        version: "1.2.1",
+        timestamp: new Date().toISOString(),
+      };
+
+      await hookRegistry.run("onSave", data);
+
+      const content = JSON.stringify(data, null, 2);
 
       await electronAPI.writeFile(targetFile.path, content);
       await refreshDirectory();
@@ -630,18 +631,18 @@ import { settingsStore, loadMacro, loadProjectData } from "./projectStore";
         if (!confirm(`File "${fileName}" already exists. Overwrite?`)) return;
       }
 
-      const content = JSON.stringify(
-        {
-          startPoint,
-          lines: normalizeLines(lines),
-          shapes,
-          sequence,
-          version: "1.2.1",
-          timestamp: new Date().toISOString(),
-        },
-        null,
-        2,
-      );
+      const data = {
+        startPoint,
+        lines: normalizeLines(lines),
+        shapes,
+        sequence,
+        version: "1.2.1",
+        timestamp: new Date().toISOString(),
+      };
+
+      await hookRegistry.run("onSave", data);
+
+      const content = JSON.stringify(data, null, 2);
 
       await electronAPI.writeFile(filePath, content);
       creatingNewFile = false;
@@ -705,6 +706,8 @@ import { settingsStore, loadMacro, loadProjectData } from "./projectStore";
         newName = `${baseName}${suffix}${counter}.pp`;
         counter++;
       }
+
+      await hookRegistry.run("onSave", data);
 
       await electronAPI.writeFile(
         path.join(currentDirectory, newName),
