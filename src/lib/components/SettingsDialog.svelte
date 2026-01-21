@@ -144,6 +144,8 @@
     settings = { ...settings };
   }
 
+  import { saveSettings } from "../../utils/settingsPersistence";
+
   async function handleReset() {
     if (
       confirm(
@@ -155,6 +157,16 @@
       Object.keys(defaultSettings).forEach((key) => {
         (settings as any)[key] = (defaultSettings as any)[key];
       });
+
+      // Prevent the UI from immediately triggering the onboarding tutorial
+      // when the user resets settings. Mark onboarding as seen and persist.
+      (settings as any).hasSeenOnboarding = true;
+      settings = { ...settings };
+      try {
+        await saveSettings(settings);
+      } catch (e) {
+        console.warn("Failed to persist settings after reset", e);
+      }
     }
   }
 
