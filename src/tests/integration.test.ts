@@ -126,7 +126,7 @@ describe("Field Logic and Visibility Integration", () => {
     };
 
     // Simulate "Import" by calling loadProjectData
-    loadProjectData(mockData);
+    await loadProjectData(mockData);
 
     expect(get(startPointStore).x).toBe(20);
     expect(get(linesStore)).toHaveLength(1);

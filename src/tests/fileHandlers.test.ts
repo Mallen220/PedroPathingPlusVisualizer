@@ -58,7 +58,7 @@ describe("fileHandlers", () => {
   });
 
   describe("loadProjectData", () => {
-    it("restores linked names by stripping suffixes", () => {
+    it("restores linked names by stripping suffixes", async () => {
       const data = {
         lines: [
           {
@@ -77,14 +77,14 @@ describe("fileHandlers", () => {
         sequence: [],
       };
 
-      fileHandlers.loadProjectData(data);
+      await fileHandlers.loadProjectData(data);
       const lines = get(linesStore);
 
       expect(lines[0].name).toBe("MyPath");
       expect(lines[1].name).toBe("MyPath"); // Suffix stripped
     });
 
-    it("restores linked names from _linkedName metadata", () => {
+    it("restores linked names from _linkedName metadata", async () => {
       const data = {
         lines: [
           { id: "1", name: "Unique Name 1", _linkedName: "Shared Name" },
@@ -93,7 +93,7 @@ describe("fileHandlers", () => {
         sequence: [],
       };
 
-      fileHandlers.loadProjectData(data);
+      await fileHandlers.loadProjectData(data);
       const lines = get(linesStore);
 
       expect(lines[0].name).toBe("Shared Name");
