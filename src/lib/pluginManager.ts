@@ -16,6 +16,9 @@ import {
   navbarActionRegistry,
   hookRegistry,
   fieldContextMenuRegistry,
+  dialogRegistry,
+  timelineTransformerRegistry,
+  fieldRenderRegistry,
 } from "./registries";
 import { registerCoreUI } from "./coreRegistrations";
 
@@ -144,6 +147,9 @@ export class PluginManager {
         navbarActions: navbarActionRegistry,
         hooks: hookRegistry,
         contextMenuItems: fieldContextMenuRegistry,
+        dialogs: dialogRegistry,
+        timelineTransformers: timelineTransformerRegistry,
+        fieldRenderers: fieldRenderRegistry,
       },
       stores: {
         project: projectStore,
@@ -188,6 +194,9 @@ export class PluginManager {
     navbarActionRegistry.reset();
     hookRegistry.reset();
     fieldContextMenuRegistry.reset();
+    dialogRegistry.reset();
+    timelineTransformerRegistry.reset();
+    fieldRenderRegistry.reset();
 
     // Restore built-in components/tabs before loading plugins so the UI baseline persists
     registerCoreUI();
