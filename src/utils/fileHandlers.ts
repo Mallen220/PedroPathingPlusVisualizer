@@ -179,13 +179,8 @@ async function performSave(
       }
     });
 
-    // Determine targetPath early if using writeFile strategy (standard Electron)
-    if (
-      electronAPI &&
-      electronAPI.writeFile &&
-      !electronAPI.saveFile &&
-      !targetPath
-    ) {
+    // Determine targetPath early to ensure we can calculate relative paths
+    if (electronAPI && !targetPath) {
       if (electronAPI.showSaveDialog) {
         const filePath = await electronAPI.showSaveDialog({
           title: "Save Project",
@@ -194,7 +189,8 @@ async function performSave(
         });
         if (!filePath) return false;
         targetPath = filePath;
-      } else {
+      } else if (electronAPI.writeFile && !electronAPI.saveFile) {
+        // If we can't show dialog and only have writeFile, we can't save without a path
         return false;
       }
     }

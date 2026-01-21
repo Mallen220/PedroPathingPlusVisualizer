@@ -193,6 +193,7 @@ describe("fileHandlers", () => {
         success: true,
         filepath: "/saved/file.pp",
       });
+      mockElectronAPI.showSaveDialog.mockResolvedValue("/saved/file.pp");
       // Ensure we have some data
       linesStore.set([{ id: "1", name: "Line 1" } as any]);
 
@@ -208,6 +209,7 @@ describe("fileHandlers", () => {
         success: false,
         error: "Permission denied",
       });
+      mockElectronAPI.showSaveDialog.mockResolvedValue("/saved/file.pp");
 
       await fileHandlers.saveProject();
 
