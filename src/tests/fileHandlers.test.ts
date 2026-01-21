@@ -137,6 +137,10 @@ describe("fileHandlers", () => {
       expect(mockElectronAPI.readFile).toHaveBeenCalledWith(
         "/resolved/relative/path/macro.pp"
       );
+
+      // Verify sequenceStore has absolute path
+      const seq = get(sequenceStore);
+      expect((seq[0] as any).filePath).toBe("/resolved/relative/path/macro.pp");
     });
   });
 
