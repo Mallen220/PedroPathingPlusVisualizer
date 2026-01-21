@@ -52,6 +52,7 @@ Collision checks are now more powerful and visual.
 
 - **Range Markers:** Visualize collision risks with new range indicators.
 - **Clearer Feedback:** Immediate visual cues when paths intersect with obstacles or leave safe zones.
+- **Zero-Length Checks:** Automatically detects and alerts you about zero-length path segments that can cause issues.
 
 ### **Refined Diff View**
 
