@@ -8,7 +8,7 @@
   export let loopAnimation: boolean;
   // New prop for timeline items (markers, waits, rotates)
   export let timelineItems: {
-    type: "marker" | "wait" | "rotate" | "dot";
+    type: "marker" | "wait" | "rotate" | "dot" | "macro";
     percent: number;
     durationPercent?: number;
     color?: string;
@@ -219,6 +219,13 @@
             class={item.explicit === true
               ? "absolute top-1/2 -translate-y-1/2 h-2 bg-pink-500/70"
               : "absolute top-1/2 -translate-y-1/2 h-2 bg-pink-200/40"}
+            style="left: {item.percent}%; width: {item.durationPercent}%; border-radius: 2px;"
+            aria-hidden="true"
+          ></div>
+        {:else if item.type === "macro"}
+          <!-- Macro: Blue highlight/underline -->
+          <div
+            class="absolute top-1/2 -translate-y-1/2 h-2 bg-blue-500/50"
             style="left: {item.percent}%; width: {item.durationPercent}%; border-radius: 2px;"
             aria-hidden="true"
           ></div>

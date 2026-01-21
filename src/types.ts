@@ -201,7 +201,7 @@ export interface Shape {
   visible?: boolean;
 }
 
-export type TimelineEventType = "travel" | "wait";
+export type TimelineEventType = "travel" | "wait" | "macro";
 
 export interface TimelineEvent {
   type: TimelineEventType;
