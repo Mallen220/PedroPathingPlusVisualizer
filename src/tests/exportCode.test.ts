@@ -6,6 +6,7 @@ import ExportCodeDialog from "../lib/components/dialogs/ExportCodeDialog.svelte"
 // Mock the utils module used by the component so we can control generated code
 vi.mock("../utils", () => {
   return {
+    getRandomColor: vi.fn(() => "#ffffff"),
     generateJavaCode: vi.fn(),
     generatePointsArray: vi.fn(() => "apple\nbanana\napple\ncherry\napple"),
     generateSequentialCommandCode: vi.fn(),

@@ -16,7 +16,8 @@ import { resetSettings, saveSettings } from "../utils/settingsPersistence";
 
 describe("SettingsDialog", () => {
   beforeEach(() => {
-    vi.resetAllMocks();
+    // Only clear call history; preserve mock implementations declared above
+    vi.clearAllMocks();
   });
 
   it("does not trigger onboarding after reset (marks hasSeenOnboarding true and persists it)", async () => {
