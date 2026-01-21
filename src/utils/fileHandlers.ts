@@ -200,10 +200,38 @@ async function performSave(
       await Promise.all(
         sequenceToSave.map(async (item) => {
           if (item.kind === "macro" && item.filePath) {
-            item.filePath = await electronAPI.relativePath!(
+            const relPath = await electronAPI.relativePath!(
               targetPath!,
               item.filePath,
             );
+
+            // Force strict relative path usage (no absolute paths allowed)
+            // path.relative on Windows can return absolute if on different drives.
+            // On POSIX it might not happen as easily unless roots are different (unlikely for project files).
+            // We check if it starts with a separator (POSIX) or Drive letter (Windows)
+            // A simple heuristic for absolute paths:
+            // POSIX: starts with '/'
+            // Windows: starts with 'X:\' or '\\'
+            const isAbsolute =
+              relPath.startsWith("/") ||
+              relPath.match(/^[a-zA-Z]:\\/) ||
+              relPath.startsWith("\\\\");
+
+            if (isAbsolute) {
+              console.warn(
+                `[Save] Warning: Could not calculate relative path for macro ${item.filePath} relative to ${targetPath}. Result was ${relPath}.`,
+              );
+              // For "No Exceptions" rule, we might fail or try to copy?
+              // Copying is invasive.
+              // We will throw error to stop save if we strictly follow "No Exceptions" and it's impossible.
+              // However, user said "You cannot ever use absolute paths".
+              // So we should probably fail.
+              throw new Error(
+                `Cannot save project: Macro at "${item.filePath}" is on a different drive or incompatible path with project at "${targetPath}". Absolute paths are forbidden.`,
+              );
+            }
+
+            item.filePath = relPath;
           }
         }),
       );
