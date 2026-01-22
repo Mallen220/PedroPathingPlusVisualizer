@@ -1,7 +1,7 @@
 /// <reference path="./pedro.d.ts" />
 
 // Plugin: Field Annotations
-// Version: 1.2
+// Version: 1.3
 // Description: Add sticky notes to the field for collaboration and planning.
 
 console.log("[FieldAnnotations] Plugin loading...");
@@ -30,24 +30,118 @@ function setAnnotations(list) {
   }
 }
 
+// Custom prompt implementation since window.prompt is disabled
+function requestNoteText(callback) {
+    // Check if dialog already exists
+    if (document.getElementById('annotation-prompt')) return;
+
+    const overlay = document.createElement('div');
+    overlay.id = 'annotation-prompt';
+    overlay.style.position = 'fixed';
+    overlay.style.inset = '0';
+    overlay.style.backgroundColor = 'rgba(0,0,0,0.5)';
+    overlay.style.zIndex = '9999';
+    overlay.style.display = 'flex';
+    overlay.style.alignItems = 'center';
+    overlay.style.justifyContent = 'center';
+
+    const dialog = document.createElement('div');
+    dialog.style.backgroundColor = '#1f2937'; // gray-800
+    dialog.style.padding = '1.5rem';
+    dialog.style.borderRadius = '0.75rem';
+    dialog.style.boxShadow = '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)';
+    dialog.style.width = '100%';
+    dialog.style.maxWidth = '24rem';
+    dialog.style.color = 'white';
+
+    const title = document.createElement('h3');
+    title.textContent = 'Add Sticky Note';
+    title.style.fontSize = '1.125rem';
+    title.style.fontWeight = '600';
+    title.style.marginBottom = '1rem';
+
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.placeholder = 'Enter note text...';
+    input.style.width = '100%';
+    input.style.padding = '0.5rem';
+    input.style.marginBottom = '1.5rem';
+    input.style.borderRadius = '0.375rem';
+    input.style.backgroundColor = '#374151'; // gray-700
+    input.style.border = '1px solid #4b5563'; // gray-600
+    input.style.color = 'white';
+    input.style.outline = 'none';
+
+    const btnContainer = document.createElement('div');
+    btnContainer.style.display = 'flex';
+    btnContainer.style.justifyContent = 'flex-end';
+    btnContainer.style.gap = '0.75rem';
+
+    const cancelBtn = document.createElement('button');
+    cancelBtn.textContent = 'Cancel';
+    cancelBtn.style.padding = '0.5rem 1rem';
+    cancelBtn.style.borderRadius = '0.375rem';
+    cancelBtn.style.color = '#d1d5db'; // gray-300
+    cancelBtn.style.backgroundColor = 'transparent';
+    cancelBtn.style.cursor = 'pointer';
+    cancelBtn.onmouseover = () => cancelBtn.style.color = 'white';
+    cancelBtn.onmouseout = () => cancelBtn.style.color = '#d1d5db';
+
+    const confirmBtn = document.createElement('button');
+    confirmBtn.textContent = 'Add Note';
+    confirmBtn.style.padding = '0.5rem 1rem';
+    confirmBtn.style.borderRadius = '0.375rem';
+    confirmBtn.style.backgroundColor = '#8b5cf6'; // violet-500
+    confirmBtn.style.color = 'white';
+    confirmBtn.style.fontWeight = '500';
+    confirmBtn.style.cursor = 'pointer';
+    confirmBtn.onmouseover = () => confirmBtn.style.backgroundColor = '#7c3aed'; // violet-600
+    confirmBtn.onmouseout = () => confirmBtn.style.backgroundColor = '#8b5cf6';
+
+    const close = () => document.body.removeChild(overlay);
+
+    cancelBtn.onclick = close;
+    confirmBtn.onclick = () => {
+        const text = input.value.trim();
+        if (text) {
+            callback(text);
+        }
+        close();
+    };
+
+    input.onkeydown = (e) => {
+        if (e.key === 'Enter') confirmBtn.click();
+        if (e.key === 'Escape') close();
+    };
+
+    btnContainer.appendChild(cancelBtn);
+    btnContainer.appendChild(confirmBtn);
+    dialog.appendChild(title);
+    dialog.appendChild(input);
+    dialog.appendChild(btnContainer);
+    overlay.appendChild(dialog);
+    document.body.appendChild(overlay);
+
+    setTimeout(() => input.focus(), 50);
+}
+
 function addNote(x, y) {
     try {
-        const text = prompt("Enter note text:");
-        if (!text) return;
+        requestNoteText((text) => {
+            const colors = ["#fef08a", "#bae6fd", "#bbf7d0", "#fbcfe8", "#e9d5ff"];
+            const color = colors[Math.floor(Math.random() * colors.length)];
 
-        const colors = ["#fef08a", "#bae6fd", "#bbf7d0", "#fbcfe8", "#e9d5ff"];
-        const color = colors[Math.floor(Math.random() * colors.length)];
+            const newNote = {
+            id: Math.random().toString(36).substring(2, 10),
+            x: x,
+            y: y,
+            text: text,
+            color: color
+            };
 
-        const newNote = {
-        id: Math.random().toString(36).substring(2, 10),
-        x: x,
-        y: y,
-        text: text,
-        color: color
-        };
-
-        const list = getAnnotations();
-        setAnnotations([...list, newNote]);
+            const list = getAnnotations();
+            setAnnotations([...list, newNote]);
+        });
     } catch (e) {
         console.error("[FieldAnnotations] Add Note failed:", e);
     }
@@ -79,7 +173,6 @@ pedro.registries.contextMenuItems.register({
 pedro.registries.navbarActions.register({
     id: "add-annotation-btn",
     title: "Add Note",
-    // Icon: Sticky Note SVG
     icon: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
   <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
 </svg>
@@ -89,31 +182,22 @@ pedro.registries.navbarActions.register({
     onClick: () => {
         // Calculate center of view
         try {
-            const pan = pedro.stores.get(pedro.stores.app.fieldViewStore.fieldPan) || {x: 0, y: 0};
-            // Default to center of field if we can't get pan info,
-            // but actually we want the field coordinates of the viewport center.
-            // fieldViewStore exposes xScale/yScale which map Field -> Screen.
-            // We need Screen -> Field (invert).
-
             const fieldView = pedro.stores.get(pedro.stores.app.fieldViewStore);
             if (fieldView && fieldView.xScale && fieldView.xScale.invert) {
                 const width = fieldView.width || 800;
                 const height = fieldView.height || 600;
 
-                // Center of screen
                 const cx = width / 2;
                 const cy = height / 2;
 
                 const fx = fieldView.xScale.invert(cx);
                 const fy = fieldView.yScale.invert(cy);
 
-                // Clamp to field bounds (0-144)
                 const clampedX = Math.max(0, Math.min(144, fx));
                 const clampedY = Math.max(0, Math.min(144, fy));
 
                 addNote(clampedX, clampedY);
             } else {
-                // Fallback
                 addNote(72, 72);
             }
         } catch(e) {
@@ -148,8 +232,63 @@ pedro.registries.contextMenuItems.register({
             Math.abs(args.y - note.y) < NOTE_SIZE_INCHES / 2
         );
 
-        if (note && confirm(`Delete note "${note.text}"?`)) {
-            setAnnotations(list.filter(n => n.id !== note.id));
+        // Replace confirm with custom dialog or assume intention for now
+        // Or implement a simple Confirm dialog similar to requestNoteText
+        // For simplicity, let's just delete or use a safer non-blocking confirm if possible
+        // But since prompt is blocked, confirm likely is too.
+        // Let's implement a quick confirm dialog
+
+        if (note) {
+             const overlay = document.createElement('div');
+            overlay.style.position = 'fixed';
+            overlay.style.inset = '0';
+            overlay.style.backgroundColor = 'rgba(0,0,0,0.5)';
+            overlay.style.zIndex = '9999';
+            overlay.style.display = 'flex';
+            overlay.style.alignItems = 'center';
+            overlay.style.justifyContent = 'center';
+
+            const dialog = document.createElement('div');
+            dialog.style.backgroundColor = '#1f2937';
+            dialog.style.padding = '1.5rem';
+            dialog.style.borderRadius = '0.75rem';
+            dialog.style.color = 'white';
+            dialog.style.maxWidth = '20rem';
+
+            const msg = document.createElement('p');
+            msg.textContent = `Delete note "${note.text}"?`;
+            msg.style.marginBottom = '1.5rem';
+
+            const btnContainer = document.createElement('div');
+            btnContainer.style.display = 'flex';
+            btnContainer.style.justifyContent = 'flex-end';
+            btnContainer.style.gap = '0.75rem';
+
+            const cancelBtn = document.createElement('button');
+            cancelBtn.textContent = 'Cancel';
+            cancelBtn.style.padding = '0.5rem 1rem';
+            cancelBtn.style.borderRadius = '0.375rem';
+            cancelBtn.style.color = '#d1d5db';
+            cancelBtn.style.backgroundColor = 'transparent';
+            cancelBtn.onclick = () => document.body.removeChild(overlay);
+
+            const confirmBtn = document.createElement('button');
+            confirmBtn.textContent = 'Delete';
+            confirmBtn.style.padding = '0.5rem 1rem';
+            confirmBtn.style.borderRadius = '0.375rem';
+            confirmBtn.style.backgroundColor = '#ef4444'; // red-500
+            confirmBtn.style.color = 'white';
+            confirmBtn.onclick = () => {
+                setAnnotations(list.filter(n => n.id !== note.id));
+                document.body.removeChild(overlay);
+            };
+
+            btnContainer.appendChild(cancelBtn);
+            btnContainer.appendChild(confirmBtn);
+            dialog.appendChild(msg);
+            dialog.appendChild(btnContainer);
+            overlay.appendChild(dialog);
+            document.body.appendChild(overlay);
         }
     } catch (e) {
         console.error("[FieldAnnotations] Delete Note failed:", e);
