@@ -1,8 +1,6 @@
-### What's New!
+## Features
 
-## **Features:**
-
-### **Sticky Notes**
+### Sticky Notes
 
 Collaborate better by placing notes directly on the field.
 
@@ -10,28 +8,28 @@ Collaborate better by placing notes directly on the field.
 - **Customizable:** Change colors, minimize notes, and drag them to position.
 - **Persisted:** Notes are saved with your project file.
 
-### **Custom Field Maps**
+### Custom Field Maps
 
 Import your own field images for custom game elements or practice fields.
 
 - **Calibration Wizard:** Easily upload and calibrate any image using a simple 2-point system.
 - **Visual Validation:** Ensure your map is scaled correctly before using it.
 
-### **Visual Path Statistics**
+### Visual Path Statistics
 
 Get deeper insights into your path's performance with the updated Statistics dialog.
 
 - **Velocity Graphs:** View detailed charts for Linear and Angular Velocity over time.
 - **Summary Metrics:** Quickly check max velocity, total time, and distance.
 
-### **Interactive Onboarding**
+### Interactive Onboarding
 
 New to the application? Our new interactive tutorial guides you through the basics of creating and managing paths.
 
 - **Step-by-Step Guide:** Learn the interface with a hands-on walkthrough.
 - **Smart Triggers:** The tutorial automatically activates for new users or can be started manually.
 
-### **Global Search**
+### Global Search
 
 Find what you need instantly with the enhanced Command Palette.
 
@@ -39,21 +37,21 @@ Find what you need instantly with the enhanced Command Palette.
 - **Quick Navigation:** Jump directly to any element in your project.
 - **Access:** Open with `Ctrl + K` (or `Cmd + K`) and start typing.
 
-### **Keep-In Zones**
+### Keep-In Zones
 
 Define boundaries for your robot with the new Keep-In Zones.
 
 - **Safety Limits:** Visual validation ensures your path stays within designated safe areas.
 - **Zone Management:** Easily toggle visibility and edit zone properties.
 
-### **Enhanced Validation**
+### Enhanced Validation
 
 Collision checks are now more powerful and visual.
 
 - **Range Markers:** Visualize collision risks with new range indicators.
 - **Clearer Feedback:** Immediate visual cues when paths intersect with obstacles or leave safe zones.
 
-### **Refined Diff View**
+### Refined Diff View
 
 Review your changes with confidence using the updated comparison tool.
 
@@ -61,14 +59,14 @@ Review your changes with confidence using the updated comparison tool.
 - **Focused UI:** A cleaner interface removes distractions, helping you focus on what changed.
 - **Smart Activation:** The diff toggle automatically appears when you have unsaved changes.
 
-### **Git Status Integration**
+### Git Status Integration
 
 Keep track of your project's version control status directly within the app.
 
 - **Status Indicators:** The Navbar now clearly displays if your current file is **Modified**, **Staged**, or **Untracked**.
 - **File Manager Support:** Quickly identify the Git status of your projects when browsing files.
 
-### **Expanded Plugin System**
+### Expanded Plugin System
 
 The plugin system has been significantly expanded, allowing for deeper integration and more powerful extensions.
 
@@ -76,14 +74,14 @@ The plugin system has been significantly expanded, allowing for deeper integrati
 - **Navbar Actions:** New buttons and tools can be added directly to the top navigation bar by plugins.
 - **Deep Integration:** Developers can now build plugins that modify or replace core interface components.
 
-### **Presentation Mode**
+### Presentation Mode
 
 A new view mode designed for showcasing your paths without distractions.
 
 - **Full Focus:** Instantly hide the sidebar and navbar to dedicate the entire screen to the field view.
 - **Easy Toggle:** Enter Presentation Mode via the "View" menu or by pressing `Alt + P`.
 
-## **Improvements:**
+## Improvements
 
 - **Path Optimization:** The optimizer now respects **Keep-In Zones**, ensuring your path stays within defined boundaries.
 - **Performance:** Major code refactoring for the Control Tab to improve responsiveness and maintainability.
