@@ -82,9 +82,10 @@ export class PluginManager {
     try {
       const key = `plugin_enabled_${name}`;
       const val = localStorage.getItem(key);
-      return val === "true";
+      // Default to enabled if not explicitly set
+      return val === null ? true : val === "true";
     } catch {
-      return false;
+      return true;
     }
   }
 
