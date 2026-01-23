@@ -269,11 +269,12 @@ export class PathOptimizer {
         heading = -currentHeading;
       } else {
         const lineIdx = activeEvent.lineIndex!;
-        const currentLine = lines[lineIdx];
+        const currentLine = activeEvent.line || lines[lineIdx];
         if (!currentLine) break; // Should not happen
 
         const prevPoint =
-          lineIdx === 0 ? this.startPoint : lines[lineIdx - 1].endPoint;
+          activeEvent.prevPoint ||
+          (lineIdx === 0 ? this.startPoint : lines[lineIdx - 1].endPoint);
 
         const timeProgress =
           activeEvent.duration > 0
