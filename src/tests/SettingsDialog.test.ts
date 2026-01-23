@@ -32,7 +32,7 @@ describe("SettingsDialog", () => {
       props: { isOpen: true, settings },
     });
 
-    const btn = getByText("Reset All");
+    const btn = getByText("Reset Defaults");
     await fireEvent.click(btn);
 
     expect(resetSettings).toHaveBeenCalled();

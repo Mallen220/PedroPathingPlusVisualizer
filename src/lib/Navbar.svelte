@@ -19,7 +19,11 @@
   } from "../stores";
   import { getRandomColor } from "../utils";
   import { SaveIcon } from "./components/icons";
-  import { calculatePathTime, formatTime, getShortcutFromSettings } from "../utils";
+  import {
+    calculatePathTime,
+    formatTime,
+    getShortcutFromSettings,
+  } from "../utils";
   import { showShortcuts } from "../stores";
   import { customExportersStore } from "./pluginsStore";
   import { navbarActionRegistry } from "./registries";
