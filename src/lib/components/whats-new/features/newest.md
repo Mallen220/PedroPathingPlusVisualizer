@@ -2,7 +2,7 @@
 
 ## **Join the Community!**
 
-We've launched a new **Discord server**! Join us to connect with other users, get help, share your projects, share ideas, and be part of the early development of Pedro Pathing Visualizer. You'll be the first of an ever growing project!
+We've launched a new **Discord server**! Join us to connect with other users, get help, share your projects, and be part of the development discussion.
 
 👉 **[Join Discord](https://discord.gg/ku59afNBBM)**
 
@@ -16,7 +16,6 @@ Analyze actual robot telemetry from your matches and compare it with your planne
 
 - **Import Telemetry:** Load recorded movement data from your robot.
 - **Visual Overlay:** See your actual path overlaid on your planned path to identify discrepancies.
-- **Future Expansion:** More analysis tools coming in future versions.
 
 ### **File Macros with Transformations**
 
@@ -24,7 +23,7 @@ Reuse paths across files with powerful macro capabilities.
 
 - **Auto-Sequences:** Pass sequences automatically when referencing paths from other files.
 - **Path Transformations:** Mirror and reverse paths without duplicating code.
-- **Basic Recursion:** Build complex sequences by composing macros together.
+- **Nested Macros:** Build complex sequences by composing macros together.
 - **Drag & Drop:** Easily import macros by dragging files from the File Manager.
 
 ### **Sticky Notes**
@@ -78,9 +77,9 @@ Define boundaries for your robot with the new Keep-In Zones.
 
 Collision checks are now more powerful and visual.
 
-- **Range-Based Detection:** Validation now works across ranges instead of single points for more accurate collision detection.
+- **Continuous Segment Analysis:** Validation now detects collisions along the entire path segment, ensuring no obstacles are missed between points.
 - **Continuous Validation:** Optional real-time validation that checks your path as you edit (can be disabled in settings).
-- **Range Markers:** Visualize collision risks with new range indicators.
+- **Segment Markers:** Visualize affected path segments directly on the timeline and field.
 - **Clearer Feedback:** Immediate visual cues when paths intersect with obstacles or leave safe zones.
 
 ### **Refined Diff View**
@@ -106,7 +105,7 @@ Extend Pedro with custom functionality and share your creations.
 - **Install Plugins:** Easily manage and install community plugins.
 - **Custom Integration:** Plugins can add custom tabs, navbar actions, and more.
 - **Access:** Open Plugin Manager from the Settings dialog.
-- **Shareable:** Make something cool? Feel free to share it in the new Discord server with others!
+- **Community-Ready:** Package your custom tools and share them with the community.
 
 ### **Expanded Plugin System**
 
@@ -135,7 +134,7 @@ More powerful editing with expanded keyboard support.
 Make Pedro work the way you want.
 
 - **Font Size Control:** Adjust the UI scale to your preference (75% - 150%).
-- **Theme Support:** Choose between light, dark, or system-default themes, plus custom theme plugins that can now be added. Including an example pink theme and secret theme.
+- **Theme Support:** Choose between light, dark, or system-default themes. New plugin support allows for fully custom community themes.
 
 ## **Improvements:**
 
