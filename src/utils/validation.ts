@@ -65,15 +65,18 @@ export function validatePath(
 
     // If distance is effectively zero (epsilon check), add a boundary marker
     if (dist < 0.001) {
-      // Find the index in the original lines array for consistent referencing
-      const originalIndex = lines.findIndex((l) => l.id === line.id);
-      markers.push({
-        x: currentStart.x,
-        y: currentStart.y,
-        time: 0, // Not really applicable, but needed for type
-        segmentIndex: originalIndex,
-        type: "zero-length",
-      });
+      // Only report zero-length for non-macro elements (ghost paths)
+      if (!line.isMacroElement) {
+        // Find the index in the original lines array for consistent referencing
+        const originalIndex = lines.findIndex((l) => l.id === line.id);
+        markers.push({
+          x: currentStart.x,
+          y: currentStart.y,
+          time: 0, // Not really applicable, but needed for type
+          segmentIndex: originalIndex,
+          type: "zero-length",
+        });
+      }
     }
     currentStart = line.endPoint;
   });

@@ -75,7 +75,6 @@ describe("Macro Validation", () => {
     };
 
     // Line 2 buggy: ends at same point as L1 (10,0).
-    // If evaluated immediately after L1, it would be zero-length.
     const line2_buggy: Line = {
       id: "L2_buggy",
       endPoint: { x: 10, y: 0, heading: "constant", degrees: 0 }, // Back to 10,0
@@ -139,6 +138,61 @@ describe("Macro Validation", () => {
     validatePath(startPoint, lines, dummySettings, sequence, dummyShapes);
 
     // Should NOT report zero-length for the fake line
+    expect(mocks.collisionMarkersSet).toHaveBeenCalledWith(
+        expect.not.arrayContaining([expect.objectContaining({ type: "zero-length" })])
+    );
+  });
+
+  it("should ignore zero-length lines that are inside a macro (ghost paths)", () => {
+    const startPoint: Point = { x: 0, y: 0, heading: "constant", degrees: 0 };
+
+    // Line 1: (0,0) -> (10,0)
+    const line1: Line = {
+        id: "L1",
+        endPoint: { x: 10, y: 0, heading: "constant", degrees: 0 },
+        controlPoints: [],
+        color: "black"
+    };
+
+    // Macro with internal zero-length line
+    // M1: (10,0) -> (10,0) [Zero Length!]
+    const lineM1: Line = {
+        id: "M1",
+        endPoint: { x: 10, y: 0, heading: "constant", degrees: 0 },
+        controlPoints: [],
+        color: "red",
+        isMacroElement: true,
+        macroId: "macro1"
+    };
+
+    // M2: (10,0) -> (20,0)
+    const lineM2: Line = {
+        id: "M2",
+        endPoint: { x: 20, y: 0, heading: "constant", degrees: 0 },
+        controlPoints: [],
+        color: "red",
+        isMacroElement: true,
+        macroId: "macro1"
+    };
+
+    const lines = [line1, lineM1, lineM2];
+    const sequence: SequenceItem[] = [
+        { kind: "path", lineId: "L1" } as SequencePathItem,
+        {
+            kind: "macro",
+            id: "macro1",
+            filePath: "macro.json",
+            name: "MyMacro",
+            sequence: [
+                { kind: "path", lineId: "M1" } as SequencePathItem,
+                { kind: "path", lineId: "M2" } as SequencePathItem
+            ]
+        } as SequenceMacroItem
+    ];
+
+    validatePath(startPoint, lines, dummySettings, sequence, dummyShapes);
+
+    // Should NOT report zero-length for M1 because it is a macro element
     expect(mocks.collisionMarkersSet).toHaveBeenCalledWith(
         expect.not.arrayContaining([expect.objectContaining({ type: "zero-length" })])
     );
