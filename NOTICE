@@ -199,3 +199,7 @@ src/lib/components/dialogs/SettingsDialog.svelte
 src/lib/components/dialogs/SettingsItem.svelte
 verify_settings_v2.py
 src/utils/potatoTheme.ts
+install.sh
+src/tests/PlaybackControls.test.ts
+src/utils/pathOptimizer.ts
+src/utils/shortcutFormatter.ts

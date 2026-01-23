@@ -463,9 +463,12 @@ export class PathOptimizer {
 
         if (shouldExtend) {
           // Extend current collision within the same segment
-          currentCollision.endTime = t;
-          currentCollision.endX = x;
-          currentCollision.endY = y;
+          // Guard with a runtime check so TypeScript knows currentCollision is defined
+          if (currentCollision) {
+            currentCollision.endTime = t;
+            currentCollision.endX = x;
+            currentCollision.endY = y;
+          }
         } else {
           // Close previous collision if it exists (type change or segment change)
           if (currentCollision) {

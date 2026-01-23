@@ -19,7 +19,7 @@
   export let playbackSpeed: number = 1.0;
   export let setPlaybackSpeed: (factor: number, autoPlay?: boolean) => void;
   export let totalSeconds: number = 0;
-  export let settings: Settings;
+  export let settings: Settings | undefined;
 
   import type { Settings } from "../../types";
   import { fade, fly } from "svelte/transition";
