@@ -253,18 +253,19 @@ export function expandMacro(
         macroId: macroItem.id,
       };
     } else if (target.heading === "linear") {
-      // Bridge ends where macro starts.
+      // Use tangential bridges for macros even when the macro start is linear.
+      // Tangential bridges provide a smoother connection from caller paths
+      // and avoid introducing artificial linear headings.
       bridgeEndPoint = {
         x: target.x,
         y: target.y,
-        heading: "linear",
-        startDeg: 0, // Ignored by calculator (uses current)
-        endDeg: target.endDeg, // Use endDeg from target? or target.startDeg? Usually target.startDeg
+        heading: "tangential",
+        reverse: target.reverse,
         isMacroElement: true,
         macroId: macroItem.id,
       };
     } else {
-      // Tangential
+      // Tangential (already tangential)
       bridgeEndPoint = {
         x: target.x,
         y: target.y,
