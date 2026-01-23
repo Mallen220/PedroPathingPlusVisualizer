@@ -65,6 +65,8 @@ describe("Macro Integration", () => {
     expect(bridge).toBeDefined();
     expect(bridge?.startPoint?.x).toBe(prevPoint.x);
     expect(bridge?.endPoint.x).toBe(macroData.startPoint.x);
+    // Bridge to macros should use tangential heading to create a smooth connection
+    expect(bridge?.endPoint.heading).toBe("tangential");
 
     const expandedLine = result.lines.find((l) => l.originalId === "m-line-1");
     expect(expandedLine).toBeDefined();
