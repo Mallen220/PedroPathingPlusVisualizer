@@ -80,6 +80,26 @@
       optimizationFailed: false,
     };
   }
+
+  export function addPathAtStart() {
+    if (waypointTableRef && waypointTableRef.addPathAtStart)
+      waypointTableRef.addPathAtStart();
+  }
+
+  export function addWaitAtStart() {
+    if (waypointTableRef && waypointTableRef.addWaitAtStart)
+      waypointTableRef.addWaitAtStart();
+  }
+
+  export function addRotateAtStart() {
+    if (waypointTableRef && waypointTableRef.addRotateAtStart)
+      waypointTableRef.addRotateAtStart();
+  }
+
+  export function moveSequenceItem(seqIndex: number, delta: number) {
+    if (waypointTableRef && waypointTableRef.moveSequenceItem)
+      waypointTableRef.moveSequenceItem(seqIndex, delta);
+  }
 </script>
 
 <div class="p-4 w-full">

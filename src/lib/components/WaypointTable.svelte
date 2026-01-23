@@ -19,6 +19,7 @@
     gridSize,
     selectedLineId,
     selectedPointId,
+    focusRequest,
   } from "../../stores";
   import { slide } from "svelte/transition";
   import OptimizationDialog from "./dialogs/OptimizationDialog.svelte";
@@ -122,6 +123,55 @@
 
   // Use snap stores to determine step size for inputs
   $: stepSize = $snapToGrid && $showGrid ? $gridSize : 0.1;
+
+  // Handle Focus Requests
+  $: if ($focusRequest && isActive) {
+    const sel = $selectedPointId;
+    const req = $focusRequest;
+
+    // Helper to focus by ID
+    const focusById = (id: string) => {
+      const el = document.getElementById(id);
+      if (el) el.focus();
+    };
+
+    if (sel === "point-0-0") {
+      if (req.field === "x") focusById("start-point-x");
+      if (req.field === "y") focusById("start-point-y");
+    } else if (sel?.startsWith("point-")) {
+      const parts = sel.split("-");
+      const lineNum = Number(parts[1]);
+      const ptIdx = Number(parts[2]);
+      if (lineNum > 0 && ptIdx === 0) {
+        // End point
+        const line = lines[lineNum - 1];
+        if (line) {
+          if (req.field === "x") focusById(`path-endpoint-x-${line.id}`);
+          if (req.field === "y") focusById(`path-endpoint-y-${line.id}`);
+        }
+      } else if (lineNum > 0 && ptIdx > 0) {
+        // Control point
+        const line = lines[lineNum - 1];
+        if (line) {
+          const cpIdx = ptIdx - 1;
+          if (req.field === "x")
+            focusById(`path-cp-x-${line.id}-${cpIdx}`);
+          if (req.field === "y")
+            focusById(`path-cp-y-${line.id}-${cpIdx}`);
+        }
+      }
+    } else if (sel?.startsWith("wait-")) {
+      const id = sel.substring(5);
+      if (req.field === "x" || req.field === "duration") {
+        focusById(`wait-duration-${id}`);
+      }
+    } else if (sel?.startsWith("rotate-")) {
+      const id = sel.substring(7);
+      if (req.field === "y" || req.field === "degrees" || req.field === "heading") {
+        focusById(`rotate-degrees-${id}`);
+      }
+    }
+  }
 
   function updatePoint(
     point: Point | ControlPoint,
@@ -926,6 +976,18 @@
     loadMacro(filePath);
   }
 
+  export function addPathAtStart() {
+    insertPath(0);
+  }
+
+  export function addWaitAtStart() {
+    insertWait(0);
+  }
+
+  export function addRotateAtStart() {
+    insertRotate(0);
+  }
+
   function insertPath(index: number) {
     // Logic similar to insertLineAfter in ControlTab
     // We need to find where to insert in `lines` array.
@@ -987,7 +1049,7 @@
     recordChange();
   }
 
-  function moveSequenceItem(seqIndex: number, delta: number) {
+  export function moveSequenceItem(seqIndex: number, delta: number) {
     const targetIndex = seqIndex + delta;
     if (targetIndex < 0 || targetIndex >= sequence.length) return;
 
@@ -1211,6 +1273,7 @@
           </td>
           <td class="px-3 py-2">
             <input
+              id="start-point-x"
               type="number"
               class="w-20 px-2 py-1 rounded border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 focus:ring-2 focus:ring-blue-500 focus:outline-none"
               step={stepSize}
@@ -1222,6 +1285,7 @@
           </td>
           <td class="px-3 py-2">
             <input
+              id="start-point-y"
               type="number"
               class="w-20 px-2 py-1 rounded border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 focus:ring-2 focus:ring-blue-500 focus:outline-none"
               step={stepSize}
@@ -1364,6 +1428,7 @@
                 <td class="px-3 py-2">
                   <div class="flex items-center gap-2">
                     <input
+                      id="path-endpoint-x-{line.id}"
                       type="number"
                       class="w-20 px-2 py-1 rounded border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 focus:ring-2 focus:ring-blue-500 focus:outline-none"
                       step={stepSize}
@@ -1380,6 +1445,7 @@
                 </td>
                 <td class="px-3 py-2">
                   <input
+                    id="path-endpoint-y-{line.id}"
                     type="number"
                     class="w-20 px-2 py-1 rounded border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 focus:ring-2 focus:ring-blue-500 focus:outline-none"
                     step={stepSize}
@@ -1479,6 +1545,7 @@
                   </td>
                   <td class="px-3 py-2">
                     <input
+                      id="path-cp-x-{line.id}-{j}"
                       type="number"
                       class="w-20 px-2 py-1 rounded border border-neutral-300 dark:border-neutral-600 bg-neutral-50 dark:bg-neutral-900/50 focus:ring-2 focus:ring-blue-500 focus:outline-none text-xs"
                       step={stepSize}
@@ -1491,6 +1558,7 @@
                   </td>
                   <td class="px-3 py-2">
                     <input
+                      id="path-cp-y-{line.id}-{j}"
                       type="number"
                       class="w-20 px-2 py-1 rounded border border-neutral-300 dark:border-neutral-600 bg-neutral-50 dark:bg-neutral-900/50 focus:ring-2 focus:ring-blue-500 focus:outline-none text-xs"
                       step={stepSize}
@@ -1621,6 +1689,7 @@
               </td>
               <td class="px-3 py-2">
                 <input
+                  id="wait-duration-{item.id}"
                   type="number"
                   class="w-20 px-2 py-1 rounded border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 focus:ring-2 focus:ring-amber-500 focus:outline-none text-xs"
                   min="0"
@@ -1766,6 +1835,7 @@
               <td class="px-3 py-2 text-neutral-400 text-xs italic"> - </td>
               <td class="px-3 py-2">
                 <input
+                  id="rotate-degrees-{item.id}"
                   type="number"
                   class="w-20 px-2 py-1 rounded border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 focus:ring-2 focus:ring-pink-500 focus:outline-none text-xs"
                   value={item.degrees}

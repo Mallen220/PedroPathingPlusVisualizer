@@ -891,6 +891,22 @@
         recordChange();
       }
     }
+
+    if (sel.startsWith("obstacle-")) {
+      const parts = sel.split("-");
+      const shapeIdx = Number(parts[1]);
+      const vertexIdx = Number(parts[2]);
+      if (shapes[shapeIdx]) {
+        const shape = shapes[shapeIdx];
+        if (shape.locked) return;
+        if (shape.vertices.length > 3) {
+          shape.vertices.splice(vertexIdx, 1);
+          shapesStore.set(shapes);
+          selectedPointId.set(null);
+          recordChange();
+        }
+      }
+    }
   }
 
   function movePoint(dx: number, dy: number) {

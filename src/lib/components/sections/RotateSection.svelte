@@ -1,6 +1,6 @@
 <!-- Copyright 2026 Matthew Allen. Licensed under the Apache License, Version 2.0. -->
 <script lang="ts">
-  import { selectedPointId, selectedLineId } from "../../../stores";
+  import { selectedPointId, selectedLineId, focusRequest } from "../../../stores";
   import DeleteButtonWithConfirm from "../common/DeleteButtonWithConfirm.svelte";
   import type { SequenceRotateItem, SequenceItem } from "../../../types/index";
   import {
@@ -31,6 +31,19 @@
 
   let hoveredRotateId: string | null = null;
   let hoveredRotateAnchor: HTMLElement | null = null;
+
+  let degreesInput: HTMLInputElement;
+
+  // Handle focus request
+  $: if ($focusRequest && isSelected) {
+    if (
+      $focusRequest.field === "degrees" ||
+      $focusRequest.field === "heading" ||
+      $focusRequest.field === "y" // Reuse Y key for primary value (degrees)
+    ) {
+      if (degreesInput) degreesInput.focus();
+    }
+  }
 
   function handleRotateHoverEnter(e: MouseEvent, id: string | null) {
     hoveredRotateId = id;
@@ -325,6 +338,7 @@
             />
           </svg>
           <input
+            bind:this={degreesInput}
             id="rotate-heading-{rotate.id}"
             class="w-full pl-9 pr-2 py-1.5 text-sm bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-lg focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 outline-none transition-all"
             type="number"

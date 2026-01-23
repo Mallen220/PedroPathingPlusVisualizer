@@ -1,6 +1,6 @@
 <!-- Copyright 2026 Matthew Allen. Licensed under the Apache License, Version 2.0. -->
 <script lang="ts">
-  import { selectedPointId, selectedLineId } from "../../../stores";
+  import { selectedPointId, selectedLineId, focusRequest } from "../../../stores";
   import DeleteButtonWithConfirm from "../common/DeleteButtonWithConfirm.svelte";
   import type { SequenceWaitItem, SequenceItem } from "../../../types/index";
   import {
@@ -34,6 +34,18 @@
 
   let hoveredWaitId: string | null = null;
   let hoveredWaitAnchor: HTMLElement | null = null;
+
+  let durationInput: HTMLInputElement;
+
+  // Handle focus request
+  $: if ($focusRequest && isSelected) {
+    if (
+      $focusRequest.field === "duration" ||
+      $focusRequest.field === "x" // Reuse X key for primary value (duration)
+    ) {
+      if (durationInput) durationInput.focus();
+    }
+  }
 
   function handleWaitHoverEnter(e: MouseEvent, id: string | null) {
     hoveredWaitId = id;
@@ -309,6 +321,7 @@
             />
           </svg>
           <input
+            bind:this={durationInput}
             id="wait-duration-{wait.id}"
             class="w-full pl-9 pr-2 py-1.5 text-sm bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-lg focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 outline-none transition-all"
             type="number"

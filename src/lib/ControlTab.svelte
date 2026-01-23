@@ -124,27 +124,35 @@
     };
   }
 
-  // --- Methods delegating to PathTab ---
+  // --- Methods delegating to PathTab or Active Tab ---
   export function addPathAtStart() {
-    if (tabInstances["path"] && tabInstances["path"].addPathAtStart) {
+    if (activeTabInstance && activeTabInstance.addPathAtStart) {
+      activeTabInstance.addPathAtStart();
+    } else if (tabInstances["path"] && tabInstances["path"].addPathAtStart) {
       tabInstances["path"].addPathAtStart();
     }
   }
 
   export function addWaitAtStart() {
-    if (tabInstances["path"] && tabInstances["path"].addWaitAtStart) {
+    if (activeTabInstance && activeTabInstance.addWaitAtStart) {
+      activeTabInstance.addWaitAtStart();
+    } else if (tabInstances["path"] && tabInstances["path"].addWaitAtStart) {
       tabInstances["path"].addWaitAtStart();
     }
   }
 
   export function addRotateAtStart() {
-    if (tabInstances["path"] && tabInstances["path"].addRotateAtStart) {
+    if (activeTabInstance && activeTabInstance.addRotateAtStart) {
+      activeTabInstance.addRotateAtStart();
+    } else if (tabInstances["path"] && tabInstances["path"].addRotateAtStart) {
       tabInstances["path"].addRotateAtStart();
     }
   }
 
   export function moveSequenceItem(seqIndex: number, delta: number) {
-    if (tabInstances["path"] && tabInstances["path"].moveSequenceItem) {
+    if (activeTabInstance && activeTabInstance.moveSequenceItem) {
+      activeTabInstance.moveSequenceItem(seqIndex, delta);
+    } else if (tabInstances["path"] && tabInstances["path"].moveSequenceItem) {
       tabInstances["path"].moveSequenceItem(seqIndex, delta);
     }
   }
