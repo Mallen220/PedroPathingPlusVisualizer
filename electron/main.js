@@ -1191,6 +1191,7 @@ ipcMain.handle("telemetry:connect", async (event, ip, port, protocol = "tcp") =>
     console.log(`Attempting to connect to telemetry (TCP) at ${ip}:${port}`);
     try {
       telemetrySocket = new net.Socket();
+      telemetrySocket.setEncoding("utf8"); // Ensure we get strings
       let buffer = "";
 
       telemetrySocket.connect(port, ip, () => {
@@ -1201,7 +1202,8 @@ ipcMain.handle("telemetry:connect", async (event, ip, port, protocol = "tcp") =>
       });
 
       telemetrySocket.on("data", (data) => {
-        buffer += data.toString();
+        // console.log(`Received TCP data chunk (${data.length} chars)`);
+        buffer += data;
         // Split by newline
         let boundary = buffer.indexOf("\n");
         while (boundary !== -1) {
@@ -1209,6 +1211,7 @@ ipcMain.handle("telemetry:connect", async (event, ip, port, protocol = "tcp") =>
           buffer = buffer.substring(boundary + 1);
           if (line.trim().length > 0) {
             if (!event.sender.isDestroyed()) {
+              // console.log("Sending telemetry line to renderer");
               event.sender.send("telemetry:data", line);
             }
           }

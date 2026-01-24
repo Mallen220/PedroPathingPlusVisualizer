@@ -68,6 +68,7 @@ if (typeof window !== "undefined") {
 
 export function processTelemetryMessage(raw: string) {
   try {
+    // console.log("Processing telemetry message:", raw);
     const parsed = JSON.parse(raw);
     let packet: TelemetryPacket;
 
