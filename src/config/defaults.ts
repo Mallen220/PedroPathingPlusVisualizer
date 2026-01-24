@@ -517,7 +517,7 @@ export const DEFAULT_KEY_BINDINGS: KeyBinding[] = [
   },
   {
     id: "toggle-command-palette",
-    key: "cmd+p, ctrl+p",
+    key: "cmd+k, ctrl+k, cmd+p, ctrl+p",
     description: "Toggle Command Palette",
     action: "toggleCommandPalette",
     category: "View",

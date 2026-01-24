@@ -23,6 +23,7 @@
   import PluginManagerDialog from "./lib/components/dialogs/PluginManagerDialog.svelte";
   import KeyboardShortcutsDialog from "./lib/components/dialogs/KeyboardShortcutsDialog.svelte";
   import ExportCodeDialog from "./lib/components/dialogs/ExportCodeDialog.svelte";
+  import CommandPalette from "./lib/components/dialogs/CommandPalette.svelte";
   import DialogHost from "./lib/components/DialogHost.svelte";
 
   // Stores
@@ -42,6 +43,13 @@
     currentDirectoryStore,
     showPluginManager,
     showTelemetryDialog,
+    showCommandPalette,
+    showGrid,
+    showRuler,
+    showProtractor,
+    snapToGrid,
+    fieldZoom,
+    fieldPan,
   } from "./stores";
   import {
     startPointStore,
@@ -86,7 +94,7 @@
   import { PluginManager } from "./lib/pluginManager";
   import { themesStore } from "./lib/pluginsStore";
   import { registerCoreUI } from "./lib/coreRegistrations";
-  import { componentRegistry } from "./lib/registries";
+  import { componentRegistry, commandRegistry } from "./lib/registries";
   import { POTATO_THEME_CSS, firePotatoConfetti } from "./utils/potatoTheme";
 
   // Register Default Components/Tabs
@@ -756,6 +764,42 @@
     // Initialize Plugins
     await PluginManager.init();
 
+    // Register Core Commands
+    const register = commandRegistry.register;
+
+    register({ id: "new-project", label: "New Project", description: "Create a new project", category: "File", shortcut: "Cmd+N", action: handleResetProject });
+    register({ id: "open-project", label: "Open Project", description: "Open a .pp file", category: "File", shortcut: "Cmd+O", action: () => document.getElementById("file-upload")?.click() });
+    register({ id: "save-project", label: "Save Project", description: "Save current project", category: "File", shortcut: "Cmd+S", action: handleSaveProject });
+    register({ id: "save-as", label: "Save As", description: "Save project as a new file", category: "File", shortcut: "Cmd+Shift+S", action: saveFileAs });
+
+    register({ id: "undo", label: "Undo", description: "Undo last action", category: "Edit", shortcut: "Cmd+Z", action: undoAction });
+    register({ id: "redo", label: "Redo", description: "Redo last action", category: "Edit", shortcut: "Cmd+Shift+Z", action: redoAction });
+
+    register({ id: "toggle-settings", label: "Settings", description: "Open settings dialog", category: "View", shortcut: "Cmd+,", action: () => showSettings.set(true) });
+    register({ id: "toggle-shortcuts", label: "Keyboard Shortcuts", description: "View keyboard shortcuts", category: "View", shortcut: "?", action: () => showShortcuts.set(true) });
+    register({ id: "toggle-plugins", label: "Plugin Manager", description: "Manage plugins", category: "View", shortcut: "Cmd+Shift+P", action: () => showPluginManager.set(true) });
+    register({ id: "toggle-telemetry", label: "Telemetry", description: "Open telemetry dialog", category: "View", action: () => showTelemetryDialog.set(true) });
+
+    register({ id: "export-code", label: "Export Code", description: "Export path to Java code", category: "Export", shortcut: "Cmd+Shift+J", action: () => exportDialogState.set({ isOpen: true, format: "java" }) });
+    register({ id: "export-json", label: "Export JSON", description: "Export raw path data", category: "Export", shortcut: "Cmd+Shift+X", action: () => exportDialogState.set({ isOpen: true, format: "json" }) });
+    register({ id: "export-gif", label: "Export GIF", description: "Export animated GIF", category: "Export", shortcut: "Cmd+Shift+E", action: exportGif });
+
+    register({ id: "toggle-grid", label: "Toggle Grid", description: "Show/hide field grid", category: "View", shortcut: "G", action: () => showGrid.update(v => !v) });
+    register({ id: "toggle-snap", label: "Toggle Snap", description: "Enable/disable snap to grid", category: "View", shortcut: "N", action: () => snapToGrid.update(v => !v) });
+    register({ id: "toggle-ruler", label: "Toggle Ruler", description: "Show/hide ruler tool", category: "View", shortcut: "Alt+M", action: () => showRuler.update(v => !v) });
+    register({ id: "toggle-protractor", label: "Toggle Protractor", description: "Show/hide protractor tool", category: "View", shortcut: "Shift+P", action: () => showProtractor.update(v => !v) });
+
+    register({ id: "play-animation", label: "Play Animation", category: "Playback", shortcut: "Space", action: play });
+    register({ id: "pause-animation", label: "Pause Animation", category: "Playback", shortcut: "Space", action: pause });
+    register({ id: "reset-animation", label: "Reset Animation", category: "Playback", shortcut: "R", action: resetAnimation });
+
+    register({ id: "zoom-in", label: "Zoom In", category: "View", shortcut: "+", action: () => fieldZoom.update(z => Math.min(5, z + 0.25)) });
+    register({ id: "zoom-out", label: "Zoom Out", category: "View", shortcut: "-", action: () => fieldZoom.update(z => Math.max(0.1, z - 0.25)) });
+    register({ id: "zoom-reset", label: "Reset Zoom", category: "View", shortcut: "0", action: () => { fieldZoom.set(1); fieldPan.set({x:0,y:0}); } });
+
+    register({ id: "open-docs", label: "Documentation", description: "Open documentation", category: "Help", shortcut: "F1", action: () => window.open("https://github.com/Mallen220/PedroPathingVisualizer", "_blank") });
+    register({ id: "report-issue", label: "Report Issue", category: "Help", action: () => window.open("https://github.com/Mallen220/PedroPathingVisualizer/issues", "_blank") });
+
     // Load Settings
     const savedSettings = await loadSettings();
     settingsStore.set({ ...savedSettings });
@@ -884,6 +928,9 @@
               break;
             case "open-shortcuts":
               showShortcuts.set(true);
+              break;
+            case "toggle-command-palette":
+              showCommandPalette.set(true);
               break;
             // ... other cases ...
           }
@@ -1312,6 +1359,7 @@
   toggleStats={() => (statsOpen = !statsOpen)}
   openWhatsNew={() => (showWhatsNew = true)}
   toggleSidebar={() => (showSidebar = !showSidebar)}
+  toggleCommandPalette={() => showCommandPalette.set(true)}
   {fieldRenderer}
 />
 
@@ -1375,6 +1423,7 @@
   bind:settings={$settingsStore}
 />
 <PluginManagerDialog bind:isOpen={$showPluginManager} />
+<CommandPalette bind:isOpen={$showCommandPalette} />
 
 {#if $showFileManager}
   <FileManager

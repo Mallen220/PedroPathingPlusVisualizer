@@ -239,3 +239,34 @@ const createFieldRenderRegistry = () => {
 };
 
 export const fieldRenderRegistry = createFieldRenderRegistry();
+
+// --- Command Registry ---
+export interface Command {
+  id: string;
+  label: string;
+  description?: string;
+  shortcut?: string;
+  category?: string;
+  action: () => void;
+  keywords?: string[]; // Extra keywords for search
+}
+
+const createCommandRegistry = () => {
+  const { subscribe, update, set } = writable<Command[]>([]);
+
+  return {
+    subscribe,
+    register: (command: Command) => {
+      update((commands) => {
+        const filtered = commands.filter((c) => c.id !== command.id);
+        return [...filtered, command];
+      });
+    },
+    unregister: (id: string) => {
+      update((commands) => commands.filter((c) => c.id !== id));
+    },
+    reset: () => set([]),
+  };
+};
+
+export const commandRegistry = createCommandRegistry();
