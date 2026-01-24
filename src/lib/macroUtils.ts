@@ -260,7 +260,7 @@ export function expandMacro(
         x: target.x,
         y: target.y,
         heading: "tangential",
-        reverse: target.reverse,
+        reverse: false,
         isMacroElement: true,
         macroId: macroItem.id,
       };
