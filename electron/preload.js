@@ -87,7 +87,8 @@ contextBridge.exposeInMainWorld("electronAPI", {
 
   // Telemetry
   telemetry: {
-    connect: (ip, port) => ipcRenderer.invoke("telemetry:connect", ip, port),
+    connect: (ip, port, protocol) =>
+      ipcRenderer.invoke("telemetry:connect", ip, port, protocol),
     disconnect: () => ipcRenderer.invoke("telemetry:disconnect"),
     onData: (callback) =>
       ipcRenderer.on("telemetry:data", (_event, data) => callback(data)),

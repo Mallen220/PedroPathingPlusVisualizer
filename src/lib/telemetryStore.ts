@@ -68,11 +68,35 @@ if (typeof window !== "undefined") {
 
 export function processTelemetryMessage(raw: string) {
   try {
-    const packet: TelemetryPacket = JSON.parse(raw);
+    const parsed = JSON.parse(raw);
+    let packet: TelemetryPacket;
+
+    // Normalize Data
+    // Case 1: PedroPathingLiveView (flat format: { x, y, heading })
+    // It doesn't have a timestamp, so we synthesize it.
+    if (
+      typeof parsed.x === "number" &&
+      typeof parsed.y === "number" &&
+      typeof parsed.heading === "number" &&
+      !parsed.robotPose
+    ) {
+      packet = {
+        timestamp: Date.now(),
+        robotPose: {
+          x: parsed.x,
+          y: parsed.y,
+          heading: parsed.heading, // Assumed Radians from PedroPathing logic
+        },
+        data: { ...parsed },
+      };
+    } else {
+      // Case 2: Standard TelemetryPacket (Panels)
+      packet = parsed as TelemetryPacket;
+    }
+
     // Basic validation
     if (typeof packet.timestamp !== "number") {
-      // console.warn('Invalid telemetry packet: missing timestamp');
-      // Relax validation for now or check other fields
+      packet.timestamp = Date.now();
     }
 
     telemetryState.update((s) => ({

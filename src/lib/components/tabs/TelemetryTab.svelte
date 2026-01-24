@@ -11,8 +11,15 @@
 
   // Inputs
   let ip = "192.168.43.1";
-  let port = 8082;
+  let protocol: "tcp" | "websocket" = "tcp";
+  let port = 8888;
   let connecting = false;
+
+  // Update default port when protocol changes
+  function updateDefaultPort() {
+    if (protocol === "tcp") port = 8888;
+    else port = 8082;
+  }
 
   $: status = $telemetryState.status;
   $: fps = $telemetryState.fps;
@@ -88,7 +95,7 @@
       if (connecting) return;
       connecting = true;
       try {
-        await api.telemetry.connect(ip, port);
+        await api.telemetry.connect(ip, port, protocol);
       } catch (e) {
         console.error(e);
         notification.set({
@@ -109,6 +116,33 @@
     <h3 class="font-semibold text-lg text-neutral-800 dark:text-neutral-100">
       Connection
     </h3>
+
+    <!-- Protocol Selection -->
+    <div class="flex gap-4 text-sm">
+      <label class="flex items-center gap-2 cursor-pointer">
+        <input
+          type="radio"
+          bind:group={protocol}
+          value="tcp"
+          on:change={updateDefaultPort}
+          disabled={$isConnected}
+          class="text-purple-600 focus:ring-purple-500"
+        />
+        <span class="text-neutral-700 dark:text-neutral-300">TCP (PedroPathing)</span>
+      </label>
+      <label class="flex items-center gap-2 cursor-pointer">
+        <input
+          type="radio"
+          bind:group={protocol}
+          value="websocket"
+          on:change={updateDefaultPort}
+          disabled={$isConnected}
+          class="text-purple-600 focus:ring-purple-500"
+        />
+        <span class="text-neutral-700 dark:text-neutral-300">WebSocket (Panels)</span>
+      </label>
+    </div>
+
     <div class="flex gap-2 items-center">
       <input
         type="text"
