@@ -147,14 +147,14 @@
     const tag = el.tagName;
     return tag === "BUTTON" || el.getAttribute("role") === "button";
   }
-
+  
   function shouldBlockShortcut(
     e: KeyboardEvent,
     actionId?: string,
   ): boolean {
     // Whitelist specific actions that should work even when input is focused
     if (actionId === "toggle-command-palette") return false;
-
+  if (e.key === "Escape") return false;
     if (isInputFocused()) return true;
     if (isButtonFocused()) {
       // If focused on a button, only block interaction keys (Space, Enter)
@@ -1678,9 +1678,30 @@
         });
       }
     },
+    editItem: () => {
+      const sel = $selectedPointId;
+      if (!sel) return;
+      if (sel.startsWith("wait-")) {
+        // Map 'x' to duration for Wait items
+        focusRequest.set({ field: "x", timestamp: Date.now(), id: sel });
+      } else if (sel.startsWith("rotate-")) {
+        // Map 'heading' (or 'degrees') for Rotate items
+        focusRequest.set({ field: "heading", timestamp: Date.now(), id: sel });
+      } else {
+        // Default to X for points/obstacles
+        focusRequest.set({ field: "x", timestamp: Date.now(), id: sel });
+      }
+    },
     deselectAll: () => {
       selectedPointId.set(null);
       selectedLineId.set(null);
+      // Blur any active input
+      if (
+        document.activeElement &&
+        (document.activeElement as HTMLElement).blur
+      ) {
+        (document.activeElement as HTMLElement).blur();
+      }
     },
     focusX: () => focusRequest.set({ field: "x", timestamp: Date.now() }),
     focusY: () => focusRequest.set({ field: "y", timestamp: Date.now() }),
