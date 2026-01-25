@@ -109,8 +109,9 @@
     on:click={() => {
       loopAnimation = !loopAnimation;
     }}
-    class:opacity-100={loopAnimation}
-    class:opacity-50={!loopAnimation}
+    class="p-1 rounded-md transition-all duration-200 {loopAnimation
+      ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400'
+      : 'text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800'}"
   >
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -118,7 +119,7 @@
       viewBox="0 0 24 24"
       stroke-width="2"
       stroke="currentColor"
-      class="size-6 stroke-blue-500"
+      class="size-6"
     >
       <path
         stroke-linecap="round"
