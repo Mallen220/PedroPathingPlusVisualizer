@@ -654,6 +654,7 @@ export function calculatePathTime(
             startTime: currentTime,
             endTime: currentTime + waitSeconds,
             waitId: item.id,
+            itemId: item.id,
             startHeading: currentHeading,
             targetHeading: currentHeading,
             atPoint: lastPoint,
@@ -677,6 +678,7 @@ export function calculatePathTime(
             startTime: currentTime,
             endTime: currentTime + rotTime,
             waitId: item.id,
+            itemId: item.id,
             startHeading: currentHeading,
             targetHeading: targetHeading,
             atPoint: lastPoint,
@@ -706,6 +708,7 @@ export function calculatePathTime(
             duration,
             startTime,
             endTime,
+            itemId: item.id,
           });
         }
 
@@ -751,6 +754,7 @@ export function calculatePathTime(
           startHeading: currentHeading,
           targetHeading: requiredStartHeading,
           atPoint: prevPoint,
+          itemId: (item as any).lineId,
         });
         currentTime += rotTime;
         currentHeading = requiredStartHeading;
@@ -848,6 +852,7 @@ export function calculatePathTime(
         motionProfile: motionProfile,
         velocityProfile: velocityProfile,
         headingProfile: headingProfile,
+        itemId: (item as any).lineId,
       });
       currentTime += segmentTime;
 

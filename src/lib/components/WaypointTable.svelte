@@ -65,6 +65,8 @@
   ) => void;
   export let settings: import("../../types/index").Settings | undefined =
     undefined;
+  export let timePrediction: import("../../types/index").TimePrediction | null =
+    null;
 
   // Shapes and collapsedObstacles binding for ObstaclesSection
   export let shapes: import("../../types/index").Shape[];
@@ -1041,6 +1043,14 @@
     syncLinesToSequence(newSeq);
     recordChange();
   }
+
+  function getItemDuration(item: SequenceItem) {
+    if (!timePrediction || !timePrediction.timeline) return 0;
+    const itemId = item.kind === "path" ? item.lineId : item.id;
+    return timePrediction.timeline
+      .filter((ev) => ev.itemId === itemId)
+      .reduce((sum, ev) => sum + ev.duration, 0);
+  }
 </script>
 
 <svelte:window on:dragover={handleWindowDragOver} on:drop={handleWindowDrop} />
@@ -1407,9 +1417,23 @@
                       use:focusOnRequest={{ id: endPointId, field: "x" }}
                       disabled={line.locked}
                     />
-                    <span class="text-xs text-neutral-500"
-                      >{line.waitBeforeName || line.waitBeforeMs || ""}</span
-                    >
+                    <div class="flex flex-col">
+                      <span class="text-xs text-neutral-500"
+                        >{line.waitBeforeName ||
+                          line.waitBeforeMs ||
+                          ""}</span
+                      >
+                      {#if timePrediction}
+                        {@const dur = getItemDuration(item)}
+                        {#if dur > 0}
+                          <span
+                            class="text-[10px] text-blue-600 dark:text-blue-400 font-medium"
+                          >
+                            Est: {dur.toFixed(2)}s
+                          </span>
+                        {/if}
+                      {/if}
+                    </div>
                   </div>
                 </td>
                 <td class="px-3 py-2">
@@ -1677,7 +1701,38 @@
                   disabled={item.locked}
                 />
               </td>
-              <td class="px-3 py-2 text-neutral-400 text-xs italic"> - </td>
+              <td class="px-3 py-2 text-neutral-400 text-xs italic">
+                {#if timePrediction}
+                  {@const dur = getItemDuration(item)}
+                  {#if dur > 0}
+                    <span
+                      class="text-blue-600 dark:text-blue-400 font-medium not-italic"
+                    >
+                      {dur.toFixed(2)}s
+                    </span>
+                  {:else}
+                    -
+                  {/if}
+                {:else}
+                  -
+                {/if}
+              </td>
+              <td class="px-3 py-2 text-neutral-400 text-xs italic">
+                {#if timePrediction}
+                  {@const dur = getItemDuration(item)}
+                  {#if dur > 0}
+                    <span
+                      class="text-blue-600 dark:text-blue-400 font-medium not-italic"
+                    >
+                      {dur.toFixed(2)}s
+                    </span>
+                  {:else}
+                    -
+                  {/if}
+                {:else}
+                  -
+                {/if}
+              </td>
               <td
                 class="px-3 py-2 text-left flex items-center justify-start gap-1"
               >

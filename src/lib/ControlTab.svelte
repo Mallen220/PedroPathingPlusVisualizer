@@ -425,6 +425,7 @@
             bind:robotHeading
             {recordChange}
             {onPreviewChange}
+            {timePrediction}
             isActive={activeTab === tab.id}
           />
         </div>

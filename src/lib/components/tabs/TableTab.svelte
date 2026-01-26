@@ -19,6 +19,8 @@
   export let shapes: Shape[];
   export let settings: Settings;
   export let isActive: boolean = false;
+  export let timePrediction: import("../../../types").TimePrediction | null =
+    null;
 
   let waypointTableRef: any = null;
   let optimizationOpen = false;
@@ -98,5 +100,6 @@
     bind:shapes
     bind:collapsedObstacles
     {settings}
+    {timePrediction}
   />
 </div>
