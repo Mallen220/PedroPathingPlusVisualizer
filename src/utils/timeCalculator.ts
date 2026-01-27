@@ -16,6 +16,7 @@ import {
   getDistance,
 } from "./math";
 import { getRandomColor } from "./draw";
+import { actionRegistry } from "../lib/actionRegistry";
 
 /**
  * Calculates the first derivative of a Bezier curve of degree N at t.
@@ -186,7 +187,7 @@ interface PathAnalysis {
 /**
  * Unwraps target angle to be closest to reference angle.
  */
-function unwrapAngle(target: number, reference: number): number {
+export function unwrapAngle(target: number, reference: number): number {
   const diff = getAngularDifference(reference, target);
   return reference + diff;
 }
@@ -433,7 +434,7 @@ export function analyzePathSegment(
  * Calculates time to rotate a certain angle using a trapezoidal motion profile
  * Accounts for angular acceleration limits derived from robot dimensions.
  */
-function calculateRotationTime(
+export function calculateRotationTime(
   angleDiffDegrees: number,
   settings: Settings,
 ): number {
@@ -644,46 +645,20 @@ export function calculatePathTime(
     });
 
     seq.forEach((item, idx) => {
-      if (item.kind === "wait") {
-        const waitSeconds = msToSeconds(item.durationMs);
-        if (waitSeconds > 0) {
-          timeline.push({
-            type: "wait",
-            name: item.name,
-            duration: waitSeconds,
-            startTime: currentTime,
-            endTime: currentTime + waitSeconds,
-            waitId: item.id,
-            startHeading: currentHeading,
-            targetHeading: currentHeading,
-            atPoint: lastPoint,
-          });
-          currentTime += waitSeconds;
-        }
-        return;
-      }
-
-      if (item.kind === "rotate") {
-        // Calculate rotation duration
-        const targetHeading = unwrapAngle(item.degrees, currentHeading);
-        const diff = Math.abs(currentHeading - targetHeading);
-        const rotTime = calculateRotationTime(diff, safeSettings);
-
-        if (rotTime > 0) {
-          timeline.push({
-            type: "wait", // Reuse wait type for stationary actions
-            name: item.name,
-            duration: rotTime,
-            startTime: currentTime,
-            endTime: currentTime + rotTime,
-            waitId: item.id,
-            startHeading: currentHeading,
-            targetHeading: targetHeading,
-            atPoint: lastPoint,
-          });
-          currentTime += rotTime;
-          currentHeading = targetHeading;
-        }
+      // Registry Check
+      const action = actionRegistry.get(item.kind);
+      if (action && action.calculateTime) {
+        const res = action.calculateTime(item, {
+          currentTime,
+          currentHeading,
+          lastPoint,
+          settings: safeSettings,
+          lines: contextLines,
+        });
+        res.events.forEach((ev) => timeline.push(ev));
+        currentTime += res.duration;
+        if (res.endHeading !== undefined) currentHeading = res.endHeading;
+        if (res.endPoint) lastPoint = res.endPoint;
         return;
       }
 
