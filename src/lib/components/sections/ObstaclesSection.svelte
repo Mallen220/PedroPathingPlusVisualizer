@@ -6,6 +6,7 @@
     showGrid,
     gridSize,
     focusRequest,
+    selectedPointId,
   } from "../../../stores";
   import { settingsStore } from "../../projectStore";
   import TrashIcon from "../icons/TrashIcon.svelte";
@@ -236,8 +237,17 @@
         </EmptyState>
       {:else}
         {#each shapes as shape, shapeIdx}
+          <!-- svelte-ignore a11y-click-events-have-key-events -->
+          <!-- svelte-ignore a11y-no-static-element-interactions -->
           <div
-            class="flex flex-col w-full justify-start items-start gap-1 p-2 border rounded-md border-neutral-300 dark:border-neutral-600 bg-neutral-50 dark:bg-neutral-900/30"
+            id={`obstacle-header-${shapeIdx}`}
+            class="flex flex-col w-full justify-start items-start gap-1 p-2 border rounded-md transition-colors {
+              $selectedPointId === `obstacle-${shapeIdx}`
+                ? 'border-purple-500 ring-1 ring-purple-500 bg-purple-50 dark:bg-purple-900/20'
+                : 'border-neutral-300 dark:border-neutral-600 bg-neutral-50 dark:bg-neutral-900/30'
+            }"
+            on:click|stopPropagation={() =>
+              selectedPointId.set(`obstacle-${shapeIdx}`)}
           >
             <div class="flex flex-row w-full justify-between items-center">
               <div class="flex flex-row items-center gap-2">

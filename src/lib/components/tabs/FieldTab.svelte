@@ -10,6 +10,7 @@
   } from "../../../types/index";
   import { tick } from "svelte";
   import { slide } from "svelte/transition";
+  import { selectedPointId } from "../../../stores";
   import RobotPositionDisplay from "../RobotPositionDisplay.svelte";
   import CollapseAllButton from "../tools/CollapseAllButton.svelte";
   import OptimizationDialog from "../dialogs/OptimizationDialog.svelte";
@@ -138,6 +139,42 @@
   export async function scrollToMarker(markerId: string) {
     if (globalMarkersRef) {
       await globalMarkersRef.scrollToMarker(markerId);
+    }
+  }
+
+  export async function scrollToItem(itemId: string) {
+    // Handle expansion if needed
+    if (itemId.startsWith("obstacle-header-")) {
+      const idx = parseInt(itemId.replace("obstacle-header-", ""));
+      if (!isNaN(idx)) {
+        if (collapsedSections.obstaclesSection) {
+          collapsedSections.obstaclesSection = false;
+        }
+        // Expand the obstacle card
+        collapsedSections.obstacles[idx] = false;
+        collapsedSections = { ...collapsedSections };
+      }
+    }
+
+    await tick();
+    const el = document.getElementById(itemId);
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+  }
+
+  export function toggleCollapseSelected() {
+    const sel = $selectedPointId;
+    if (!sel) return;
+
+    if (sel.startsWith("obstacle-")) {
+      const parts = sel.split("-");
+      const shapeIdx = parseInt(parts[1]);
+      if (!isNaN(shapeIdx)) {
+        collapsedSections.obstacles[shapeIdx] =
+          !collapsedSections.obstacles[shapeIdx];
+        collapsedSections = { ...collapsedSections };
+      }
     }
   }
 </script>

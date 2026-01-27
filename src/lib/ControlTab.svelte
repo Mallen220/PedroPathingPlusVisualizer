@@ -155,6 +155,12 @@
     }
   }
 
+  export function copyTable() {
+    if (tabInstances["table"] && tabInstances["table"].copyTable) {
+      tabInstances["table"].copyTable();
+    }
+  }
+
   export async function scrollToItem(type: string, id: string) {
     if (type === "path" || type === "wait" || type === "rotate") {
       activeTab = "path";
@@ -167,6 +173,12 @@
       await tick();
       if (tabInstances["field"] && tabInstances["field"].scrollToMarker) {
         tabInstances["field"].scrollToMarker(id);
+      }
+    } else if (type === "obstacle") {
+      activeTab = "field";
+      await tick();
+      if (tabInstances["field"] && tabInstances["field"].scrollToItem) {
+        tabInstances["field"].scrollToItem(id);
       }
     }
   }

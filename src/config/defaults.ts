@@ -395,6 +395,20 @@ export const DEFAULT_KEY_BINDINGS: KeyBinding[] = [
     category: "Navigation",
   },
   {
+    id: "select-next",
+    key: "alt+]",
+    description: "Select Next Item",
+    action: "selectNext",
+    category: "Navigation",
+  },
+  {
+    id: "select-prev",
+    key: "alt+[",
+    description: "Select Previous Item",
+    action: "selectPrev",
+    category: "Navigation",
+  },
+  {
     id: "select-paths-tab",
     key: "alt+1",
     description: "Switch to Paths tab",
@@ -872,6 +886,13 @@ export const DEFAULT_KEY_BINDINGS: KeyBinding[] = [
     description: "Start Interactive Tutorial",
     action: "startTutorial",
     category: "Help",
+  },
+  {
+    id: "copy-table",
+    key: "",
+    description: "Copy Waypoint Table to Clipboard",
+    action: "copyTable",
+    category: "Export",
   },
 ];
 

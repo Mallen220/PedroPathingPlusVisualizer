@@ -343,6 +343,31 @@
   }
 
   function addControlPoint() {
+    // Check for selected obstacle
+    const sel = $selectedPointId;
+    if (sel && sel.startsWith("obstacle-")) {
+      const parts = sel.split("-");
+      const shapeIdx = parseInt(parts[1]);
+      if (!isNaN(shapeIdx) && shapes[shapeIdx]) {
+        if (shapes[shapeIdx].locked) return;
+        const newVertex = { x: _.random(36, 108), y: _.random(36, 108) };
+        // If a vertex was selected, insert after it, otherwise append
+        const vertexIdx = parts[2] !== undefined ? parseInt(parts[2]) : -1;
+        if (vertexIdx >= 0) {
+          shapes[shapeIdx].vertices.splice(vertexIdx + 1, 0, newVertex);
+          selectedPointId.set(`obstacle-${shapeIdx}-${vertexIdx + 1}`);
+        } else {
+          shapes[shapeIdx].vertices.push(newVertex);
+          selectedPointId.set(
+            `obstacle-${shapeIdx}-${shapes[shapeIdx].vertices.length - 1}`,
+          );
+        }
+        shapesStore.set(shapes);
+        recordChange();
+        return;
+      }
+    }
+
     if (lines.length === 0) return;
     const targetId = $selectedLineId || lines[lines.length - 1].id;
     const targetLine =
@@ -363,6 +388,39 @@
   }
 
   function removeControlPoint() {
+    // Check for selected obstacle
+    const sel = $selectedPointId;
+    if (sel && sel.startsWith("obstacle-")) {
+      const parts = sel.split("-");
+      const shapeIdx = parseInt(parts[1]);
+      if (!isNaN(shapeIdx) && shapes[shapeIdx]) {
+        if (shapes[shapeIdx].locked) return;
+        // If vertex selected, remove it. If header selected, remove last vertex?
+        // Usually removeControlPoint implies removing the *selected* point if applicable
+        // Or the last one if generic.
+        const vertexIdx = parts[2] !== undefined ? parseInt(parts[2]) : -1;
+        if (vertexIdx >= 0) {
+          if (shapes[shapeIdx].vertices.length > 3) {
+            shapes[shapeIdx].vertices.splice(vertexIdx, 1);
+            // Select previous or parent
+            if (vertexIdx > 0)
+              selectedPointId.set(`obstacle-${shapeIdx}-${vertexIdx - 1}`);
+            else selectedPointId.set(`obstacle-${shapeIdx}`);
+            shapesStore.set(shapes);
+            recordChange();
+          }
+        } else {
+          // Header selected -> remove last vertex
+          if (shapes[shapeIdx].vertices.length > 3) {
+            shapes[shapeIdx].vertices.pop();
+            shapesStore.set(shapes);
+            recordChange();
+          }
+        }
+        return;
+      }
+    }
+
     if (lines.length > 0) {
       const targetId = $selectedLineId || lines[lines.length - 1].id;
       const targetLine =
@@ -481,6 +539,37 @@
       return;
     }
 
+    if (sel.startsWith("obstacle-")) {
+      const parts = sel.split("-");
+      const shapeIdx = parseInt(parts[1]);
+      if (isNaN(shapeIdx) || !shapes[shapeIdx]) return;
+
+      const newShape = _.cloneDeep(shapes[shapeIdx]);
+      newShape.id = `obstacle-${Date.now()}`;
+      // Offset slightly
+      newShape.vertices.forEach((v) => {
+        v.x = Math.min(144, v.x + 2);
+        v.y = Math.min(144, v.y + 2);
+      });
+
+      const existingNames = shapes.map((s) => s.name || "");
+      if (newShape.name && newShape.name.trim() !== "") {
+        newShape.name = generateName(newShape.name, existingNames);
+      } else {
+        newShape.name = ""; // keep empty if it was empty
+      }
+
+      shapesStore.update((s) => {
+        const s2 = [...s];
+        // Insert after original
+        s2.splice(shapeIdx + 1, 0, newShape);
+        return s2;
+      });
+      selectedPointId.set(`obstacle-${shapeIdx + 1}`);
+      recordChange();
+      return;
+    }
+
     // Path duplication
     let targetLineId: string | null = null;
     if (sel.startsWith("point-")) {
@@ -587,6 +676,17 @@
       return;
     }
 
+    if (sel.startsWith("obstacle-")) {
+      const parts = sel.split("-");
+      const shapeIdx = parseInt(parts[1]);
+      if (!isNaN(shapeIdx) && shapes[shapeIdx]) {
+        clipboard = _.cloneDeep(shapes[shapeIdx]);
+        // Tag it so we know it's a shape if the type structure isn't obvious
+        (clipboard as any)._type = "obstacle";
+      }
+      return;
+    }
+
     let targetLineId: string | null = null;
     if (sel.startsWith("point-")) {
       const parts = sel.split("-");
@@ -673,6 +773,35 @@
         sequenceStore.update((s) => [...s, newRotate]);
       }
       selectedPointId.set(`rotate-${newRotate.id}`);
+      recordChange();
+      return;
+    }
+
+    // Handle Obstacle
+    if (
+      (clipboard as any)._type === "obstacle" ||
+      (clipboard as any).vertices
+    ) {
+      const newShape = _.cloneDeep(clipboard);
+      delete (newShape as any)._type;
+      (newShape as any).id = `obstacle-${Date.now()}`;
+
+      // Offset slightly to show it's new
+      (newShape as any).vertices.forEach((v: any) => {
+        v.x = Math.min(144, v.x + 2);
+        v.y = Math.min(144, v.y + 2);
+      });
+
+      const existingNames = shapes.map((s) => s.name || "");
+      if (newShape.name && newShape.name.trim() !== "") {
+        newShape.name = generateName(newShape.name, existingNames);
+      } else {
+        newShape.name = "";
+      }
+
+      shapesStore.update((s) => [...s, newShape]);
+      selectedPointId.set(`obstacle-${shapes.length}`);
+      activeControlTab = "field";
       recordChange();
       return;
     }
@@ -844,6 +973,37 @@
       );
       selectedPointId.set(null);
       recordChange();
+      return;
+    }
+
+    if (sel.startsWith("obstacle-")) {
+      const parts = sel.split("-");
+      const shapeIdx = parseInt(parts[1]);
+      if (isNaN(shapeIdx) || !shapes[shapeIdx]) return;
+      if (shapes[shapeIdx].locked) return;
+
+      const vertexIdx = parts[2] !== undefined ? parseInt(parts[2]) : -1;
+
+      if (vertexIdx === -1) {
+        // Obstacle Header selected -> Delete Obstacle
+        shapesStore.update((s) => s.filter((_, i) => i !== shapeIdx));
+        selectedPointId.set(null);
+        recordChange();
+      } else {
+        // Vertex selected -> Delete Vertex
+        if (shapes[shapeIdx].vertices.length > 3) {
+          shapesStore.update((s) => {
+            const newShapes = [...s];
+            newShapes[shapeIdx].vertices.splice(vertexIdx, 1);
+            return newShapes;
+          });
+          // Select previous or parent
+          if (vertexIdx > 0)
+            selectedPointId.set(`obstacle-${shapeIdx}-${vertexIdx - 1}`);
+          else selectedPointId.set(`obstacle-${shapeIdx}`);
+          recordChange();
+        }
+      }
       return;
     }
 
@@ -1059,6 +1219,7 @@
         );
     });
     shapes.forEach((s, sIdx) => {
+      items.push(`obstacle-${sIdx}`);
       s.vertices.forEach((_, vIdx) => items.push(`obstacle-${sIdx}-${vIdx}`));
     });
     return items;
@@ -1090,6 +1251,14 @@
       const line = lines[lineIdx];
       if (line && line.eventMarkers && line.eventMarkers[evIdx]) {
         controlTabRef.scrollToItem("event", line.eventMarkers[evIdx].id);
+      }
+    } else if (sel.startsWith("obstacle-")) {
+      const parts = sel.split("-");
+      // Format is obstacle-SHAPEIDX or obstacle-SHAPEIDX-VERTIDX
+      // We just need the shape index to scroll to the card
+      const shapeIdx = parts[1];
+      if (shapeIdx !== undefined) {
+        controlTabRef.scrollToItem("obstacle", `obstacle-header-${shapeIdx}`);
       }
     }
   }
@@ -1924,6 +2093,11 @@
     rotateField: () => rotateField(),
     toggleContinuousValidation: () => toggleContinuousValidation(),
     toggleOnionCurrentPath: () => toggleOnionCurrentPath(),
+    copyTable: () => {
+      if (controlTabRef && controlTabRef.copyTable) {
+        controlTabRef.copyTable();
+      }
+    },
   };
 
   // --- Derived Commands for Search ---

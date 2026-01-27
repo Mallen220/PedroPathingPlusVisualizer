@@ -80,6 +80,12 @@
       optimizationFailed: false,
     };
   }
+
+  export function copyTable() {
+    if (waypointTableRef && waypointTableRef.copyTable) {
+      waypointTableRef.copyTable();
+    }
+  }
 </script>
 
 <div class="p-4 w-full">
