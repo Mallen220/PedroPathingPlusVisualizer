@@ -5,6 +5,7 @@
   import type { Settings } from "../../../types/index";
   import { DEFAULT_KEY_BINDINGS } from "../../../config/defaults";
   import { notification } from "../../../stores";
+  import { parseShortcut } from "../../../utils/shortcutFormatter";
 
   export let isOpen = false;
   export let settings: Settings;
@@ -470,7 +471,7 @@
                       {/if}
 
                       <button
-                        class="px-3 py-1.5 min-w-[6rem] text-sm font-mono font-bold rounded-md shadow-sm border transition-all duration-200 text-center relative group"
+                        class="px-3 py-1.5 min-w-[6rem] text-sm font-mono font-bold rounded-md shadow-sm border transition-all duration-200 text-center relative group flex items-center justify-center gap-1"
                         class:bg-indigo-100={recordingKeyFor === binding.id}
                         class:text-indigo-700={recordingKeyFor === binding.id}
                         class:border-indigo-300={recordingKeyFor === binding.id}
@@ -504,7 +505,12 @@
                         {#if recordingKeyFor === binding.id}
                           <span class="animate-pulse">Listening...</span>
                         {:else if binding.key}
-                          {binding.key}
+                          {#each parseShortcut(binding.key) as key}
+                            <kbd
+                              class="bg-neutral-100 dark:bg-neutral-700 border border-neutral-300 dark:border-neutral-600 rounded px-1.5 py-0.5 text-xs text-neutral-800 dark:text-neutral-200 shadow-sm"
+                              >{key}</kbd
+                            >
+                          {/each}
                         {:else}
                           Unbound
                         {/if}

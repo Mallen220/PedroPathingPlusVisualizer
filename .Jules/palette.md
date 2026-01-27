@@ -12,3 +12,8 @@ Action: Before optimizing empty states, verify they are actually reachable in th
 
 Learning: Removing default outlines (`focus:outline-none`) on range inputs (`<input type="range">`) to achieve a custom look creates a significant accessibility barrier. Keyboard users cannot see the focus state on the slider thumb.
 Action: Always add explicit `focus-visible` styles (e.g., `focus-visible:ring`) to the slider or its container when removing default outlines.
+
+## 2026-10-24 - Platform-Agnostic Key Formatting
+
+Learning: Users on different platforms expect different symbols (⌘ vs Ctrl). Hardcoding text like "Ctrl/Cmd" in UI is cluttered. Using a utility to detecting platform and parsing shortcuts allows for clean, native-feeling UI components (like `<kbd>` tags) that respect user context.
+Action: Centralize shortcut parsing logic to handle comma-separated alternatives and platform-specific symbols, then use this parser to drive UI rendering instead of string manipulation in components.

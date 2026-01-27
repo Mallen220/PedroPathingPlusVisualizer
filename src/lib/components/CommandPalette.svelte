@@ -3,6 +3,7 @@
   import { fade, fly } from "svelte/transition";
   import { cubicInOut } from "svelte/easing";
   import { onMount } from "svelte";
+  import { parseShortcut } from "../../utils/shortcutFormatter";
 
   export let isOpen = false;
   export let commands: {
@@ -18,26 +19,6 @@
   let selectedIndex = 0;
   let inputElement: HTMLInputElement;
   let recentCommandIds: string[] = [];
-
-  function getDisplayShortcut(shortcut: string): string {
-    if (!shortcut) return "";
-    const isMac =
-      /Mac|iPod|iPhone|iPad/.test(navigator.platform) ||
-      /Mac/.test(navigator.userAgent);
-    const parts = shortcut.split(",").map((s) => s.trim());
-    let best = parts[0];
-    if (isMac) {
-      const mac = parts.find((p) => p.toLowerCase().includes("cmd"));
-      if (mac) best = mac;
-    } else {
-      const nonMac = parts.find(
-        (p) =>
-          !p.toLowerCase().includes("cmd") || p.toLowerCase().includes("ctrl"),
-      );
-      if (nonMac) best = nonMac;
-    }
-    return best;
-  }
 
   onMount(() => {
     try {
@@ -208,18 +189,14 @@
                 </div>
                 {#if command.shortcut}
                   <div class="flex items-center gap-1">
-                    <!-- Show appropriate shortcut for platform -->
-                    {#each getDisplayShortcut(command.shortcut).split("+") as key}
+                    {#each parseShortcut(command.shortcut) as key}
                       <kbd
                         class="text-xs font-mono font-bold px-1.5 py-0.5 rounded border
                        {index === selectedIndex
                           ? 'bg-indigo-500 border-indigo-400 text-indigo-100'
                           : 'bg-neutral-100 dark:bg-neutral-800 border-neutral-200 dark:border-neutral-700 text-neutral-500 dark:text-neutral-400'}"
                       >
-                        {key
-                          .trim()
-                          .replace("Command", "Cmd")
-                          .replace("Control", "Ctrl")}
+                        {key}
                       </kbd>
                     {/each}
                   </div>
