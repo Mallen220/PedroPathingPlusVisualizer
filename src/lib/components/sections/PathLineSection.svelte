@@ -3,6 +3,7 @@
   import type { Line } from "../../../types/index";
   import { snapToGrid, showGrid, gridSize } from "../../../stores";
   import ControlPointsSection from "./ControlPointsSection.svelte";
+  import EventMarkersSection from "./EventMarkersSection.svelte";
   import HeadingControls from "../HeadingControls.svelte";
   import ColorPicker from "../tools/ColorPicker.svelte";
   import {
@@ -22,7 +23,7 @@
   export let idx: number;
   export let lines: Line[];
   export let collapsed: boolean;
-  // export let collapsedEventMarkers: boolean;
+  export let collapsedEventMarkers: boolean;
   export let collapsedControlPoints: boolean;
   export let onRemove: () => void;
   export let onInsertAfter: () => void;
@@ -407,6 +408,12 @@
         lineIdx={idx}
         bind:collapsed={collapsedControlPoints}
         {recordChange}
+      />
+
+      <EventMarkersSection
+        bind:line
+        lineIdx={idx}
+        bind:collapsed={collapsedEventMarkers}
       />
 
       <!-- Action Bar -->

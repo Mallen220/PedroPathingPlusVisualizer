@@ -868,6 +868,9 @@
                 lines.findIndex((l) => l.id === ln.id)
               ]
             }
+            bind:collapsedEventMarkers={
+              collapsedEventMarkers[lines.findIndex((l) => l.id === ln.id)]
+            }
             onRemove={() => removeLine(lines.findIndex((l) => l.id === ln.id))}
             onInsertAfter={() => insertLineAfter(sIdx)}
             onAddWaitAfter={() => insertWaitAfter(sIdx)}

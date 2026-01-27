@@ -9,6 +9,7 @@
     updateLinkedWaits,
   } from "../../../utils/pointLinking";
   import { tooltipPortal } from "../../actions/portal";
+  import WaitMarkersSection from "./WaitMarkersSection.svelte";
 
   export let wait: SequenceWaitItem;
   export let sequence: SequenceItem[];
@@ -321,6 +322,8 @@
           />
         </div>
       </div>
+
+      <WaitMarkersSection {wait} />
 
       <!-- Action Bar -->
       <div
