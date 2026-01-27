@@ -28,6 +28,7 @@
     fieldRenderRegistry,
     type ContextMenuItem,
   } from "../registries";
+  import { actionRegistry } from "../actionRegistry";
   import ContextMenu from "./tools/ContextMenu.svelte";
   import {
     linesStore,
@@ -1205,119 +1206,26 @@
       sequence &&
       sequence.length > 0
     ) {
-      const waitById = new Map<string, any>();
-      const rotateById = new Map<string, any>();
-      sequence.forEach((it) => {
-        if (it.kind === "wait") waitById.set(it.id, it);
-        if (it.kind === "rotate") rotateById.set(it.id, it);
-      });
-      timePrediction.timeline.forEach((ev: any) => {
-        if (ev.type !== "wait" || !ev.waitId || !ev.atPoint) return;
-        const seqWait = waitById.get(ev.waitId);
-        if (
-          !seqWait ||
-          !seqWait.eventMarkers ||
-          seqWait.eventMarkers.length === 0
-        )
-          return;
-        const point = ev.atPoint;
-        seqWait.eventMarkers.forEach((event: any, eventIdx: number) => {
-          const isHovered = $hoveredMarkerId === event.id;
-          const radiusMult = isHovered ? 1.3 : 0.9;
-
-          const markerGroup = new Two.Group();
-          markerGroup.id = `wait-event-${ev.waitId}-${eventIdx}`;
-          const markerCircle = new Two.Circle(
-            x(point.x),
-            y(point.y),
-            uiLength(POINT_RADIUS * radiusMult),
-          );
-          markerCircle.id = `wait-event-circle-${ev.waitId}-${eventIdx}`;
-          const waitSelected = $selectedPointId === `wait-${ev.waitId}`;
-          if (waitSelected) {
-            markerCircle.fill = "#f97316";
-            markerCircle.stroke = "#fffbeb";
-            markerCircle.linewidth = uiLength(0.6);
-          } else {
-            markerCircle.fill = isHovered ? "#8b5cf6" : "#a78bfa";
-            markerCircle.stroke = "#ffffff";
-            markerCircle.linewidth = uiLength(0.3);
+      // Use Registry for registered actions (e.g. Wait)
+      sequence.forEach((item) => {
+        const action = actionRegistry.get(item.kind);
+        if (action && action.renderField) {
+          const elems = action.renderField(item, {
+            x,
+            y,
+            uiLength,
+            settings,
+            hoveredId: $hoveredMarkerId,
+            selectedId: $selectedLineId,
+            selectedPointId: $selectedPointId,
+            timePrediction,
+          });
+          if (elems) {
+            elems.forEach((el) => twoMarkers.push(el));
           }
-          const flagSize = uiLength(isHovered ? 1 : 0.6);
-          const flagPoints = [
-            new Two.Anchor(x(point.x), y(point.y) - flagSize / 2),
-            new Two.Anchor(x(point.x) + flagSize / 2, y(point.y)),
-            new Two.Anchor(x(point.x), y(point.y) + flagSize / 2),
-          ];
-          const flag = new Two.Path(flagPoints, true);
-          flag.fill = waitSelected ? "#fffbeb" : "#ffffff";
-          flag.stroke = "none";
-          flag.id = `wait-event-flag-${ev.waitId}-${eventIdx}`;
-          markerGroup.add(markerCircle, flag);
-          twoMarkers.push(markerGroup);
-        });
+        }
       });
 
-      // Rotate event markers
-      timePrediction.timeline.forEach((ev: any) => {
-        // Rotate events appear as wait type in timeline with waitId matching rotate id
-        if (ev.type !== "wait" || !ev.waitId || !ev.atPoint) return;
-        const seqRotate = rotateById.get(ev.waitId);
-        if (
-          !seqRotate ||
-          !seqRotate.eventMarkers ||
-          seqRotate.eventMarkers.length === 0
-        )
-          return;
-        const point = ev.atPoint;
-        seqRotate.eventMarkers.forEach((event: any, eventIdx: number) => {
-          const isHovered = $hoveredMarkerId === event.id;
-          const radiusMult = isHovered ? 1.3 : 0.9;
-
-          const markerGroup = new Two.Group();
-          markerGroup.id = `rotate-event-${ev.waitId}-${eventIdx}`;
-          const markerCircle = new Two.Circle(
-            x(point.x),
-            y(point.y),
-            uiLength(POINT_RADIUS * radiusMult),
-          );
-          markerCircle.id = `rotate-event-circle-${ev.waitId}-${eventIdx}`;
-          const rotateSelected = $selectedPointId === `rotate-${ev.waitId}`;
-          if (rotateSelected) {
-            markerCircle.fill = "#f97316";
-            markerCircle.stroke = "#fffbeb";
-            markerCircle.linewidth = uiLength(0.6);
-          } else {
-            markerCircle.fill = isHovered ? "#06b6d4" : "#67e8f9";
-            markerCircle.stroke = "#ffffff";
-            markerCircle.linewidth = uiLength(0.3);
-          }
-          // Arrow/rotation indicator shape (circular arrow segment)
-          const arrowSize = uiLength(isHovered ? 1 : 0.6);
-          const arrowPoints = [
-            new Two.Anchor(
-              x(point.x) - arrowSize / 3,
-              y(point.y) - arrowSize / 3,
-            ),
-            new Two.Anchor(
-              x(point.x) + arrowSize / 3,
-              y(point.y) - arrowSize / 3,
-            ),
-            new Two.Anchor(x(point.x) + arrowSize / 3, y(point.y)),
-            new Two.Anchor(x(point.x), y(point.y)),
-            new Two.Anchor(x(point.x), y(point.y) + arrowSize / 3),
-          ];
-          const arrow = new Two.Path(arrowPoints, false);
-          arrow.fill = "none";
-          arrow.stroke = rotateSelected ? "#fffbeb" : "#ffffff";
-          arrow.linewidth = uiLength(0.3);
-          arrow.cap = "round";
-          arrow.join = "round";
-          arrow.id = `rotate-event-arrow-${ev.waitId}-${eventIdx}`;
-          markerGroup.add(markerCircle, arrow);
-          twoMarkers.push(markerGroup);
-        });
-      });
     }
     return twoMarkers;
   })();

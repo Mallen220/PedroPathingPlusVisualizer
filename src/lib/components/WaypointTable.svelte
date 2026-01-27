@@ -46,6 +46,7 @@
     isRotateLinked,
   } from "../../utils/pointLinking";
   import { getRandomColor } from "../../utils/draw";
+  import { actionRegistry } from "../actionRegistry";
 
   export let startPoint: Point;
   export let lines: Line[];
@@ -489,10 +490,16 @@
     }
   }
 
-  function deleteWait(index: number) {
+  function deleteSequenceItem(index: number) {
     const item = sequence[index];
     if (!item) return;
-    if (item.kind === "wait" && item.locked) return;
+
+    if (item.kind === "path") {
+        deleteLine(item.lineId);
+        return;
+    }
+
+    if ((item as any).locked) return;
 
     sequence.splice(index, 1);
     sequence = [...sequence];
@@ -501,29 +508,10 @@
     selectedPointId.set(null);
   }
 
-  function deleteRotate(index: number) {
-    const item = sequence[index];
-    if (!item) return;
-    if (item.kind === "rotate" && item.locked) return;
-
-    sequence.splice(index, 1);
-    sequence = [...sequence];
-    syncLinesToSequence(sequence);
-    if (recordChange) recordChange();
-    selectedPointId.set(null);
-  }
-
-  function deleteMacro(index: number) {
-    const item = sequence[index];
-    if (!item) return;
-    if (item.kind === "macro" && item.locked) return;
-
-    sequence.splice(index, 1);
-    sequence = [...sequence];
-    syncLinesToSequence(sequence);
-    if (recordChange) recordChange();
-    selectedPointId.set(null);
-  }
+  // Deprecated specific delete functions mapped to generic one for backward compat if needed
+  function deleteWait(index: number) { deleteSequenceItem(index); }
+  function deleteRotate(index: number) { deleteSequenceItem(index); }
+  function deleteMacro(index: number) { deleteSequenceItem(index); }
 
   function toggleWaitLock(index: number) {
     const item = sequence[index];
@@ -741,14 +729,7 @@
     // Delete
     items.push({
       label: "Delete",
-      onClick: () =>
-        item.kind === "path"
-          ? deleteLine(item.lineId)
-          : item.kind === "wait"
-            ? deleteWait(seqIndex)
-            : item.kind === "rotate"
-              ? deleteRotate(seqIndex)
-              : deleteMacro(seqIndex),
+      onClick: () => deleteSequenceItem(seqIndex),
       danger: true,
       disabled: isLocked || (lines.length <= 1 && item.kind === "path"),
     });
@@ -1290,6 +1271,7 @@
         <!-- Sequence Items (displaySequence ensures missing lines are shown) -->
         {#each displaySequence as item, seqIdx (item.kind === "path" ? item.lineId : item.id)}
           {@const seqIndex = findSequenceIndex(item)}
+          {@const actionDef = actionRegistry.get(item.kind)}
           {#if item.kind === "path"}
             {#each lines.filter((l) => l.id === item.lineId) as line (line.id)}
               {@const lineIdx = lines.findIndex((l) => l === line)}
@@ -1575,455 +1557,33 @@
                 </tr>
               {/each}
             {/each}
-          {:else if item.kind === "wait"}
-            <!-- Wait Item -->
-            {@const seqIndex = findSequenceIndex(item)}
-            <tr
-              data-seq-index={seqIndex}
-              draggable={!item.locked}
-              on:dragstart={(e) => handleDragStart(e, seqIndex)}
-              on:dragend={handleDragEnd}
-              on:contextmenu={(e) => handleContextMenu(e, seqIndex)}
-              class="hover:bg-neutral-50 dark:hover:bg-neutral-800/50 bg-amber-50 dark:bg-amber-900/20 transition-colors duration-150"
-              class:border-t-2={dragOverIndex === seqIndex &&
-                dragPosition === "top"}
-              class:border-b-2={dragOverIndex === seqIndex &&
-                dragPosition === "bottom"}
-              class:border-blue-500={dragOverIndex === seqIndex}
-              class:dark:border-blue-400={dragOverIndex === seqIndex}
-              class:opacity-50={draggingIndex === seqIndex}
-            >
-              <td
-                class="w-8 px-2 py-2 text-center cursor-grab active:cursor-grabbing text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                  class="w-4 h-4 mx-auto"
-                >
-                  <path
-                    fill-rule="evenodd"
-                    d="M10 3a1.5 1.5 0 100-3 1.5 1.5 0 000 3zm0 5a1.5 1.5 0 100-3 1.5 1.5 0 000 3zm0 5a1.5 1.5 0 100-3 1.5 1.5 0 000 3zm0 5a1.5 1.5 0 100-3 1.5 1.5 0 000 3z"
-                    clip-rule="evenodd"
-                  />
-                </svg>
-              </td>
-              <td class="px-3 py-2">
-                <div class="relative w-full max-w-[160px]">
-                  <input
-                    class="w-full px-2 py-1 rounded border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 focus:ring-2 focus:ring-amber-500 focus:outline-none text-xs pr-6"
-                    class:text-amber-500={hoveredWaitId === item.id}
-                    value={item.name}
-                    on:input={(e) =>
-                      // @ts-ignore
-                      updateWaitName(item, e.target.value)}
-                    use:focusOnRequest={{
-                      id: `wait-${item.id}`,
-                      field: "name",
-                    }}
-                    disabled={item.locked}
-                    placeholder="Wait"
-                    aria-label="Wait"
-                  />
-                  {#if isWaitLinked(sequence, item.id)}
-                    <!-- svelte-ignore a11y-no-static-element-interactions -->
-                    <div
-                      class="absolute right-1 top-1/2 -translate-y-1/2 text-amber-500 cursor-help flex items-center justify-center"
-                      on:mouseenter={(e) => handleWaitHoverEnter(e, item.id)}
-                      on:mouseleave={handleWaitHoverLeave}
-                    >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 20 20"
-                        fill="currentColor"
-                        class="w-3.5 h-3.5"
-                      >
-                        <path
-                          fill-rule="evenodd"
-                          d="M12.586 4.586a2 2 0 112.828 2.828l-3 3a2 2 0 01-2.828 0 1 1 0 00-1.414 1.414 4 4 0 005.656 0l3-3a4 4 0 00-5.656-5.656l-1.5 1.5a1 1 0 101.414 1.414l1.5-1.5zm-5 5a2 2 0 012.828 0 1 1 0 101.414-1.414 4 4 0 00-5.656 0l-3 3a4 4 0 105.656 5.656l1.5-1.5a1 1 0 10-1.414-1.414l-1.5 1.5a2 2 0 11-2.828-2.828l3-3z"
-                          clip-rule="evenodd"
-                        />
-                      </svg>
-                      {#if hoveredWaitId === item.id}
-                        <div
-                          use:tooltipPortal={hoveredWaitAnchor}
-                          class="w-64 p-2 bg-amber-100 dark:bg-amber-900 border border-amber-300 dark:border-amber-700 rounded shadow-lg text-xs text-amber-900 dark:text-amber-100 z-50 pointer-events-none"
-                        >
-                          <strong>Linked Wait</strong><br />
-                          Logic: Same Name = Shared Duration.<br />
-                          This wait event shares its duration with other waits named
-                          '{item.name}'.
-                        </div>
-                      {/if}
-                    </div>
-                  {/if}
-                </div>
-              </td>
-              <td class="px-3 py-2">
-                <input
-                  type="number"
-                  class="w-20 px-2 py-1 rounded border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 focus:ring-2 focus:ring-amber-500 focus:outline-none text-xs"
-                  min="0"
-                  value={item.durationMs}
-                  aria-label="{item.name || 'Wait'} Duration"
-                  on:input={(e) =>
-                    updateWaitDuration(
-                      item,
-                      // @ts-ignore
-                      parseFloat(e.target.value),
-                    )}
-                  use:focusOnRequest={{ id: `wait-${item.id}`, field: "x" }}
-                  disabled={item.locked}
-                />
-              </td>
-              <td class="px-3 py-2 text-neutral-400 text-xs italic"> - </td>
-              <td
-                class="px-3 py-2 text-left flex items-center justify-start gap-1"
-              >
-                <!-- Lock toggle for wait -->
-                <button
-                  on:click|stopPropagation={() => toggleWaitLock(seqIndex)}
-                  title={item.locked ? "Unlock wait" : "Lock wait"}
-                  aria-label={item.locked ? "Unlock wait" : "Lock wait"}
-                  class="inline-flex items-center justify-center h-6 w-6 p-0.5 rounded hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
-                  aria-pressed={item.locked}
-                >
-                  {#if item.locked}
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke-width="2"
-                      stroke="currentColor"
-                      class="size-5 stroke-yellow-500"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z"
-                      />
-                    </svg>
-                  {:else}
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke-width="2"
-                      stroke="currentColor"
-                      class="size-5 stroke-gray-400"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        d="M13.5 10.5V6.75a4.5 4.5 0 1 1 9 0v3.75M3.75 21.75h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H3.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z"
-                      />
-                    </svg>
-                  {/if}
-                </button>
-
-                <!-- Delete slot (hidden when locked) -->
-                {#if !item.locked}
-                  <button
-                    on:click|stopPropagation={() => deleteWait(seqIndex)}
-                    title="Delete wait"
-                    aria-label="Delete wait"
-                    class="inline-flex items-center justify-center h-6 w-6 p-0.5 rounded transition-colors text-neutral-400 hover:text-red-600 hover:bg-neutral-50 dark:hover:bg-neutral-800"
-                  >
-                    <TrashIcon className="size-4" strokeWidth={2} />
-                  </button>
-                {:else}
-                  <span class="h-6 w-6" aria-hidden="true"></span>
-                {/if}
-              </td>
-            </tr>
-          {:else if item.kind === "rotate"}
-            <!-- Rotate Item -->
-            {@const seqIndex = findSequenceIndex(item)}
-            <tr
-              data-seq-index={seqIndex}
-              draggable={!item.locked}
-              on:dragstart={(e) => handleDragStart(e, seqIndex)}
-              on:dragend={handleDragEnd}
-              on:contextmenu={(e) => handleContextMenu(e, seqIndex)}
-              class="hover:bg-neutral-50 dark:hover:bg-neutral-800/50 bg-pink-50 dark:bg-pink-900/20 transition-colors duration-150"
-              class:border-t-2={dragOverIndex === seqIndex &&
-                dragPosition === "top"}
-              class:border-b-2={dragOverIndex === seqIndex &&
-                dragPosition === "bottom"}
-              class:border-blue-500={dragOverIndex === seqIndex}
-              class:dark:border-blue-400={dragOverIndex === seqIndex}
-              class:opacity-50={draggingIndex === seqIndex}
-            >
-              <td
-                class="w-8 px-2 py-2 text-center cursor-grab active:cursor-grabbing text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                  class="w-4 h-4 mx-auto"
-                >
-                  <path
-                    fill-rule="evenodd"
-                    d="M10 3a1.5 1.5 0 100-3 1.5 1.5 0 000 3zm0 5a1.5 1.5 0 100-3 1.5 1.5 0 000 3zm0 5a1.5 1.5 0 100-3 1.5 1.5 0 000 3z"
-                    clip-rule="evenodd"
-                  />
-                </svg>
-              </td>
-              <td class="px-3 py-2">
-                <div class="relative w-full max-w-[160px]">
-                  <input
-                    class="w-full px-2 py-1 rounded border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 focus:ring-2 focus:ring-pink-500 focus:outline-none text-xs pr-6"
-                    value={item.name}
-                    on:input={(e) =>
-                      // @ts-ignore
-                      updateRotateName(item, e.target.value)}
-                    use:focusOnRequest={{
-                      id: `rotate-${item.id}`,
-                      field: "name",
-                    }}
-                    disabled={item.locked}
-                    placeholder="Rotate"
-                    aria-label="Rotate"
-                  />
-                  {#if isRotateLinked(sequence, item.id)}
-                    <!-- svelte-ignore a11y-no-static-element-interactions -->
-                    <div
-                      class="absolute right-1 top-1/2 -translate-y-1/2 text-pink-500 cursor-help flex items-center justify-center"
-                      title="Linked Rotate: Same Name = Shared Degrees"
-                    >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 20 20"
-                        fill="currentColor"
-                        class="w-3.5 h-3.5"
-                      >
-                        <path
-                          fill-rule="evenodd"
-                          d="M12.586 4.586a2 2 0 112.828 2.828l-3 3a2 2 0 01-2.828 0 1 1 0 00-1.414 1.414 4 4 0 005.656 0l3-3a4 4 0 00-5.656-5.656l-1.5 1.5a1 1 0 101.414 1.414l1.5-1.5zm-5 5a2 2 0 012.828 0 1 1 0 101.414-1.414 4 4 0 00-5.656 0l-3 3a4 4 0 105.656 5.656l1.5-1.5a1 1 0 10-1.414-1.414l-1.5 1.5a2 2 0 11-2.828-2.828l3-3z"
-                          clip-rule="evenodd"
-                        />
-                      </svg>
-                    </div>
-                  {/if}
-                </div>
-              </td>
-              <td class="px-3 py-2 text-neutral-400 text-xs italic"> - </td>
-              <td class="px-3 py-2">
-                <input
-                  type="number"
-                  class="w-20 px-2 py-1 rounded border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 focus:ring-2 focus:ring-pink-500 focus:outline-none text-xs"
-                  value={item.degrees}
-                  aria-label="{item.name || 'Rotate'} Degrees"
-                  on:input={(e) =>
-                    updateRotateDegrees(
-                      item,
-                      // @ts-ignore
-                      parseFloat(e.target.value),
-                    )}
-                  use:focusOnRequest={{
-                    id: `rotate-${item.id}`,
-                    field: "heading",
-                  }}
-                  disabled={item.locked}
-                />
-              </td>
-              <td
-                class="px-3 py-2 text-left flex items-center justify-start gap-1"
-              >
-                <!-- Lock toggle for rotate -->
-                <button
-                  on:click|stopPropagation={() => toggleWaitLock(seqIndex)}
-                  title={item.locked ? "Unlock rotate" : "Lock rotate"}
-                  aria-label={item.locked ? "Unlock rotate" : "Lock rotate"}
-                  class="inline-flex items-center justify-center h-6 w-6 p-0.5 rounded hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
-                  aria-pressed={item.locked}
-                >
-                  {#if item.locked}
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke-width="2"
-                      stroke="currentColor"
-                      class="size-5 stroke-yellow-500"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z"
-                      />
-                    </svg>
-                  {:else}
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke-width="2"
-                      stroke="currentColor"
-                      class="size-5 stroke-gray-400"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        d="M13.5 10.5V6.75a4.5 4.5 0 1 1 9 0v3.75M3.75 21.75h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H3.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z"
-                      />
-                    </svg>
-                  {/if}
-                </button>
-
-                <!-- Delete slot (hidden when locked) -->
-                {#if !item.locked}
-                  <button
-                    on:click|stopPropagation={() => deleteRotate(seqIndex)}
-                    title="Delete rotate"
-                    aria-label="Delete rotate"
-                    class="inline-flex items-center justify-center h-6 w-6 p-0.5 rounded transition-colors text-neutral-400 hover:text-red-600 hover:bg-neutral-50 dark:hover:bg-neutral-800"
-                  >
-                    <TrashIcon className="size-4" strokeWidth={2} />
-                  </button>
-                {:else}
-                  <span class="h-6 w-6" aria-hidden="true"></span>
-                {/if}
-              </td>
-            </tr>
-          {:else if item.kind === "macro"}
-            <!-- Macro Item -->
-            {@const seqIndex = findSequenceIndex(item)}
-            <tr
-              data-seq-index={seqIndex}
-              draggable={!item.locked}
-              on:dragstart={(e) => handleDragStart(e, seqIndex)}
-              on:dragend={handleDragEnd}
-              on:contextmenu={(e) => handleContextMenu(e, seqIndex)}
-              class="hover:bg-neutral-50 dark:hover:bg-neutral-800/50 bg-teal-50 dark:bg-teal-900/20 transition-colors duration-150"
-              class:border-t-2={dragOverIndex === seqIndex &&
-                dragPosition === "top"}
-              class:border-b-2={dragOverIndex === seqIndex &&
-                dragPosition === "bottom"}
-              class:border-blue-500={dragOverIndex === seqIndex}
-              class:dark:border-blue-400={dragOverIndex === seqIndex}
-              class:opacity-50={draggingIndex === seqIndex}
-            >
-              <td
-                class="w-8 px-2 py-2 text-center cursor-grab active:cursor-grabbing text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                  class="w-4 h-4 mx-auto"
-                >
-                  <path
-                    fill-rule="evenodd"
-                    d="M10 3a1.5 1.5 0 100-3 1.5 1.5 0 000 3zm0 5a1.5 1.5 0 100-3 1.5 1.5 0 000 3zm0 5a1.5 1.5 0 100-3 1.5 1.5 0 000 3z"
-                    clip-rule="evenodd"
-                  />
-                </svg>
-              </td>
-              <td class="px-3 py-2">
-                <div class="relative w-full max-w-[160px]">
-                  <input
-                    class="w-full px-2 py-1 rounded border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 focus:ring-2 focus:ring-teal-500 focus:outline-none text-xs pr-6"
-                    value={item.name}
-                    on:input={(e) =>
-                      // @ts-ignore
-                      updateMacroName(item, e.target.value)}
-                    use:focusOnRequest={{
-                      id: `macro-${item.id}`,
-                      field: "name",
-                    }}
-                    disabled={item.locked}
-                    placeholder="Macro"
-                    aria-label="Macro Name"
-                  />
-                  <!-- Macro Icon -->
-                  <div
-                    class="absolute right-1 top-1/2 -translate-y-1/2 text-teal-500 flex items-center justify-center"
-                    title={`Macro: ${item.filePath}`}
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 20 20"
-                      fill="currentColor"
-                      class="w-3.5 h-3.5"
-                    >
-                      <path
-                        fill-rule="evenodd"
-                        d="M2 10a8 8 0 1 1 16 0 8 8 0 0 1-16 0Zm6.39-2.9a.75.75 0 1 0-1.22-.872l-3.236 4.53L9.53 12.22a.75.75 0 0 0 1.06-1.06l-2.22-2.22 2.22-2.22ZM11.61 7.1a.75.75 0 1 0-1.22.872l2.22 2.22-2.22 2.22a.75.75 0 1 0 1.06 1.06l3.236-4.53-3.076-1.842Z"
-                        clip-rule="evenodd"
-                      />
-                    </svg>
-                  </div>
-                </div>
-              </td>
-              <td
-                class="px-3 py-2 text-neutral-400 text-xs italic truncate max-w-[100px]"
-                title={item.filePath}
-              >
-                {item.filePath.split(/[/\\]/).pop()}
-              </td>
-              <td class="px-3 py-2 text-neutral-400 text-xs italic"> - </td>
-              <td
-                class="px-3 py-2 text-left flex items-center justify-start gap-1"
-              >
-                <!-- Lock toggle for macro -->
-                <button
-                  on:click|stopPropagation={() => toggleWaitLock(seqIndex)}
-                  title={item.locked ? "Unlock macro" : "Lock macro"}
-                  aria-label={item.locked ? "Unlock macro" : "Lock macro"}
-                  class="inline-flex items-center justify-center h-6 w-6 p-0.5 rounded hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
-                  aria-pressed={item.locked}
-                >
-                  {#if item.locked}
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke-width="2"
-                      stroke="currentColor"
-                      class="size-5 stroke-yellow-500"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z"
-                      />
-                    </svg>
-                  {:else}
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke-width="2"
-                      stroke="currentColor"
-                      class="size-5 stroke-gray-400"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        d="M13.5 10.5V6.75a4.5 4.5 0 1 1 9 0v3.75M3.75 21.75h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H3.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z"
-                      />
-                    </svg>
-                  {/if}
-                </button>
-
-                <!-- Delete slot (hidden when locked) -->
-                {#if !item.locked}
-                  <button
-                    on:click|stopPropagation={() => deleteMacro(seqIndex)}
-                    title="Delete macro"
-                    aria-label="Delete macro"
-                    class="inline-flex items-center justify-center h-6 w-6 p-0.5 rounded transition-colors text-neutral-400 hover:text-red-600 hover:bg-neutral-50 dark:hover:bg-neutral-800"
-                  >
-                    <TrashIcon className="size-4" strokeWidth={2} />
-                  </button>
-                {:else}
-                  <span class="h-6 w-6" aria-hidden="true"></span>
-                {/if}
-              </td>
-            </tr>
+          {:else if actionDef}
+             <svelte:component
+                this={actionDef.component}
+                {item}
+                index={seqIndex}
+                isLocked={item.locked}
+                {dragOverIndex}
+                {dragPosition}
+                {draggingIndex}
+                onUpdate={(updatedItem) => {
+                    sequence[seqIndex] = updatedItem;
+                    if (item.kind === 'wait') {
+                        // Handle linking for wait
+                        sequence = updateLinkedWaits(sequence, item.id);
+                    } else if (item.kind === 'rotate') {
+                        // Handle linking for rotate
+                        sequence = updateLinkedRotations(sequence, item.id);
+                    }
+                    recordChange();
+                }}
+                onLock={() => toggleWaitLock(seqIndex)}
+                onDelete={() => deleteSequenceItem(seqIndex)}
+                onDragStart={(e) => handleDragStart(e, seqIndex)}
+                onDragEnd={handleDragEnd}
+                onContextMenu={(e) => handleContextMenu(e, seqIndex)}
+                {sequence}
+             />
           {/if}
         {/each}
 
