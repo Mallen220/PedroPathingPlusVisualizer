@@ -13,4 +13,15 @@ describe("Keybindings", () => {
     expect(selectPrev).toBeDefined();
     expect(selectPrev?.key).toBe("ctrl+up, cmd+up, shift+tab");
   });
+
+  it("should include select-next and select-prev for item selection", () => {
+    const selectNext = DEFAULT_KEY_BINDINGS.find((b) => b.id === "select-next");
+    const selectPrev = DEFAULT_KEY_BINDINGS.find((b) => b.id === "select-prev");
+
+    expect(selectNext).toBeDefined();
+    expect(selectNext?.key).toBe(".");
+
+    expect(selectPrev).toBeDefined();
+    expect(selectPrev?.key).toBe(",");
+  });
 });
