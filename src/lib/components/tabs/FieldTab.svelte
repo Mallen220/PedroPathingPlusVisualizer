@@ -24,7 +24,7 @@
   export let sequence: SequenceItem[];
   export let shapes: Shape[];
   export let settings: Settings;
-  export let recordChange: () => void;
+  export let recordChange: (description?: string) => void;
   export let onPreviewChange: ((lines: Line[] | null) => void) | null = null;
   export let isActive: boolean = false;
 

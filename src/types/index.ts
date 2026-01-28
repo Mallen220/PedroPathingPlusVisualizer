@@ -191,6 +191,14 @@ export interface Settings {
   showDebugSequence?: boolean; // Developer/debugging aids
 }
 
+export interface AppState {
+  startPoint: Point;
+  lines: Line[];
+  shapes: Shape[];
+  sequence: SequenceItem[];
+  settings: Settings;
+}
+
 export interface RobotProfile {
   id: string;
   name: string;

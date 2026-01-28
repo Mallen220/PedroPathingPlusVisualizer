@@ -40,7 +40,7 @@
   export let lines: Line[];
   export let sequence: SequenceItem[];
   export let settings: Settings;
-  export let recordChange: () => void;
+  export let recordChange: (description?: string) => void;
   export let isActive: boolean = false; // instead of checking activeTab === 'path'
 
   $: showDebug = (settings as any)?.showDebugSequence;

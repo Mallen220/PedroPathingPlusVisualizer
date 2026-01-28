@@ -101,7 +101,7 @@
   export let isObstructingHUD = false;
 
   // Callback props for interactions
-  export let onRecordChange: () => void;
+  export let onRecordChange: (description?: string) => void;
 
   // Local state
   let two: Two;
@@ -1975,7 +1975,7 @@
 
     two.renderer.domElement.addEventListener("mouseup", () => {
       if (isDown) {
-        onRecordChange(); // Notify parent of change
+        onRecordChange("Move Point (Field)"); // Notify parent of change
       }
       isDown = false;
       isPanning = false;
@@ -2034,7 +2034,7 @@
       const newIdx = $linesStore.length - 1;
       selectedPointId.set(`point-${newIdx + 1}-0`);
 
-      onRecordChange();
+      onRecordChange("Add Path (Field)");
     });
   });
 

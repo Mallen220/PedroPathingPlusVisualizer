@@ -14,7 +14,7 @@
   export let startPoint: Point;
   export let lines: Line[];
   export let sequence: SequenceItem[];
-  export let recordChange: () => void;
+  export let recordChange: (description?: string) => void;
   export let onPreviewChange: ((lines: Line[] | null) => void) | null = null;
   export let shapes: Shape[];
   export let settings: Settings;

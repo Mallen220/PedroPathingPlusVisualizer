@@ -50,7 +50,7 @@
   export let startPoint: Point;
   export let lines: Line[];
   export let sequence: SequenceItem[];
-  export let recordChange: () => void;
+  export let recordChange: (description?: string) => void;
   // Handler passed from parent to toggle optimization dialog
   export let onToggleOptimization: () => void;
   export let onValidate: (() => void) | null = null;
@@ -169,7 +169,7 @@
     // Trigger reactivity for lines/startPoint
     lines = lines;
     startPoint = startPoint;
-    recordChange();
+    recordChange("Update Point (Table)");
   }
 
   function handleInput(
@@ -187,20 +187,20 @@
 
   function updateLineName(lineId: string, name: string) {
     lines = handleWaypointRename(lines, lineId, name);
-    recordChange();
+    recordChange("Rename Path");
   }
 
   function updateWaitName(item: SequenceItem, name: string) {
     if (item.kind === "wait") {
       sequence = handleWaitRename(sequence, item.id, name);
-      recordChange();
+      recordChange("Rename Wait");
     }
   }
 
   function updateRotateName(item: SequenceItem, name: string) {
     if (item.kind === "rotate") {
       sequence = handleRotateRename(sequence, item.id, name);
-      recordChange();
+      recordChange("Rename Rotate");
     }
   }
 
@@ -209,7 +209,7 @@
     if (line) {
       line.color = color;
       lines = lines; // Trigger reactivity
-      recordChange();
+      recordChange("Change Path Color");
     }
   }
 
@@ -395,7 +395,7 @@
     );
     sequence = newSequence;
     syncLinesToSequence(newSequence);
-    recordChange();
+    recordChange("Reorder Sequence");
 
     handleDragEnd();
   }

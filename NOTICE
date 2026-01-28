@@ -204,3 +204,5 @@ src/tests/PlaybackControls.test.ts
 src/utils/pathOptimizer.ts
 src/utils/shortcutFormatter.ts
 src/tests/VerifyKeybinds.test.ts
+src/lib/components/tabs/HistoryTab.svelte
+src/utils/history.ts

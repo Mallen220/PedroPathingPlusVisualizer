@@ -73,7 +73,8 @@
   } from "./utils";
   import { validatePath } from "./utils/validation";
   import { loadSettings, saveSettings } from "./utils/settingsPersistence";
-  import { createHistory, type AppState } from "./utils/history";
+  import { createHistory, type HistoryEntry } from "./utils/history";
+  import type { AppState } from "./types/index";
   import {
     saveProject,
     saveFileAs,
@@ -257,7 +258,7 @@
     currentFilePath.set(null);
     projectMetadataStore.set({ filepath: "" });
 
-    recordChange();
+    recordChange("Reset Project");
     // Mark as clean new project
     lastSavedState = getCurrentState();
     isUnsaved.set(false);
@@ -564,7 +565,7 @@
 
   // --- History ---
   const history = createHistory();
-  const { canUndoStore, canRedoStore } = history;
+  const { canUndoStore, canRedoStore, historyStore } = history;
   $: canUndo = $canUndoStore;
   $: canRedo = $canRedoStore;
 
@@ -620,10 +621,10 @@
     recordChange();
   }
 
-  function recordChange() {
+  function recordChange(description: string = "Change") {
     refreshMacros();
     previewOptimizedLines = null;
-    history.record(getAppState());
+    history.record(getAppState(), description);
     if (isLoaded) isUnsaved.set(true);
 
     // Autosave on change
@@ -739,6 +740,43 @@
     }
   }
 
+  function handleJumpTo(entry: HistoryEntry) {
+    const newState = history.jumpTo(entry);
+    if (newState) {
+      startPointStore.set(newState.startPoint);
+      linesStore.set(newState.lines);
+      shapesStore.set(newState.shapes);
+      sequenceStore.set(newState.sequence);
+
+      // Check for macros that need reloading
+      const currentMacros = get(macrosStore);
+      if (newState.sequence) {
+        newState.sequence.forEach((item) => {
+          if (item.kind === "macro") {
+            if (!currentMacros.has(item.filePath)) {
+              loadMacro(item.filePath);
+            }
+          }
+        });
+      }
+
+      // Preserve onion layer visibility
+      const currentShowOnion = get(settingsStore).showOnionLayers;
+      const preservedShowOnion =
+        typeof currentShowOnion === "boolean"
+          ? currentShowOnion
+          : newState.settings?.showOnionLayers;
+
+      settingsStore.set({
+        ...newState.settings,
+        showOnionLayers: preservedShowOnion,
+      });
+
+      const currentState = getCurrentState();
+      isUnsaved.set(currentState !== lastSavedState);
+    }
+  }
+
   function closeWhatsNew() {
     showWhatsNew = false;
     // Update settings with new version
@@ -763,7 +801,7 @@
     // Stabilize
     setTimeout(async () => {
       // Record initial state before marking as loaded to prevent unsaved flag
-      recordChange();
+      recordChange("Initial State");
       isLoaded = true;
       lastSavedState = getCurrentState(); // Assume fresh start is "saved" unless loaded
 
@@ -1580,6 +1618,8 @@
         bind:activeTab={activeControlTab}
         onPreviewChange={handlePreviewChange}
         totalSeconds={effectiveDuration * 1000}
+        {historyStore}
+        onJumpTo={handleJumpTo}
       />
     </div>
   </div>

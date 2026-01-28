@@ -66,7 +66,7 @@
   export let resetAnimation: () => void;
   export let stepForward: () => void;
   export let stepBackward: () => void;
-  export let recordChange: () => void;
+  export let recordChange: (description?: string) => void;
   export let controlTabRef: any = null;
   export let activeControlTab: "path" | "field" | "table" = "path";
   export let toggleStats: () => void = () => {};
@@ -251,7 +251,7 @@
       selectedPointId.set(`point-${newIndex + 1}-0`);
     }
 
-    recordChange();
+    recordChange("Add Path (Keyboard)");
   }
 
   function addWait() {
@@ -276,7 +276,7 @@
 
     selectedPointId.set(`wait-${wait.id}`);
     selectedLineId.set(null);
-    recordChange();
+    recordChange("Add Wait (Keyboard)");
   }
 
   function addRotate() {
@@ -301,7 +301,7 @@
 
     selectedPointId.set(`rotate-${rotate.id}`);
     selectedLineId.set(null);
-    recordChange();
+    recordChange("Add Rotate (Keyboard)");
   }
 
   function addEventMarker() {
@@ -321,7 +321,7 @@
           position: 0.5,
         });
         sequenceStore.set(sequence);
-        recordChange();
+        recordChange("Add Event Marker (Keyboard)");
         return;
       }
     }
@@ -338,7 +338,7 @@
         position: 0.5,
       });
       linesStore.set(lines);
-      recordChange();
+      recordChange("Add Event Marker (Keyboard)");
     }
   }
 
@@ -359,7 +359,7 @@
     const cpIndex = targetLine.controlPoints.length;
     selectedLineId.set(targetLine.id as string);
     selectedPointId.set(`point-${lineIndex + 1}-${cpIndex}`);
-    recordChange();
+    recordChange("Add Control Point (Keyboard)");
   }
 
   function removeControlPoint() {
@@ -371,7 +371,7 @@
         if (targetLine.locked) return; // Don't allow removing control points from locked lines
         targetLine.controlPoints.pop();
         linesStore.set(lines);
-        recordChange();
+        recordChange("Remove Control Point (Keyboard)");
       }
     }
   }
@@ -444,7 +444,7 @@
           return s2;
         });
         selectedPointId.set(`wait-${newWait.id}`);
-        recordChange();
+        recordChange("Duplicate Wait");
       }
       return;
     }
@@ -476,7 +476,7 @@
           return s2;
         });
         selectedPointId.set(`rotate-${newRotate.id}`);
-        recordChange();
+        recordChange("Duplicate Rotate");
       }
       return;
     }
@@ -556,7 +556,7 @@
 
       selectedLineId.set(newLine.id!);
       selectedPointId.set(`point-${lineIndex + 2}-0`); // Selected the end point of new line
-      recordChange();
+      recordChange("Duplicate Path");
     }
   }
 
@@ -642,7 +642,7 @@
         sequenceStore.update((s) => [...s, newWait]);
       }
       selectedPointId.set(`wait-${newWait.id}`);
-      recordChange();
+      recordChange("Paste Wait");
       return;
     }
 
@@ -673,7 +673,7 @@
         sequenceStore.update((s) => [...s, newRotate]);
       }
       selectedPointId.set(`rotate-${newRotate.id}`);
-      recordChange();
+      recordChange("Paste Rotate");
       return;
     }
 
@@ -808,7 +808,7 @@
       // We can just set selectedLineId and let the UI handle it, or try to guess point ID.
       // Point ID depends on index.
       // Let's record change.
-      recordChange();
+      recordChange("Paste Path");
     }
   }
 
@@ -828,7 +828,7 @@
         s.filter((item) => !(item.kind === "wait" && item.id === waitId)),
       );
       selectedPointId.set(null);
-      recordChange();
+      recordChange("Delete Wait (Keyboard)");
       return;
     }
 
@@ -843,7 +843,7 @@
         s.filter((item) => !(item.kind === "rotate" && item.id === rotateId)),
       );
       selectedPointId.set(null);
-      recordChange();
+      recordChange("Delete Rotate (Keyboard)");
       return;
     }
 
@@ -872,7 +872,7 @@
         }
         selectedPointId.set(null);
         selectedLineId.set(null);
-        recordChange();
+        recordChange("Delete Path (Keyboard)");
         return;
       }
       // Control Point
@@ -882,7 +882,7 @@
         line.controlPoints.splice(cpIndex, 1);
         linesStore.set(lines);
         selectedPointId.set(null);
-        recordChange();
+        recordChange("Delete Control Point (Keyboard)");
       }
     }
   }
@@ -935,7 +935,7 @@
           startPoint.x = Number(startPoint.x.toFixed(3));
           startPoint.y = Number(startPoint.y.toFixed(3));
           startPointStore.set(startPoint);
-          recordChange();
+          recordChange("Move Start Point (Keyboard)");
         }
         return;
       }
@@ -963,7 +963,7 @@
             line.endPoint.y = Number(line.endPoint.y.toFixed(3));
             // Ensure linked lines (same-named waypoints) are updated when a point is moved via keybinds
             linesStore.set(updateLinkedWaypoints(lines, line.id!));
-            recordChange();
+            recordChange("Move Point (Keyboard)");
           }
         } else {
           const cpIndex = ptIdx - 1;
@@ -996,7 +996,7 @@
               line.controlPoints[cpIndex].y.toFixed(3),
             );
             linesStore.set(lines);
-            recordChange();
+            recordChange("Move Control Point (Keyboard)");
           }
         }
       }
