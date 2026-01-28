@@ -4,6 +4,7 @@ import prettierJavaPlugin from "prettier-plugin-java";
 import type { Point, Line, BasePoint, SequenceItem } from "../types";
 import { getCurvePoint } from "./math";
 import pkg from "../../package.json";
+import { actionRegistry } from "../lib/actionRegistry";
 
 /**
  * Generate Java code from path data
@@ -194,6 +195,23 @@ export async function generateJavaCode(
   const targetSequence = flattenSequence(rawSequence);
 
   targetSequence.forEach((item) => {
+    // Check Registry
+    const action = actionRegistry.get(item.kind);
+    if (action && action.toJavaCode) {
+      // Registry Action (e.g. Wait)
+      // Note: we don't emit 'case stateStep:' here because toJavaCode is expected to generate it or return code block.
+      // But my WaitAction implementation generates `case stateStep: ... case stateStep+1: ...`
+      // So I should NOT emit `case stateStep:` before calling it if it handles it.
+      // My implementation of WaitAction.ts DOES generate "case ${stateStep}:".
+      // But the loop here previously emitted `stateMachineCode += ... case ...`.
+      // I should remove the pre-emission for registry items.
+
+      const res = action.toJavaCode(item, { stateStep });
+      stateMachineCode += res.code;
+      stateStep += res.stepsUsed;
+      return;
+    }
+
     stateMachineCode += `\n        case ${stateStep}:`;
 
     if (item.kind === "path") {
@@ -220,30 +238,6 @@ export async function generateJavaCode(
         stateMachineCode += `\n          break;`;
         stateStep += 1;
       }
-    } else if (item.kind === "wait") {
-      const waitMs = (item as any).durationMs || 0;
-      stateMachineCode += `\n          setPathState(${stateStep + 1});`;
-      stateMachineCode += `\n          break;`;
-
-      stateMachineCode += `\n        case ${stateStep + 1}:`;
-      stateMachineCode += `\n          if(pathTimer.getMilliseconds() > ${waitMs}) {`;
-      stateMachineCode += `\n            setPathState(${stateStep + 2});`;
-      stateMachineCode += `\n          }`;
-      stateMachineCode += `\n          break;`;
-      stateStep += 2;
-    } else if (item.kind === "rotate") {
-      const degrees = (item as any).degrees || 0;
-      const radians = (degrees * Math.PI) / 180;
-      stateMachineCode += `\n          follower.turnTo(${radians.toFixed(3)});`;
-      stateMachineCode += `\n          setPathState(${stateStep + 1});`;
-      stateMachineCode += `\n          break;`;
-
-      stateMachineCode += `\n        case ${stateStep + 1}:`;
-      stateMachineCode += `\n          if(!follower.isBusy()) {`;
-      stateMachineCode += `\n            setPathState(${stateStep + 2});`;
-      stateMachineCode += `\n          }`;
-      stateMachineCode += `\n          break;`;
-      stateStep += 2;
     }
   });
 
@@ -625,110 +619,10 @@ export async function generateSequentialCommandCode(
   );
 
   seq.forEach((item, idx) => {
-    if (item.kind === "rotate") {
-      const rotateItem: any = item as any;
-      const degrees = rotateItem.degrees || 0;
-      const radians = (degrees * Math.PI) / 180;
-
-      const markers: any[] = Array.isArray(rotateItem.eventMarkers)
-        ? [...rotateItem.eventMarkers]
-        : [];
-
-      if (markers.length === 0) {
-        commands.push(
-          `                new ${InstantCmdClass}(() -> follower.turnTo(${radians.toFixed(3)}))`,
-          `                new ${WaitUntilCmdClass}(() -> !follower.isTurning())`,
-        );
-        return;
-      }
-
-      // Sort markers by position (0-1)
-      markers.sort((a, b) => (a.position || 0) - (b.position || 0));
-
-      const firstMarker = markers[0];
-      let turnCommand = `                new ${InstantCmdClass}(() -> {
-                        progressTracker.turn(${radians.toFixed(3)}, "${firstMarker.name}", ${firstMarker.position.toFixed(3)});`;
-
-      // Register remaining markers
-      for (let i = 1; i < markers.length; i++) {
-        turnCommand += `
-                        progressTracker.registerEvent("${markers[i].name}", ${markers[i].position.toFixed(3)});`;
-      }
-      turnCommand += `
-                    })`;
-
-      commands.push(turnCommand);
-
-      let eventSequence = `                new ${ParallelRaceClass}(
-                    new ${WaitUntilCmdClass}(() -> !follower.isTurning()),
-                    new ${SequentialGroupClass}(`;
-
-      markers.forEach((marker, idx) => {
-        if (idx > 0) eventSequence += `,`;
-        eventSequence += `
-                        new ${WaitUntilCmdClass}(() -> progressTracker.shouldTriggerEvent("${marker.name}")),
-                        new ${InstantCmdClass}(() -> progressTracker.executeEvent("${marker.name}"))`;
-      });
-
-      // Ensure the event sequence doesn't finish before the turn completes
-      eventSequence += `,
-                        new ${WaitUntilCmdClass}(() -> !follower.isTurning())`;
-
-      eventSequence += `
-                    ))`;
-
-      commands.push(eventSequence);
-      return;
-    }
-
-    if (item.kind === "wait") {
-      const waitItem: any = item as any;
-      const waitDuration = waitItem.durationMs || 0;
-
-      const markers: any[] = Array.isArray(waitItem.eventMarkers)
-        ? [...waitItem.eventMarkers]
-        : [];
-
-      // Determine wait value and formatting
-      // NextFTC Delay uses seconds, SolversLib WaitCommand uses ms (or whatever SolversLib expects, assumed ms)
-      const getWaitValue = (ms: number) =>
-        isNextFTC ? (ms / 1000.0).toFixed(3) : ms.toFixed(0);
-
-      if (markers.length === 0) {
-        commands.push(
-          `                new ${WaitCmdClass}(${getWaitValue(waitDuration)})`,
-        );
-        return;
-      }
-
-      // Sort markers by position (0-1) to schedule in order
-      markers.sort((a, b) => (a.position || 0) - (b.position || 0));
-
-      let scheduled = 0;
-      const markerCommandParts: string[] = [];
-
-      markers.forEach((marker) => {
-        const targetMs =
-          Math.max(0, Math.min(1, marker.position || 0)) * waitDuration;
-        const delta = Math.max(0, targetMs - scheduled);
-        scheduled = targetMs;
-
-        markerCommandParts.push(
-          `new ${WaitCmdClass}(${getWaitValue(delta)}), new ${InstantCmdClass}(() -> progressTracker.executeEvent("${marker.name}"))`,
-        );
-      });
-
-      const remaining = Math.max(0, waitDuration - scheduled);
-      markerCommandParts.push(
-        `new ${WaitCmdClass}(${getWaitValue(remaining)})`,
-      );
-
-      commands.push(
-        `                new ${ParallelRaceClass}(
-                    new ${WaitCmdClass}(${getWaitValue(waitDuration)}),
-                    new ${SequentialGroupClass}(${markerCommandParts.join(",")})
-                )`,
-      );
+    // Registry Check
+    const action = actionRegistry.get(item.kind);
+    if (action && action.toSequentialCommand) {
+      commands.push(action.toSequentialCommand(item, { isNextFTC }));
       return;
     }
 
