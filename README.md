@@ -51,7 +51,6 @@ Pedro Pathing Visualizer isn't just a port of the web tool—it's a complete rei
   - **Diff View**: Visually compare your current changes against the saved version.
   - **Onion Skinning**: See previous path states to make precise adjustments.
 - **Path Optimizer**: Single-click optimization to refine your paths for maximum speed while respecting field boundaries and obstacles.
-- **Field Annotation**: Add **Sticky Notes** to the field to leave reminders or instructions for your drive team.
 - **Custom Field Maps**: Import any field image with the built-in Calibration Wizard.
 
 ### ⚡ **Efficiency Boosters**
@@ -76,17 +75,12 @@ It's not just about looks—the engine is brand new.
 - **Readability**: The codebase has been cleaned up and modernized, making it easier for contributors to add features (and for the app to run without hiccups).
 - **Stability**: Automated testing and continuous validation ensure that the app is reliable when you need it most—at the competition.
 
-### 💎 **Feature Highlights**
-- **Keep-In Zones**: The opposite of obstacles! Define the safe zone for your robot, and the validator will yell at you if you stray outside. Perfect for keeping your robot within field perimeters.
-- **Global Event Markers**: No more hunting for where you put that event. The new Global Event Manager gives you a unified view of every trigger in your routine, making complex sequencing a breeze.
-- **Waypoint Table**:
-  - **Why it's cool**: Sometimes drag-and-drop isn't enough. The Waypoint Table lets you dial in coordinates to the thousandth of an inch.
-  - **Features**: Sticky headers, right-click context menus for power actions, and instant feedback. It turns path planning into precision engineering.
-
 ### 🎨 **Fully Customizable**
 - **Theming**: Light Mode, Dark Mode, and custom theme plugins.
 - **Keybindings**: Every action is remappable. Custom profiles supported.
 - **Font Sizing**: Adjustable font sizes to suit your preference and screen resolution.
+
+Oh, and so so many little improvements not even included yet! Check back often for a growing list of upgrades!
 
 ## 📥 Installation
 
