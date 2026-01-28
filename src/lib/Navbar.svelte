@@ -46,10 +46,12 @@
   export let exportGif: () => any;
   export let undoAction: () => any;
   export let redoAction: () => any;
-  export const recordChange: () => any = () => {};
+  export const recordChange: (action?: string) => any = () => {};
   export let canUndo: boolean;
   export let canRedo: boolean;
   export let history: ReturnType<typeof createHistory>;
+
+  $: historyStore = history?.historyStore;
 
   let shortcutsOpen = false;
   let exportMenuOpen = false;
@@ -443,8 +445,7 @@
             </svg>
           </button>
 
-          {#if historyOpen}
-            {@const historyStore = history.historyStore}
+          {#if historyOpen && $historyStore}
             <div
               bind:this={historyDropdownRef}
               use:menuNavigation
