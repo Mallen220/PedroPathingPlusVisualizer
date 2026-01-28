@@ -406,6 +406,20 @@ export const DEFAULT_KEY_BINDINGS: KeyBinding[] = [
     action: "cycleTabPrev",
     category: "Navigation",
   },
+  {
+    id: "select-next",
+    key: ".",
+    description: "Select Next Item",
+    action: "selectNext",
+    category: "Navigation",
+  },
+  {
+    id: "select-prev",
+    key: ",",
+    description: "Select Previous Item",
+    action: "selectPrev",
+    category: "Navigation",
+  },
 
   // Tools
   {
