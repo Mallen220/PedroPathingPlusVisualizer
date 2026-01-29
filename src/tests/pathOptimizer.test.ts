@@ -4,6 +4,11 @@ import { PathOptimizer } from "../utils/pathOptimizer";
 import { calculatePathTime } from "../utils/timeCalculator";
 import { pointInPolygon, getRobotCorners } from "../utils/geometry";
 import type { Line, Point, SequenceItem, Settings, Shape } from "../types";
+import { actionRegistry } from "../lib/actionRegistry";
+import { registerCoreUI } from "../lib/coreRegistrations";
+import type { SequencePathItem } from "../types";
+
+const pathKind = (): SequencePathItem['kind'] => (actionRegistry.getAll().find((a: any) => a.isPath)?.kind as SequencePathItem['kind']) ?? "path";
 
 describe("PathOptimizer", () => {
   let startPoint: Point;
@@ -13,6 +18,10 @@ describe("PathOptimizer", () => {
   let shapes: Shape[];
 
   beforeEach(() => {
+    // Ensure core actions are registered for tests that rely on action kinds
+    actionRegistry.reset();
+    registerCoreUI();
+
     // Offset from boundary so validation does not flag the starting safety margin
     // as a boundary collision while we check macro sequencing behavior.
     startPoint = {
@@ -56,7 +65,7 @@ describe("PathOptimizer", () => {
 
     sequence = [
       {
-        kind: "path",
+        kind: pathKind(),
         lineId: "line1",
       },
     ];
@@ -287,13 +296,13 @@ describe("PathOptimizer", () => {
     ];
 
     sequence = [
-      { kind: "path", lineId: firstLine.id! },
+      { kind: pathKind(), lineId: firstLine.id! },
       {
-        kind: "macro",
+        kind: actionRegistry.getAll().find((a: any) => a.isMacro)?.kind as import("../types").SequenceMacroItem['kind'] ?? "macro",
         id: "m1",
         name: "Macro",
         filePath: "macro.json",
-        sequence: [{ kind: "path", lineId: macroLine.id! }],
+        sequence: [{ kind: pathKind(), lineId: macroLine.id! }],
       },
     ];
 
@@ -333,8 +342,8 @@ describe("PathOptimizer", () => {
     ];
 
     sequence = [
-      { kind: "path", lineId: "seg-1" },
-      { kind: "path", lineId: "seg-2" },
+      { kind: pathKind(), lineId: "seg-1" },
+      { kind: pathKind(), lineId: "seg-2" },
     ];
 
     const optimizer = new PathOptimizer(

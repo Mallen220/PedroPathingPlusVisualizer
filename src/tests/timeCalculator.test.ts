@@ -1,11 +1,23 @@
 // Copyright 2026 Matthew Allen. Licensed under the Apache License, Version 2.0.
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, beforeEach } from "vitest";
 import {
   calculatePathTime,
   formatTime,
   analyzePathSegment,
 } from "../utils/timeCalculator";
 import type { Point, Line, Settings, SequenceItem } from "../types";
+import { actionRegistry } from "../lib/actionRegistry";
+import { registerCoreUI } from "../lib/coreRegistrations";
+import type { SequencePathItem, SequenceWaitItem, SequenceRotateItem } from "../types";
+
+beforeEach(() => {
+  actionRegistry.reset();
+  registerCoreUI();
+});
+
+const pathKind = (): SequencePathItem['kind'] => (actionRegistry.getAll().find((a) => a.isPath)?.kind as SequencePathItem['kind']) ?? "path";
+const waitKind = (): SequenceWaitItem['kind'] => (actionRegistry.getAll().find((a) => a.isWait)?.kind as SequenceWaitItem['kind']) ?? "wait";
+const rotateKind = (): SequenceRotateItem['kind'] => (actionRegistry.getAll().find((a) => a.isRotate)?.kind as SequenceRotateItem['kind']) ?? "rotate";
 
 describe("Time Calculator", () => {
   const defaultSettings: Settings = {
@@ -76,8 +88,8 @@ describe("Time Calculator", () => {
     ];
 
     const sequence: SequenceItem[] = [
-      { kind: "path", lineId: "line1" },
-      { kind: "wait", durationMs: 1000, name: "wait1", id: "wait1" },
+      { kind: pathKind(), lineId: "line1" },
+      { kind: waitKind(), durationMs: 1000, name: "wait1", id: "wait1" },
     ];
 
     const result = calculatePathTime(
@@ -126,8 +138,8 @@ describe("Time Calculator", () => {
 
     // Explicitly define sequence to ensure order
     const sequence: SequenceItem[] = [
-      { kind: "path", lineId: "line1" },
-      { kind: "path", lineId: "line2" },
+      { kind: pathKind(), lineId: "line1" },
+      { kind: pathKind(), lineId: "line2" },
     ];
 
     const result = calculatePathTime(
@@ -184,7 +196,7 @@ describe("Time Calculator", () => {
       },
     ];
     const sequence: SequenceItem[] = [
-      { kind: "rotate", id: "rot1", name: "Rotate", degrees: 90 },
+      { kind: rotateKind(), id: "rot1", name: "Rotate", degrees: 90 },
     ];
 
     // Need to set initial heading to 0.

@@ -16,6 +16,11 @@ import {
   settingsStore,
 } from "../lib/projectStore";
 import { DEFAULT_SETTINGS } from "../config/defaults";
+import { actionRegistry } from "../lib/actionRegistry";
+import { registerCoreUI } from "../lib/coreRegistrations";
+import type { SequenceMacroItem } from "../types";
+
+const macroKind = (): SequenceMacroItem['kind'] => (actionRegistry.getAll().find((a: any) => a.isMacro)?.kind as SequenceMacroItem['kind']) ?? "macro";
 
 // Mock Svelte stores
 vi.mock("../stores", async () => {
@@ -43,6 +48,10 @@ describe("fileHandlers", () => {
   };
 
   beforeEach(() => {
+    // Ensure core actions are available for tests that inspect kinds
+    actionRegistry.reset();
+    registerCoreUI();
+
     // Don't replace the entire window object, just extend it
     (window as any).electronAPI = mockElectronAPI;
 
@@ -105,7 +114,7 @@ describe("fileHandlers", () => {
         lines: [],
         sequence: [
           {
-            kind: "macro",
+            kind: macroKind(),
             filePath: "relative/path/macro.pp",
             name: "Macro",
             id: "1",
@@ -238,7 +247,7 @@ describe("fileHandlers", () => {
       linesStore.set([]);
       sequenceStore.set([
         {
-          kind: "macro",
+          kind: macroKind(),
           id: "m1",
           name: "Macro",
           filePath: "/absolute/path/to/macro.pp",

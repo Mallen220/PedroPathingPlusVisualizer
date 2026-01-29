@@ -10,6 +10,10 @@ import { registerCoreUI } from "../lib/coreRegistrations";
 
 // Register actions for tests
 registerCoreUI();
+import { actionRegistry } from "../lib/actionRegistry";
+import type { SequencePathItem, SequenceWaitItem } from "../types";
+const pathKind = (): SequencePathItem['kind'] => (actionRegistry.getAll().find((a: any) => a.isPath)?.kind as SequencePathItem['kind']) ?? "path";
+const waitKind = (): SequenceWaitItem['kind'] => (actionRegistry.getAll().find((a: any) => a.isWait)?.kind as SequenceWaitItem['kind']) ?? "wait";
 
 // Mock prettier to just return the code as-is or with simple modification
 vi.mock("prettier", () => ({
@@ -159,7 +163,7 @@ describe("codeExporter", () => {
     it("should handle wait events in sequence when provided", async () => {
       const sequence: SequenceItem[] = [
         {
-          kind: "wait",
+          kind: waitKind(),
           durationMs: 500,
           eventMarkers: [{ name: "waitMarker", position: 0.5 }],
         } as any,
@@ -246,8 +250,8 @@ describe("codeExporter", () => {
     it("should handle wait commands in sequence", async () => {
       const lines = [line1];
       const sequence: SequenceItem[] = [
-        { kind: "path", lineId: "line1" },
-        { kind: "wait", durationMs: 1000 } as any,
+        { kind: pathKind(), lineId: "line1" },
+        { kind: waitKind(), durationMs: 1000 } as any,
       ];
       const code = await generateSequentialCommandCode(
         startPoint,
@@ -262,8 +266,8 @@ describe("codeExporter", () => {
     it("should handle NextFTC wait commands (seconds conversion)", async () => {
       const lines = [line1];
       const sequence: SequenceItem[] = [
-        { kind: "path", lineId: "line1" },
-        { kind: "wait", durationMs: 1500 } as any,
+        { kind: pathKind(), lineId: "line1" },
+        { kind: waitKind(), durationMs: 1500 } as any,
       ];
       const code = await generateSequentialCommandCode(
         startPoint,
@@ -293,7 +297,7 @@ describe("codeExporter", () => {
     it("should handle wait events with markers", async () => {
       const sequence: SequenceItem[] = [
         {
-          kind: "wait",
+          kind: waitKind(),
           durationMs: 2000,
           eventMarkers: [
             { name: "midWait", position: 0.5 },

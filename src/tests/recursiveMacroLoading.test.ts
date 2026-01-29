@@ -2,11 +2,18 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { loadMacro, macrosStore } from "../lib/projectStore";
 import { get } from "svelte/store";
+import { actionRegistry } from "../lib/actionRegistry";
+import { registerCoreUI } from "../lib/coreRegistrations";
 
 describe("recursiveMacroLoading", () => {
+
   beforeEach(() => {
     macrosStore.set(new Map());
     vi.clearAllMocks();
+
+    // Ensure core actions are registered so macro kind is known
+    actionRegistry.reset();
+    registerCoreUI();
   });
 
   it("should resolve and update nested macro paths recursively", async () => {
@@ -63,11 +70,12 @@ describe("recursiveMacroLoading", () => {
 
     // Check if nested paths are updated in the store
     const m1 = macros.get("/abs/macro1.pp");
-    const m1_child = m1?.sequence.find((s) => s.kind === "macro");
+    const macroKind = actionRegistry.getAll().find((a: any) => a.isMacro)?.kind as import("../types").SequenceMacroItem['kind'] ?? "macro";
+    const m1_child = m1?.sequence.find((s): s is import("../types").SequenceMacroItem => s.kind === macroKind);
     expect(m1_child?.filePath).toBe("/abs/macro2.pp");
 
     const m2 = macros.get("/abs/macro2.pp");
-    const m2_child = m2?.sequence.find((s) => s.kind === "macro");
+    const m2_child = m2?.sequence.find((s): s is import("../types").SequenceMacroItem => s.kind === macroKind);
     expect(m2_child?.filePath).toBe("/abs/subdir/macro3.pp");
   });
 });
