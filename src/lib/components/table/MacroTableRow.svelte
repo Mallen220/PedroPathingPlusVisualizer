@@ -21,7 +21,7 @@
   export let onDragEnd: () => void;
   export let onContextMenu: (e: MouseEvent) => void;
 
-
+  export const sequence: SequenceItem[] = [];
 
   $: macroItem = item as any; // Cast for template usage
 

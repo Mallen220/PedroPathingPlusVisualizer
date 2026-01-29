@@ -1,11 +1,21 @@
 // Copyright 2026 Matthew Allen. Licensed under the Apache License, Version 2.0.
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, beforeEach } from "vitest";
 import {
   mirrorPointHeading,
   mirrorPathData,
   reversePathData,
 } from "../utils/pathTransform";
 import type { Point, Line, Shape, SequenceItem } from "../types";
+import { actionRegistry } from "../lib/actionRegistry";
+import { registerCoreUI } from "../lib/coreRegistrations";
+
+beforeEach(() => {
+  actionRegistry.reset();
+  registerCoreUI();
+});
+
+const pathKind = () => actionRegistry.getAll().find((a) => a.isPath)?.kind ?? "path";
+const waitKind = () => actionRegistry.getAll().find((a) => a.isWait)?.kind ?? "wait";
 
 describe("pathTransform", () => {
   describe("mirrorPointHeading", () => {
@@ -162,7 +172,7 @@ describe("pathTransform", () => {
             waitAfterName: "w2",
           } as unknown as Line,
         ],
-        sequence: [{ kind: "path", lineId: "line1" }] as SequenceItem[],
+        sequence: [{ kind: pathKind(), lineId: "line1" }] as SequenceItem[],
       };
 
       const reversed = reversePathData(data);
@@ -312,9 +322,9 @@ describe("pathTransform", () => {
           } as Line,
         ],
         sequence: [
-          { kind: "path", lineId: "L1" },
-          { kind: "wait", id: "W1" },
-          { kind: "path", lineId: "L2" },
+          { kind: pathKind(), lineId: "L1" },
+          { kind: waitKind(), id: "W1" },
+          { kind: pathKind(), lineId: "L2" },
         ] as SequenceItem[],
       };
 
