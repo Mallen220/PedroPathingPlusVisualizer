@@ -69,10 +69,15 @@
   let historyButtonRef: HTMLElement;
 
   // Compute history items for dropdown (Newest Top)
+  // Redo Stack: [Next, Future, FarFuture]
+  // Undo Stack: [..., Prev, Current]
+  // Desired Display: FarFuture, Future, Next, Current, Prev, ...
   $: historyItems = (() => {
     if (!$historyStore) return [];
     const { undoStack, redoStack } = $historyStore;
-    return [...redoStack, ...[...undoStack].reverse()];
+    // Reverse redoStack to put "Farthest Future" at top
+    // Reverse undoStack to put "Current" at top of its section
+    return [...[...redoStack].reverse(), ...[...undoStack].reverse()];
   })();
 
   let selectedGridSize = 12;
@@ -985,7 +990,7 @@
               {/each}
             {/if}
           </div>
-        {/if}
+        /if}
       </div>
     </div>
 
