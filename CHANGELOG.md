@@ -1,3 +1,7 @@
+## 1.7.1 (2026-01-29)
+
+- Improve download count fetch robustness. Refactor action types to use a dynamic registry system for increased plugin support. Add Auto Export Code feature, disabled by default in settings. Implement History Panel and enhance undo/redo visibility. Preparation for stable release. Added Strategy Sheet export option. Rename to Pedro Pathing Plus Visualizer to better distinguish between the original program. 
+
 ## 1.7.0 (2026-01-23)
 
 - Added new Discord server link to Navbar! Join new and be one of the first members! Added Presentation Mode (Option/Alt + P). Added Plugin Manager. Add Git Status checker and diff view (Can be disabled in settings). Add Custom Field Map Import Wizard. Always more key binds, now supporting Copy, Cut, Paste. Add Keep-In Zones (opposite of Obstacles) and shape visibility controls. Add interactive onboarding tutorial to help new users. Command Palette now searches for paths, events, and waits in current file. Validation checks now works in ranges instead of points. Added continuous validation checker (disabled in settings by default). Add path analysis graphs to statistics dialog. Add Telemetry Data Import & Visualization (Will be expanded in future versions). Added file macros allowing users to pass auto sequences into other files (Drag and drop from file manager). Macros support path transformations and basic recursion. Added setting to change font size. Overhauled settings UI for cleaner interface.
