@@ -310,11 +310,25 @@ export function calculatePathTime(
           const curve = chain?.curves.get(item.lineId);
           if (!curve) continue;
 
+          // Find the proper start point for this segment (end of previous path item or global start)
+          let segmentStartPoint = startPoint;
+          if (i > 0) {
+              // Scan backwards for the first path item
+              for(let k = i - 1; k >= 0; k--) {
+                  const prevItem = queue[k];
+                  if (prevItem.kind === "path") {
+                      const prevLine = lineMap.get(prevItem.lineId);
+                      if (prevLine) {
+                          segmentStartPoint = prevLine.endPoint as any;
+                      }
+                      break;
+                  }
+              }
+          }
+
           // Prepare Segment Heading Info
-          const hStartDeg = getLineStartHeading(line, (i > 0 && queue[i-1].kind === "path" && lineMap.get((queue[i-1] as any).lineId)?.endPoint) || startPoint);
-          const hEndDeg = getLineEndHeading(line, startPoint); // Incorrect prev point usage in helper but typically looks at line internals
-          // We need robust heading logic.
-          // Let's use the helper but ensure unwind.
+          const hStartDeg = getLineStartHeading(line, segmentStartPoint);
+          const hEndDeg = getLineEndHeading(line, segmentStartPoint);
 
           // Re-unwind relative to robot
           let hStartRad = hStartDeg * (Math.PI / 180);
