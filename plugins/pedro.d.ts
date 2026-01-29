@@ -201,6 +201,7 @@ interface Settings {
   // Auto Export Settings
   autoExportCode?: boolean;
   autoExportPath?: string;
+  autoExportPathMode?: "relative" | "absolute";
   autoExportFormat?: "java" | "sequential" | "points" | "json";
   autoExportTargetLibrary?: "SolversLib" | "NextFTC";
   autoExportFullClass?: boolean;
