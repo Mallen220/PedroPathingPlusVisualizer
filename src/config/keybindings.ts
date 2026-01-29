@@ -850,4 +850,32 @@ export const DEFAULT_KEY_BINDINGS: KeyBinding[] = [
     action: "startTutorial",
     category: "Help",
   },
+  {
+    id: "add-macro",
+    key: "cmd+shift+a, ctrl+shift+a",
+    description: "Add Macro",
+    action: "addMacro",
+    category: "Editing",
+  },
+  {
+    id: "copy-table",
+    key: "cmd+shift+c, ctrl+shift+c",
+    description: "Copy Waypoint Table",
+    action: "copyTable",
+    category: "Export",
+  },
+  {
+    id: "toggle-telemetry",
+    key: "m",
+    description: "Toggle Telemetry",
+    action: "toggleTelemetry",
+    category: "View",
+  },
+  {
+    id: "toggle-telemetry-ghost",
+    key: "shift+m",
+    description: "Toggle Telemetry Ghost",
+    action: "toggleTelemetryGhost",
+    category: "View",
+  },
 ];

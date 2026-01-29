@@ -22,6 +22,7 @@
     fileManagerNewFileMode,
     showPluginManager,
     showRuler,
+    notification,
   } from "../../stores";
   import {
     startPointStore,
@@ -32,7 +33,12 @@
     playingStore,
     playbackSpeedStore,
     renumberDefaultPathNames,
+    loadMacro,
   } from "../projectStore";
+  import {
+    showTelemetry,
+    showTelemetryGhost,
+  } from "../../lib/telemetryStore";
   import {
     updateLinkedWaypoints,
     updateLinkedWaits,
@@ -51,6 +57,7 @@
   } from "../../config";
   import { DEFAULT_KEY_BINDINGS } from "../../config/keybindings";
   import { getRandomColor } from "../../utils";
+  import { makeId } from "../../utils/nameGenerator";
   import { computeZoomStep } from "../zoomHelpers";
   import _ from "lodash";
   import { actionRegistry } from "../actionRegistry";
@@ -90,6 +97,7 @@
   let clipboard: SequenceItem | Line | null = null;
   let showCommandPalette = false;
   let fileInput: HTMLInputElement;
+  let macroInput: HTMLInputElement;
   let fileCommands: {
     id: string;
     label: string;
@@ -1456,6 +1464,133 @@
     gridSize.set(prev);
   }
 
+  function addMacro() {
+    if (macroInput) macroInput.click();
+  }
+
+  async function handleMacroSelect(e: Event) {
+    const target = e.target as HTMLInputElement;
+    if (!target.files || target.files.length === 0) return;
+
+    const file = target.files[0];
+    const filePath = (file as any).path;
+
+    if (!filePath) {
+      notification.set({
+        message: "Macros are only supported in the desktop application.",
+        type: "error"
+      });
+      target.value = "";
+      return;
+    }
+
+    const parts = filePath.split(/[/\\]/);
+    const fileName = parts.pop() || filePath;
+    const baseName = fileName.replace(/\.pp$/, "");
+
+    const newMacro = {
+      kind: "macro",
+      id: makeId(),
+      filePath,
+      name: baseName,
+      locked: false,
+    };
+
+    const insertIdx = getSelectedSequenceIndex();
+    if (insertIdx !== null) {
+      sequenceStore.update((s) => {
+        const s2 = [...s];
+        s2.splice(insertIdx + 1, 0, newMacro);
+        return s2;
+      });
+    } else {
+      sequenceStore.update((s) => [...s, newMacro]);
+    }
+
+    // Trigger load
+    await loadMacro(filePath);
+
+    // Clear selection as macros are container-level items
+    selectedPointId.set(null);
+    selectedLineId.set(null);
+
+    recordChange("Add Macro");
+    target.value = "";
+  }
+
+  function copyTable() {
+    const rows = [];
+    rows.push("| Name | X (in) / Dur (ms) | Y (in) / Deg |");
+    rows.push("| :--- | :--- | :--- |");
+    rows.push(
+      `| Start Point | ${startPoint.x.toString()} | ${startPoint.y.toString()} |`,
+    );
+
+    // Reconstruct display logic partially (or just iterate sequence)
+    // We iterate sequence. If path, find line.
+
+    // We need to handle missing lines too, similar to WaypointTable
+    const seqCopy = [...sequence];
+    const pathIds = new Set(
+      seqCopy
+        .filter((s) => actionRegistry.get((s as any).kind)?.isPath)
+        .map((s) => (s as any).lineId),
+    );
+    lines.forEach((l) => {
+      if (l.id && !pathIds.has(l.id) && !l.isMacroElement) {
+        seqCopy.push({ kind: "path", lineId: l.id });
+      }
+    });
+
+    for (const item of seqCopy) {
+      const kind = (item as any).kind;
+      if (kind === "path") {
+        const lineId = (item as any).lineId;
+        const line = lines.find((l) => l.id === lineId);
+        if (line) {
+          let xVal = line.endPoint.x.toString();
+          if (line.waitBeforeName || line.waitBeforeMs) {
+            xVal += ` (${line.waitBeforeName || line.waitBeforeMs})`;
+          }
+          const lineIdx = lines.findIndex((l) => l.id === line.id);
+          rows.push(
+            `| ${line.name || `Path ${lineIdx + 1}`} | ${xVal} | ${line.endPoint.y.toString()} |`,
+          );
+          line.controlPoints.forEach((cp, idx) => {
+            rows.push(
+              `| ↳ Control ${idx + 1} | ${cp.x.toString()} | ${cp.y.toString()} |`,
+            );
+          });
+        }
+      } else if (kind === "wait") {
+        const wait = item as any;
+        rows.push(
+          `| ${wait.name || "Wait"} | ${wait.durationMs.toString()} | - |`,
+        );
+      } else if (kind === "rotate") {
+        const rotate = item as any;
+        rows.push(
+          `| ${rotate.name || "Rotate"} | - | ${rotate.degrees.toString()} |`,
+        );
+      }
+    }
+
+    const text = rows.join("\n");
+    navigator.clipboard.writeText(text).then(() => {
+      notification.set({
+        message: "Table copied to clipboard!",
+        type: "success",
+        timeout: 2000
+      });
+    }).catch(err => {
+      console.error("Failed to copy table", err);
+      notification.set({
+        message: "Failed to copy table",
+        type: "error"
+      });
+    });
+  }
+
   function modifyZoom(delta: number) {
     if (isUIElementFocused()) return;
     fieldZoom.update((z) => {
@@ -1948,6 +2083,10 @@
     rotateField: () => rotateField(),
     toggleContinuousValidation: () => toggleContinuousValidation(),
     toggleOnionCurrentPath: () => toggleOnionCurrentPath(),
+    addMacro: () => addMacro(),
+    copyTable: () => copyTable(),
+    toggleTelemetry: () => showTelemetry.update(v => !v),
+    toggleTelemetryGhost: () => showTelemetryGhost.update(v => !v),
   };
 
   // --- Derived Commands for Search ---
@@ -2106,6 +2245,15 @@
       e.target.value = "";
     }
   }}
+/>
+
+<input
+  bind:this={macroInput}
+  type="file"
+  accept=".pp"
+  class="hidden"
+  style="display:none;"
+  on:change={handleMacroSelect}
 />
 
 <!-- No UI for shortcuts themselves, just listeners -->
