@@ -185,24 +185,23 @@
   </div>
 
   <!-- Code Preview -->
-  <div
-    class="flex-1 min-h-0 overflow-auto p-4 bg-neutral-100 dark:bg-neutral-900/50"
-  >
-    <div
-      class="bg-white dark:bg-neutral-950 rounded-lg shadow-sm border border-neutral-200 dark:border-neutral-800 p-4 min-h-full"
-    >
+  <div class="flex-1 min-h-0 overflow-hidden relative group bg-[#282b2e]">
+    <div class="absolute inset-0 overflow-auto custom-scrollbar p-4">
       {#if code}
-        <pre
-          class="font-mono text-xs sm:text-sm text-neutral-800 dark:text-neutral-200 whitespace-pre-wrap break-all">{code}</pre>
+        <Highlight
+          language={java}
+          {code}
+          class="highlight-wrapper text-sm font-mono leading-relaxed relative z-10"
+        />
       {:else if isGenerating}
         <div
-          class="flex items-center justify-center h-64 text-neutral-500 dark:text-neutral-400"
+          class="flex items-center justify-center h-full text-neutral-500 dark:text-neutral-400"
         >
           Generating preview...
         </div>
       {:else}
         <div
-          class="flex items-center justify-center h-64 text-neutral-500 dark:text-neutral-400"
+          class="flex items-center justify-center h-full text-neutral-500 dark:text-neutral-400"
         >
           No code generated.
         </div>
@@ -210,3 +209,50 @@
     </div>
   </div>
 </div>
+
+<svelte:head>
+  {@html codeStyle}
+</svelte:head>
+
+<style>
+  /* Ensure the highlightjs background is transparent so our line highlights show through */
+  :global(.highlight-wrapper) {
+    background: transparent !important;
+    padding: 0 !important; /* Remove padding from hljs container */
+    margin: 0 !important; /* Remove margin */
+    overflow: visible !important; /* Prevent double scrollbars */
+    font-family:
+      ui-monospace,
+      SFMono-Regular,
+      Menlo,
+      Monaco,
+      Consolas,
+      "Liberation Mono",
+      "Courier New",
+      monospace !important;
+    font-size: 0.875rem !important; /* text-sm */
+    line-height: 1.625 !important; /* leading-relaxed */
+  }
+
+  /* Ensure inner pre/code elements also match (some highlight styles add padding on the pre element) */
+  :global(.highlight-wrapper pre),
+  :global(.highlight-wrapper pre.hljs) {
+    padding: 0 !important;
+    margin: 0 !important;
+    line-height: 1.625 !important;
+    overflow: visible !important;
+  }
+
+  :global(.highlight-wrapper code) {
+    overflow: visible !important;
+    font-family:
+      ui-monospace,
+      SFMono-Regular,
+      Menlo,
+      Monaco,
+      Consolas,
+      "Liberation Mono",
+      "Courier New",
+      monospace !important;
+  }
+</style>
