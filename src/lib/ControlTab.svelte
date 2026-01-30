@@ -5,6 +5,7 @@
   import FieldTab from "./components/tabs/FieldTab.svelte";
   import TableTab from "./components/tabs/TableTab.svelte";
   import DiffTab from "./components/tabs/DiffTab.svelte";
+  import CodeTab from "./components/tabs/CodeTab.svelte";
 
   // Register default tabs; callable so plugin reloads can restore baseline tabs
   export const registerDefaultControlTabs = () => {
@@ -28,6 +29,13 @@
       component: TableTab,
       order: 2,
       icon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" class="size-4" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="1.5" stroke-width="2"/><rect x="3" y="4" width="18" height="5" rx="1.5" fill="currentColor" opacity="0.06" stroke="none"/><line x1="3" y1="10" x2="21" y2="10" stroke-width="2" stroke-linecap="round"/><line x1="9" y1="10" x2="9" y2="20" stroke-width="1.5" stroke-linecap="round"/><line x1="15" y1="10" x2="15" y2="20" stroke-width="1.5" stroke-linecap="round"/></svg>`,
+    });
+    tabRegistryModule.register({
+      id: "code",
+      label: "Code",
+      component: CodeTab,
+      order: 3,
+      icon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" class="size-4" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.25 6.75L22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3l-4.5 16.5" /></svg>`,
     });
   };
 
@@ -82,6 +90,15 @@
   let tabInstances: Record<string, any> = {};
 
   $: activeTabInstance = tabInstances[activeTab];
+
+  // If code tab is active but setting is disabled, switch to path
+  $: if (
+    activeTab === "code" &&
+    settings &&
+    settings.autoExportCode === false
+  ) {
+    activeTab = "path";
+  }
 
   export async function openAndStartOptimization() {
     if (activeTabInstance && activeTabInstance.openAndStartOptimization) {
@@ -370,22 +387,24 @@
         aria-label="Editor View Selection"
       >
         {#each $tabRegistry as tab (tab.id)}
-          <button
-            role="tab"
-            aria-selected={activeTab === tab.id}
-            aria-controls="{tab.id}-panel"
-            id="{tab.id}-tab"
-            class="flex-1 min-w-[80px] px-3 py-2 text-sm font-semibold rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-purple-500/50 flex items-center justify-center gap-2 {activeTab ===
-            tab.id
-              ? 'bg-white dark:bg-neutral-700 shadow-sm text-neutral-900 dark:text-white ring-1 ring-black/5 dark:ring-white/5'
-              : 'text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300 hover:bg-neutral-50/50 dark:hover:bg-neutral-700/50'}"
-            on:click={() => (activeTab = tab.id)}
-          >
-            {#if tab.icon}
-              {@html tab.icon}
-            {/if}
-            {tab.label}
-          </button>
+          {#if tab.id !== "code" || settings?.autoExportCode}
+            <button
+              role="tab"
+              aria-selected={activeTab === tab.id}
+              aria-controls="{tab.id}-panel"
+              id="{tab.id}-tab"
+              class="flex-1 min-w-[80px] px-3 py-2 text-sm font-semibold rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-purple-500/50 flex items-center justify-center gap-2 {activeTab ===
+              tab.id
+                ? 'bg-white dark:bg-neutral-700 shadow-sm text-neutral-900 dark:text-white ring-1 ring-black/5 dark:ring-white/5'
+                : 'text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300 hover:bg-neutral-50/50 dark:hover:bg-neutral-700/50'}"
+              on:click={() => (activeTab = tab.id)}
+            >
+              {#if tab.icon}
+                {@html tab.icon}
+              {/if}
+              {tab.label}
+            </button>
+          {/if}
         {/each}
       </div>
       <button
@@ -414,28 +433,32 @@
     </div>
 
     <div
-      class="flex flex-col justify-start items-start w-full overflow-y-auto overflow-x-hidden flex-1 min-h-0 relative scroll-smooth pb-20"
+      class="flex flex-col justify-start items-start w-full overflow-y-auto overflow-x-hidden flex-1 min-h-0 relative scroll-smooth"
+      class:pb-20={activeTab !== 'code'}
+      class:pb-0={activeTab === 'code'}
       role="tabpanel"
       id="{activeTab}-panel"
       aria-labelledby="{activeTab}-tab"
     >
       {#each $tabRegistry as tab (tab.id)}
-        <div class:hidden={activeTab !== tab.id} class="w-full">
-          <svelte:component
-            this={tab.component}
-            bind:this={tabInstances[tab.id]}
-            bind:startPoint
-            bind:lines
-            bind:sequence
-            bind:shapes
-            bind:settings
-            bind:robotXY
-            bind:robotHeading
-            {recordChange}
-            {onPreviewChange}
-            isActive={activeTab === tab.id}
-          />
-        </div>
+        {#if tab.id !== "code" || settings?.autoExportCode}
+          <div class:hidden={activeTab !== tab.id} class="w-full h-full">
+            <svelte:component
+              this={tab.component}
+              bind:this={tabInstances[tab.id]}
+              bind:startPoint
+              bind:lines
+              bind:sequence
+              bind:shapes
+              bind:settings
+              bind:robotXY
+              bind:robotHeading
+              {recordChange}
+              {onPreviewChange}
+              isActive={activeTab === tab.id}
+            />
+          </div>
+        {/if}
       {/each}
     </div>
   {/if}
