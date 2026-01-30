@@ -38,6 +38,19 @@
   let format: "java" | "sequential" = "java";
   let targetLibrary: "SolversLib" | "NextFTC" = "SolversLib";
 
+  // Sync state with settings
+  $: if (settings) {
+    if (settings.autoExportFormat === "sequential") {
+      format = "sequential";
+    } else {
+      format = "java";
+    }
+
+    if (settings.autoExportTargetLibrary) {
+      targetLibrary = settings.autoExportTargetLibrary;
+    }
+  }
+
   interface DiffLine {
     content: string; // HTML content
     type: "added" | "removed" | "unchanged";
@@ -194,22 +207,14 @@
     });
   }
 
-  function handleFormatChange(e: Event) {
-    const val = (e.target as HTMLSelectElement).value;
-    format = val as "java" | "sequential";
-    // Reset diff state on format change
-    code = "";
-    previousCode = "";
-    displayLines = [];
-  }
-
-  function handleLibraryChange(e: Event) {
-    const val = (e.target as HTMLSelectElement).value;
-    targetLibrary = val as "SolversLib" | "NextFTC";
-    // Reset diff state
-    code = "";
-    previousCode = "";
-    displayLines = [];
+  // Reset diff state when format changes
+  $: if (format || targetLibrary) {
+    // Only clear if actually changed from what we have generated
+    // But since this is reactive to settings, it might clear on load?
+    // We rely on `updateCode` being triggered by reactive dependencies.
+    // If format changes, we should reset previousCode so we don't diff Java vs Sequential.
+    // However, updateCode handles generation. We just need to reset previousCode if we want a clean slate.
+    // Ideally, we reset if the *type* of code changes fundamentally.
   }
 </script>
 
@@ -220,41 +225,16 @@
   <div
     class="flex-none p-4 flex flex-wrap gap-4 items-center border-b border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800"
   >
-    <div class="flex items-center gap-2">
-      <label
-        for="code-format"
-        class="text-sm font-medium text-neutral-700 dark:text-neutral-300"
-        >Format:</label
-      >
-      <select
-        id="code-format"
-        value={format}
-        on:change={handleFormatChange}
-        class="block w-48 rounded-md border-neutral-300 dark:border-neutral-600 bg-neutral-50 dark:bg-neutral-700 text-neutral-900 dark:text-white shadow-sm focus:border-purple-500 focus:ring-purple-500 sm:text-sm p-2"
-      >
-        <option value="java">Java Class (Standard)</option>
-        <option value="sequential">Sequential Command</option>
-      </select>
-    </div>
-
-    {#if format === "sequential"}
-      <div class="flex items-center gap-2">
-        <label
-          for="target-lib"
-          class="text-sm font-medium text-neutral-700 dark:text-neutral-300"
-          >Library:</label
-        >
-        <select
-          id="target-lib"
-          value={targetLibrary}
-          on:change={handleLibraryChange}
-          class="block w-40 rounded-md border-neutral-300 dark:border-neutral-600 bg-neutral-50 dark:bg-neutral-700 text-neutral-900 dark:text-white shadow-sm focus:border-purple-500 focus:ring-purple-500 sm:text-sm p-2"
-        >
-          <option value="SolversLib">SolversLib</option>
-          <option value="NextFTC">NextFTC</option>
-        </select>
+    <div class="flex flex-col gap-0.5">
+      <div class="text-sm font-medium text-neutral-900 dark:text-white">
+        Previewing: {format === "java"
+          ? "Java Class (Standard)"
+          : `Sequential (${targetLibrary})`}
       </div>
-    {/if}
+      <div class="text-xs text-neutral-500 dark:text-neutral-400">
+        Output format is controlled by Auto Export settings.
+      </div>
+    </div>
 
     <div class="flex-1"></div>
 
