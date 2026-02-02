@@ -214,6 +214,10 @@
     });
   }
 
+  export function copyCode() {
+    handleCopy();
+  }
+
   // Reset diff state when format changes
   $: if (format || targetLibrary) {
     // Only clear if actually changed from what we have generated

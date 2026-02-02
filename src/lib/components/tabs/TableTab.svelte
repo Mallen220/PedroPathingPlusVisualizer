@@ -38,6 +38,12 @@
   }
 
   // Exported methods
+  export function copyTable() {
+    if (waypointTableRef && waypointTableRef.copyTable) {
+      waypointTableRef.copyTable();
+    }
+  }
+
   export function openAndStartOptimization() {
     if (waypointTableRef && waypointTableRef.openAndStartOptimization) {
       return waypointTableRef.openAndStartOptimization();

@@ -542,6 +542,10 @@
 
   let copyButtonText = "Copy Table";
 
+  export function copyTable() {
+    copyTableToClipboard();
+  }
+
   function copyTableToClipboard() {
     const rows = [];
     rows.push("| Name | X (in) / Dur (ms) | Y (in) / Deg |");

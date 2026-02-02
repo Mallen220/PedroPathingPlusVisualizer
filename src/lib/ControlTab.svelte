@@ -91,6 +91,18 @@
 
   $: activeTabInstance = tabInstances[activeTab];
 
+  export function copyCode() {
+    if (tabInstances["code"] && tabInstances["code"].copyCode) {
+      tabInstances["code"].copyCode();
+    }
+  }
+
+  export function copyTable() {
+    if (tabInstances["table"] && tabInstances["table"].copyTable) {
+      tabInstances["table"].copyTable();
+    }
+  }
+
   // If code tab is active but setting is disabled, switch to path
   $: if (
     activeTab === "code" &&

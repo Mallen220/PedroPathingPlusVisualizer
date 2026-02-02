@@ -581,6 +581,24 @@
 
   function copy() {
     if (isUIElementFocused()) return;
+
+    if (
+      activeControlTab === "code" &&
+      controlTabRef &&
+      controlTabRef.copyCode
+    ) {
+      controlTabRef.copyCode();
+      return;
+    }
+    if (
+      activeControlTab === "table" &&
+      controlTabRef &&
+      controlTabRef.copyTable
+    ) {
+      controlTabRef.copyTable();
+      return;
+    }
+
     const sel = $selectedPointId;
     if (!sel) return;
 
@@ -911,6 +929,40 @@
         selectedPointId.set(null);
         recordChange("Delete Selection");
       }
+    }
+
+    if (sel.startsWith("event-")) {
+      const parts = sel.split("-");
+      const lineIdx = Number(parts[1]);
+      const evIdx = Number(parts[2]);
+      const line = lines[lineIdx];
+      if (line && line.eventMarkers && line.eventMarkers[evIdx]) {
+        if (line.locked) return;
+        line.eventMarkers.splice(evIdx, 1);
+        linesStore.set(lines);
+        selectedPointId.set(null);
+        recordChange("Delete Event Marker");
+      }
+      return;
+    }
+
+    if (sel.startsWith("obstacle-")) {
+      const parts = sel.split("-");
+      const shapeIdx = Number(parts[1]);
+      const vertexIdx = Number(parts[2]);
+      if (shapes[shapeIdx]) {
+        if (shapes[shapeIdx].vertices.length <= 3) {
+          shapesStore.update((s) => s.filter((_, i) => i !== shapeIdx));
+          selectedPointId.set(null);
+          recordChange("Delete Obstacle");
+        } else {
+          shapes[shapeIdx].vertices.splice(vertexIdx, 1);
+          shapesStore.set(shapes);
+          selectedPointId.set(null);
+          recordChange("Delete Obstacle Vertex");
+        }
+      }
+      return;
     }
   }
 
