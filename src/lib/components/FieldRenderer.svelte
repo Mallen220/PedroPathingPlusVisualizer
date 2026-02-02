@@ -151,9 +151,18 @@
     fieldViewStore.set({ xScale: x, yScale: y, width, height });
   }
 
-  // Follow Robot Logic
-  $: if ($followRobotStore && robotXY) {
+  // Follow Robot Logic (Reactive for scrubbing/stepping)
+  $: if ($followRobotStore && robotXY && !$playingStore) {
     panToField(robotXY.x, robotXY.y);
+  }
+
+  // Follow Robot Logic (Loop for playback)
+  let followLoopId: number;
+  function followLoop() {
+    if ($followRobotStore && $playingStore && robotXY) {
+      panToField(robotXY.x, robotXY.y);
+    }
+    followLoopId = requestAnimationFrame(followLoop);
   }
 
   // Resume Follow on Play Logic
@@ -1482,6 +1491,9 @@
     // Trigger hook for plugins to initialize overlays
     hookRegistry.run("fieldOverlayInit", overlayContainer);
 
+    // Start Follow Loop
+    followLoop();
+
     // Event Listeners
     two.renderer.domElement.addEventListener("mouseenter", () => {
       // Optimization: Start caching rects when user interacts with field
@@ -2058,6 +2070,7 @@
       window.removeEventListener("resize", updateRects);
       window.removeEventListener("scroll", updateRects, true);
     }
+    if (followLoopId) cancelAnimationFrame(followLoopId);
   });
 </script>
 
