@@ -1988,14 +1988,15 @@
   // Public method to pan the view to center on specific field coordinates (inches)
   export function panToField(fx: number, fy: number) {
     const factor = get(fieldZoom);
+    const baseSize = Math.min(width, height);
     // Calculate required pan to center the point
-    // x(v) = center - halfW + pan + (v/SIZE)*W
-    // target x(v) = center => pan = halfW - (v/SIZE)*W = W * (0.5 - v/SIZE)
-    const px = width * factor * (0.5 - fx / FIELD_SIZE);
+    // x(v) = center + pan + (v/SIZE - 0.5)*baseSize*zoom
+    // target x(v) = center => pan = - (v/SIZE - 0.5)*baseSize*zoom
+    const px = baseSize * factor * (0.5 - fx / FIELD_SIZE);
 
-    // y(v) = center + halfH + pan - (v/SIZE)*H
-    // target y(v) = center => pan = (v/SIZE)*H - halfH = H * (v/SIZE - 0.5)
-    const py = height * factor * (fy / FIELD_SIZE - 0.5);
+    // y(v) = center + pan - (v/SIZE - 0.5)*baseSize*zoom
+    // target y(v) = center => pan = (v/SIZE - 0.5)*baseSize*zoom
+    const py = baseSize * factor * (fy / FIELD_SIZE - 0.5);
 
     fieldPan.set({ x: px, y: py });
   }
