@@ -33,15 +33,8 @@
   export let lines: Line[];
   export let sequence: SequenceItem[];
   export let settings: Settings;
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  export let recordChange: (action?: string) => void;
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   export let isActive: boolean = false;
-  $: {
-    // Silence unused prop warnings
-    void recordChange;
-    void isActive;
-  }
+
 
   const electronAPI = (window as any).electronAPI;
 
@@ -196,19 +189,20 @@
 
   // Trigger update when dependencies change
   $: if (
-    startPoint ||
-    lines ||
-    sequence ||
-    settings ||
-    format ||
-    targetLibrary
+    isActive &&
+    (startPoint ||
+      lines ||
+      sequence ||
+      settings ||
+      format ||
+      targetLibrary)
   ) {
     updateCode();
   }
 
   // Force update on mount
   onMount(() => {
-    updateCode();
+    if (isActive) updateCode();
   });
 
   function handleCopy() {
