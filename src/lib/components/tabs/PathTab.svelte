@@ -28,6 +28,7 @@
   import WaitSection from "../sections/WaitSection.svelte";
   import RotateSection from "../sections/RotateSection.svelte";
   import MacroSection from "../sections/MacroSection.svelte";
+  import MacroLibrary from "../tools/MacroLibrary.svelte";
   import {
     selectedLineId,
     selectedPointId,
@@ -48,6 +49,8 @@
   export let settings: Settings;
   export let recordChange: (action?: string) => void;
   export let isActive: boolean = false; // instead of checking activeTab === 'path'
+
+  let showLibrary = false;
 
   $: showDebug = (settings as any)?.showDebugSequence;
 
@@ -757,92 +760,148 @@
   }
 </script>
 
-<div class="w-full flex flex-col gap-4 p-4 pb-32">
-  <div class="flex items-center justify-between gap-4 w-full">
-    <StartingPointSection
-      bind:startPoint
-      {addPathAtStart}
-      {addWaitAtStart}
-      {addRotateAtStart}
-      {toggleCollapseAll}
-      {allCollapsed}
-      {settings}
-    />
-  </div>
-
-  {#if showDebug}
-    <div class="p-2 text-xs text-neutral-500">
-      <div>
-        <strong>DEBUG (PathTab)</strong> — lines: {lines.length}, sequence: {(
-          sequence || []
-        ).length}
+<div class="w-full flex flex-row items-start relative">
+  <!-- Main Column -->
+  <div class="flex-1 flex flex-col gap-4 p-4 pb-32 min-w-0">
+    <div class="flex items-center justify-between gap-4 w-full">
+      <div class="flex-1 min-w-0">
+        <StartingPointSection
+          bind:startPoint
+          {addPathAtStart}
+          {addWaitAtStart}
+          {addRotateAtStart}
+          {toggleCollapseAll}
+          {allCollapsed}
+          {settings}
+        />
       </div>
-      <div>
-        Missing: {JSON.stringify(debugMissing)}
-      </div>
-      <div>
-        Invalid refs: {JSON.stringify(debugInvalidRefs)}
-      </div>
-    </div>
-  {/if}
-
-  {#if sequence.length === 0}
-    <EmptyState
-      title="Start your path"
-      description="Add your first path segment, wait command, or rotation to begin."
-    >
-      <div slot="icon">
+      <button
+        on:click={() => (showLibrary = !showLibrary)}
+        class={`flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-lg transition-colors border shadow-sm ${
+          showLibrary
+            ? "bg-blue-50 text-blue-600 border-blue-200 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-800"
+            : "bg-white text-neutral-600 border-neutral-200 hover:bg-neutral-50 dark:bg-neutral-800 dark:text-neutral-300 dark:border-neutral-700 dark:hover:bg-neutral-700"
+        }`}
+        title="Toggle Macro Library"
+        aria-label={showLibrary ? "Hide Macro Library" : "Show Macro Library"}
+      >
         <svg
           xmlns="http://www.w3.org/2000/svg"
-          fill="none"
           viewBox="0 0 24 24"
-          stroke-width="1.5"
-          stroke="currentColor"
-          class="size-6 text-neutral-400"
+          fill="currentColor"
+          class="size-5"
         >
           <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            d="M15.042 21.672 13.684 16.6m0 0-2.51 2.225.569-9.47 5.227 7.917-3.286-.672ZM12 2.25V4.5m5.834.166-1.591 1.591M20.25 10.5H18M7.757 14.743l-1.59 1.59M6 10.5H3.75m4.007-4.243-1.59-1.59"
+            d="M5.625 1.5c-1.036 0-1.875.84-1.875 1.875v17.25c0 1.035.84 1.875 1.875 1.875h12.75c1.035 0 1.875-.84 1.875-1.875V12.75A3.75 3.75 0 0 0 16.5 9h-1.875a1.875 1.875 0 0 1-1.875-1.875V5.25A3.75 3.75 0 0 0 9 1.5H5.625Z"
+          />
+          <path
+            d="M12.971 1.816A5.23 5.23 0 0 1 14.25 5.25v1.875c0 .207.168.375.375.375H16.5a5.23 5.23 0 0 1 3.434 1.279 9.768 9.768 0 0 0-6.963-6.963Z"
           />
         </svg>
-      </div>
-    </EmptyState>
-  {/if}
+        <span class="hidden sm:inline">Library</span>
+      </button>
+    </div>
 
-  {#each sequence as item, sIdx (getItemId(item))}
-    {@const isLocked = isItemLocked(item, lines)}
-    {@const def = $actionRegistry[item.kind]}
-    <div
-      role="listitem"
-      data-index={sIdx}
-      id={`sequence-item-${getItemId(item)}`}
-      class="w-full transition-all duration-200 rounded-lg"
-      draggable={!isItemLocked(item, lines)}
-      on:dragstart={(e) => handleDragStart(e, sIdx)}
-      on:dragend={handleDragEnd}
-      class:border-t-4={dragOverIndex === sIdx && dragPosition === "top"}
-      class:border-b-4={dragOverIndex === sIdx && dragPosition === "bottom"}
-      class:border-blue-500={dragOverIndex === sIdx}
-      class:dark:border-blue-400={dragOverIndex === sIdx}
-      class:opacity-50={draggingIndex === sIdx}
-    >
-      {#if item.kind === "path"}
-        {#each lines.filter((l) => l.id === getPathLineId(item)) as ln (ln.id)}
-          <PathLineSection
-            bind:line={ln}
-            idx={lines.findIndex((l) => l.id === ln.id)}
-            bind:lines
-            bind:collapsed={
-              collapsedSections.lines[lines.findIndex((l) => l.id === ln.id)]
-            }
-            bind:collapsedControlPoints={
-              collapsedSections.controlPoints[
-                lines.findIndex((l) => l.id === ln.id)
-              ]
-            }
-            onRemove={() => removeLine(lines.findIndex((l) => l.id === ln.id))}
-            onInsertAfter={() => insertLineAfter(sIdx)}
+    {#if showDebug}
+      <div class="p-2 text-xs text-neutral-500">
+        <div>
+          <strong>DEBUG (PathTab)</strong> — lines: {lines.length}, sequence: {(
+            sequence || []
+          ).length}
+        </div>
+        <div>
+          Missing: {JSON.stringify(debugMissing)}
+        </div>
+        <div>
+          Invalid refs: {JSON.stringify(debugInvalidRefs)}
+        </div>
+      </div>
+    {/if}
+
+    {#if sequence.length === 0}
+      <EmptyState
+        title="Start your path"
+        description="Add your first path segment, wait command, or rotation to begin."
+      >
+        <div slot="icon">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke-width="1.5"
+            stroke="currentColor"
+            class="size-6 text-neutral-400"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M15.042 21.672 13.684 16.6m0 0-2.51 2.225.569-9.47 5.227 7.917-3.286-.672ZM12 2.25V4.5m5.834.166-1.591 1.591M20.25 10.5H18M7.757 14.743l-1.59 1.59M6 10.5H3.75m4.007-4.243-1.59-1.59"
+            />
+          </svg>
+        </div>
+      </EmptyState>
+    {/if}
+
+    {#each sequence as item, sIdx (getItemId(item))}
+      {@const isLocked = isItemLocked(item, lines)}
+      {@const def = $actionRegistry[item.kind]}
+      <div
+        role="listitem"
+        data-index={sIdx}
+        id={`sequence-item-${getItemId(item)}`}
+        class="w-full transition-all duration-200 rounded-lg"
+        draggable={!isItemLocked(item, lines)}
+        on:dragstart={(e) => handleDragStart(e, sIdx)}
+        on:dragend={handleDragEnd}
+        class:border-t-4={dragOverIndex === sIdx && dragPosition === "top"}
+        class:border-b-4={dragOverIndex === sIdx && dragPosition === "bottom"}
+        class:border-blue-500={dragOverIndex === sIdx}
+        class:dark:border-blue-400={dragOverIndex === sIdx}
+        class:opacity-50={draggingIndex === sIdx}
+      >
+        {#if item.kind === "path"}
+          {#each lines.filter((l) => l.id === getPathLineId(item)) as ln (ln.id)}
+            <PathLineSection
+              bind:line={ln}
+              idx={lines.findIndex((l) => l.id === ln.id)}
+              bind:lines
+              bind:collapsed={
+                collapsedSections.lines[lines.findIndex((l) => l.id === ln.id)]
+              }
+              bind:collapsedControlPoints={
+                collapsedSections.controlPoints[
+                  lines.findIndex((l) => l.id === ln.id)
+                ]
+              }
+              onRemove={() =>
+                removeLine(lines.findIndex((l) => l.id === ln.id))}
+              onInsertAfter={() => insertLineAfter(sIdx)}
+              onAddWaitAfter={() =>
+                handleAddActionAfter(sIdx, $actionRegistry["wait"])}
+              onAddRotateAfter={() =>
+                handleAddActionAfter(sIdx, $actionRegistry["rotate"])}
+              onAddAction={addActionAfterFor.bind(null, sIdx)}
+              onMoveUp={() => moveSequenceItem(sIdx, -1)}
+              onMoveDown={() => moveSequenceItem(sIdx, 1)}
+              canMoveUp={sIdx !== 0}
+              canMoveDown={sIdx !== sequence.length - 1}
+              {recordChange}
+            />
+          {/each}
+        {:else if def && def.sectionComponent}
+          <svelte:component
+            this={def.sectionComponent}
+            {...{ [def.kind]: item }}
+            bind:sequence
+            collapsed={collapsedSections.items[getItemId(item)]}
+            onRemove={() => {
+              const newSeq = [...sequence];
+              newSeq.splice(sIdx, 1);
+              sequence = newSeq;
+              recordChange?.("Remove Item");
+            }}
+            onInsertAfter={() => handleAddActionAfter(sIdx, def)}
+            onAddPathAfter={() => insertLineAfter(sIdx)}
             onAddWaitAfter={() =>
               handleAddActionAfter(sIdx, $actionRegistry["wait"])}
             onAddRotateAfter={() =>
@@ -854,118 +913,101 @@
             canMoveDown={sIdx !== sequence.length - 1}
             {recordChange}
           />
-        {/each}
-      {:else if def && def.sectionComponent}
-        <svelte:component
-          this={def.sectionComponent}
-          {...{ [def.kind]: item }}
-          bind:sequence
-          collapsed={collapsedSections.items[getItemId(item)]}
-          onRemove={() => {
-            const newSeq = [...sequence];
-            newSeq.splice(sIdx, 1);
-            sequence = newSeq;
-            recordChange?.("Remove Item");
-          }}
-          onInsertAfter={() => handleAddActionAfter(sIdx, def)}
-          onAddPathAfter={() => insertLineAfter(sIdx)}
-          onAddWaitAfter={() =>
-            handleAddActionAfter(sIdx, $actionRegistry["wait"])}
-          onAddRotateAfter={() =>
-            handleAddActionAfter(sIdx, $actionRegistry["rotate"])}
-          onAddAction={addActionAfterFor.bind(null, sIdx)}
-          onMoveUp={() => moveSequenceItem(sIdx, -1)}
-          onMoveDown={() => moveSequenceItem(sIdx, 1)}
-          canMoveUp={sIdx !== 0}
-          canMoveDown={sIdx !== sequence.length - 1}
-          {recordChange}
-        />
-      {/if}
-    </div>
-  {/each}
-  <!-- Add Buttons at end of list -->
-  <div class="flex flex-row justify-center items-center gap-3 pt-4 flex-wrap">
-    {#each Object.values($actionRegistry) as def (def.kind)}
-      {#if def.createDefault || def.isPath}
-        <button
-          on:click={() => {
-            if (def.isPath) addLine();
-            else handleAddAction(def);
-          }}
-          title={def.isPath
-            ? `Add Path${getShortcutFromSettings(settings, "add-path")}`
-            : `Add ${def.label}`}
-          class={`flex items-center gap-2 px-4 py-2 text-sm font-medium text-white rounded-md shadow-sm transition-colors focus:outline-none focus:ring-2 ${getButtonColorClass(def.buttonColor || "gray")}`}
-          aria-label={`Add ${def.label}`}
-        >
-          <!-- Icon -->
-          {#if def.kind === "path"}
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke-width="2"
-              stroke="currentColor"
-              class="size-4"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                d="M12 4.5v15m7.5-7.5h-15"
-              />
-            </svg>
-          {:else if def.kind === "wait"}
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              class="size-4"
-            >
-              <circle cx="12" cy="12" r="9" />
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                d="M12 7v5l3 2"
-              />
-            </svg>
-          {:else if def.kind === "rotate"}
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              class="size-4"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99"
-              />
-            </svg>
-          {:else}
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke-width="2"
-              stroke="currentColor"
-              class="size-4"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                d="M12 4.5v15m7.5-7.5h-15"
-              />
-            </svg>
-          {/if}
-          Add {def.label}
-        </button>
-      {/if}
+        {/if}
+      </div>
     {/each}
+    <!-- Add Buttons at end of list -->
+    <div class="flex flex-row justify-center items-center gap-3 pt-4 flex-wrap">
+      {#each Object.values($actionRegistry) as def (def.kind)}
+        {#if def.createDefault || def.isPath}
+          <button
+            on:click={() => {
+              if (def.isPath) addLine();
+              else handleAddAction(def);
+            }}
+            title={def.isPath
+              ? `Add Path${getShortcutFromSettings(settings, "add-path")}`
+              : `Add ${def.label}`}
+            class={`flex items-center gap-2 px-4 py-2 text-sm font-medium text-white rounded-md shadow-sm transition-colors focus:outline-none focus:ring-2 ${getButtonColorClass(def.buttonColor || "gray")}`}
+            aria-label={`Add ${def.label}`}
+          >
+            <!-- Icon -->
+            {#if def.kind === "path"}
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke-width="2"
+                stroke="currentColor"
+                class="size-4"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M12 4.5v15m7.5-7.5h-15"
+                />
+              </svg>
+            {:else if def.kind === "wait"}
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                class="size-4"
+              >
+                <circle cx="12" cy="12" r="9" />
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M12 7v5l3 2"
+                />
+              </svg>
+            {:else if def.kind === "rotate"}
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                class="size-4"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99"
+                />
+              </svg>
+            {:else}
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke-width="2"
+                stroke="currentColor"
+                class="size-4"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M12 4.5v15m7.5-7.5h-15"
+                />
+              </svg>
+            {/if}
+            Add {def.label}
+          </button>
+        {/if}
+      {/each}
+    </div>
   </div>
+
+  {#if showLibrary}
+    <div
+      class="w-72 flex-none sticky top-4 h-[calc(100vh-180px)] self-start mr-4 rounded-xl overflow-hidden border border-neutral-200 dark:border-neutral-700 shadow-sm z-10 bg-white dark:bg-neutral-900"
+    >
+      <MacroLibrary />
+    </div>
+  {/if}
 </div>
 
 <svelte:window on:dragover={handleWindowDragOver} on:drop={handleWindowDrop} />
