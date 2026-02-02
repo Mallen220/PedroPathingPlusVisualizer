@@ -12,3 +12,8 @@ Action: Before optimizing empty states, verify they are actually reachable in th
 
 Learning: Removing default outlines (`focus:outline-none`) on range inputs (`<input type="range">`) to achieve a custom look creates a significant accessibility barrier. Keyboard users cannot see the focus state on the slider thumb.
 Action: Always add explicit `focus-visible` styles (e.g., `focus-visible:ring`) to the slider or its container when removing default outlines.
+
+## 2026-06-05 - Consistent Control Styles
+
+Learning: Duplicating controls across different panels (like "Validate" and "Optimize" buttons appearing in both WaypointTable and RobotPositionDisplay) creates a risk of inconsistent accessibility and styling. Users relying on keyboard navigation can become confused if the same action behaves differently (e.g., missing focus ring) in different contexts.
+Action: When mirroring controls, always audit the original for accessibility features (aria-labels, focus-visible states) and carry them over.

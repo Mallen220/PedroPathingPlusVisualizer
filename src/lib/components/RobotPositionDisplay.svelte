@@ -30,8 +30,9 @@
     <div class="flex items-center gap-2">
       <button
         title={`Validate Path${getShortcutFromSettings(settings, "validate-path")}`}
+        aria-label="Validate Path"
         on:click={() => onValidate && onValidate()}
-        class="flex flex-row items-center gap-1 hover:bg-neutral-200 dark:hover:bg-neutral-800 px-2 py-1 rounded transition-colors text-blue-500"
+        class="flex flex-row items-center gap-1 hover:bg-neutral-200 dark:hover:bg-neutral-800 px-2 py-1 rounded transition-colors text-blue-500 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:outline-none"
       >
         <span>Validate</span>
         <svg
@@ -51,8 +52,9 @@
       </button>
       <button
         title={`Optimize Path${getShortcutFromSettings(settings, "optimize-start")}`}
+        aria-label="Optimize Path"
         on:click={() => onToggleOptimization && onToggleOptimization()}
-        class="flex flex-row items-center gap-1 hover:bg-neutral-200 dark:hover:bg-neutral-800 px-2 py-1 rounded transition-colors text-purple-500"
+        class="flex flex-row items-center gap-1 hover:bg-neutral-200 dark:hover:bg-neutral-800 px-2 py-1 rounded transition-colors text-purple-500 focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:outline-none"
       >
         <span>Optimize</span>
         <svg
