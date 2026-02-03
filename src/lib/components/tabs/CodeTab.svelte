@@ -107,6 +107,8 @@
           null,
           sequence,
           targetLibrary,
+          settings.javaPackageName,
+          settings.telemetryImplementation,
         );
       }
 
