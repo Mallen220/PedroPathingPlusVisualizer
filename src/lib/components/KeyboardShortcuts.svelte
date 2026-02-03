@@ -1985,7 +1985,13 @@
       }
     },
     resetSettings: () => {
-      settingsStore.set(JSON.parse(JSON.stringify(DEFAULT_SETTINGS)));
+      if (
+        confirm(
+          "Are you sure you want to reset all settings to defaults? This cannot be undone.",
+        )
+      ) {
+        settingsStore.set(JSON.parse(JSON.stringify(DEFAULT_SETTINGS)));
+      }
     },
     cycleTheme: () => {
       settingsStore.update((s) => {

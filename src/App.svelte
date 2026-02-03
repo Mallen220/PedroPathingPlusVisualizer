@@ -15,7 +15,6 @@
   import NotificationToast from "./lib/components/NotificationToast.svelte";
   import OnboardingTutorial from "./lib/components/OnboardingTutorial.svelte";
   import WhatsNewDialog from "./lib/components/whats-new/WhatsNewDialog.svelte";
-  import SaveNameDialog from "./lib/components/dialogs/SaveNameDialog.svelte";
   import UnsavedChangesDialog from "./lib/components/dialogs/UnsavedChangesDialog.svelte";
   import FileManager from "./lib/FileManager.svelte";
   import SettingsDialog from "./lib/components/dialogs/SettingsDialog.svelte";
@@ -163,65 +162,13 @@
   let dragCounter = 0;
 
   // Custom Prompt State
-  let showSaveNameDialog = false;
   let showUnsavedChangesDialog = false;
   let pendingAction: "reset" | "close" | null = null;
-  let saveNameResolve: ((name: string | null) => void) | null = null;
-
-  function openSaveNamePrompt(): Promise<string | null> {
-    return new Promise((resolve) => {
-      saveNameResolve = resolve;
-      showSaveNameDialog = true;
-    });
-  }
-
-  function handleSaveName(name: string) {
-    if (saveNameResolve) saveNameResolve(name);
-    saveNameResolve = null;
-  }
-
-  function handleCancelSaveName() {
-    if (saveNameResolve) saveNameResolve(null);
-    saveNameResolve = null;
-  }
 
   // --- Unsaved Changes Dialog Logic ---
   async function handleUnsavedSave() {
     showUnsavedChangesDialog = false;
-    const api = (window as any).electronAPI;
-    const currentPath = get(currentFilePath);
-    let success = false;
-
-    if (!currentPath && api && api.getSavedDirectory) {
-      // Try to use default directory + prompt
-      const savedDir = await api.getSavedDirectory();
-      if (savedDir) {
-        const name = await openSaveNamePrompt();
-        if (name) {
-          const sep = savedDir.includes("\\") ? "\\" : "/";
-          const cleanDir = savedDir.endsWith(sep)
-            ? savedDir.slice(0, -1)
-            : savedDir;
-          const fullPath = `${cleanDir}${sep}${name}.pp`;
-          success = await saveProject(
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            false,
-            fullPath,
-          );
-        } else {
-          // User cancelled name input
-          return;
-        }
-      } else {
-        success = await saveProject();
-      }
-    } else {
-      success = await saveProject();
-    }
+    let success = await saveProject();
 
     if (success) {
       if (pendingAction === "close") {
@@ -333,41 +280,7 @@
               "You have unsaved changes. Press OK to save them before opening. Press Cancel to proceed without saving.",
             )
           ) {
-            // Check if we need to name the file (new file)
-            const currentPath = get(currentFilePath);
-            let success = false;
-
-            if (!currentPath && api.getSavedDirectory) {
-              // Try to use default directory + prompt
-              const savedDir = await api.getSavedDirectory();
-              if (savedDir) {
-                const name = await openSaveNamePrompt();
-                if (name) {
-                  const sep = savedDir.includes("\\") ? "\\" : "/";
-                  const cleanDir = savedDir.endsWith(sep)
-                    ? savedDir.slice(0, -1)
-                    : savedDir;
-                  const fullPath = `${cleanDir}${sep}${name}.pp`;
-                  success = await saveProject(
-                    undefined,
-                    undefined,
-                    undefined,
-                    undefined,
-                    undefined,
-                    false,
-                    fullPath,
-                  );
-                } else {
-                  // User cancelled name input
-                  return;
-                }
-              } else {
-                success = await saveProject();
-              }
-            } else {
-              success = await saveProject();
-            }
-
+            const success = await saveProject();
             if (!success) return; // Save failed or cancelled
           } else {
             if (
@@ -1369,12 +1282,6 @@
   whatsNewOpen={showWhatsNew}
   {isLoaded}
   on:tutorialComplete={() => (showWhatsNew = true)}
-/>
-
-<SaveNameDialog
-  bind:show={showSaveNameDialog}
-  onSave={handleSaveName}
-  onCancel={handleCancelSaveName}
 />
 
 <UnsavedChangesDialog

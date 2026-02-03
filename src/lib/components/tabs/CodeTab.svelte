@@ -35,7 +35,6 @@
   export let settings: Settings;
   export let isActive: boolean = false;
 
-
   const electronAPI = (window as any).electronAPI;
 
   let code = "";
@@ -190,12 +189,7 @@
   // Trigger update when dependencies change
   $: if (
     isActive &&
-    (startPoint ||
-      lines ||
-      sequence ||
-      settings ||
-      format ||
-      targetLibrary)
+    (startPoint || lines || sequence || settings || format || targetLibrary)
   ) {
     updateCode();
   }
