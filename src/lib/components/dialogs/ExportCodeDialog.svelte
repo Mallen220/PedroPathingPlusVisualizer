@@ -154,6 +154,7 @@
           sequence,
           targetLibrary,
           packageName,
+          telemetryImplementation,
         );
         currentLanguage = java;
       } else if (exportFormat === "json") {
