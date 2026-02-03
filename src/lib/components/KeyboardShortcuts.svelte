@@ -581,6 +581,20 @@
 
   function copy() {
     if (isUIElementFocused()) return;
+
+    // Context-aware copy
+    if (activeControlTab === "code") {
+      if (controlTabRef && controlTabRef.copyCode) {
+        controlTabRef.copyCode();
+        return;
+      }
+    } else if (activeControlTab === "table") {
+      if (controlTabRef && controlTabRef.copyTable) {
+        controlTabRef.copyTable();
+        return;
+      }
+    }
+
     const sel = $selectedPointId;
     if (!sel) return;
 
@@ -2014,6 +2028,21 @@
     rotateField: () => rotateField(),
     toggleContinuousValidation: () => toggleContinuousValidation(),
     toggleOnionCurrentPath: () => toggleOnionCurrentPath(),
+    copyCode: () => {
+      if (controlTabRef && controlTabRef.copyCode) {
+        controlTabRef.copyCode();
+      }
+    },
+    copyTable: () => {
+      if (controlTabRef && controlTabRef.copyTable) {
+        controlTabRef.copyTable();
+      }
+    },
+    downloadJava: () => {
+      if (controlTabRef && controlTabRef.downloadJava) {
+        controlTabRef.downloadJava();
+      }
+    },
   };
 
   // --- Derived Commands for Search ---

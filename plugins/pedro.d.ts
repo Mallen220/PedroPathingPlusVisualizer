@@ -664,7 +664,6 @@ interface ActionDefinition {
   ) => TimeCalculationResult;
 }
 
-
 export {};
 
 // Global variable exposed to plugins
