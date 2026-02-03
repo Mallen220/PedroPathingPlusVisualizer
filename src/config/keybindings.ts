@@ -660,6 +660,27 @@ export const DEFAULT_KEY_BINDINGS: KeyBinding[] = [
     action: "editItem",
     category: "Editing",
   },
+  {
+    id: "copy-code",
+    key: "cmd+shift+c, ctrl+shift+c",
+    description: "Copy Generated Code",
+    action: "copyCode",
+    category: "Export",
+  },
+  {
+    id: "copy-table",
+    key: "cmd+shift+t, ctrl+shift+t",
+    description: "Copy Table as Markdown",
+    action: "copyTable",
+    category: "Export",
+  },
+  {
+    id: "download-java",
+    key: "cmd+j, ctrl+j",
+    description: "Download Java File",
+    action: "downloadJava",
+    category: "Export",
+  },
   // Extended Commands
   {
     id: "set-file-manager-directory",
