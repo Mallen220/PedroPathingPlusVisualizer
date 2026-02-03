@@ -130,6 +130,24 @@
     }
   }
 
+  export function copyCode() {
+    if (activeTabInstance && activeTabInstance.copyCode) {
+      activeTabInstance.copyCode();
+    }
+  }
+
+  export function downloadJava() {
+    if (activeTabInstance && activeTabInstance.downloadJava) {
+      activeTabInstance.downloadJava();
+    }
+  }
+
+  export function copyTable() {
+    if (activeTabInstance && activeTabInstance.copyTable) {
+      activeTabInstance.copyTable();
+    }
+  }
+
   export function getOptimizationStatus() {
     if (activeTabInstance && activeTabInstance.getOptimizationStatus) {
       return activeTabInstance.getOptimizationStatus();
