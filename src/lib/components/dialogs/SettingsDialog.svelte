@@ -1335,7 +1335,7 @@
 
                 <SettingsItem
                   label="Smart Object Snapping"
-                  description="Snap points to align with other waypoints (Hold Alt to invert)"
+                  description="Snap points to align with other waypoints (Hold Alt/Option to invert)"
                   {searchQuery}
                   layout="row"
                 >
