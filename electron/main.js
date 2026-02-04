@@ -666,6 +666,15 @@ ipcMain.handle("renderer-ready", async (event) => {
 // Open a URL in the default system browser (called from renderer via preload)
 ipcMain.handle("app:open-external", async (event, url) => {
   try {
+    const parsed = new URL(url);
+    if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
+      console.warn(
+        "Security Warning: Blocked attempt to open non-http/https URL:",
+        url,
+      );
+      return false;
+    }
+
     await shell.openExternal(url);
     return true;
   } catch (err) {
