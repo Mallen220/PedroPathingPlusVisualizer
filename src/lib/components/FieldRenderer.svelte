@@ -414,7 +414,7 @@
       // Check for Velocity Heatmap Mode (only for main path)
       const showHeatmap =
         isHeatmapEnabled && settings.showVelocityHeatmap && timePrediction;
-      let heatmapSegments: PathLine[] = [];
+      let heatmapSegments: (PathLine | Path)[] = [];
 
       if (showHeatmap) {
         // Try to find corresponding timeline event for velocity data
@@ -436,6 +436,27 @@
           let cps = [_startPoint, ...line.controlPoints, line.endPoint];
           let prevPt = getCurvePoint(0, cps);
 
+          let currentAnchors: any[] = [];
+          let currentColor: string | null = null;
+          let segmentCounter = 0;
+
+          const createHeatmapSegment = (
+            anchors: any[],
+            color: string,
+            segIdx: number,
+          ) => {
+            const path = new Two.Path(anchors, false, false);
+            path.noFill();
+            path.stroke = color;
+            path.linewidth = getWidth(line);
+            path.id = `${idPrefix}-line-${idx + 1}-heatmap-${segIdx}`;
+            if (line.locked) {
+              path.dashes = [uiLength(2), uiLength(2)];
+              path.opacity = 0.7;
+            }
+            return path;
+          };
+
           for (let i = 1; i <= samples; i++) {
             const t = i / samples;
             const currPt = getCurvePoint(t, cps);
@@ -455,22 +476,66 @@
             const hue = 120 - ratio * 120;
             const color = `hsl(${hue}, 100%, 40%)`;
 
-            let seg = new Two.Line(
-              x(prevPt.x),
-              y(prevPt.y),
-              x(currPt.x),
-              y(currPt.y),
-            );
-            seg.stroke = color;
-            seg.linewidth = getWidth(line);
-            seg.id = `${idPrefix}-line-${idx + 1}-seg-${i}`;
-            if (line.locked) {
-              seg.dashes = [uiLength(2), uiLength(2)];
-              seg.opacity = 0.7;
+            if (color !== currentColor) {
+              if (currentAnchors.length > 0) {
+                heatmapSegments.push(
+                  createHeatmapSegment(
+                    currentAnchors,
+                    currentColor!,
+                    segmentCounter++,
+                  ),
+                );
+              }
+
+              // Start new path with previous point
+              currentAnchors = [
+                new Two.Anchor(
+                  x(prevPt.x),
+                  y(prevPt.y),
+                  0,
+                  0,
+                  0,
+                  0,
+                  Two.Commands.move,
+                ),
+                new Two.Anchor(
+                  x(currPt.x),
+                  y(currPt.y),
+                  0,
+                  0,
+                  0,
+                  0,
+                  Two.Commands.line,
+                ),
+              ];
+              currentColor = color;
+            } else {
+              // Extend current path
+              currentAnchors.push(
+                new Two.Anchor(
+                  x(currPt.x),
+                  y(currPt.y),
+                  0,
+                  0,
+                  0,
+                  0,
+                  Two.Commands.line,
+                ),
+              );
             }
-            heatmapSegments.push(seg);
 
             prevPt = currPt;
+          }
+
+          // Flush last segment
+          if (currentAnchors.length > 0 && currentColor) {
+            heatmapSegments.push(
+              createHeatmapSegment(
+                currentAnchors,
+                currentColor,
+                segmentCounter++,
+              ),
+            );
           }
         }
       }
