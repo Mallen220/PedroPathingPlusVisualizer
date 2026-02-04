@@ -1,6 +1,6 @@
 // Copyright 2026 Matthew Allen. Licensed under the Apache License, Version 2.0.
 import { writable } from "svelte/store";
-import type { CollisionMarker, Notification, FieldView } from "./types";
+import type { CollisionMarker, Notification, FieldView, POI } from "./types";
 
 // Math tools stores
 export const showRuler = writable(false);
@@ -18,6 +18,8 @@ export const showSettings = writable(false);
 export const settingsActiveTab = writable("general");
 export const showPluginManager = writable(false);
 export const showTelemetryDialog = writable(false);
+export const showPOIManager = writable(false);
+export const showPOIs = writable(true);
 export const isPresentationMode = writable(false);
 export const showExportGif = writable(false);
 export const showStrategySheet = writable(false);
@@ -94,3 +96,36 @@ export const fieldViewStore = writable<FieldView>({
 
 // Plugin Redraw Trigger
 export const pluginRedrawTrigger = writable(0);
+
+// POI Store with Persistence
+const storedPOIs =
+  typeof localStorage !== "undefined"
+    ? localStorage.getItem("pedro-pois")
+    : null;
+const defaultPOIs: POI[] = [
+  {
+    id: "center",
+    name: "Center Field",
+    x: 72,
+    y: 72,
+    color: "#cbd5e1",
+    visible: true,
+  },
+];
+
+let initialPOIs = defaultPOIs;
+try {
+  if (storedPOIs) {
+    initialPOIs = JSON.parse(storedPOIs);
+  }
+} catch (e) {
+  console.error("Failed to parse stored POIs", e);
+}
+
+export const poiStore = writable<POI[]>(initialPOIs);
+
+poiStore.subscribe((value) => {
+  if (typeof localStorage !== "undefined") {
+    localStorage.setItem("pedro-pois", JSON.stringify(value));
+  }
+});

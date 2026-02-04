@@ -21,6 +21,7 @@
   import SettingsDialog from "./lib/components/dialogs/SettingsDialog.svelte";
   import TelemetryDialog from "./lib/components/dialogs/TelemetryDialog.svelte";
   import PluginManagerDialog from "./lib/components/dialogs/PluginManagerDialog.svelte";
+  import POIManager from "./lib/components/dialogs/POIManager.svelte";
   import KeyboardShortcutsDialog from "./lib/components/dialogs/KeyboardShortcutsDialog.svelte";
   import ExportCodeDialog from "./lib/components/dialogs/ExportCodeDialog.svelte";
   import StrategySheetPreview from "./lib/components/dialogs/StrategySheetPreview.svelte";
@@ -43,6 +44,7 @@
     projectMetadataStore,
     currentDirectoryStore,
     showPluginManager,
+    showPOIManager,
     showTelemetryDialog,
   } from "./stores";
   import {
@@ -1391,6 +1393,7 @@
   bind:settings={$settingsStore}
 />
 <PluginManagerDialog bind:isOpen={$showPluginManager} />
+<POIManager bind:isOpen={$showPOIManager} />
 
 {#if $showFileManager}
   <FileManager

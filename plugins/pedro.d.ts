@@ -330,6 +330,15 @@ interface Registry<T> {
   reset: () => void;
 }
 
+interface POI {
+  id: string;
+  name: string;
+  x: number;
+  y: number;
+  color?: string;
+  visible?: boolean;
+}
+
 interface ComponentRegistryState {
   [key: string]: any;
 }

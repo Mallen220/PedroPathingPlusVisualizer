@@ -21,6 +21,8 @@
     hoveredMarkerId,
     fieldViewStore,
     pluginRedrawTrigger,
+    poiStore,
+    showPOIs,
   } from "../../stores";
   import {
     hookRegistry,
@@ -113,7 +115,7 @@
   let overlayContainer: HTMLDivElement;
 
   // Smart Snapping State
-  let snapGuides: InstanceType<typeof Two.Line>[] = [];
+  let snapGuides: any[] = [];
 
   // Context Menu State
   let showContextMenu = false;
@@ -1436,6 +1438,8 @@
     collisionGroup.id = "collision-group";
     const snapGroup = new Two.Group();
     snapGroup.id = "snap-group";
+    const poiGroup = new Two.Group();
+    poiGroup.id = "poi-group";
 
     two.clear();
 
@@ -1454,6 +1458,24 @@
       // Ensure collisionElements is used in the reactive block to trigger updates
       collisionElements.forEach((el) => collisionGroup.add(el));
       snapGuides.forEach((el) => snapGroup.add(el));
+
+      if ($showPOIs) {
+        $poiStore.forEach((poi) => {
+          if (!poi.visible) return;
+          const star = new Two.Star(
+            x(poi.x),
+            y(poi.y),
+            uiLength(0.8),
+            uiLength(1.8),
+            5,
+          );
+          star.fill = poi.color || "#facc15";
+          star.stroke = "#000000";
+          star.linewidth = uiLength(0.1);
+          star.id = `poi-${poi.id}`;
+          poiGroup.add(star);
+        });
+      }
     }
 
     if (isDiffMode) {
@@ -1466,6 +1488,7 @@
     two.add(pointGroup);
     two.add(collisionGroup);
     two.add(snapGroup);
+    two.add(poiGroup);
 
     // Apply custom renderers
     $fieldRenderRegistry.forEach((entry) => {
@@ -1573,9 +1596,48 @@
         const SNAP_THRESHOLD = 1.0; // inches
         const isSnappingEnabled = settings.smartSnapping !== false; // Enabled by default
         const shouldSnap = evt.altKey ? !isSnappingEnabled : isSnappingEnabled;
-        let newGuides: InstanceType<typeof Two.Line>[] = [];
+        let newGuides: any[] = [];
 
-        if (shouldSnap && currentElem.startsWith("point-")) {
+        let snappedToPOI = false;
+        if (
+          shouldSnap &&
+          $showPOIs &&
+          $poiStore.length > 0 &&
+          currentElem.startsWith("point-")
+        ) {
+          const POI_SNAP_THRESHOLD = 2.0;
+          let bestPOI = null;
+          let minPOIDist = POI_SNAP_THRESHOLD;
+
+          $poiStore.forEach((poi) => {
+            if (!poi.visible) return;
+            const dist = Math.sqrt(
+              Math.pow(poi.x - inchX, 2) + Math.pow(poi.y - inchY, 2),
+            );
+            if (dist < minPOIDist) {
+              minPOIDist = dist;
+              bestPOI = poi;
+            }
+          });
+
+          if (bestPOI) {
+            inchX = bestPOI.x;
+            inchY = bestPOI.y;
+            snappedToPOI = true;
+
+            const guide = new Two.Circle(x(inchX), y(inchY), uiLength(1.5));
+            guide.stroke = bestPOI.color || "#facc15";
+            guide.linewidth = uiLength(0.2);
+            guide.noFill();
+            newGuides.push(guide);
+          }
+        }
+
+        if (
+          shouldSnap &&
+          !snappedToPOI &&
+          currentElem.startsWith("point-")
+        ) {
           const targets: Point[] = [startPoint];
           lines.forEach((l) => {
             if (l.endPoint) targets.push(l.endPoint);

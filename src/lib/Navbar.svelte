@@ -17,6 +17,8 @@
     gitStatusStore,
     showPluginManager,
     showStrategySheet,
+    showPOIs,
+    showPOIManager,
   } from "../stores";
   import { getRandomColor } from "../utils";
   import { SaveIcon } from "./components/icons";
@@ -731,6 +733,51 @@
                 >
               </button>
             {/if}
+
+            <button
+              title="Toggle Points of Interest"
+              aria-label="Toggle Points of Interest"
+              role="menuitemcheckbox"
+              aria-checked={$showPOIs}
+              on:click={() => showPOIs.update((v) => !v)}
+              class="flex items-center gap-3 w-full px-2 py-1.5 rounded-md hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors group text-left"
+            >
+              <div
+                class="p-0.5 rounded-sm group-hover:bg-white dark:group-hover:bg-neutral-600 transition-colors {$showPOIs
+                  ? 'text-blue-500'
+                  : 'text-neutral-500 dark:text-neutral-400'}"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path
+                    d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"
+                  />
+                </svg>
+              </div>
+              <div class="flex-1 flex justify-between items-center">
+                <span class="text-sm text-neutral-700 dark:text-neutral-200"
+                  >Points of Interest</span
+                >
+                <button
+                  on:click|stopPropagation={() => {
+                    viewOptionsOpen = false;
+                    showPOIManager.set(true);
+                  }}
+                  class="text-xs text-blue-600 dark:text-blue-400 hover:underline px-1"
+                >
+                  Manage
+                </button>
+              </div>
+            </button>
 
             <button
               title={`Toggle Grid${getShortcutFromSettings(settings, "toggle-grid")}`}

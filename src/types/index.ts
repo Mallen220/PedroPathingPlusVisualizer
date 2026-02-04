@@ -321,6 +321,15 @@ export interface Registry<T> {
   reset: () => void;
 }
 
+export interface POI {
+  id: string;
+  name: string;
+  x: number;
+  y: number;
+  color?: string;
+  visible?: boolean;
+}
+
 export interface ComponentRegistryState {
   [key: string]: any;
 }
