@@ -26,6 +26,7 @@
     showTelemetryDialog,
     showStrategySheet,
     showExportGif,
+    notification,
   } from "../../stores";
   import {
     startPointStore,
@@ -1966,7 +1967,14 @@
         settingsStore.update((s) => ({ ...s, autosaveMode: "close" }));
     },
     openDocs: () => {
-      if (openWhatsNew) openWhatsNew();
+      const url = "https://github.com/Mallen220/PedroPathingVisualizer";
+      // @ts-ignore
+      if (window.electronAPI && window.electronAPI.openExternal) {
+        // @ts-ignore
+        window.electronAPI.openExternal(url);
+      } else {
+        window.open(url, "_blank");
+      }
     },
     reportIssue: () => {
       const url =
@@ -1992,10 +2000,32 @@
           "Reset all key bindings to defaults? This will overwrite any custom key bindings.",
         )
       ) {
+        const previousBindings = settings.keyBindings
+          ? settings.keyBindings.map((b) => ({ ...b }))
+          : [];
+
         settingsStore.update((s) => ({
           ...s,
           keyBindings: DEFAULT_KEY_BINDINGS.map((b) => ({ ...b })),
         }));
+
+        notification.set({
+          message: "Reset key bindings to defaults",
+          type: "success",
+          timeout: 5000,
+          actionLabel: "Undo",
+          action: () => {
+            settingsStore.update((s) => ({
+              ...s,
+              keyBindings: previousBindings,
+            }));
+            notification.set({
+              message: "Restored key bindings",
+              type: "success",
+              timeout: 3000,
+            });
+          },
+        });
       }
     },
     resetSettings: () => {
