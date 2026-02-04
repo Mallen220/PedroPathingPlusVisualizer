@@ -21,6 +21,13 @@
   export let lines: Line[];
   export let sequence: SequenceItem[];
   export let settings: Settings;
+  export let committedData: {
+    startPoint: Point;
+    lines: Line[];
+    sequence: SequenceItem[];
+    settings: Settings;
+  } | null = null;
+
   export let percent: number = 0;
   export let isOpen: boolean = false;
   export let onClose: () => void;
@@ -79,25 +86,53 @@
   }
 
   let pathStats: PathStats | null = null;
+  let committedStats: PathStats | null = null;
   let activeTab: "summary" | "graphs" | "insights" = "summary";
   let currentTime = 0;
 
   $: if (isOpen && lines && sequence && settings) {
-    calculateStats();
+    pathStats = computePathStats(startPoint, lines, sequence, settings);
+
+    if (committedData) {
+      committedStats = computePathStats(
+        committedData.startPoint,
+        committedData.lines,
+        committedData.sequence,
+        committedData.settings
+      );
+    } else {
+      committedStats = null;
+    }
   }
 
   $: if (pathStats) {
     currentTime = (percent / 100) * pathStats.totalTime;
   }
 
-  function calculateStats() {
+  // Comparison metrics
+  $: comparison = (pathStats && committedStats) ? {
+    time: pathStats.totalTime - committedStats.totalTime,
+    dist: pathStats.totalDistance - committedStats.totalDistance,
+    vel: pathStats.maxLinearVelocity - committedStats.maxLinearVelocity,
+    angVel: pathStats.maxAngularVelocity - committedStats.maxAngularVelocity
+  } : null;
+
+  function computePathStats(
+    _startPoint: Point,
+    _lines: Line[],
+    _sequence: SequenceItem[],
+    _settings: Settings
+  ): PathStats {
     // Basic time and distance from standard calculator
-    const timePred = calculatePathTime(startPoint, lines, settings, sequence);
+    const timePred = calculatePathTime(
+      _startPoint,
+      _lines,
+      _settings,
+      _sequence
+    );
 
     // Detailed segment analysis
     let segments: SegmentStat[] = [];
-    let maxLinearVelocity = 0;
-    let maxAngularVelocity = 0;
 
     // Data for charts
     let velocityData: { time: number; value: number }[] = [];
@@ -107,49 +142,36 @@
     let insights: Insight[] = [];
 
     // Pre-calculate constants for insight thresholds
-    const maxAccel = settings.maxAcceleration || 30;
-    const maxVel = settings.maxVelocity || 100;
-    const kFriction = settings.kFriction || 0;
+    const maxAccel = _settings.maxAcceleration || 30;
+    const maxVel = _settings.maxVelocity || 100;
+    const kFriction = _settings.kFriction || 0;
     const gravity = 386.22; // in/s^2
     const frictionLimitAccel = kFriction * gravity;
 
-    let currentHeading =
-      startPoint.heading === "linear"
-        ? startPoint.startDeg
-        : startPoint.heading === "constant"
-          ? startPoint.degrees
-          : 0; // Approx for tangential start
-
-    let lastPoint = startPoint;
-
-    // Map timePrediction segments to sequence items
-    const timeline = timePred.timeline || [];
-
-    // Filter to travel and wait events
-    // Actually we iterate sequence items and find matching events.
-
-    // Index cursor for timeline
+    // Timeline index cursor
     let timelineIndex = 0;
+    const timeline = timePred.timeline || [];
 
     // Re-simulation loop setup
     let simHeading =
-      startPoint.heading === "linear"
-        ? startPoint.startDeg
-        : startPoint.heading === "constant"
-          ? startPoint.degrees
+      _startPoint.heading === "linear"
+        ? _startPoint.startDeg
+        : _startPoint.heading === "constant"
+          ? _startPoint.degrees
           : 0;
+
     // Tangential start logic
-    if (startPoint.heading === "tangential" && lines.length > 0) {
-      const l = lines[0];
+    if (_startPoint.heading === "tangential" && _lines.length > 0) {
+      const l = _lines[0];
       const next = l.controlPoints.length > 0 ? l.controlPoints[0] : l.endPoint;
       simHeading =
-        Math.atan2(next.y - startPoint.y, next.x - startPoint.x) *
+        Math.atan2(next.y - _startPoint.y, next.x - _startPoint.x) *
         (180 / Math.PI);
-      if (startPoint.reverse) simHeading += 180;
+      if (_startPoint.reverse) simHeading += 180;
     }
 
-    let simPoint = startPoint;
-    const lineById = new Map(lines.map((l) => [l.id, l]));
+    let simPoint = _startPoint;
+    const lineById = new Map(_lines.map((l) => [l.id, l]));
 
     let _maxLin = 0;
     let _maxAng = 0;
@@ -159,7 +181,6 @@
     let activeFrictionWarning: Insight | null = null;
 
     // Helper to add data point to charts
-    // Avoid duplicate time points if possible, or just push
     const addDataPoint = (
       t: number,
       vLin: number,
@@ -247,20 +268,14 @@
           addDataPoint(startTime, 0, 0, 0, 0);
           addDataPoint(endTime, 0, 0, 0, 0);
         }
-      } else if (ev.type === "travel") {
-        // This is handled by the main path logic usually, but if called separately:
-        // We would need the full profile extraction logic here.
-        // Since we inline it for the main path item, we won't use this helper for 'travel'
-        // events linked to a sequence item unless we refactor fully.
       }
     };
 
     // Ensure start at 0
     addDataPoint(0, 0, 0, 0, 0);
 
-    sequence.forEach((item) => {
+    _sequence.forEach((item) => {
       // Common logic to consume intermediate events
-      // Find the target event for this sequence item
       let targetEventIndex = -1;
 
       for (let i = timelineIndex; i < timeline.length; i++) {
@@ -283,7 +298,7 @@
           const line = lineById.get(item.lineId);
           if (
             line &&
-            tEv.lineIndex === lines.findIndex((l) => l.id === line.id)
+            tEv.lineIndex === _lines.findIndex((l) => l.id === line.id)
           ) {
             isMatch = true;
           }
@@ -303,17 +318,13 @@
         timelineIndex = targetEventIndex; // Move cursor to target
       }
 
-      // Now process the sequence item itself (which corresponds to timeline[timelineIndex] if found)
-      // If not found (e.g. 0 duration wait dropped from timeline?), we handle graceful fallback in blocks below.
-
+      // Now process the sequence item itself
       // Handle Wait Item
       if (item.kind === "wait") {
         let event: any = null;
         if (targetEventIndex !== -1) {
           event = timeline[targetEventIndex];
           timelineIndex++;
-
-          // Add data for explicit wait
           processEventForGraph(event);
         }
 
@@ -337,8 +348,6 @@
         if (targetEventIndex !== -1) {
           event = timeline[targetEventIndex];
           timelineIndex++;
-
-          // Add data for explicit rotate
           processEventForGraph(event);
         }
 
@@ -364,7 +373,7 @@
           maxVel: 0,
           maxAngVel: maxAngVel,
           degrees: degrees,
-          color: "#d946ef", // Fuchsia-500 (matching pink/fuchsia theme of rotate)
+          color: "#d946ef", // Fuchsia-500
         });
         return;
       }
@@ -390,7 +399,7 @@
       const resolution =
         event.motionProfile && event.motionProfile.length > 0
           ? event.motionProfile.length - 1
-          : (settings as any).resolution || 100;
+          : (_settings as any).resolution || 100;
 
       const analysis = analyzePathSegment(
         simPoint,
@@ -408,7 +417,7 @@
       if (event.motionProfile && analysis.steps.length > 0) {
         const profile = event.motionProfile;
         const headingProfile = event.headingProfile;
-        const velocityProfile = event.velocityProfile; // Use this if available!
+        const velocityProfile = event.velocityProfile;
 
         // Limit loop to min of both
         const len = Math.min(profile.length - 1, analysis.steps.length);
@@ -417,12 +426,11 @@
           const t = event.startTime + profile[i];
 
           // Linear Velocity
-          // Use velocityProfile if available (more accurate from motion profile gen)
           let vLin = 0;
           if (velocityProfile && velocityProfile.length > i) {
             vLin = velocityProfile[i];
           } else {
-            // Fallback: derive from distance/time
+            // Fallback
             const dt = profile[i + 1] - profile[i];
             if (dt > 1e-6) {
               const step = analysis.steps[i];
@@ -455,12 +463,6 @@
           let accLin = 0;
           let accCent = 0;
           if (dt > 1e-6) {
-            // Forward difference with next point's velocity would be better if available
-            // But we iterate i.
-            // Let's look at i+1 if possible, or use current dt from previous
-            // profile[i+1] is t_next
-            // v[i+1] is v_next
-            // a = (v[i+1] - v[i]) / dt
             let vNext = 0;
             if (velocityProfile && velocityProfile.length > i + 1) {
               vNext = velocityProfile[i + 1];
@@ -470,8 +472,7 @@
             accLin = (vNext - vLin) / dt;
           }
 
-          // Centripetal Acceleration: v^2 / r
-          // We need radius at this step
+          // Centripetal Acceleration
           if (analysis.steps[i] && analysis.steps[i].radius > 0.001) {
             accCent = (vLin * vLin) / analysis.steps[i].radius;
           }
@@ -492,7 +493,7 @@
           addDataPoint(event.endTime, segMaxLin, segMaxAng, 0, 0);
         }
 
-        // Approx degrees turned from analysis
+        // Approx degrees turned
         if (line.endPoint.heading === "tangential") {
           segDegrees = analysis.tangentRotation;
         } else {
@@ -502,7 +503,7 @@
 
       segments.push({
         name:
-          line.name || `Path ${lines.findIndex((l) => l.id === line.id) + 1}`,
+          line.name || `Path ${_lines.findIndex((l) => l.id === line.id) + 1}`,
         length: analysis.length,
         time: event.duration,
         maxVel: segMaxLin,
@@ -528,7 +529,7 @@
       insights.push({ ...(activeFrictionWarning as Insight), endTime: totalT });
     }
 
-    pathStats = {
+    return {
       totalTime: timePred.totalTime,
       totalDistance: timePred.totalDistance,
       maxLinearVelocity: _maxLin,
@@ -621,7 +622,7 @@
           id="stats-title"
           class="text-lg font-semibold text-neutral-900 dark:text-white"
         >
-          Path Statistics
+          {committedStats ? "Path Comparison" : "Path Statistics"}
         </h2>
 
         <!-- Tabs -->
@@ -720,60 +721,118 @@
       <!-- Summary Tab -->
       {#if activeTab === "summary"}
         <!-- Summary Cards -->
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 flex-shrink-0">
-          <div
-            class="bg-neutral-100 dark:bg-neutral-700/50 p-3 rounded-lg flex flex-col items-center justify-center text-center"
-          >
-            <span
-              class="text-xs text-neutral-500 dark:text-neutral-400 uppercase tracking-wide"
-              >Total Time</span
-            >
-            <span
-              class="text-xl font-bold text-neutral-900 dark:text-white mt-1"
-            >
-              {formatTime(pathStats.totalTime)}
-            </span>
+        {#if committedStats && comparison}
+          <!-- Comparison View -->
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 flex-shrink-0">
+            <!-- Total Time -->
+            <div class="bg-neutral-100 dark:bg-neutral-700/50 p-3 rounded-lg flex flex-col items-center justify-center text-center">
+              <span class="text-xs text-neutral-500 dark:text-neutral-400 uppercase tracking-wide">Total Time</span>
+              <div class="flex items-baseline gap-2 mt-1">
+                <span class="text-xl font-bold text-neutral-900 dark:text-white">
+                  {formatTime(pathStats.totalTime)}
+                </span>
+                <span class="text-xs font-medium {comparison.time < 0 ? 'text-green-600 dark:text-green-400' : comparison.time > 0 ? 'text-red-600 dark:text-red-400' : 'text-neutral-500'}">
+                  {comparison.time > 0 ? '+' : ''}{comparison.time.toFixed(2)}s
+                </span>
+              </div>
+            </div>
+
+            <!-- Distance -->
+            <div class="bg-neutral-100 dark:bg-neutral-700/50 p-3 rounded-lg flex flex-col items-center justify-center text-center">
+              <span class="text-xs text-neutral-500 dark:text-neutral-400 uppercase tracking-wide">Distance</span>
+              <div class="flex items-baseline gap-2 mt-1">
+                <span class="text-xl font-bold text-neutral-900 dark:text-white">
+                  {pathStats.totalDistance.toFixed(1)}"
+                </span>
+                <span class="text-xs font-medium {comparison.dist < 0 ? 'text-green-600 dark:text-green-400' : 'text-neutral-500'}">
+                  {comparison.dist > 0 ? '+' : ''}{comparison.dist.toFixed(1)}"
+                </span>
+              </div>
+            </div>
+
+            <!-- Max Velocity -->
+            <div class="bg-neutral-100 dark:bg-neutral-700/50 p-3 rounded-lg flex flex-col items-center justify-center text-center">
+              <span class="text-xs text-neutral-500 dark:text-neutral-400 uppercase tracking-wide">Max Vel</span>
+              <div class="flex items-baseline gap-2 mt-1">
+                <span class="text-xl font-bold text-neutral-900 dark:text-white">
+                  {pathStats.maxLinearVelocity.toFixed(1)}
+                </span>
+                <span class="text-xs font-medium text-neutral-500">
+                  {comparison.vel > 0 ? '+' : ''}{comparison.vel.toFixed(1)}
+                </span>
+              </div>
+            </div>
+
+            <!-- Max Angular Velocity -->
+            <div class="bg-neutral-100 dark:bg-neutral-700/50 p-3 rounded-lg flex flex-col items-center justify-center text-center">
+              <span class="text-xs text-neutral-500 dark:text-neutral-400 uppercase tracking-wide">Max Ang Vel</span>
+              <div class="flex items-baseline gap-2 mt-1">
+                <span class="text-xl font-bold text-neutral-900 dark:text-white">
+                  {pathStats.maxAngularVelocity.toFixed(1)}
+                </span>
+                <span class="text-xs font-medium text-neutral-500">
+                   {comparison.angVel > 0 ? '+' : ''}{comparison.angVel.toFixed(1)}
+                </span>
+              </div>
+            </div>
           </div>
-          <div
-            class="bg-neutral-100 dark:bg-neutral-700/50 p-3 rounded-lg flex flex-col items-center justify-center text-center"
-          >
-            <span
-              class="text-xs text-neutral-500 dark:text-neutral-400 uppercase tracking-wide"
-              >Distance</span
+        {:else}
+          <!-- Standard View -->
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 flex-shrink-0">
+            <div
+              class="bg-neutral-100 dark:bg-neutral-700/50 p-3 rounded-lg flex flex-col items-center justify-center text-center"
             >
-            <span
-              class="text-xl font-bold text-neutral-900 dark:text-white mt-1"
+              <span
+                class="text-xs text-neutral-500 dark:text-neutral-400 uppercase tracking-wide"
+                >Total Time</span
+              >
+              <span
+                class="text-xl font-bold text-neutral-900 dark:text-white mt-1"
+              >
+                {formatTime(pathStats.totalTime)}
+              </span>
+            </div>
+            <div
+              class="bg-neutral-100 dark:bg-neutral-700/50 p-3 rounded-lg flex flex-col items-center justify-center text-center"
             >
-              {pathStats.totalDistance.toFixed(1)}"
-            </span>
+              <span
+                class="text-xs text-neutral-500 dark:text-neutral-400 uppercase tracking-wide"
+                >Distance</span
+              >
+              <span
+                class="text-xl font-bold text-neutral-900 dark:text-white mt-1"
+              >
+                {pathStats.totalDistance.toFixed(1)}"
+              </span>
+            </div>
+            <div
+              class="bg-neutral-100 dark:bg-neutral-700/50 p-3 rounded-lg flex flex-col items-center justify-center text-center"
+            >
+              <span
+                class="text-xs text-neutral-500 dark:text-neutral-400 uppercase tracking-wide"
+                >Max Vel</span
+              >
+              <span
+                class="text-xl font-bold text-neutral-900 dark:text-white mt-1"
+              >
+                {pathStats.maxLinearVelocity.toFixed(1)} in/s
+              </span>
+            </div>
+            <div
+              class="bg-neutral-100 dark:bg-neutral-700/50 p-3 rounded-lg flex flex-col items-center justify-center text-center"
+            >
+              <span
+                class="text-xs text-neutral-500 dark:text-neutral-400 uppercase tracking-wide"
+                >Max Ang Vel</span
+              >
+              <span
+                class="text-xl font-bold text-neutral-900 dark:text-white mt-1"
+              >
+                {pathStats.maxAngularVelocity.toFixed(1)} rad/s
+              </span>
+            </div>
           </div>
-          <div
-            class="bg-neutral-100 dark:bg-neutral-700/50 p-3 rounded-lg flex flex-col items-center justify-center text-center"
-          >
-            <span
-              class="text-xs text-neutral-500 dark:text-neutral-400 uppercase tracking-wide"
-              >Max Vel</span
-            >
-            <span
-              class="text-xl font-bold text-neutral-900 dark:text-white mt-1"
-            >
-              {pathStats.maxLinearVelocity.toFixed(1)} in/s
-            </span>
-          </div>
-          <div
-            class="bg-neutral-100 dark:bg-neutral-700/50 p-3 rounded-lg flex flex-col items-center justify-center text-center"
-          >
-            <span
-              class="text-xs text-neutral-500 dark:text-neutral-400 uppercase tracking-wide"
-              >Max Ang Vel</span
-            >
-            <span
-              class="text-xl font-bold text-neutral-900 dark:text-white mt-1"
-            >
-              {pathStats.maxAngularVelocity.toFixed(1)} rad/s
-            </span>
-          </div>
-        </div>
+        {/if}
 
         <!-- Table Header (desktop only) -->
         <div

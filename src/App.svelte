@@ -1353,6 +1353,7 @@
     sequence={$sequenceStore}
     settings={$settingsStore}
     startPoint={$startPointStore}
+    committedData={$committedData}
     controlRect={controlTabRect}
     percent={$percentStore}
     onClose={() => (statsOpen = false)}
