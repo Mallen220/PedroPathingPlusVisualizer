@@ -1,6 +1,6 @@
 ## 1.7.2 (2026-02-04)
 
-- Quick Fix: Rename to pedro-pathing-plus-visualizer across project. Add live code preview tab when auto export is enabled (recommended). Changed default port from 34567 to 17218. Several critical security fixes. Added keybind hints. Add Follow Robot toggle to settings and field renderer. Configurable Telemetry Export within exported code. Telemetry support for Panels, Standard FTC, FtcDashboard + Standard, future support for PPP visualizer. Add keybindings for copying code/table and downloading java when in certain tabs. Add smart object snapping for field waypoints, can be disabled in settings interface. 
+- Quick Fix: Rename to pedro-pathing-plus-visualizer across project. Add live code preview tab when auto export is enabled (recommended). Changed default port from 34567 to 17218. Several critical security fixes. Added keybind hints. Add Follow Robot toggle to settings and field renderer. Configurable Telemetry Export within exported code. Telemetry support for Panels, Standard FTC, FtcDashboard + Standard, future support for PPP visualizer. Add keybindings for copying code/table and downloading java when in certain tabs. Add smart object snapping for field waypoints, can be disabled in settings interface.
 
 ## 1.7.1 (2026-01-29)
 
