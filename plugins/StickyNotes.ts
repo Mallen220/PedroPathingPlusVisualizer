@@ -281,7 +281,7 @@ interface StickyNote {
     colorBtn.title = "Change Color";
     colorBtn.onclick = (e) => {
         e.stopPropagation();
-        cycleColor(note.id, note.color);
+        cycleColor(note.id);
     }
 
     // Collapse
@@ -292,7 +292,11 @@ interface StickyNote {
         : `<svg width="12" height="12" class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path></svg>`;
     collapseBtn.onclick = (e) => {
         e.stopPropagation();
-        updateNote(note.id, { collapsed: !note.collapsed });
+        const currentData = pedro.stores.get(pedro.stores.project.extraDataStore);
+        const currentNote = currentData.stickyNotes?.find((n: StickyNote) => n.id === note.id);
+        if (currentNote) {
+            updateNote(note.id, { collapsed: !currentNote.collapsed });
+        }
     }
 
     // Delete
@@ -435,7 +439,12 @@ interface StickyNote {
   }
 
   // Helpers
-  function cycleColor(id: string, currentColor: string) {
+  function cycleColor(id: string) {
+    const currentData = pedro.stores.get(pedro.stores.project.extraDataStore);
+    const currentNote = currentData.stickyNotes?.find((n: StickyNote) => n.id === id);
+    if (!currentNote) return;
+
+    const currentColor = currentNote.color;
     const colors = [
         "#fef3c7", // Yellow (Amber 100)
         "#dbeafe", // Blue (Blue 100)
