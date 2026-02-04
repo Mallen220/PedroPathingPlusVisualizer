@@ -154,6 +154,7 @@
           sequence,
           targetLibrary,
           packageName,
+          exportFullCode,
         );
         currentLanguage = java;
       } else if (exportFormat === "json") {
@@ -693,7 +694,7 @@
           {/if}
 
           <!-- Java Controls -->
-          {#if exportFormat === "java"}
+          {#if exportFormat === "java" || exportFormat === "sequential"}
             <label
               class="flex items-center gap-2 text-sm text-neutral-700 dark:text-neutral-200 cursor-pointer select-none"
               aria-label="Export full Java class with imports"

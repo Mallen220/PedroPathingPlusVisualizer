@@ -443,6 +443,7 @@ export async function generateSequentialCommandCode(
   sequence?: SequenceItem[],
   targetLibrary: "SolversLib" | "NextFTC" = "SolversLib", // - Added parameter
   packageName: string = "org.firstinspires.ftc.teamcode.Commands.AutoCommands",
+  exportFullCode: boolean = true,
 ): Promise<string> {
   // Determine class name from file name or use default
   let className = "AutoPath";
@@ -846,7 +847,10 @@ import com.seattlesolvers.solverslib.pedroCommand.FollowPathCommand;
 `;
   }
 
-  const sequentialCommandCode = `
+  let sequentialCommandCode = "";
+
+  if (exportFullCode) {
+    sequentialCommandCode = `
 ${AUTO_GENERATED_FILE_WARNING_MESSAGE}
 
 package ${packageName};
@@ -899,6 +903,41 @@ ${commands.join(",\n")}
     }
 }
 `;
+  } else {
+    // Partial export (Class Body Only)
+    sequentialCommandCode = `
+    private final Follower follower;
+${progressTrackerField}
+
+    // Poses
+${allPoseDeclarations.join("\n")}
+
+    // Path chains
+${pathChainDeclarations}
+
+    public ${className}(final Drivetrain drive, HardwareMap hw, Telemetry telemetry) throws IOException {
+        this.follower = drive.getFollower();
+        this.progressTracker = new ProgressTracker(follower, telemetry);
+
+        PedroPathReader pp = new PedroPathReader("${fileName ? fileName.split(/[\\/]/).pop() || "AutoPath.pp" : "AutoPath.pp"}", hw.appContext);
+
+        // Load poses
+${allPoseInitializations.join("\n")}
+
+        follower.setStartingPose(startPoint);
+
+        buildPaths();
+
+        addCommands(
+${commands.join(",\n")}
+        );
+    }
+
+    public void buildPaths() {
+        ${pathBuilders}
+    }
+`;
+  }
 
   try {
     const formattedCode = await prettier.format(sequentialCommandCode, {
