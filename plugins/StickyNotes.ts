@@ -50,7 +50,30 @@ interface StickyNote {
       },
     });
 
-    // 4. Subscribe to stores
+    // 4. Register Navbar Action
+    pedro.registries.navbarActions.register({
+        id: "sticky-notes-add",
+        title: "Add Sticky Note (Alt+N)",
+        icon: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" /></svg>`,
+        onClick: () => {
+             addNoteAtCenter();
+        },
+        location: "right",
+    });
+
+    // 5. Global Keybind (Alt+N)
+    window.addEventListener("keydown", (e) => {
+        // Block if typing in input
+        const tag = (e.target as HTMLElement).tagName;
+        if (tag === "INPUT" || tag === "TEXTAREA" || (e.target as HTMLElement).isContentEditable) return;
+
+        if (e.altKey && e.code === "KeyN") {
+            e.preventDefault();
+            addNoteAtCenter();
+        }
+    });
+
+    // 6. Subscribe to stores
     const { extraDataStore } = pedro.stores.project;
     const { fieldViewStore } = pedro.stores.app;
 
@@ -106,6 +129,27 @@ interface StickyNote {
       };
       return { ...data, stickyNotes: [...notes, newNote] };
     });
+  }
+
+  function addNoteAtCenter() {
+    const { fieldViewStore } = pedro.stores.app;
+    const view = pedro.stores.get(fieldViewStore);
+    if (!view || !view.xScale || !view.yScale) return;
+
+    // Center of viewport (relative to field view width/height)
+    const cx = view.width / 2;
+    const cy = view.height / 2;
+
+    // Invert to field coordinates
+    // We assume scale.invert exists as it is standard d3 behavior for linear scales
+    if (view.xScale.invert && view.yScale.invert) {
+        const ix = view.xScale.invert(cx);
+        const iy = view.yScale.invert(cy);
+        addNote(ix, iy);
+    } else {
+        // Fallback to center of 144x144 field if scales broken
+        addNote(72, 72);
+    }
   }
 
   function updateNote(id: string, updates: Partial<StickyNote>) {
@@ -323,26 +367,6 @@ interface StickyNote {
         // Calculate final field coordinates
         const { fieldViewStore } = pedro.stores.app;
         const fieldView = pedro.stores.get(fieldViewStore);
-
-        // Get final pixels
-        const finalRect = el.getBoundingClientRect();
-        // Since getBoundingClientRect is viewport relative, and our scales are likely somewhat complex
-        // We should use the scale.invert function.
-        // Note: scale.invert expects pixels relative to the field drawing area (or whatever the scale range is).
-        // The container is #field-overlay-layer which is overlaying the Two.js canvas.
-        // So the click coordinates or element coordinates relative to the container *should* map
-        // if we consider the scale implementation.
-
-        // FieldView x/y scales map Field Inches (domain) to Pixels (range).
-        // The range seems to be centered around center of viewport plus pan.
-        // x(v) = width/2 + (v...)*scale + pan
-        // So we need the coordinate relative to the container (which matches the canvas).
-
-        // Get element center or top-left? Sticky notes x/y usually top-left.
-        // But field coordinates are what we store.
-        // Let's use the element's current left/top style values if they are correct?
-        // Wait, style.left is relative to parent. Parent is overlay. Overlay is same size as canvas.
-        // So style.left is the pixel coordinate in the "range" of d3 scale.
 
         // Parse px values from style
         const finalPxX = parseFloat(el.style.left);
