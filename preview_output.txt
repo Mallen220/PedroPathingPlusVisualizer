@@ -1,0 +1,6 @@
+
+> pedro-pathing-plus-visualizer@1.7.2 preview
+> vite preview
+
+  ➜  Local:   http://localhost:4173/
+  ➜  Network: use --host to expose

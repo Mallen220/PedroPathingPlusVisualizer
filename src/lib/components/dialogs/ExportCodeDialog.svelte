@@ -48,6 +48,9 @@
   let telemetryImplementation: "Standard" | "Dashboard" | "Panels" | "None" =
     "Panels";
 
+  let opModeGroup = "Autonomous";
+  let includeWarning = true;
+
   let exportedCode = "";
   let currentLanguage: typeof java | typeof plaintext | typeof json = java;
   let copied = false;
@@ -112,6 +115,12 @@
     if (settings.telemetryImplementation) {
       telemetryImplementation = settings.telemetryImplementation;
     }
+    if (settings.autoExportOpModeGroup) {
+      opModeGroup = settings.autoExportOpModeGroup;
+    }
+    if (settings.autoExportIncludeWarning !== undefined) {
+      includeWarning = settings.autoExportIncludeWarning;
+    }
   });
 
   async function handlePackageKeydown(event: KeyboardEvent) {
@@ -141,6 +150,8 @@
           sequence,
           packageName,
           telemetryImplementation,
+          opModeGroup,
+          includeWarning,
         );
         currentLanguage = java;
       } else if (exportFormat === "points") {
@@ -154,6 +165,7 @@
           sequence,
           targetLibrary,
           packageName,
+          includeWarning,
         );
         currentLanguage = java;
       } else if (exportFormat === "json") {
@@ -215,6 +227,19 @@
         sequentialClassName = fileName
           .replace(".pp", "")
           .replace(/[^a-zA-Z0-9]/g, "_");
+      }
+    }
+
+    // Update defaults from settings
+    if (settings) {
+      if (settings.autoExportOpModeGroup) {
+        opModeGroup = settings.autoExportOpModeGroup;
+      }
+      if (settings.autoExportIncludeWarning !== undefined) {
+        includeWarning = settings.autoExportIncludeWarning;
+      }
+      if (settings.autoExportFullClass !== undefined) {
+        exportFullCode = settings.autoExportFullClass;
       }
     }
 
@@ -692,22 +717,60 @@
             {/if}
           {/if}
 
-          <!-- Java Controls -->
-          {#if exportFormat === "java"}
+          <div class="flex flex-col gap-2">
+            <!-- Include Warning Toggle -->
             <label
               class="flex items-center gap-2 text-sm text-neutral-700 dark:text-neutral-200 cursor-pointer select-none"
-              aria-label="Export full Java class with imports"
+              aria-label="Include auto-generated file warning header"
             >
               <div class="relative flex items-center">
                 <input
                   type="checkbox"
-                  bind:checked={exportFullCode}
+                  bind:checked={includeWarning}
                   on:change={refreshCode}
                   class="peer h-4 w-4 rounded border-neutral-300 text-blue-600 focus:ring-blue-500 dark:border-neutral-600 dark:bg-neutral-700 dark:ring-offset-neutral-800"
                 />
               </div>
-              <span>Generate Full Class</span>
+              <span>Include Warning</span>
             </label>
+
+            <!-- Java Controls -->
+            {#if exportFormat === "java"}
+              <label
+                class="flex items-center gap-2 text-sm text-neutral-700 dark:text-neutral-200 cursor-pointer select-none"
+                aria-label="Export full Java class with imports"
+              >
+                <div class="relative flex items-center">
+                  <input
+                    type="checkbox"
+                    bind:checked={exportFullCode}
+                    on:change={refreshCode}
+                    class="peer h-4 w-4 rounded border-neutral-300 text-blue-600 focus:ring-blue-500 dark:border-neutral-600 dark:bg-neutral-700 dark:ring-offset-neutral-800"
+                  />
+                </div>
+                <span>Generate Full Class</span>
+              </label>
+            {/if}
+          </div>
+
+          <!-- OpMode Group (Java Full Class only) -->
+          {#if exportFormat === "java" && exportFullCode}
+            <div class="flex flex-col gap-1.5">
+              <label
+                for="group-name-input"
+                class="text-[10px] font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400"
+              >
+                OpMode Group
+              </label>
+              <input
+                id="group-name-input"
+                type="text"
+                bind:value={opModeGroup}
+                on:input={refreshCode}
+                class="px-3 py-1.5 text-sm rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 focus:outline-none focus:ring-2 focus:ring-blue-500 min-w-[150px]"
+                placeholder="Autonomous"
+              />
+            </div>
           {/if}
         </div>
       {/if}

@@ -1566,6 +1566,35 @@
                             placeholder="org.firstinspires.ftc.teamcode.Commands.AutoCommands"
                           />
                         </SettingsItem>
+
+                        <SettingsItem
+                          label="Include Warning"
+                          description="Include auto-generated file warning header"
+                          {searchQuery}
+                          layout="row"
+                        >
+                          <input
+                            type="checkbox"
+                            bind:checked={settings.autoExportIncludeWarning}
+                            class="w-5 h-5 rounded border-neutral-300 dark:border-neutral-600 text-blue-500 focus:ring-2 focus:ring-blue-500 cursor-pointer"
+                          />
+                        </SettingsItem>
+
+                        {#if settings.autoExportFormat === "java"}
+                          <SettingsItem
+                            label="OpMode Group"
+                            description="Group name for the Autonomous annotation"
+                            {searchQuery}
+                            layout="col"
+                          >
+                            <input
+                              type="text"
+                              bind:value={settings.autoExportOpModeGroup}
+                              class="w-full px-3 py-2 rounded-md border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono text-sm"
+                              placeholder="Autonomous"
+                            />
+                          </SettingsItem>
+                        {/if}
                       </div>
                     {/if}
                   </div>

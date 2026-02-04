@@ -105,7 +105,18 @@
         const newLinesHL = highlightAndSplit(newCode, "java");
 
         // Diff against previous state
-        const diffs = diffLines(previousCode, newCode);
+        let diffs: any[] = [];
+        try {
+          diffs = diffLines(previousCode, newCode);
+        } catch (e) {
+          console.error("Diff failed", e);
+          diffs = [{ value: newCode, added: true, removed: false }];
+        }
+
+        if (!diffs) {
+             diffs = [{ value: newCode, added: true, removed: false }];
+        }
+
         let newDisplayLines: DiffLine[] = [];
         let lineCounter = 0;
         let oldLineIndex = 0;

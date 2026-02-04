@@ -28,6 +28,8 @@ export async function generateJavaCode(
   sequence?: SequenceItem[],
   packageName: string = "org.firstinspires.ftc.teamcode.Commands.AutoCommands",
   telemetryImpl: "Standard" | "Dashboard" | "Panels" | "None" = "Panels",
+  opModeGroup: string = "Autonomous",
+  includeWarning: boolean = true,
 ): Promise<string> {
   const headingTypeToFunctionName = {
     constant: "setConstantHeadingInterpolation",
@@ -250,7 +252,9 @@ export async function generateJavaCode(
   let file = "";
   if (!exportFullCode) {
     file =
-      AUTO_GENERATED_FILE_WARNING_MESSAGE + pathsClass + namedCommandsSection;
+      (includeWarning ? AUTO_GENERATED_FILE_WARNING_MESSAGE : "") +
+      pathsClass +
+      namedCommandsSection;
   } else {
     // Determine imports based on telemetry implementation
     let extraImports = "";
@@ -323,7 +327,7 @@ export async function generateJavaCode(
     }
 
     file = `
-    ${AUTO_GENERATED_FILE_WARNING_MESSAGE}
+    ${includeWarning ? AUTO_GENERATED_FILE_WARNING_MESSAGE : ""}
 
     package ${packageName};
     import com.qualcomm.robotcore.eventloop.opmode.OpMode;
@@ -338,7 +342,7 @@ export async function generateJavaCode(
     import com.pedropathing.geometry.Pose;
     ${eventMarkerNames.size > 0 ? "import com.pedropathing.NamedCommands;" : ""}
     
-    @Autonomous(name = "Pedro Pathing Autonomous", group = "Autonomous")
+    @Autonomous(name = "Pedro Pathing Autonomous", group = "${opModeGroup}")
     ${classAnnotations}
     public class PedroAutonomous extends OpMode {
       ${telemetryField}
@@ -443,6 +447,7 @@ export async function generateSequentialCommandCode(
   sequence?: SequenceItem[],
   targetLibrary: "SolversLib" | "NextFTC" = "SolversLib", // - Added parameter
   packageName: string = "org.firstinspires.ftc.teamcode.Commands.AutoCommands",
+  includeWarning: boolean = true,
 ): Promise<string> {
   // Determine class name from file name or use default
   let className = "AutoPath";
@@ -847,7 +852,7 @@ import com.seattlesolvers.solverslib.pedroCommand.FollowPathCommand;
   }
 
   const sequentialCommandCode = `
-${AUTO_GENERATED_FILE_WARNING_MESSAGE}
+${includeWarning ? AUTO_GENERATED_FILE_WARNING_MESSAGE : ""}
 
 package ${packageName};
     

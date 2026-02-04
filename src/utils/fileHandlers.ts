@@ -686,6 +686,8 @@ async function handleAutoExport(
           sequence,
           settings.javaPackageName,
           settings.telemetryImplementation,
+          settings.autoExportOpModeGroup ?? "Autonomous",
+          settings.autoExportIncludeWarning ?? true,
         );
         extension = "java";
         break;
@@ -697,6 +699,7 @@ async function handleAutoExport(
           sequence,
           settings.autoExportTargetLibrary ?? "SolversLib",
           settings.javaPackageName,
+          settings.autoExportIncludeWarning ?? true,
         );
         extension = "java";
         break;
