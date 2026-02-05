@@ -46,8 +46,9 @@
   let ignoreClick = false;
 
   $: currentTime =
-    (draggingMarkerIndex !== null ? draggingMarkerPercent / 100 : percent / 100) *
-    totalSeconds;
+    (draggingMarkerIndex !== null
+      ? draggingMarkerPercent / 100
+      : percent / 100) * totalSeconds;
 
   function toggleSpeedMenu() {
     showSpeedMenu = !showSpeedMenu;

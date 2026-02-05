@@ -788,12 +788,7 @@
   });
 
   function handleKeydown(e: KeyboardEvent) {
-    if (
-      e.key === "Escape" &&
-      isOpen &&
-      !creatingNewFile &&
-      !renamingFile
-    ) {
+    if (e.key === "Escape" && isOpen && !creatingNewFile && !renamingFile) {
       isOpen = false;
     }
   }

@@ -148,7 +148,9 @@
 
     // No confirm() here, handled by DeleteButtonWithConfirm
 
-    robotProfilesStore.update((p) => p.filter((x) => x.id !== selectedProfileId));
+    robotProfilesStore.update((p) =>
+      p.filter((x) => x.id !== selectedProfileId),
+    );
     selectedProfileId = "";
     notification.set({
       message: `Profile "${profile.name}" deleted`,
