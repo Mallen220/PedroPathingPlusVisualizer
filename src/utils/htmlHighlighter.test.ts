@@ -46,7 +46,7 @@ describe("highlightAndSplit", () => {
   });
 
   it("should handle empty input", () => {
-      const lines = highlightAndSplit("");
-      expect(lines).toEqual([]);
+    const lines = highlightAndSplit("");
+    expect(lines).toEqual([]);
   });
 });

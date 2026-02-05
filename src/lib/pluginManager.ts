@@ -85,7 +85,7 @@ export class PluginManager {
             name: file,
             loaded: true,
             enabled,
-            description
+            description,
           });
         } catch (error: any) {
           console.error(`Failed to load plugin ${file}:`, error);
@@ -145,7 +145,10 @@ export class PluginManager {
     themesStore.set(activeThemes);
   }
 
-  static extractMetadata(filename: string, code: string): PluginMetadata | undefined {
+  static extractMetadata(
+    filename: string,
+    code: string,
+  ): PluginMetadata | undefined {
     let metadata: PluginMetadata | undefined;
 
     const handler = {
@@ -176,7 +179,10 @@ export class PluginManager {
     return metadata;
   }
 
-  static executePlugin(filename: string, code: string): PluginMetadata | undefined {
+  static executePlugin(
+    filename: string,
+    code: string,
+  ): PluginMetadata | undefined {
     let codeToExecute = code;
     let metadata: PluginMetadata | undefined;
 

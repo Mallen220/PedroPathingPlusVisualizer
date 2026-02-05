@@ -2224,6 +2224,7 @@
       if (parsed) {
         if (parsed.type === "point") {
           const { lineIndex, pointIndex } = parsed;
+          if (lineIndex === undefined || pointIndex === undefined) return;
           const isStartPoint = lineIndex === -1;
           const isControlPoint = pointIndex > 0;
           const isEndPoint = !isStartPoint && !isControlPoint;
@@ -2293,7 +2294,9 @@
               onClick: () => {
                 linesStore.update((l) => {
                   const newLines = [...l];
-                  newLines.splice(lineIndex, 1);
+                  if (typeof lineIndex === "number") {
+                    newLines.splice(lineIndex, 1);
+                  }
                   return newLines;
                 });
                 onRecordChange("Delete Path");
@@ -2301,50 +2304,78 @@
               },
             });
 
-            const currentHeading = lines[lineIndex].endPoint.heading;
-            menuItems.push({ separator: true });
-            menuItems.push({ label: "Heading Mode", disabled: true });
-            menuItems.push({
-              label: "Tangential",
-              disabled: currentHeading === "tangential",
-              onClick: () => {
-                linesStore.update((l) => {
-                  l[lineIndex].endPoint.heading = "tangential";
-                  return l;
-                });
-                onRecordChange("Set Heading Tangential");
-              },
-            });
-            menuItems.push({
-              label: "Constant",
-              disabled: currentHeading === "constant",
-              onClick: () => {
-                linesStore.update((l) => {
-                  l[lineIndex].endPoint.heading = "constant";
-                  // Preserve degrees if existing
-                  if (l[lineIndex].endPoint.degrees === undefined) {
-                    l[lineIndex].endPoint.degrees = 0;
-                  }
-                  return l;
-                });
-                onRecordChange("Set Heading Constant");
-              },
-            });
-            menuItems.push({
-              label: "Linear",
-              disabled: currentHeading === "linear",
-              onClick: () => {
-                linesStore.update((l) => {
-                  l[lineIndex].endPoint.heading = "linear";
-                  if (l[lineIndex].endPoint.startDeg === undefined)
-                    l[lineIndex].endPoint.startDeg = 0;
-                  if (l[lineIndex].endPoint.endDeg === undefined)
-                    l[lineIndex].endPoint.endDeg = 0;
-                  return l;
-                });
-                onRecordChange("Set Heading Linear");
-              },
-            });
+            if (lines[lineIndex]) {
+              const currentHeading = lines[lineIndex].endPoint.heading;
+              menuItems.push({ separator: true });
+              menuItems.push({ label: "Heading Mode", disabled: true });
+              menuItems.push({
+                label: "Tangential",
+                disabled: currentHeading === "tangential",
+                onClick: () => {
+                  linesStore.update((l) => {
+                    if (!l[lineIndex]) return l;
+                    const pt = l[lineIndex].endPoint;
+                    l[lineIndex].endPoint = {
+                      x: pt.x,
+                      y: pt.y,
+                      locked: pt.locked,
+                      isMacroElement: pt.isMacroElement,
+                      macroId: pt.macroId,
+                      originalId: pt.originalId,
+                      heading: "tangential",
+                      reverse: pt.reverse ?? false,
+                    };
+                    return l;
+                  });
+                  onRecordChange("Set Heading Tangential");
+                },
+              });
+              menuItems.push({
+                label: "Constant",
+                disabled: currentHeading === "constant",
+                onClick: () => {
+                  linesStore.update((l) => {
+                    if (!l[lineIndex]) return l;
+                    const pt = l[lineIndex].endPoint;
+                    l[lineIndex].endPoint = {
+                      x: pt.x,
+                      y: pt.y,
+                      locked: pt.locked,
+                      isMacroElement: pt.isMacroElement,
+                      macroId: pt.macroId,
+                      originalId: pt.originalId,
+                      heading: "constant",
+                      degrees: (pt as any).degrees ?? 0,
+                    };
+                    return l;
+                  });
+                  onRecordChange("Set Heading Constant");
+                },
+              });
+              menuItems.push({
+                label: "Linear",
+                disabled: currentHeading === "linear",
+                onClick: () => {
+                  linesStore.update((l) => {
+                    if (!l[lineIndex]) return l;
+                    const pt = l[lineIndex].endPoint;
+                    l[lineIndex].endPoint = {
+                      x: pt.x,
+                      y: pt.y,
+                      locked: pt.locked,
+                      isMacroElement: pt.isMacroElement,
+                      macroId: pt.macroId,
+                      originalId: pt.originalId,
+                      heading: "linear",
+                      startDeg: (pt as any).startDeg ?? 0,
+                      endDeg: (pt as any).endDeg ?? 0,
+                    };
+                    return l;
+                  });
+                  onRecordChange("Set Heading Linear");
+                },
+              });
+            }
           } else if (isStartPoint) {
             const currentHeading = startPoint.heading;
             menuItems.push({ separator: true });
@@ -2354,8 +2385,14 @@
               disabled: currentHeading === "tangential",
               onClick: () => {
                 startPointStore.update((p) => ({
-                  ...p,
+                  x: p.x,
+                  y: p.y,
+                  locked: p.locked,
+                  isMacroElement: p.isMacroElement,
+                  macroId: p.macroId,
+                  originalId: p.originalId,
                   heading: "tangential",
+                  reverse: p.reverse ?? false,
                 }));
                 onRecordChange("Set Start Tangential");
               },
@@ -2365,9 +2402,14 @@
               disabled: currentHeading === "constant",
               onClick: () => {
                 startPointStore.update((p) => ({
-                  ...p,
+                  x: p.x,
+                  y: p.y,
+                  locked: p.locked,
+                  isMacroElement: p.isMacroElement,
+                  macroId: p.macroId,
+                  originalId: p.originalId,
                   heading: "constant",
-                  degrees: p.degrees ?? 0,
+                  degrees: (p as any).degrees ?? 0,
                 }));
                 onRecordChange("Set Start Constant");
               },
@@ -2377,10 +2419,15 @@
               disabled: currentHeading === "linear",
               onClick: () => {
                 startPointStore.update((p) => ({
-                  ...p,
+                  x: p.x,
+                  y: p.y,
+                  locked: p.locked,
+                  isMacroElement: p.isMacroElement,
+                  macroId: p.macroId,
+                  originalId: p.originalId,
                   heading: "linear",
-                  startDeg: p.startDeg ?? 0,
-                  endDeg: p.endDeg ?? 0,
+                  startDeg: (p as any).startDeg ?? 0,
+                  endDeg: (p as any).endDeg ?? 0,
                 }));
                 onRecordChange("Set Start Linear");
               },
@@ -2388,13 +2435,16 @@
           }
         } else if (parsed.type === "obstacle") {
           const { shapeIndex } = parsed;
+          if (shapeIndex === undefined) return;
           menuItems.push({ label: "Obstacle", disabled: true });
           menuItems.push({ separator: true });
           menuItems.push({
             label: shapes[shapeIndex].locked ? "Unlock" : "Lock",
             onClick: () => {
               shapesStore.update((s) => {
-                s[shapeIndex].locked = !s[shapeIndex].locked;
+                if (s[shapeIndex]) {
+                  s[shapeIndex].locked = !s[shapeIndex].locked;
+                }
                 return s;
               });
               onRecordChange("Toggle Obstacle Lock");
@@ -2406,7 +2456,9 @@
             onClick: () => {
               shapesStore.update((s) => {
                 const newShapes = [...s];
-                newShapes.splice(shapeIndex, 1);
+                if (typeof shapeIndex === "number") {
+                  newShapes.splice(shapeIndex, 1);
+                }
                 return newShapes;
               });
               onRecordChange("Delete Obstacle");
