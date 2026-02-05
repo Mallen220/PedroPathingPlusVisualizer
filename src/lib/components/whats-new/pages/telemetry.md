@@ -7,6 +7,7 @@ Validate your autonomous routines by comparing your planned path against real-wo
 The visualizer supports both **CSV** and **JSON** file formats.
 
 ### CSV Format
+
 Your CSV file should have a header row (optional but recommended) and columns for time, x, y, and heading.
 
 ```csv
@@ -17,11 +18,13 @@ time, x, y, heading
 ```
 
 The importer tries to auto-detect columns, but generally expects:
+
 - **Time**: Seconds or milliseconds
 - **X / Y**: Field coordinates (inches)
 - **Heading**: Robot heading in radians or degrees
 
 ### JSON Format
+
 For JSON, provide an array of objects:
 
 ```json

@@ -1,3 +1,4 @@
+// Copyright 2026 Matthew Allen. Licensed under the Apache License, Version 2.0.
 import { describe, it, expect } from "vitest";
 import { highlightAndSplit } from "./htmlHighlighter";
 
@@ -46,7 +47,7 @@ describe("highlightAndSplit", () => {
   });
 
   it("should handle empty input", () => {
-      const lines = highlightAndSplit("");
-      expect(lines).toEqual([]);
+    const lines = highlightAndSplit("");
+    expect(lines).toEqual([]);
   });
 });
