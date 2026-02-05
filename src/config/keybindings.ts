@@ -878,4 +878,32 @@ export const DEFAULT_KEY_BINDINGS: KeyBinding[] = [
     action: "startTutorial",
     category: "Help",
   },
+  {
+    id: "select-next",
+    key: "alt+right",
+    description: "Select Next Item",
+    action: "selectNext",
+    category: "Navigation",
+  },
+  {
+    id: "select-prev",
+    key: "alt+left",
+    description: "Select Previous Item",
+    action: "selectPrev",
+    category: "Navigation",
+  },
+  {
+    id: "open-telemetry",
+    key: "alt+i",
+    description: "Import Telemetry",
+    action: "openTelemetry",
+    category: "Tools",
+  },
+  {
+    id: "open-strategy",
+    key: "alt+y",
+    description: "Open Strategy Sheet",
+    action: "openStrategy",
+    category: "Tools",
+  },
 ];

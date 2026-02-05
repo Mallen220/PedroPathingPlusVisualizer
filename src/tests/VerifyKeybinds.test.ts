@@ -17,4 +17,34 @@ describe("Keybindings", () => {
     expect(selectPrev).toBeDefined();
     expect(selectPrev?.key).toBe("ctrl+up, cmd+up, shift+tab");
   });
+
+  it("should include select-next and select-prev", () => {
+    const selectNext = DEFAULT_KEY_BINDINGS.find(
+      (b) => b.id === "select-next",
+    );
+    const selectPrev = DEFAULT_KEY_BINDINGS.find(
+      (b) => b.id === "select-prev",
+    );
+
+    expect(selectNext).toBeDefined();
+    expect(selectNext?.key).toBe("alt+right");
+
+    expect(selectPrev).toBeDefined();
+    expect(selectPrev?.key).toBe("alt+left");
+  });
+
+  it("should include open-telemetry and open-strategy", () => {
+    const openTelemetry = DEFAULT_KEY_BINDINGS.find(
+      (b) => b.id === "open-telemetry",
+    );
+    const openStrategy = DEFAULT_KEY_BINDINGS.find(
+      (b) => b.id === "open-strategy",
+    );
+
+    expect(openTelemetry).toBeDefined();
+    expect(openTelemetry?.key).toBe("alt+i");
+
+    expect(openStrategy).toBeDefined();
+    expect(openStrategy?.key).toBe("alt+y");
+  });
 });

@@ -2028,6 +2028,8 @@
     rotateField: () => rotateField(),
     toggleContinuousValidation: () => toggleContinuousValidation(),
     toggleOnionCurrentPath: () => toggleOnionCurrentPath(),
+    openTelemetry: () => showTelemetryDialog.set(true),
+    openStrategy: () => showStrategySheet.set(true),
     copyCode: () => {
       if (controlTabRef && controlTabRef.copyCode) {
         controlTabRef.copyCode();
