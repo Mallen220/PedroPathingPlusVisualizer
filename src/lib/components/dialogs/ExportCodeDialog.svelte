@@ -51,6 +51,8 @@
   let exportedCode = "";
   let currentLanguage: typeof java | typeof plaintext | typeof json = java;
   let copied = false;
+  let isLoading = false;
+  let isSaving = false;
   let dialogRef: HTMLDivElement;
   let scrollContainer: HTMLDivElement;
 
@@ -218,12 +220,19 @@
       }
     }
 
-    await refreshCode();
-
     isOpen = true;
+    isLoading = true;
+
+    // Allow UI to render the loading state before processing
     await tick();
     if (dialogRef) {
       dialogRef.focus();
+    }
+
+    try {
+      await refreshCode();
+    } finally {
+      isLoading = false;
     }
   }
 
@@ -241,32 +250,33 @@
       return;
     }
 
-    if (!electronAPI || !electronAPI.showSaveDialog || !electronAPI.writeFile) {
-      // Fallback for web: use download attribute trick via Blob
-      // But downloadTrajectory is specialized for JSON/PP usually, let's make a generic one.
-      const blob = new Blob([exportedCode], { type: "text/plain" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      let filename = "generated_code.txt";
-      if (exportFormat === "java" || exportFormat === "sequential") {
-        // Try to find class name or use default
-        // Regex to find 'class ClassName'
-        const match = exportedCode.match(/class\s+(\w+)/);
-        if (match) filename = `${match[1]}.java`;
-        else filename = "AutoPath.java";
-      } else if (exportFormat === "points") {
-        filename = "points.txt";
-      }
-      a.download = filename;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-      return;
-    }
-
+    isSaving = true;
     try {
+      if (!electronAPI || !electronAPI.showSaveDialog || !electronAPI.writeFile) {
+        // Fallback for web: use download attribute trick via Blob
+        // But downloadTrajectory is specialized for JSON/PP usually, let's make a generic one.
+        const blob = new Blob([exportedCode], { type: "text/plain" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        let filename = "generated_code.txt";
+        if (exportFormat === "java" || exportFormat === "sequential") {
+          // Try to find class name or use default
+          // Regex to find 'class ClassName'
+          const match = exportedCode.match(/class\s+(\w+)/);
+          if (match) filename = `${match[1]}.java`;
+          else filename = "AutoPath.java";
+        } else if (exportFormat === "points") {
+          filename = "points.txt";
+        }
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        return;
+      }
+
       let defaultName = "generated_code";
       let extensions = ["txt"];
       let nameFilter = "Text File";
@@ -294,6 +304,17 @@
     } catch (err) {
       console.error("Failed to save file:", err);
       alert("Failed to save file: " + (err as Error).message);
+    } finally {
+      isSaving = false;
+    }
+  }
+
+  async function handleExportPP() {
+    isSaving = true;
+    try {
+      await exportAsPP();
+    } finally {
+      isSaving = false;
     }
   }
 
@@ -714,6 +735,38 @@
 
       <!-- Code Content -->
       <div class="relative flex-1 min-h-0 bg-[#282b2e] overflow-hidden group">
+        {#if isLoading}
+          <div
+            class="absolute inset-0 z-50 flex items-center justify-center bg-[#282b2e]/50 backdrop-blur-sm"
+            transition:fade={{ duration: 150 }}
+          >
+            <div class="flex flex-col items-center gap-3">
+              <svg
+                class="animate-spin h-8 w-8 text-blue-500"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  class="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  stroke-width="4"
+                ></circle>
+                <path
+                  class="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                ></path>
+              </svg>
+              <span class="text-neutral-300 text-sm font-medium"
+                >Generating...</span
+              >
+            </div>
+          </div>
+        {/if}
         <div
           bind:this={scrollContainer}
           class="absolute inset-0 overflow-auto custom-scrollbar p-4 pb-20"
@@ -763,48 +816,98 @@
 
           {#if exportFormat !== "json"}
             <button
-              class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-neutral-700 dark:text-neutral-200 bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 rounded-lg transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-neutral-500"
+              class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-neutral-700 dark:text-neutral-200 bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 rounded-lg transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-neutral-500 disabled:opacity-50 disabled:cursor-not-allowed"
               on:click={handleSaveFile}
+              disabled={isSaving || isLoading}
               title="Save the generated content to a file"
             >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke-width="2"
-                stroke="currentColor"
-                class="size-4"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M12 12.75l-3-3m3 3 3-3m-3 3V3"
-                />
-              </svg>
-              Save to File
+              {#if isSaving}
+                <svg
+                  class="animate-spin h-4 w-4 text-neutral-700 dark:text-neutral-200"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    class="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    stroke-width="4"
+                  ></circle>
+                  <path
+                    class="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  ></path>
+                </svg>
+                <span>Saving...</span>
+              {:else}
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke-width="2"
+                  stroke="currentColor"
+                  class="size-4"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M12 12.75l-3-3m3 3 3-3m-3 3V3"
+                  />
+                </svg>
+                <span>Save to File</span>
+              {/if}
             </button>
           {/if}
 
           {#if exportFormat === "json"}
             <button
-              class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-neutral-700 dark:text-neutral-200 bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 rounded-lg transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-neutral-500"
-              on:click={exportAsPP}
+              class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-neutral-700 dark:text-neutral-200 bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 rounded-lg transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-neutral-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              on:click={handleExportPP}
+              disabled={isSaving || isLoading}
             >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke-width="2"
-                stroke="currentColor"
-                class="size-4"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z"
-                />
-              </svg>
-              Download as .pp
+              {#if isSaving}
+                <svg
+                  class="animate-spin h-4 w-4 text-neutral-700 dark:text-neutral-200"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    class="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    stroke-width="4"
+                  ></circle>
+                  <path
+                    class="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  ></path>
+                </svg>
+                <span>Saving...</span>
+              {:else}
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke-width="2"
+                  stroke="currentColor"
+                  class="size-4"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z"
+                  />
+                </svg>
+                <span>Download as .pp</span>
+              {/if}
             </button>
           {/if}
           <button
