@@ -20,6 +20,7 @@
   import FileManager from "./lib/FileManager.svelte";
   import SettingsDialog from "./lib/components/dialogs/SettingsDialog.svelte";
   import TelemetryDialog from "./lib/components/dialogs/TelemetryDialog.svelte";
+  import TransformDialog from "./lib/components/dialogs/TransformDialog.svelte";
   import PluginManagerDialog from "./lib/components/dialogs/PluginManagerDialog.svelte";
   import KeyboardShortcutsDialog from "./lib/components/dialogs/KeyboardShortcutsDialog.svelte";
   import ExportCodeDialog from "./lib/components/dialogs/ExportCodeDialog.svelte";
@@ -44,6 +45,7 @@
     currentDirectoryStore,
     showPluginManager,
     showTelemetryDialog,
+    showTransformDialog,
   } from "./stores";
   import {
     startPointStore,
@@ -1386,6 +1388,7 @@
 
 <SettingsDialog bind:isOpen={$showSettings} bind:settings={$settingsStore} />
 <TelemetryDialog bind:isOpen={$showTelemetryDialog} />
+<TransformDialog bind:isOpen={$showTransformDialog} {recordChange} />
 <KeyboardShortcutsDialog
   bind:isOpen={$showShortcuts}
   bind:settings={$settingsStore}
