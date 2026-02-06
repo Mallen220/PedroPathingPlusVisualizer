@@ -5,6 +5,7 @@ import type { CollisionMarker, Notification, FieldView } from "./types";
 // Math tools stores
 export const showRuler = writable(false);
 export const showProtractor = writable(false);
+export const showRobot = writable(true);
 export const showGrid = writable(false);
 export const protractorLockToRobot = writable(true);
 export const gridSize = writable(12);
