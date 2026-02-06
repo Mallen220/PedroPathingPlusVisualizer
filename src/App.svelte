@@ -2,6 +2,7 @@
 <script lang="ts">
   import { onMount, onDestroy } from "svelte";
   import { get } from "svelte/store";
+  import { fade, fly } from "svelte/transition";
   import * as d3 from "d3";
   import { debounce } from "lodash";
 
@@ -11,6 +12,7 @@
   import FieldRenderer from "./lib/components/FieldRenderer.svelte";
   import KeyboardShortcuts from "./lib/components/KeyboardShortcuts.svelte";
   import ExportGifDialog from "./lib/components/dialogs/ExportGifDialog.svelte";
+  import OptimizationDialog from "./lib/components/dialogs/OptimizationDialog.svelte";
   import PathStatisticsDialog from "./lib/components/dialogs/PathStatisticsDialog.svelte";
   import NotificationToast from "./lib/components/NotificationToast.svelte";
   import OnboardingTutorial from "./lib/components/OnboardingTutorial.svelte";
@@ -33,6 +35,7 @@
     showSettings,
     isPresentationMode,
     showExportGif,
+    showOptimizationDialog,
     showStrategySheet,
     showShortcuts,
     exportDialogState,
@@ -1332,6 +1335,39 @@
     {electronAPI}
     on:close={() => showExportGif.set(false)}
   />
+{/if}
+
+{#if $showOptimizationDialog}
+  <div
+    class="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 bg-black/50 backdrop-blur-sm"
+    role="dialog"
+    aria-modal="true"
+    transition:fade={{ duration: 150 }}
+    on:click|self={() => showOptimizationDialog.set(false)}
+  >
+    <div
+      class="w-full max-w-2xl bg-white dark:bg-neutral-800 rounded-xl shadow-2xl p-6 border border-neutral-200 dark:border-neutral-700"
+      transition:fly={{ y: 20, duration: 200 }}
+    >
+      <OptimizationDialog
+        isOpen={true}
+        startPoint={$startPointStore}
+        lines={$linesStore}
+        settings={$settingsStore}
+        sequence={$sequenceStore}
+        shapes={$shapesStore}
+        onApply={(newLines) => {
+          linesStore.set(newLines);
+          recordChange("Optimize Path");
+          showOptimizationDialog.set(false);
+        }}
+        onPreviewChange={(lines) => {
+          previewOptimizedLines = lines;
+        }}
+        onClose={() => showOptimizationDialog.set(false)}
+      />
+    </div>
+  </div>
 {/if}
 
 {#if $showStrategySheet && fieldRenderer}

@@ -100,36 +100,6 @@
     activeTab = "path";
   }
 
-  export async function openAndStartOptimization() {
-    if (activeTabInstance && activeTabInstance.openAndStartOptimization) {
-      return await activeTabInstance.openAndStartOptimization();
-    }
-  }
-
-  export function stopOptimization() {
-    if (activeTabInstance && activeTabInstance.stopOptimization) {
-      activeTabInstance.stopOptimization();
-    }
-  }
-
-  export function applyOptimization() {
-    if (activeTabInstance && activeTabInstance.applyOptimization) {
-      activeTabInstance.applyOptimization();
-    }
-  }
-
-  export function discardOptimization() {
-    if (activeTabInstance && activeTabInstance.discardOptimization) {
-      activeTabInstance.discardOptimization();
-    }
-  }
-
-  export function retryOptimization() {
-    if (activeTabInstance && activeTabInstance.retryOptimization) {
-      activeTabInstance.retryOptimization();
-    }
-  }
-
   export function copyCode() {
     if (activeTabInstance && activeTabInstance.copyCode) {
       activeTabInstance.copyCode();
@@ -146,18 +116,6 @@
     if (activeTabInstance && activeTabInstance.copyTable) {
       activeTabInstance.copyTable();
     }
-  }
-
-  export function getOptimizationStatus() {
-    if (activeTabInstance && activeTabInstance.getOptimizationStatus) {
-      return activeTabInstance.getOptimizationStatus();
-    }
-    return {
-      isOpen: false,
-      isRunning: false,
-      optimizedLines: null,
-      optimizationFailed: false,
-    };
   }
 
   // --- Methods delegating to PathTab ---

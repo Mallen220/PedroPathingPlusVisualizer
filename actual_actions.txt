@@ -1,0 +1,178 @@
+        "https://github.com/Mallen220/PedroPathingPlusVisualizer/issues";
+        const themes: ("light" | "dark" | "auto")[] = ["light", "dark", "auto"];
+        exportDialogState.update((s) => ({ ...s, isOpen: false }));
+        focusRequest.set({ field: "heading", timestamp: Date.now(), id: sel });
+        focusRequest.set({ field: "x", timestamp: Date.now(), id: sel });
+        return { ...s, followRobot: newVal };
+        return { ...s, theme: themes[nextIndex] };
+        settingsStore.update((s) => ({ ...s, autosaveMode: "change" }));
+        settingsStore.update((s) => ({ ...s, autosaveMode: "close" }));
+        settingsStore.update((s) => ({ ...s, autosaveMode: "never" }));
+      exportDialogState.set({ isOpen: true, format: "points" }),
+      exportDialogState.set({ isOpen: true, format: "sequential" }),
+      focusRequest.set({ field: "heading", timestamp: Date.now() }),
+    .map((s: any) => ({
+  $: actions = {
+  $: lineCommands = lines.map((l, i) => ({
+  $: rotateCommands = sequence
+  $: waitCommands = sequence
+aVelocity
+action
+addControlPoint
+addEventMarker
+addNewLine
+addObstacle
+addPathAtStart
+addRotate
+addRotateAtStart
+addWait
+addWaitAtStart
+autosaveInterval
+autosaveMode
+cancelDialog
+category
+clearObstacles
+confirmDialog
+copy
+copyCode
+copyPathJson
+copyTable
+cut
+cycleFieldMap
+cycleGridSize
+cycleGridSizeReverse
+cycleRobotProfile
+cycleTabNext
+cycleTabPrev
+cycleTheme
+decreasePlaybackSpeed
+decreaseValue
+deselectAll
+downloadJava
+duplicate
+editItem
+exportGif
+exportJava
+exportPP
+exportPoints
+exportSequential
+field
+focusCodeEditor
+focusHeading
+focusName
+focusPathList
+focusX
+focusY
+id
+increasePlaybackSpeed
+increaseValue
+kFriction
+keyBindings
+label
+maxAcceleration
+maxDeceleration
+maxVelocity
+message
+moveItemDown
+moveItemUp
+movePointDown
+movePointLeft
+movePointRight
+movePointUp
+newProject
+openDocs
+openFile
+openSettings
+openWhatsNew
+optimizeApply
+optimizeDiscard
+optimizeRetry
+optimizeStart
+optimizeStop
+panToEnd
+panToStart
+panViewDown
+panViewLeft
+panViewRight
+panViewUp
+paste
+rLength
+rWidth
+redo
+removeControlPoint
+removeSelected
+reportIssue
+resetAnimation
+resetKeybinds
+resetPlaybackSpeed
+resetSettings
+resetStartPoint
+restrictDraggingToField
+robotImage
+rotateField
+saveFileAs
+saveProject
+selectFirst
+selectLast
+selectNext
+selectNextSequence
+selectPrev
+selectPrevSequence
+selectTabCode
+selectTabField
+selectTabPaths
+selectTabTable
+setAutoSave1m
+setAutoSave5m
+setAutoSaveChange
+setAutoSaveClose
+setAutoSaveNever
+setAutosave
+setFileManagerDirectory
+setTheme
+setThemeDark
+setThemeLight
+showDebugSequence
+showHelp
+showOnionLayers
+showVelocityHeatmap
+snapSelection
+startTutorial
+stepBackward
+stepForward
+timeout
+timestamp
+toggleCollapseAll
+toggleCollapseSelected
+toggleCommandPalette
+toggleContinuousValidation
+toggleDebugSequence
+toggleDiff
+toggleDragRestriction
+toggleFieldBoundaries
+toggleFileManager
+toggleFollowRobot
+toggleGrid
+toggleHeadingMode
+toggleLock
+toggleOnion
+toggleOnionCurrentPath
+togglePlay
+togglePluginManager
+togglePresentationMode
+toggleProtractor
+toggleReverse
+toggleRuler
+toggleSidebar
+toggleSnap
+toggleStats
+toggleVelocityHeatmap
+type
+undo
+validateFieldBoundaries
+validatePath
+xVelocity
+yVelocity
+zoomIn
+zoomOut
+zoomReset

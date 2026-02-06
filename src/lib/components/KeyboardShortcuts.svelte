@@ -11,6 +11,7 @@
     showProtractor,
     showShortcuts,
     showSettings,
+    showOptimizationDialog,
     isPresentationMode,
     selectedPointId,
     selectedLineId,
@@ -1716,31 +1717,12 @@
     resetPlaybackSpeed: () => resetPlaybackSpeed(),
     toggleProtractor: () => showProtractor.update((v) => !v),
     optimizeStart: () => {
-      if (controlTabRef?.openAndStartOptimization)
-        controlTabRef.openAndStartOptimization();
+      showOptimizationDialog.set(true);
     },
-    optimizeStop: () => {
-      if (controlTabRef?.getOptimizationStatus?.().isRunning)
-        controlTabRef.stopOptimization();
-    },
-    optimizeApply: () => {
-      const status = controlTabRef?.getOptimizationStatus?.();
-      if (status?.optimizedLines && !status.optimizationFailed)
-        controlTabRef.applyOptimization();
-    },
-    optimizeDiscard: () => {
-      const status = controlTabRef?.getOptimizationStatus?.();
-      if (status?.optimizedLines || status?.optimizationFailed)
-        controlTabRef.discardOptimization();
-    },
-    optimizeRetry: () => {
-      const status = controlTabRef?.getOptimizationStatus?.();
-      if (
-        !status?.isRunning &&
-        (status?.optimizedLines || status?.optimizationFailed)
-      )
-        controlTabRef.retryOptimization();
-    },
+    optimizeStop: () => {}, // Handled by dialog UI
+    optimizeApply: () => {}, // Handled by dialog UI
+    optimizeDiscard: () => {}, // Handled by dialog UI
+    optimizeRetry: () => {}, // Handled by dialog UI
     selectTabPaths: () => (activeControlTab = "path"),
     selectTabField: () => (activeControlTab = "field"),
     selectTabTable: () => (activeControlTab = "table"),

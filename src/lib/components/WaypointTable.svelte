@@ -20,9 +20,9 @@
     selectedLineId,
     selectedPointId,
     focusRequest,
+    showOptimizationDialog,
   } from "../../stores";
   import { slide } from "svelte/transition";
-  import OptimizationDialog from "./dialogs/OptimizationDialog.svelte";
   import { tick } from "svelte";
   import { tooltipPortal } from "../actions/portal";
   import ObstaclesSection from "./sections/ObstaclesSection.svelte";
@@ -57,15 +57,8 @@
   export let lines: Line[];
   export let sequence: SequenceItem[];
   export let recordChange: () => void;
-  // Handler passed from parent to toggle optimization dialog
-  export let onToggleOptimization: () => void;
   export let onValidate: (() => void) | null = null;
 
-  // Props for inline optimization panel
-  export let optimizationOpen: boolean = false;
-  export let handleOptimizationApply: (
-    newLines: import("../../types/index").Line[],
-  ) => void;
   export let onPreviewChange: (
     lines: import("../../types/index").Line[] | null,
   ) => void;
@@ -110,46 +103,6 @@
       destroy() {
         unsubscribe();
       },
-    };
-  }
-
-  // Optimization dialog refs and programmatic control
-  let optDialogRef: any = null;
-  let optIsRunning: boolean = false;
-  let optOptimizedLines: Line[] | null = null;
-  let optFailed: boolean = false;
-
-  export async function openAndStartOptimization() {
-    optimizationOpen = true;
-    await tick();
-    if (optDialogRef && optDialogRef.startOptimization)
-      optDialogRef.startOptimization();
-  }
-
-  export function stopOptimization() {
-    if (optDialogRef && optDialogRef.stopOptimization)
-      optDialogRef.stopOptimization();
-  }
-
-  export function applyOptimization() {
-    if (optDialogRef && optDialogRef.handleApply) optDialogRef.handleApply();
-  }
-
-  export function discardOptimization() {
-    if (optDialogRef && optDialogRef.handleClose) optDialogRef.handleClose();
-  }
-
-  export function retryOptimization() {
-    if (optDialogRef && optDialogRef.startOptimization)
-      optDialogRef.startOptimization();
-  }
-
-  export function getOptimizationStatus() {
-    return {
-      isOpen: optimizationOpen,
-      isRunning: optIsRunning,
-      optimizedLines: optOptimizedLines,
-      optimizationFailed: optFailed,
     };
   }
 
@@ -1148,7 +1101,7 @@
       <button
         title={`Optimize Path${getShortcutFromSettings(settings, "optimize-start")}`}
         aria-label="Optimize Path"
-        on:click={() => onToggleOptimization && onToggleOptimization()}
+        on:click={() => showOptimizationDialog.set(true)}
         class="flex flex-row items-center gap-1 hover:bg-neutral-200 dark:hover:bg-neutral-800 px-2 py-1 rounded transition-colors text-purple-500 focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:outline-none"
       >
         <span>Optimize</span>
@@ -1179,29 +1132,6 @@
       </div>
       <div>Missing: {JSON.stringify(debugMissing)}</div>
       <div>Invalid refs: {JSON.stringify(debugInvalidRefs)}</div>
-    </div>
-  {/if}
-
-  {#if optimizationOpen}
-    <div
-      class="w-full border border-neutral-200 dark:border-neutral-700 rounded-lg bg-neutral-100 dark:bg-neutral-800 p-4"
-      transition:slide
-    >
-      <OptimizationDialog
-        bind:this={optDialogRef}
-        bind:isRunning={optIsRunning}
-        bind:optimizedLines={optOptimizedLines}
-        bind:optimizationFailed={optFailed}
-        isOpen={true}
-        {startPoint}
-        {lines}
-        {settings}
-        {sequence}
-        {shapes}
-        onApply={handleOptimizationApply}
-        {onPreviewChange}
-        onClose={() => onToggleOptimization && onToggleOptimization()}
-      />
     </div>
   {/if}
 

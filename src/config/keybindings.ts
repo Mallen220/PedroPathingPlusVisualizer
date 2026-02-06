@@ -816,6 +816,20 @@ export const DEFAULT_KEY_BINDINGS: KeyBinding[] = [
     category: "View",
   },
   {
+    id: "select-next",
+    key: "",
+    description: "Select Next Element",
+    action: "selectNext",
+    category: "Editing",
+  },
+  {
+    id: "select-prev",
+    key: "",
+    description: "Select Previous Element",
+    action: "selectPrev",
+    category: "Editing",
+  },
+  {
     id: "select-last",
     key: "shift+end",
     description: "Select Last Point",

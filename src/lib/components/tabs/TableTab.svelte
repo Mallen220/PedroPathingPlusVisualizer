@@ -21,7 +21,6 @@
   export let isActive: boolean = false;
 
   let waypointTableRef: any = null;
-  let optimizationOpen = false;
 
   let collapsedObstacles = shapes.map(() => true);
   $: if (shapes.length !== collapsedObstacles.length) {
@@ -32,59 +31,11 @@
     validatePath(startPoint, lines, settings, sequence, shapes);
   }
 
-  function handleOptimizationApply(newLines: Line[]) {
-    lines = newLines;
-    recordChange?.();
-  }
-
   // Exported methods
   export function copyTable() {
     if (waypointTableRef && waypointTableRef.copyTableToClipboard) {
       waypointTableRef.copyTableToClipboard();
     }
-  }
-
-  export function openAndStartOptimization() {
-    if (waypointTableRef && waypointTableRef.openAndStartOptimization) {
-      return waypointTableRef.openAndStartOptimization();
-    }
-    optimizationOpen = true;
-  }
-
-  export function stopOptimization() {
-    if (waypointTableRef && waypointTableRef.stopOptimization) {
-      waypointTableRef.stopOptimization();
-    }
-  }
-
-  export function applyOptimization() {
-    if (waypointTableRef && waypointTableRef.applyOptimization) {
-      waypointTableRef.applyOptimization();
-    }
-  }
-
-  export function discardOptimization() {
-    if (waypointTableRef && waypointTableRef.discardOptimization) {
-      waypointTableRef.discardOptimization();
-    }
-  }
-
-  export function retryOptimization() {
-    if (waypointTableRef && waypointTableRef.retryOptimization) {
-      waypointTableRef.retryOptimization();
-    }
-  }
-
-  export function getOptimizationStatus() {
-    if (waypointTableRef && waypointTableRef.getOptimizationStatus) {
-      return waypointTableRef.getOptimizationStatus();
-    }
-    return {
-      isOpen: optimizationOpen,
-      isRunning: false,
-      optimizedLines: null,
-      optimizationFailed: false,
-    };
   }
 </script>
 
@@ -96,10 +47,7 @@
     bind:lines
     bind:sequence
     {recordChange}
-    onToggleOptimization={() => (optimizationOpen = !optimizationOpen)}
     onValidate={handleValidate}
-    {optimizationOpen}
-    {handleOptimizationApply}
     onPreviewChange={onPreviewChange || (() => {})}
     bind:shapes
     bind:collapsedObstacles

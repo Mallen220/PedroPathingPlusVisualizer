@@ -1,0 +1,133 @@
+        "https://github.com/Mallen220/PedroPathingPlusVisualizer/issues";
+        const themes: ("light" | "dark" | "auto")[] = ["light", "dark", "auto"];
+        exportDialogState.update((s) => ({ ...s, isOpen: false }));
+        focusRequest.set({ field: "heading", timestamp: Date.now(), id: sel });
+        focusRequest.set({ field: "x", timestamp: Date.now(), id: sel });
+        return { ...s, theme: themes[nextIndex] };
+        settingsStore.update((s) => ({ ...s, autosaveMode: "change" }));
+        settingsStore.update((s) => ({ ...s, autosaveMode: "close" }));
+        settingsStore.update((s) => ({ ...s, autosaveMode: "never" }));
+      exportDialogState.set({ isOpen: true, format: "points" }),
+      exportDialogState.set({ isOpen: true, format: "sequential" }),
+      focusRequest.set({ field: "heading", timestamp: Date.now() }),
+  $: actions = {
+addControlPoint
+addEventMarker
+addNewLine
+addObstacle
+addPathAtStart
+addRotate
+addRotateAtStart
+addWait
+addWaitAtStart
+autosaveInterval
+autosaveMode
+clearObstacles
+copy
+copyPathJson
+cut
+cycleGridSize
+cycleGridSizeReverse
+cycleTabNext
+cycleTabPrev
+cycleTheme
+decreasePlaybackSpeed
+decreaseValue
+deselectAll
+duplicate
+editItem
+exportGif
+exportJava
+exportPP
+exportPoints
+exportSequential
+field
+focusHeading
+focusName
+focusX
+focusY
+id
+increasePlaybackSpeed
+increaseValue
+keyBindings
+moveItemDown
+moveItemUp
+movePointDown
+movePointLeft
+movePointRight
+movePointUp
+newProject
+openDocs
+openFile
+openSettings
+openWhatsNew
+optimizeApply
+optimizeDiscard
+optimizeRetry
+optimizeStart
+optimizeStop
+panToEnd
+panToStart
+panViewDown
+panViewLeft
+panViewRight
+panViewUp
+paste
+redo
+removeControlPoint
+removeSelected
+reportIssue
+resetAnimation
+resetKeybinds
+resetPlaybackSpeed
+resetSettings
+resetStartPoint
+restrictDraggingToField
+saveFileAs
+saveProject
+selectFirst
+selectLast
+selectNext
+selectNextSequence
+selectPrev
+selectPrevSequence
+selectTabCode
+selectTabField
+selectTabPaths
+selectTabTable
+setAutosave
+setFileManagerDirectory
+setTheme
+showDebugSequence
+showHelp
+showOnionLayers
+showVelocityHeatmap
+snapSelection
+stepBackward
+stepForward
+timestamp
+toggleCollapseAll
+toggleCollapseSelected
+toggleCommandPalette
+toggleDebugSequence
+toggleDragRestriction
+toggleFieldBoundaries
+toggleFileManager
+toggleGrid
+toggleHeadingMode
+toggleLock
+toggleOnion
+togglePlay
+togglePresentationMode
+toggleProtractor
+toggleReverse
+toggleSidebar
+toggleSnap
+toggleStats
+toggleVelocityHeatmap
+undo
+validateFieldBoundaries
+validatePath
+zoomIn
+zoomOut
+zoomReset
