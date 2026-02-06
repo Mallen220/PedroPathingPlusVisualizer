@@ -177,6 +177,13 @@ export const DEFAULT_KEY_BINDINGS: KeyBinding[] = [
     category: "Editing",
   },
   {
+    id: "cycle-path-color",
+    key: "shift+k, alt+c",
+    description: "Cycle Path Color",
+    action: "cyclePathColor",
+    category: "Editing",
+  },
+  {
     id: "deselect-all",
     key: "escape",
     description: "Deselect all",
@@ -353,6 +360,13 @@ export const DEFAULT_KEY_BINDINGS: KeyBinding[] = [
     key: "v",
     description: "Toggle Velocity Heatmap",
     action: "toggleVelocityHeatmap",
+    category: "View",
+  },
+  {
+    id: "toggle-robot-visibility",
+    key: "alt+i",
+    description: "Toggle Robot Visibility",
+    action: "toggleRobotVisibility",
     category: "View",
   },
 

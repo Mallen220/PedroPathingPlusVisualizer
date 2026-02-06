@@ -22,6 +22,7 @@
     fieldViewStore,
     pluginRedrawTrigger,
     notification,
+    showRobot,
   } from "../../stores";
   import {
     hookRegistry,
@@ -2622,7 +2623,7 @@
       />
     {/if}
     <MathTools {x} {y} {twoElement} {robotXY} />
-    {#if !isDiffMode}
+    {#if !isDiffMode && $showRobot}
       <img
         src={settings.robotImage || "/robot.png"}
         alt="Robot"

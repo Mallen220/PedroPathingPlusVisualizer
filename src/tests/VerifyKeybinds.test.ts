@@ -17,4 +17,22 @@ describe("Keybindings", () => {
     expect(selectPrev).toBeDefined();
     expect(selectPrev?.key).toBe("ctrl+up, cmd+up, shift+tab");
   });
+
+  it("should include cycle-path-color", () => {
+    const binding = DEFAULT_KEY_BINDINGS.find(
+      (b) => b.id === "cycle-path-color",
+    );
+    expect(binding).toBeDefined();
+    expect(binding?.key).toBe("shift+k, alt+c");
+    expect(binding?.action).toBe("cyclePathColor");
+  });
+
+  it("should include toggle-robot-visibility", () => {
+    const binding = DEFAULT_KEY_BINDINGS.find(
+      (b) => b.id === "toggle-robot-visibility",
+    );
+    expect(binding).toBeDefined();
+    expect(binding?.key).toBe("alt+i");
+    expect(binding?.action).toBe("toggleRobotVisibility");
+  });
 });

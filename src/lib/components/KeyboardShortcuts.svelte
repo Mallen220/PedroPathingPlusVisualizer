@@ -28,6 +28,7 @@
     showStrategySheet,
     showExportGif,
     notification,
+    showRobot,
   } from "../../stores";
   import {
     startPointStore,
@@ -1515,6 +1516,25 @@
     playbackSpeedStore.set(1.0);
   }
 
+  function cyclePathColor() {
+    if (isUIElementFocused()) return;
+    if ($selectedLineId) {
+      linesStore.update((l) => {
+        const newLines = [...l];
+        const idx = newLines.findIndex((line) => line.id === $selectedLineId);
+        if (idx !== -1) {
+          newLines[idx] = { ...newLines[idx], color: getRandomColor() };
+        }
+        return newLines;
+      });
+      recordChange("Cycle Path Color");
+    }
+  }
+
+  function toggleRobotVisibility() {
+    showRobot.update((v) => !v);
+  }
+
   // --- New Capabilities ---
 
   function snapSelection() {
@@ -2031,6 +2051,8 @@
     rotateField: () => rotateField(),
     toggleContinuousValidation: () => toggleContinuousValidation(),
     toggleOnionCurrentPath: () => toggleOnionCurrentPath(),
+    cyclePathColor: () => cyclePathColor(),
+    toggleRobotVisibility: () => toggleRobotVisibility(),
     copyCode: () => {
       if (controlTabRef && controlTabRef.copyCode) {
         controlTabRef.copyCode();
