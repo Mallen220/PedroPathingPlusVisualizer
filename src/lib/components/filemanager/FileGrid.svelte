@@ -17,7 +17,7 @@
     select: FileInfo;
     open: FileInfo;
     "rename-start": FileInfo;
-    "rename-save": string;
+    "rename-save": { file: FileInfo; name: string };
     "rename-cancel": void;
     "menu-action": { action: string; file: FileInfo };
   }>();
@@ -554,7 +554,11 @@
                   on:click|stopPropagation
                   class="w-full text-xs text-center border border-blue-400 rounded focus:outline-none dark:bg-neutral-700 py-0.5"
                   on:keydown={(e) => {
-                    if (e.key === "Enter") dispatch("rename-save", renameInput);
+                    if (e.key === "Enter")
+                      dispatch("rename-save", {
+                        file,
+                        name: renameInput,
+                      });
                     if (e.key === "Escape") dispatch("rename-cancel");
                   }}
                   on:blur={() => dispatch("rename-cancel")}

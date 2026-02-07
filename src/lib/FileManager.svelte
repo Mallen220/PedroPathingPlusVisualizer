@@ -497,6 +497,7 @@
 
   // File Operations
   async function renameFile(file: FileInfo, newName: string) {
+    console.log("Renaming file", file.path, "to", newName);
     renamingFile = null;
     const cleanName = newName.trim();
     if (!cleanName) return;
@@ -504,7 +505,15 @@
     const fileName = cleanName.endsWith(".pp") ? cleanName : cleanName + ".pp";
     if (fileName === file.name) return;
 
-    const newFilePath = path.join(currentDirectory, fileName);
+    // Use a simpler join that works for most OS cases or rely on backend
+    // Since we are mocking path.join, ensure we handle separators if needed
+    // But for now, we just pass the new full path.
+    // NOTE: path.join here is the mock one.
+    // If currentDirectory has backslashes (Windows), and we append with /, it might be weird but usually handled.
+    const newFilePath =
+      currentDirectory.endsWith("/") || currentDirectory.endsWith("\\")
+        ? currentDirectory + fileName
+        : currentDirectory + "/" + fileName;
 
     try {
       if (await electronAPI.fileExists(newFilePath)) {
@@ -512,16 +521,22 @@
         return;
       }
 
+      console.log("Calling electronAPI.renameFile", file.path, newFilePath);
       const result = await electronAPI.renameFile(file.path, newFilePath);
-      if (result.success) {
+      console.log("Rename result", result);
+
+      if (result && result.success) {
         if (selectedFile?.path === file.path) {
           selectedFile = { ...selectedFile, name: fileName, path: newFilePath };
           currentFilePath.set(newFilePath);
         }
         showToast(`Renamed to: ${fileName}`, "success");
         await refreshDirectory();
+      } else {
+        showToast("Rename reported failure without error", "error");
       }
     } catch (error) {
+      console.error("Rename failed", error);
       showToast(`Failed to rename: ${getErrorMessage(error)}`, "error");
     }
   }
@@ -1013,8 +1028,8 @@
         {renamingFile}
         on:select={(e) => (selectedFile = e.detail)}
         on:open={(e) => loadFile(e.detail)}
-        on:rename-save={(e) =>
-          renamingFile && renameFile(renamingFile, e.detail)}
+        on:rename-save={(e) => renameFile(e.detail.file, e.detail.name)}
+        on:rename-save={(e) => renameFile(e.detail.file, e.detail.name)}
         on:rename-cancel={() => (renamingFile = null)}
         on:menu-action={handleMenuAction}
       />
