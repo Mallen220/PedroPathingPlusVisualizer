@@ -1059,8 +1059,6 @@
         </svg>
       </button>
 
-
-
       <!-- GitHub Repo Link -->
       <a
         target="_blank"
