@@ -17,3 +17,8 @@ Action: Always add explicit `focus-visible` styles (e.g., `focus-visible:ring`) 
 
 Learning: Implementing a fully accessible Searchable Dropdown (Combobox) requires careful coordination of `aria-activedescendant` and `keydown` event handling. A critical gotcha in testing is that Svelte transitions (like `slide`) keep elements in the DOM even after the state variable flips to false, causing `toBeInTheDocument` assertions to fail unexpectedly in unit tests.
 Action: Use `aria-expanded` on the input to verify state changes in tests rather than relying on the presence/absence of the listbox when transitions are involved, or mock the transitions entirely.
+
+## 2026-05-24 - Redundant UI State Constraints
+
+Learning: Discovered that business logic constraints (e.g., "cannot delete last item") are often duplicated in the UI layer (e.g., hiding the delete button entirely). Modifying only the controller logic is insufficient if the UI prevents the action from being triggered.
+Action: When relaxing constraints to enable empty states, check both the action handler (controller) and the conditional rendering logic (view) for redundant checks.

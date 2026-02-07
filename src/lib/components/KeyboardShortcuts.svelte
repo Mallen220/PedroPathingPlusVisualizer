@@ -902,7 +902,6 @@
 
       if (ptIdx === 0) {
         // End Point -> Remove line
-        if (lines.length <= 1) return;
         if (line.locked) return; // Don't allow keyboard delete of locked lines
         const removedId = line.id;
         linesStore.update((l) => l.filter((_, i) => i !== lineIndex));
