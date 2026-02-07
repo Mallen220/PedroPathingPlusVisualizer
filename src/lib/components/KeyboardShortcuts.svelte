@@ -50,7 +50,7 @@
   } from "../../utils/pointLinking";
   import { loadFile, loadRecentFile } from "../../utils/fileHandlers";
   import { validatePath } from "../../utils/validation";
-  import type { Line, SequenceItem } from "../../types/index";
+  import type { Line, SequenceItem, Shape } from "../../types/index";
   import { createTriangle } from "../../utils";
   import { toggleDiff } from "../../lib/diffStore";
   import {
@@ -98,9 +98,10 @@
   $: playbackSpeed = $playbackSpeedStore;
 
   // Internal State
-  let clipboard: SequenceItem | Line | null = null;
+  let clipboard: SequenceItem | Line | Shape | null = null;
   let showCommandPalette = false;
   let fileInput: HTMLInputElement;
+  let macroInput: HTMLInputElement;
   let fileCommands: {
     id: string;
     label: string;
@@ -504,6 +505,25 @@
       return;
     }
 
+    if (sel.startsWith("obstacle-")) {
+      const parts = sel.split("-");
+      const shapeIdx = Number(parts[1]);
+      const shape = shapes[shapeIdx];
+      if (shape) {
+        const newShape = JSON.parse(JSON.stringify(shape));
+        newShape.vertices.forEach((v: any) => {
+          v.x += 5;
+          v.y += 5;
+          if (v.x > FIELD_SIZE) v.x -= 10;
+          if (v.y > FIELD_SIZE) v.y -= 10;
+        });
+        shapesStore.update((s) => [...s, newShape]);
+        selectedPointId.set(`obstacle-${shapes.length}`);
+        recordChange("Duplicate Selection");
+        return;
+      }
+    }
+
     // Path duplication
     let targetLineId: string | null = null;
     if (sel.startsWith("point-")) {
@@ -627,6 +647,16 @@
       return;
     }
 
+    if (sel.startsWith("obstacle-")) {
+      const parts = sel.split("-");
+      const shapeIdx = Number(parts[1]);
+      const shape = shapes[shapeIdx];
+      if (shape) {
+        clipboard = JSON.parse(JSON.stringify(shape));
+      }
+      return;
+    }
+
     let targetLineId: string | null = null;
     if (sel.startsWith("point-")) {
       const parts = sel.split("-");
@@ -716,6 +746,22 @@
         sequenceStore.update((s) => [...s, newRotate]);
       }
       selectedPointId.set(`rotate-${newRotate.id}`);
+      recordChange("Paste");
+      return;
+    }
+
+    // Handle Obstacle
+    if ((clipboard as any).vertices && (clipboard as any).type) {
+      const shape = clipboard as Shape;
+      const newShape = JSON.parse(JSON.stringify(shape));
+      newShape.vertices.forEach((v: any) => {
+        v.x += 5;
+        v.y += 5;
+        if (v.x > FIELD_SIZE) v.x -= 10;
+        if (v.y > FIELD_SIZE) v.y -= 10;
+      });
+      shapesStore.update((s) => [...s, newShape]);
+      selectedPointId.set(`obstacle-${shapes.length}`);
       recordChange("Paste");
       return;
     }
@@ -888,6 +934,44 @@
       selectedPointId.set(null);
       recordChange("Delete Selection");
       return;
+    }
+
+    if (sel.startsWith("obstacle-")) {
+      const parts = sel.split("-");
+      const shapeIdx = Number(parts[1]);
+      const vertexIdx = parts[2] ? Number(parts[2]) : undefined;
+
+      const shape = shapes[shapeIdx];
+      if (shape) {
+        if (shape.locked) return;
+
+        if (vertexIdx === undefined) {
+          // Delete whole obstacle
+          shapesStore.update((s) => s.filter((_, i) => i !== shapeIdx));
+          selectedPointId.set(null);
+          recordChange("Delete Selection");
+          return;
+        } else {
+          // Delete vertex if > 3
+          if (shape.vertices.length > 3) {
+            shapesStore.update((s) => {
+              const newShapes = [...s];
+              // Immutable update: shallow copy the shape and vertices array
+              newShapes[shapeIdx] = {
+                ...newShapes[shapeIdx],
+                vertices: [...newShapes[shapeIdx].vertices],
+              };
+              newShapes[shapeIdx].vertices.splice(vertexIdx, 1);
+              return newShapes;
+            });
+            // If we deleted the selected vertex, we should probably select the obstacle or another vertex
+            // For now deselect
+            selectedPointId.set(`obstacle-${shapeIdx}`);
+            recordChange("Delete Selection");
+          }
+          return;
+        }
+      }
     }
 
     if (sel.startsWith("point-")) {
@@ -1107,6 +1191,7 @@
         );
     });
     shapes.forEach((s, sIdx) => {
+      items.push(`obstacle-${sIdx}`);
       s.vertices.forEach((_, vIdx) => items.push(`obstacle-${sIdx}-${vIdx}`));
     });
     return items;
@@ -1142,6 +1227,8 @@
       if (line && line.eventMarkers && line.eventMarkers[evIdx]) {
         controlTabRef.scrollToItem("event", line.eventMarkers[evIdx].id);
       }
+    } else if (sel.startsWith("obstacle-")) {
+      controlTabRef.scrollToItem("obstacle", sel);
     }
   }
 
@@ -1412,6 +1499,23 @@
           return s;
         }),
       );
+      recordChange("Toggle Lock");
+      return;
+    }
+
+    if (sel.startsWith("obstacle-")) {
+      const parts = sel.split("-");
+      const shapeIdx = Number(parts[1]);
+      shapesStore.update((s) => {
+        const newShapes = [...s];
+        if (newShapes[shapeIdx]) {
+          newShapes[shapeIdx] = {
+            ...newShapes[shapeIdx],
+            locked: !newShapes[shapeIdx].locked,
+          };
+        }
+        return newShapes;
+      });
       recordChange("Toggle Lock");
       return;
     }
@@ -1828,6 +1932,15 @@
     addObstacle: () => {
       shapesStore.update((s) => [...s, createTriangle(s.length)]);
       activeControlTab = "field";
+    },
+    addMacro: () => {
+      if (macroInput) macroInput.click();
+    },
+    focusObstacles: () => {
+      activeControlTab = "field";
+      if (controlTabRef && controlTabRef.expandObstacles) {
+        controlTabRef.expandObstacles();
+      }
     },
     focusName: () => {
       const sel = $selectedPointId || $selectedLineId;
@@ -2303,6 +2416,29 @@
     if (e.target.files && e.target.files.length > 0) {
       loadFile(e);
       // Reset value so we can load the same file again if needed
+      // @ts-ignore
+      e.target.value = "";
+    }
+  }}
+/>
+
+<input
+  bind:this={macroInput}
+  type="file"
+  accept=".pp"
+  class="hidden"
+  style="display:none;"
+  on:change={(e) => {
+    // @ts-ignore
+    if (e.target.files && e.target.files.length > 0) {
+      const file = e.target.files[0];
+      // Need electron path
+      const path = (file as any).path;
+      if (path && controlTabRef && controlTabRef.addMacroToSequence) {
+         controlTabRef.addMacroToSequence(path);
+      } else {
+         alert("Cannot load macro: File path unavailable or action not supported.");
+      }
       // @ts-ignore
       e.target.value = "";
     }

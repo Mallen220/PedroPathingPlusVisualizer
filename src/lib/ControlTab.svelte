@@ -179,6 +179,12 @@
     }
   }
 
+  export function addMacroToSequence(filePath: string, index?: number) {
+    if (tabInstances["path"] && tabInstances["path"].addMacroToSequence) {
+      tabInstances["path"].addMacroToSequence(filePath, index);
+    }
+  }
+
   export function moveSequenceItem(seqIndex: number, delta: number) {
     if (tabInstances["path"] && tabInstances["path"].moveSequenceItem) {
       tabInstances["path"].moveSequenceItem(seqIndex, delta);
@@ -188,6 +194,12 @@
   export function toggleCollapseSelected() {
     if (activeTabInstance && activeTabInstance.toggleCollapseSelected) {
       activeTabInstance.toggleCollapseSelected();
+    }
+  }
+
+  export function expandObstacles() {
+    if (tabInstances["field"] && tabInstances["field"].expandObstacles) {
+        tabInstances["field"].expandObstacles();
     }
   }
 
@@ -203,6 +215,12 @@
       await tick();
       if (tabInstances["field"] && tabInstances["field"].scrollToMarker) {
         tabInstances["field"].scrollToMarker(id);
+      }
+    } else if (type === "obstacle") {
+      activeTab = "field";
+      await tick();
+      if (tabInstances["field"] && tabInstances["field"].scrollToObstacle) {
+        tabInstances["field"].scrollToObstacle(id);
       }
     }
   }

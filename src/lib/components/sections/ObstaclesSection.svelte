@@ -237,6 +237,7 @@
       {:else}
         {#each shapes as shape, shapeIdx}
           <div
+            id="obstacle-header-{shapeIdx}"
             class="flex flex-col w-full justify-start items-start gap-1 p-2 border rounded-md border-neutral-300 dark:border-neutral-600 bg-neutral-50 dark:bg-neutral-900/30"
           >
             <div class="flex flex-row w-full justify-between items-center">

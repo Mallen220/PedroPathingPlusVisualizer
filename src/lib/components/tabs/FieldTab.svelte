@@ -44,7 +44,9 @@
   };
 
   $: if (shapes.length !== collapsedSections.obstacles.length) {
-    collapsedSections.obstacles = shapes.map(() => true);
+    // Only update if lengths mismatch, preserving existing state for common indices
+    const newCollapsed = shapes.map((_, i) => collapsedSections.obstacles[i] ?? true);
+    collapsedSections.obstacles = newCollapsed;
   }
 
   $: allCollapsed =
@@ -123,6 +125,32 @@
       } catch (e) {
         console.error("Error retrying field optimizer:", e);
       }
+    }
+  }
+
+  export function expandObstacles() {
+    collapsedSections.obstaclesSection = false;
+    // Also expand all obstacles? No, maybe just the section.
+    // collapsedSections.obstacles = shapes.map(() => false);
+    // Just section for now.
+  }
+
+  export async function scrollToObstacle(obstacleId: string) {
+    // obstacleId is likely "obstacle-IDX" or "obstacle-IDX-VERTEXIDX"
+    // We parse it to find index
+    const parts = obstacleId.split("-");
+    const shapeIdx = parseInt(parts[1]);
+    if (!isNaN(shapeIdx) && shapeIdx >= 0 && shapeIdx < shapes.length) {
+        expandObstacles();
+        // Also expand the specific obstacle
+        collapsedSections.obstacles[shapeIdx] = false;
+        await tick();
+
+        // Find element and scroll
+        const el = document.getElementById(`obstacle-header-${shapeIdx}`);
+        if (el) {
+            el.scrollIntoView({ behavior: "smooth", block: "center" });
+        }
     }
   }
 

@@ -170,6 +170,13 @@ export const DEFAULT_KEY_BINDINGS: KeyBinding[] = [
     category: "Editing",
   },
   {
+    id: "add-macro",
+    key: "alt+shift+a",
+    description: "Add Macro",
+    action: "addMacro",
+    category: "Editing",
+  },
+  {
     id: "focus-name",
     key: "f2, enter",
     description: "Rename selected item",
@@ -445,6 +452,27 @@ export const DEFAULT_KEY_BINDINGS: KeyBinding[] = [
     key: "ctrl+shift+tab",
     description: "Cycle tabs backward",
     action: "cycleTabPrev",
+    category: "Navigation",
+  },
+  {
+    id: "select-next",
+    key: "alt+right",
+    description: "Select Next Point/Obstacle",
+    action: "selectNext",
+    category: "Navigation",
+  },
+  {
+    id: "select-prev",
+    key: "alt+left",
+    description: "Select Previous Point/Obstacle",
+    action: "selectPrev",
+    category: "Navigation",
+  },
+  {
+    id: "focus-obstacles",
+    key: "alt+shift+o",
+    description: "Focus Obstacles Section",
+    action: "focusObstacles",
     category: "Navigation",
   },
 

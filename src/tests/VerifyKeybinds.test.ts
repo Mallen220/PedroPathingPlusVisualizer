@@ -35,4 +35,29 @@ describe("Keybindings", () => {
     expect(binding?.key).toBe("alt+i");
     expect(binding?.action).toBe("toggleRobotVisibility");
   });
+
+  it("should include select-next and select-prev", () => {
+    const selectNext = DEFAULT_KEY_BINDINGS.find((b) => b.id === "select-next");
+    const selectPrev = DEFAULT_KEY_BINDINGS.find((b) => b.id === "select-prev");
+
+    expect(selectNext).toBeDefined();
+    expect(selectNext?.key).toBe("alt+right");
+
+    expect(selectPrev).toBeDefined();
+    expect(selectPrev?.key).toBe("alt+left");
+  });
+
+  it("should include add-macro", () => {
+    const binding = DEFAULT_KEY_BINDINGS.find((b) => b.id === "add-macro");
+    expect(binding).toBeDefined();
+    expect(binding?.key).toBe("alt+shift+a");
+    expect(binding?.action).toBe("addMacro");
+  });
+
+  it("should include focus-obstacles", () => {
+    const binding = DEFAULT_KEY_BINDINGS.find((b) => b.id === "focus-obstacles");
+    expect(binding).toBeDefined();
+    expect(binding?.key).toBe("alt+shift+o");
+    expect(binding?.action).toBe("focusObstacles");
+  });
 });

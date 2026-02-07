@@ -241,7 +241,7 @@
     handleDragEnd();
   }
 
-  async function addMacroToSequence(filePath: string, index: number) {
+  export async function addMacroToSequence(filePath: string, index?: number) {
     const macroId = makeId();
     // Default name from filename
     let name = filePath.split(/[\\/]/).pop() || "Macro";
@@ -259,7 +259,7 @@
     await loadMacro(filePath);
 
     const newSeq = [...sequence];
-    if (index >= 0 && index <= newSeq.length) {
+    if (index !== undefined && index >= 0 && index <= newSeq.length) {
       newSeq.splice(index, 0, newItem);
     } else {
       newSeq.push(newItem);
