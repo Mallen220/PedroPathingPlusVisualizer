@@ -155,6 +155,15 @@
       isLocked = item.locked ?? false;
     }
 
+    if (
+      originElem?.tagName === "INPUT" ||
+      originElem?.tagName === "TEXTAREA" ||
+      originElem?.tagName === "SELECT"
+    ) {
+      e.preventDefault();
+      return;
+    }
+
     if (isLocked) {
       e.preventDefault();
       return;
