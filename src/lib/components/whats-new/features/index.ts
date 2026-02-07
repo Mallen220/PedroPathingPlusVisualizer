@@ -1,4 +1,4 @@
-// Copyright 2026 Matthew Allen. Licensed under the Apache License, Version 2.0.
+// Copyright 2026 Matthew Allen. Licensed under the Modified Apache License, Version 2.0.
 export interface FeatureHighlight {
   title: string;
   id: string; // unique id (e.g. "v1.5.1")
