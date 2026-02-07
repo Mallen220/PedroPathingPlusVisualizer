@@ -236,3 +236,10 @@ src/lib/components/whats-new/pages/telemetry.md
 src/utils/htmlHighlighter.test.ts
 src/utils/htmlHighlighter.ts
 src/tests/bench_heatmap.ts
+src/lib/components/ui/Button.svelte
+src/lib/components/ui/Card.svelte
+src/lib/components/ui/Input.svelte
+src/lib/components/ui/Select.svelte
+src/lib/components/ui/Toggle.svelte
+src/lib/components/ui/Tooltip.svelte
+src/lib/layouts/MainLayout.svelte

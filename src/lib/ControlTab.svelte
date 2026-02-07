@@ -58,6 +58,7 @@
   import { tabRegistry, timelineTransformerRegistry } from "./registries";
   import { diffMode } from "./diffStore";
   import { actionRegistry } from "./actionRegistry";
+  import Button from "./components/ui/Button.svelte";
 
   export let percent: number;
   export let playing: boolean;
@@ -66,8 +67,8 @@
   export let startPoint: Point;
   export let lines: Line[];
   export let sequence: SequenceItem[];
-  export const robotLength: number = 16; // Can be removed?
-  export const robotWidth: number = 16; // Can be removed?
+  export const robotLength: number = 16;
+  export const robotWidth: number = 16;
   export let robotXY: BasePoint;
   export let robotHeading: number;
   export let settings: Settings;
@@ -211,6 +212,7 @@
   $: timePrediction = calculatePathTime(startPoint, lines, settings, sequence);
 
   $: timelineItems = (() => {
+    // ... logic remains same ...
     const items: {
       type: "marker" | "wait" | "rotate" | "dot" | "macro";
       percent: number;
@@ -550,31 +552,29 @@
       >
         {#each $tabRegistry as tab (tab.id)}
           {#if tab.id !== "code" || settings?.autoExportCode}
-            <button
+            <Button
               role="tab"
               aria-selected={activeTab === tab.id}
               aria-controls="{tab.id}-panel"
               id="{tab.id}-tab"
-              class="flex-1 min-w-[80px] px-3 py-2 text-sm font-semibold rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-purple-500/50 flex items-center justify-center gap-2 {activeTab ===
-              tab.id
-                ? 'bg-white dark:bg-neutral-700 shadow-sm text-neutral-900 dark:text-white ring-1 ring-black/5 dark:ring-white/5'
-                : 'text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300 hover:bg-neutral-50/50 dark:hover:bg-neutral-700/50'}"
+              variant={activeTab === tab.id ? "outline" : "ghost"}
+              className={`flex-1 min-w-[80px] gap-2 ${activeTab === tab.id ? "bg-white dark:bg-neutral-700 shadow-sm text-neutral-900 dark:text-white" : ""}`}
               on:click={() => (activeTab = tab.id)}
             >
               {#if tab.icon}
                 {@html tab.icon}
               {/if}
               {tab.label}
-            </button>
+            </Button>
           {/if}
         {/each}
       </div>
-      <button
+      <Button
         id="stats-btn"
         on:click={() => (statsOpen = !statsOpen)}
-        class="flex-none flex items-center justify-center px-4 py-2 text-sm font-semibold rounded-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 border border-neutral-200 dark:border-neutral-700 hover:bg-neutral-50 dark:hover:bg-neutral-700 hover:text-neutral-900 dark:hover:text-neutral-200 gap-2 shadow-sm"
+        variant="outline"
+        className="flex-none gap-2 px-4"
         title={`Path Statistics${getShortcutFromSettings(settings, "toggle-stats")}`}
-        aria-label="View path statistics"
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -591,7 +591,7 @@
           />
         </svg>
         Stats
-      </button>
+      </Button>
     </div>
 
     <div

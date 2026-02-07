@@ -41,6 +41,7 @@
     updateLinkedWaits,
     updateLinkedRotations,
   } from "../../../utils/pointLinking";
+  import Button from "../ui/Button.svelte";
 
   export let startPoint: Point;
   export let lines: Line[];
@@ -891,7 +892,8 @@
   <div class="flex flex-row justify-center items-center gap-3 pt-4 flex-wrap">
     {#each Object.values($actionRegistry) as def (def.kind)}
       {#if def.createDefault || def.isPath}
-        <button
+        <Button
+          variant="custom"
           on:click={() => {
             if (def.isPath) addLine();
             else handleAddAction(def);
@@ -899,7 +901,7 @@
           title={def.isPath
             ? `Add Path${getShortcutFromSettings(settings, "add-path")}`
             : `Add ${def.label}`}
-          class={`flex items-center gap-2 px-4 py-2 text-sm font-medium text-white rounded-md shadow-sm transition-colors focus:outline-none focus:ring-2 ${getButtonColorClass(def.buttonColor || "gray")}`}
+          className={`flex items-center gap-2 px-4 py-2 text-sm font-medium text-white rounded-md shadow-sm transition-colors focus:outline-none focus:ring-2 ${getButtonColorClass(def.buttonColor || "gray")}`}
           aria-label={`Add ${def.label}`}
         >
           <!-- Icon -->
@@ -966,7 +968,7 @@
             </svg>
           {/if}
           Add {def.label}
-        </button>
+        </Button>
       {/if}
     {/each}
   </div>

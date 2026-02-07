@@ -6,6 +6,7 @@
   import { debounce } from "lodash";
 
   // Components
+  import MainLayout from "./lib/layouts/MainLayout.svelte";
   import ControlTab from "./lib/ControlTab.svelte";
   import Navbar from "./lib/Navbar.svelte";
   import FieldRenderer from "./lib/components/FieldRenderer.svelte";
@@ -525,15 +526,16 @@
   let statsOpen = false;
   let mainContentHeight = 0;
   let mainContentWidth = 0;
-  let mainContentDiv: HTMLDivElement;
   let innerWidth = 0;
   let innerHeight = 0;
-  let userFieldLimit: number | null = null;
-  let userFieldHeightLimit: number | null = null;
-  let resizeMode: "horizontal" | "vertical" | null = null;
+
+  // Resizing state moved to MainLayout, mostly.
+  // We still need isLargeScreen
   $: isLargeScreen = innerWidth >= 1024;
-  const MIN_SIDEBAR_WIDTH = 320;
-  const MIN_FIELD_PANE_WIDTH = 300;
+
+  // Field Draw Size logic partially moved to MainLayout
+  let leftPaneWidth = 0;
+  let fieldDrawSize = 0;
 
   // --- Animation State ---
   let animationController: ReturnType<typeof createAnimationController>;
@@ -1071,105 +1073,10 @@
     playbackSpeedStore.set(val);
   }
 
-  // --- Resizing Logic ---
-  // When in vertical (mobile) mode, hide the control tab from layout after
-  // its closing animation completes so the field can resize to the freed area.
-  let controlTabHidden = false;
-  let hideControlTabTimeout: ReturnType<typeof setTimeout> | null = null;
-
-  $: if (!isLargeScreen) {
-    // On small screens, when sidebar is closed, wait for animation then hide
-    if (!effectiveShowSidebar) {
-      if (hideControlTabTimeout) clearTimeout(hideControlTabTimeout);
-      hideControlTabTimeout = setTimeout(() => {
-        controlTabHidden = true;
-      }, 320); // slightly longer than the 300ms transition
-    } else {
-      if (hideControlTabTimeout) {
-        clearTimeout(hideControlTabTimeout);
-        hideControlTabTimeout = null;
-      }
-      controlTabHidden = false;
-    }
-  } else {
-    // Ensure visible on large screens
-    controlTabHidden = false;
-    if (hideControlTabTimeout) {
-      clearTimeout(hideControlTabTimeout);
-      hideControlTabTimeout = null;
-    }
-  }
-  $: if (userFieldLimit === null && mainContentWidth > 0 && isLargeScreen) {
-    userFieldLimit = mainContentWidth * 0.49;
-  }
-  $: if (
-    userFieldHeightLimit === null &&
-    mainContentHeight > 0 &&
-    !isLargeScreen
-  ) {
-    userFieldHeightLimit = mainContentHeight * 0.6;
-  }
-  $: leftPaneWidth = (() => {
-    if (!isLargeScreen) return mainContentWidth;
-    if (!effectiveShowSidebar) return mainContentWidth;
-    let target = userFieldLimit ?? mainContentWidth * 0.55;
-    const max = mainContentWidth - MIN_SIDEBAR_WIDTH;
-    const min = MIN_FIELD_PANE_WIDTH;
-    if (max < min) return mainContentWidth * 0.5;
-    return Math.max(min, Math.min(target, max));
-  })();
-  $: fieldDrawSize = (() => {
-    if (!isLargeScreen) {
-      const h = userFieldHeightLimit ?? mainContentHeight * 0.6;
-      return Math.min(innerWidth - 32, h - 16);
-    }
-    const avW = leftPaneWidth - 16;
-    const avH = mainContentHeight - 16;
-    return Math.max(100, Math.min(avW, avH));
-  })();
-
   $: fieldRenderWidth = $isPresentationMode ? mainContentWidth : fieldDrawSize;
   $: fieldRenderHeight = $isPresentationMode
     ? mainContentHeight
     : fieldDrawSize;
-
-  // Compute a target height for the field container so it can animate smoothly
-  // when the sidebar (control tab) opens/closes in vertical mode
-  $: fieldContainerTargetHeight = (() => {
-    if (isLargeScreen) return "100%";
-    // when sidebar is visible, reserve space for it (use userFieldHeightLimit or default fraction)
-    if (effectiveShowSidebar) {
-      const h = userFieldHeightLimit ?? mainContentHeight * 0.6;
-      // ensure we don't exceed the available height
-      const target = Math.min(h, mainContentHeight);
-      return `${Math.max(120, Math.floor(target))}px`;
-    } else {
-      // sidebar not shown -> full available height
-      return `${mainContentHeight}px`;
-    }
-  })();
-
-  function startResize(mode: "horizontal" | "vertical") {
-    if (
-      (mode === "horizontal" && (!isLargeScreen || !effectiveShowSidebar)) ||
-      (mode === "vertical" && (isLargeScreen || !effectiveShowSidebar))
-    )
-      return;
-    resizeMode = mode;
-  }
-  function handleResize(cx: number, cy: number) {
-    if (!resizeMode) return;
-    if (resizeMode === "horizontal") userFieldLimit = cx;
-    else if (resizeMode === "vertical" && mainContentDiv) {
-      const rect = mainContentDiv.getBoundingClientRect();
-      const nh = cy - rect.top;
-      const max = rect.height - 100;
-      userFieldHeightLimit = Math.max(200, Math.min(nh, max));
-    }
-  }
-  function stopResize() {
-    resizeMode = null;
-  }
 
   // --- Document Click Handler (Wait Selection) ---
   function handleDocClick(e: MouseEvent) {
@@ -1282,20 +1189,6 @@
   on:dragleave={handleDragLeave}
   on:dragover={handleDragOver}
   on:drop={handleDrop}
-  on:mouseup={stopResize}
-  on:mousemove={(e) => {
-    if (resizeMode) {
-      e.preventDefault();
-      handleResize(e.clientX, e.clientY);
-    }
-  }}
-  on:touchend={stopResize}
-  on:touchmove={(e) => {
-    if (resizeMode) {
-      const t = e.touches[0];
-      handleResize(t.clientX, t.clientY);
-    }
-  }}
 />
 
 <KeyboardShortcuts
@@ -1444,167 +1337,117 @@
   </div>
 {/if}
 
-<!-- Main Container -->
-<div
-  class="h-screen w-full flex flex-col overflow-hidden bg-neutral-100 dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100 font-sans"
+<MainLayout
+  bind:showSidebar
+  isPresentationMode={$isPresentationMode}
+  {isLargeScreen}
+  {innerWidth}
+  {innerHeight}
+  bind:controlTabContainer
+  bind:leftPaneWidth
+  bind:fieldDrawSize
+  bind:mainContentHeight
+  bind:mainContentWidth
+  sidebarClass={statsOpen ? "controlTabBlurred" : ""}
 >
-  {#if !$isPresentationMode}
-    <div class="flex-none z-50">
-      <svelte:component
-        this={$componentRegistry.Navbar || Navbar}
-        bind:lines={$linesStore}
-        bind:startPoint={$startPointStore}
-        bind:shapes={$shapesStore}
-        bind:sequence={$sequenceStore}
-        bind:settings={$settingsStore}
-        bind:robotLength
-        bind:robotWidth
-        bind:showSidebar
-        bind:isLargeScreen
-        saveProject={handleSaveProject}
-        resetProject={handleResetProject}
-        {saveFileAs}
-        {exportGif}
-        {undoAction}
-        {redoAction}
-        {recordChange}
-        {canUndo}
-        {canRedo}
-        {history}
-        on:previewOptimizedLines={handleNavbarPreviewChange}
-      />
-    </div>
-  {/if}
+  <div slot="navbar">
+    <svelte:component
+      this={$componentRegistry.Navbar || Navbar}
+      bind:lines={$linesStore}
+      bind:startPoint={$startPointStore}
+      bind:shapes={$shapesStore}
+      bind:sequence={$sequenceStore}
+      bind:settings={$settingsStore}
+      bind:robotLength
+      bind:robotWidth
+      bind:showSidebar
+      bind:isLargeScreen
+      saveProject={handleSaveProject}
+      resetProject={handleResetProject}
+      {saveFileAs}
+      {exportGif}
+      {undoAction}
+      {redoAction}
+      {recordChange}
+      {canUndo}
+      {canRedo}
+      {history}
+      on:previewOptimizedLines={handleNavbarPreviewChange}
+    />
+  </div>
 
   <div
-    class="flex-1 min-h-0 flex flex-col lg:flex-row items-stretch lg:overflow-hidden relative gap-0"
-    bind:clientHeight={mainContentHeight}
-    bind:clientWidth={mainContentWidth}
-    bind:this={mainContentDiv}
+    slot="field"
+    class="relative shadow-inner w-full h-full flex justify-center items-center"
   >
-    <!-- Field Container -->
-    <div
-      id="field-container"
-      class="flex-none flex justify-center items-center relative transition-all duration-300 ease-in-out bg-white dark:bg-black lg:dark:bg-black/40 overflow-hidden"
-      style={`
-        width: ${isLargeScreen && effectiveShowSidebar ? leftPaneWidth + "px" : "100%"};
-        height: ${isLargeScreen ? "100%" : fieldContainerTargetHeight};
-        min-height: ${!isLargeScreen ? (userFieldHeightLimit ? "0" : "60vh") : "0"};
-      `}
-    >
-      <div
-        class="relative shadow-inner w-full h-full flex justify-center items-center"
-      >
-        <svelte:component
-          this={$componentRegistry.FieldRenderer || FieldRenderer}
-          bind:this={fieldRenderer}
-          width={fieldRenderWidth}
-          height={fieldRenderHeight}
-          {timePrediction}
-          {committedRobotState}
-          {previewOptimizedLines}
-          {onRecordChange}
-        />
-      </div>
-    </div>
-
-    <!-- Resizer Handle (Desktop) -->
-    {#if isLargeScreen && effectiveShowSidebar && !$isPresentationMode}
-      <button
-        class="w-3 cursor-col-resize flex justify-center items-center hover:bg-purple-500/10 active:bg-purple-500/20 transition-colors select-none z-40 border-none bg-neutral-200 dark:bg-neutral-800 p-0 m-0 border-l border-r border-neutral-300 dark:border-neutral-700"
-        on:mousedown={() => startResize("horizontal")}
-        on:dblclick={() => {
-          userFieldLimit = null;
-        }}
-        aria-label="Resize Sidebar"
-        title="Drag to resize. Double-click to reset to default width"
-      >
-        <div
-          class="w-1 h-8 bg-neutral-400 dark:bg-neutral-600 rounded-full"
-        ></div>
-      </button>
-    {/if}
-
-    <!-- Resizer Handle (Mobile) -->
-    {#if !isLargeScreen && effectiveShowSidebar && !$isPresentationMode}
-      <button
-        class="h-3 w-full cursor-row-resize flex justify-center items-center hover:bg-purple-500/10 active:bg-purple-500/20 transition-colors select-none z-40 border-none bg-neutral-200 dark:bg-neutral-800 p-0 m-0 border-t border-b border-neutral-300 dark:border-neutral-700 touch-none"
-        on:mousedown={() => startResize("vertical")}
-        on:touchstart={(e) => {
-          e.preventDefault();
-          startResize("vertical");
-        }}
-        on:dblclick={() => {
-          userFieldHeightLimit = null;
-        }}
-        aria-label="Resize Tab"
-        title="Drag to resize. Double-click to reset to default height"
-      >
-        <div
-          class="h-1 w-8 bg-neutral-400 dark:bg-neutral-600 rounded-full"
-        ></div>
-      </button>
-    {/if}
-
-    <!-- Control Tab -->
-    <div
-      bind:this={controlTabContainer}
-      class="relative flex-1 h-auto lg:h-full min-h-0 min-w-0 transition-transform duration-300 ease-in-out transform bg-neutral-50 dark:bg-neutral-900"
-      class:translate-x-full={!effectiveShowSidebar && isLargeScreen}
-      class:translate-y-full={!effectiveShowSidebar && !isLargeScreen}
-      class:overflow-hidden={!effectiveShowSidebar}
-      class:hidden={controlTabHidden}
-      class:controlTabBlurred={statsOpen}
-    >
-      {#if statsOpen}
-        <div
-          class="control-tab-overlay absolute inset-0 z-40"
-          role="button"
-          aria-label="Dismiss statistics"
-          tabindex="0"
-          on:click={() => (statsOpen = false)}
-          on:keydown={(e) => {
-            if (e.key === "Enter" || e.key === " " || e.key === "Spacebar")
-              statsOpen = false;
-          }}
-        ></div>
-      {/if}
-
-      <svelte:component
-        this={$componentRegistry.ControlTab || ControlTab}
-        bind:this={controlTabRef}
-        bind:playing={$playingStore}
-        {play}
-        {pause}
-        bind:startPoint={$startPointStore}
-        bind:lines={$linesStore}
-        bind:sequence={$sequenceStore}
-        bind:robotLength
-        bind:robotWidth
-        bind:settings={$settingsStore}
-        bind:percent={$percentStore}
-        bind:robotXY={$robotXYStore}
-        bind:robotHeading={$robotHeadingStore}
-        bind:shapes={$shapesStore}
-        {handleSeek}
-        bind:loopAnimation={$loopAnimationStore}
-        {resetAnimation}
-        {recordChange}
-        playbackSpeed={$playbackSpeedStore}
-        {resetPlaybackSpeed}
-        {setPlaybackSpeed}
-        bind:statsOpen
-        bind:activeTab={activeControlTab}
-        onPreviewChange={handlePreviewChange}
-        totalSeconds={effectiveDuration * 1000}
-      />
-    </div>
+    <svelte:component
+      this={$componentRegistry.FieldRenderer || FieldRenderer}
+      bind:this={fieldRenderer}
+      width={fieldRenderWidth}
+      height={fieldRenderHeight}
+      {timePrediction}
+      {committedRobotState}
+      {previewOptimizedLines}
+      {onRecordChange}
+    />
   </div>
-</div>
+
+  <div slot="sidebar" class="h-full">
+    {#if statsOpen}
+      <div
+        class="control-tab-overlay absolute inset-0 z-40"
+        role="button"
+        aria-label="Dismiss statistics"
+        tabindex="0"
+        on:click={() => (statsOpen = false)}
+        on:keydown={(e) => {
+          if (e.key === "Enter" || e.key === " " || e.key === "Spacebar")
+            statsOpen = false;
+        }}
+      ></div>
+    {/if}
+
+    <svelte:component
+      this={$componentRegistry.ControlTab || ControlTab}
+      bind:this={controlTabRef}
+      bind:playing={$playingStore}
+      {play}
+      {pause}
+      bind:startPoint={$startPointStore}
+      bind:lines={$linesStore}
+      bind:sequence={$sequenceStore}
+      bind:robotLength
+      bind:robotWidth
+      bind:settings={$settingsStore}
+      bind:percent={$percentStore}
+      bind:robotXY={$robotXYStore}
+      bind:robotHeading={$robotHeadingStore}
+      bind:shapes={$shapesStore}
+      {handleSeek}
+      bind:loopAnimation={$loopAnimationStore}
+      {resetAnimation}
+      {recordChange}
+      playbackSpeed={$playbackSpeedStore}
+      {resetPlaybackSpeed}
+      {setPlaybackSpeed}
+      bind:statsOpen
+      bind:activeTab={activeControlTab}
+      onPreviewChange={handlePreviewChange}
+      totalSeconds={effectiveDuration * 1000}
+    />
+  </div>
+</MainLayout>
 
 <style>
   /* Blur the control tab when the stats panel is open; clicking the background closes the panel */
-  .controlTabBlurred {
+  /* This needs to be applied to the sidebar slot content or handled in MainLayout? */
+  /* Since MainLayout has the sidebar container, maybe I should pass a prop to MainLayout or apply it here? */
+  /* The slot content wrapper in MainLayout is what we want to blur? No, the controlTabContainer in MainLayout. */
+  /* But controlTabContainer is bound here. */
+
+  /* I can apply a class to the sidebar slot wrapper div */
+
+  :global(.controlTabBlurred) {
     filter: blur(4px);
     opacity: 0.88;
     transition:
