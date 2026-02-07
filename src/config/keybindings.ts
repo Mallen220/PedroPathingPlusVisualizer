@@ -729,6 +729,29 @@ export const DEFAULT_KEY_BINDINGS: KeyBinding[] = [
     action: "downloadJava",
     category: "Export",
   },
+  // Tools
+  {
+    id: "open-telemetry",
+    key: "alt+shift+t",
+    description: "Import Telemetry Data",
+    action: "toggleTelemetry",
+    category: "Tools",
+  },
+  // Selection
+  {
+    id: "select-next",
+    key: "alt+right",
+    description: "Select Next Field Element",
+    action: "selectNext",
+    category: "Selection",
+  },
+  {
+    id: "select-prev",
+    key: "alt+left",
+    description: "Select Previous Field Element",
+    action: "selectPrev",
+    category: "Selection",
+  },
   // Extended Commands
   {
     id: "set-file-manager-directory",

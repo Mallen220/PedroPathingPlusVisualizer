@@ -2049,6 +2049,7 @@
         startTutorial.set(true);
       });
     },
+    toggleTelemetry: () => showTelemetryDialog.update((v) => !v),
     toggleDiff: () => toggleDiff(),
     togglePluginManager: () => showPluginManager.update((v) => !v),
     toggleRuler: () => showRuler.update((v) => !v),

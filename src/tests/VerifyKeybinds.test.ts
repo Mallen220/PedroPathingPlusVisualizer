@@ -35,4 +35,24 @@ describe("Keybindings", () => {
     expect(binding?.key).toBe("alt+i");
     expect(binding?.action).toBe("toggleRobotVisibility");
   });
+
+  it("should include select-next and select-prev", () => {
+    const selectNext = DEFAULT_KEY_BINDINGS.find((b) => b.id === "select-next");
+    const selectPrev = DEFAULT_KEY_BINDINGS.find((b) => b.id === "select-prev");
+
+    expect(selectNext).toBeDefined();
+    expect(selectNext?.key).toBe("alt+right");
+    expect(selectNext?.action).toBe("selectNext");
+
+    expect(selectPrev).toBeDefined();
+    expect(selectPrev?.key).toBe("alt+left");
+    expect(selectPrev?.action).toBe("selectPrev");
+  });
+
+  it("should include open-telemetry", () => {
+    const binding = DEFAULT_KEY_BINDINGS.find((b) => b.id === "open-telemetry");
+    expect(binding).toBeDefined();
+    expect(binding?.key).toBe("alt+shift+t");
+    expect(binding?.action).toBe("toggleTelemetry");
+  });
 });
