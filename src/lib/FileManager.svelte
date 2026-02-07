@@ -1029,7 +1029,6 @@
         on:select={(e) => (selectedFile = e.detail)}
         on:open={(e) => loadFile(e.detail)}
         on:rename-save={(e) => renameFile(e.detail.file, e.detail.name)}
-        on:rename-save={(e) => renameFile(e.detail.file, e.detail.name)}
         on:rename-cancel={() => (renamingFile = null)}
         on:menu-action={handleMenuAction}
       />
@@ -1045,8 +1044,7 @@
         on:select={(e) => (selectedFile = e.detail)}
         on:open={(e) => loadFile(e.detail)}
         on:rename-start={(e) => (renamingFile = e.detail)}
-        on:rename-save={(e) =>
-          renamingFile && renameFile(renamingFile, e.detail)}
+        on:rename-save={(e) => renameFile(e.detail.file, e.detail.name)}
         on:rename-cancel={() => (renamingFile = null)}
         on:menu-action={handleMenuAction}
       />
