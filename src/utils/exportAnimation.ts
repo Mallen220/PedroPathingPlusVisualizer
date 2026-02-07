@@ -1,4 +1,4 @@
-// Copyright 2026 Matthew Allen. Licensed under the Apache License, Version 2.0.
+// Copyright 2026 Matthew Allen. Licensed under the Modified Apache License, Version 2.0.
 // Utility to export the current Two.js view / animation as a GIF or APNG.
 // Uses gif.js for GIFs and upng-js for APNGs.
 
