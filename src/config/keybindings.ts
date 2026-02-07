@@ -367,6 +367,26 @@ export const DEFAULT_KEY_BINDINGS: KeyBinding[] = [
     key: "alt+i",
     description: "Toggle Robot Visibility",
     action: "toggleRobotVisibility",
+  },
+  {
+    id: "toggle-history",
+    key: "alt+h",
+    description: "Toggle History Panel",
+    action: "toggleHistory",
+    category: "View",
+  },
+  {
+    id: "toggle-strategy-sheet",
+    key: "alt+shift+s",
+    description: "Toggle Strategy Sheet",
+    action: "toggleStrategySheet",
+    category: "View",
+  },
+  {
+    id: "toggle-protractor-lock",
+    key: "alt+l",
+    description: "Toggle Protractor Lock",
+    action: "toggleProtractorLock",
     category: "View",
   },
 
