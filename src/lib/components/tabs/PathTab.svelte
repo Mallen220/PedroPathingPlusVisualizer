@@ -141,6 +141,16 @@
       e.clientX,
       e.clientY,
     ) as HTMLElement | null;
+
+    if (
+      originElem?.tagName === "INPUT" ||
+      originElem?.tagName === "TEXTAREA" ||
+      originElem?.tagName === "SELECT"
+    ) {
+      e.preventDefault();
+      return;
+    }
+
     if (originElem?.closest("[data-event-marker-slider]")) {
       e.preventDefault();
       return;
