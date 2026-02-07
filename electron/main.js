@@ -937,12 +937,17 @@ ipcMain.handle("app:get-version", () => {
 ipcMain.handle("file:rename", async (event, oldPath, newPath) => {
   try {
     // Check if new path already exists
-    const exists = await fs
-      .access(newPath)
-      .then(() => true)
-      .catch(() => false);
-    if (exists) {
-      throw new Error(`File "${path.basename(newPath)}" already exists`);
+    // Allow case-only renames (e.g. "file.pp" -> "File.pp")
+    const isCaseRename = oldPath.toLowerCase() === newPath.toLowerCase();
+
+    if (!isCaseRename) {
+      const exists = await fs
+        .access(newPath)
+        .then(() => true)
+        .catch(() => false);
+      if (exists) {
+        throw new Error(`File "${path.basename(newPath)}" already exists`);
+      }
     }
 
     await fs.rename(oldPath, newPath);
