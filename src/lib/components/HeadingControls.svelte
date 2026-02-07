@@ -1,6 +1,7 @@
 <!-- Copyright 2026 Matthew Allen. Licensed under the Apache License, Version 2.0. -->
 <script lang="ts">
   import { createEventDispatcher } from "svelte";
+  import { transformAngle } from "../../utils/math";
   export let endPoint: any;
   export let locked: boolean = false;
   export let tabindex: number | undefined = undefined;
@@ -88,8 +89,6 @@
           class="w-full pl-12 pr-1 py-1.5 text-sm bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-lg focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 outline-none transition-all"
           step="1"
           type="number"
-          min="-180"
-          max="180"
           bind:value={endPoint.startDeg}
           on:input={() => dispatch("change")}
           on:blur={() => dispatch("commit")}
@@ -97,6 +96,18 @@
           disabled={locked}
           {tabindex}
         />
+        {#if endPoint.startDeg < -180 || endPoint.startDeg > 180}
+          <button
+            class="absolute top-full left-0 mt-0.5 z-50 text-[10px] bg-amber-100 text-amber-800 px-1 rounded border border-amber-300 shadow-sm whitespace-nowrap"
+            on:click={() => {
+              endPoint.startDeg = transformAngle(endPoint.startDeg);
+              dispatch("change");
+              dispatch("commit");
+            }}
+          >
+            Normalize
+          </button>
+        {/if}
       </div>
       <div class="relative flex-1">
         <span
@@ -108,8 +119,6 @@
           class="w-full pl-8 pr-1 py-1.5 text-sm bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-lg focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 outline-none transition-all"
           step="1"
           type="number"
-          min="-180"
-          max="180"
           bind:value={endPoint.endDeg}
           on:input={() => dispatch("change")}
           on:blur={() => dispatch("commit")}
@@ -117,6 +126,18 @@
           disabled={locked}
           {tabindex}
         />
+        {#if endPoint.endDeg < -180 || endPoint.endDeg > 180}
+          <button
+            class="absolute top-full left-0 mt-0.5 z-50 text-[10px] bg-amber-100 text-amber-800 px-1 rounded border border-amber-300 shadow-sm whitespace-nowrap"
+            on:click={() => {
+              endPoint.endDeg = transformAngle(endPoint.endDeg);
+              dispatch("change");
+              dispatch("commit");
+            }}
+          >
+            Normalize
+          </button>
+        {/if}
       </div>
     </div>
   {:else if endPoint.heading === "constant"}
@@ -131,8 +152,6 @@
           class="w-full pl-6 pr-2 py-1.5 text-sm bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-lg focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 outline-none transition-all"
           step="1"
           type="number"
-          min="-180"
-          max="180"
           value={endPoint.degrees || 0}
           on:input={handleConstantInput}
           on:blur={handleConstantBlur}
@@ -140,6 +159,18 @@
           disabled={locked}
           {tabindex}
         />
+        {#if (endPoint.degrees || 0) < -180 || (endPoint.degrees || 0) > 180}
+          <button
+            class="absolute top-full left-0 mt-0.5 z-50 text-[10px] bg-amber-100 text-amber-800 px-1 rounded border border-amber-300 shadow-sm whitespace-nowrap"
+            on:click={() => {
+              endPoint.degrees = transformAngle(endPoint.degrees || 0);
+              dispatch("change");
+              dispatch("commit");
+            }}
+          >
+            Normalize
+          </button>
+        {/if}
       </div>
     </div>
   {:else if endPoint.heading === "tangential"}

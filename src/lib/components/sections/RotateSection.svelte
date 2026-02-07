@@ -8,6 +8,7 @@
     handleRotateRename,
     updateLinkedRotations,
   } from "../../../utils/pointLinking";
+  import { transformAngle } from "../../../utils/math";
   import { tooltipPortal } from "../../actions/portal";
   import { actionRegistry } from "../../actionRegistry";
   import { getSmallButtonClass } from "../../../utils/buttonStyles";
@@ -338,6 +339,37 @@
             disabled={rotate.locked}
           />
         </div>
+        {#if rotate.degrees < -180 || rotate.degrees > 180}
+          <div class="flex items-center gap-2 mt-1">
+            <span class="text-xs text-amber-500 flex items-center gap-1">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+                class="size-3"
+              >
+                <path
+                  fill-rule="evenodd"
+                  d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495ZM10 5a.75.75 0 0 1 .75.75v3.5a.75.75 0 0 1-1.5 0v-3.5A.75.75 0 0 1 10 5Zm0 9a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z"
+                  clip-rule="evenodd"
+                />
+              </svg>
+              Value outside -180 to 180
+            </span>
+            <button
+              class="text-xs bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 px-1.5 py-0.5 rounded border border-amber-200 dark:border-amber-800 hover:bg-amber-200 dark:hover:bg-amber-900/50 transition-colors"
+              on:click={() => {
+                rotate.degrees = transformAngle(rotate.degrees);
+                if (linked) {
+                  sequence = updateLinkedRotations(sequence, rotate.id);
+                }
+                if (recordChange) recordChange();
+              }}
+            >
+              Normalize
+            </button>
+          </div>
+        {/if}
       </div>
 
       <!-- Action Bar -->

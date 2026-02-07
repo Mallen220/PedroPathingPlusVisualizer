@@ -9,6 +9,7 @@
     isPresentationMode,
   } from "../stores";
   import type * as d3 from "d3";
+  import { transformAngle } from "../utils/math";
 
   export let x: d3.ScaleLinear<number, number, number>;
   export let y: d3.ScaleLinear<number, number, number>;
@@ -29,11 +30,7 @@
   const MIN_PROTRACTOR_RADIUS = 30;
   const MAX_PROTRACTOR_RADIUS = 150;
 
-  $: normalizedProtractorAngle = Math.round(
-    protractorRadiusAngle < 0
-      ? 360 + protractorRadiusAngle
-      : protractorRadiusAngle,
-  );
+  $: displayAngle = transformAngle(Math.round(-protractorRadiusAngle));
   $: resizeHandleRadians = (protractorResizeAngle * Math.PI) / 180;
   $: resizeHandlePosition = {
     x: Math.cos(resizeHandleRadians) * protractorRadius,
@@ -338,7 +335,7 @@
         class="fill-red-600 dark:fill-red-400 text-sm font-bold"
         text-anchor="middle"
       >
-        {360 - normalizedProtractorAngle}°
+        {displayAngle}°
       </text>
 
       <!-- Resize Handle -->
