@@ -762,6 +762,7 @@
       case "open":
         loadFile(file);
         break;
+      case "rename":
       case "rename-start":
         renamingFile = file;
         break;
@@ -1025,8 +1026,13 @@
         {sortMode}
         fieldImage={settings.fieldMap}
         showGitStatus={settings.gitIntegration}
+        {renamingFile}
         on:select={(e) => (selectedFile = e.detail)}
         on:open={(e) => loadFile(e.detail)}
+        on:rename-start={(e) => (renamingFile = e.detail)}
+        on:rename-save={(e) =>
+          renamingFile && renameFile(renamingFile, e.detail)}
+        on:rename-cancel={() => (renamingFile = null)}
         on:menu-action={handleMenuAction}
       />
     {/if}
