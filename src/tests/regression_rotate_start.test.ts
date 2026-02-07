@@ -1,10 +1,16 @@
-
+// Copyright 2026 Matthew Allen. Licensed under the Apache License, Version 2.0.
 import { describe, it, expect } from "vitest";
 import { calculatePathTime } from "../utils/timeCalculator";
 import { RotateAction } from "../lib/actions/RotateAction";
 import { PathAction } from "../lib/actions/PathAction";
 import { actionRegistry } from "../lib/actionRegistry";
-import type { Point, Line, SequenceItem, SequenceRotateItem, SequencePathItem } from "../types/index";
+import type {
+  Point,
+  Line,
+  SequenceItem,
+  SequenceRotateItem,
+  SequencePathItem,
+} from "../types/index";
 
 // Mock Two.js since it's used in RotateAction
 vi.mock("two.js", () => {
@@ -16,7 +22,7 @@ vi.mock("two.js", () => {
       static Circle = class Circle {};
       static Path = class Path {};
       static Anchor = class Anchor {};
-    }
+    },
   };
 });
 
@@ -30,7 +36,7 @@ describe("Rotation Issue Reproduction", () => {
       x: 0,
       y: 0,
       heading: "constant",
-      degrees: 0
+      degrees: 0,
     };
 
     const line: Line = {
@@ -39,22 +45,22 @@ describe("Rotation Issue Reproduction", () => {
         x: 10,
         y: 0,
         heading: "constant",
-        degrees: 0
+        degrees: 0,
       },
       controlPoints: [],
-      color: "red"
+      color: "red",
     };
 
     const rotateItem: SequenceRotateItem = {
       kind: "rotate",
       id: "rotate1",
       name: "Rotate 90",
-      degrees: 90
+      degrees: 90,
     };
 
     const pathItem: SequencePathItem = {
       kind: "path",
-      lineId: "line1"
+      lineId: "line1",
     };
 
     const sequence: SequenceItem[] = [rotateItem, pathItem];
@@ -66,7 +72,7 @@ describe("Rotation Issue Reproduction", () => {
       maxVelocity: 10,
       maxAcceleration: 10,
       rWidth: 10,
-      rLength: 10
+      rLength: 10,
     };
 
     const result = calculatePathTime(startPoint, lines, settings, sequence);
@@ -80,9 +86,18 @@ describe("Rotation Issue Reproduction", () => {
     // IF the bug exists, we might see the rotation from the first action ignored, or snapped.
 
     const events = result.timeline;
-    console.log("Events:", events.map(e => ({ type: e.type, startHeading: e.startHeading, targetHeading: e.targetHeading })));
+    console.log(
+      "Events:",
+      events.map((e) => ({
+        type: e.type,
+        startHeading: e.startHeading,
+        targetHeading: e.targetHeading,
+      })),
+    );
 
-    const rotateEvent = events.find(e => e.type === "wait" && e.name === "Rotate 90");
+    const rotateEvent = events.find(
+      (e) => e.type === "wait" && e.name === "Rotate 90",
+    );
     expect(rotateEvent).toBeDefined();
     expect(rotateEvent?.targetHeading).toBe(90);
 
@@ -98,13 +113,15 @@ describe("Rotation Issue Reproduction", () => {
     // So if we don't see a wait event to rotate back to 0, it confirms the bug.
 
     // Let's check for a second wait event.
-    const rotationBackEvent = events.find((e, idx) => idx > 0 && e.type === "wait");
+    const rotationBackEvent = events.find(
+      (e, idx) => idx > 0 && e.type === "wait",
+    );
 
     // If the bug exists, this will be undefined because currentHeading was snapped to 0.
     expect(rotationBackEvent).toBeDefined();
     if (rotationBackEvent) {
-        expect(rotationBackEvent.startHeading).toBe(90);
-        expect(rotationBackEvent.targetHeading).toBe(0);
+      expect(rotationBackEvent.startHeading).toBe(90);
+      expect(rotationBackEvent.targetHeading).toBe(0);
     }
   });
 });
