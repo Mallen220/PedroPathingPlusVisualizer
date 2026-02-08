@@ -1,32 +1,18 @@
 ### What's New!
 
-## **Features:**
+## **Features & Improvements:**
 
-### **Right-Click Context Menus**
+### **Smarter Rotation Logic**
+- **Accurate Timeline:** The timeline now correctly calculates path times when starting with a rotation, ensuring your simulations match reality.
+- **Seamless Transitions:** Fixed heading snaps when using initial rotations.
 
-- **Faster editing:** Right-click on **Waypoints**, **Control Points**, and **Obstacles** to access quick actions.
-- **Quick Edits:** Delete points, toggle locks, or change heading modes instantly.
-- **Copy Coordinates:** Copy the exact X/Y position of any element from the menu.
-- **Workflow Shortcuts:** Add wait commands and manage obstacles without opening sidebars.
+### **File Manager Enhancements**
+- **Better Renaming:** Renaming files is now smoother and more reliable. The input auto-focuses, and we've fixed issues where typing could be interrupted.
 
-### **Sticky Notes Plugin**
+### **Angle Normalization**
+- **Smart Warnings:** If an angle goes outside the standard -180° to 180° range, a warning icon will appear.
+- **One-Click Fix:** Click the warning to instantly normalize the angle, keeping your data clean and consistent.
 
-- **Persistent notes:** Place notes directly in your workspace to capture ideas and strategy.
-- **Project Integration:** Notes are saved with your `.pp` project file for automatic recovery.
-- **Show/Hide Control:** Manage visibility from the Plugin Manager or via a workspace toggle.
-
-### **Redesigned Plugin Manager**
-
-- **Card-based interface:** Browse installed and available plugins in a responsive grid.
-- **Richer details:** See descriptions and status badges before installing.
-- **Search & Discover:** Improved search and discovery to find tools faster.
-
-### **Other Changes & Fixes**
-
-- **UX:** Improved discoverability for plugin actions and note controls.
-- **Performance:** Reduced UI lag when opening the Plugin Manager.
-- **Stability:** Fixed several bugs related to context menu state and note persistence.
-
----
-
-Thanks for the suggestions — these additions make editing and organizing projects faster and more flexible. Keep the feedback coming! ✨
+## **Fixes:**
+- **UI Polish:** Fixed an annoying bug where dragging from text inputs (like in the Path tab) would accidentally drag the whole tab.
+- **File Metadata:** Saved `.pp` files now include version and copyright metadata for better tracking.
