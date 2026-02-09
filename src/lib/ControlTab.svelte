@@ -100,34 +100,40 @@
     activeTab = "path";
   }
 
+  async function executeOnTab(methodName: string) {
+    if (activeTabInstance && activeTabInstance[methodName]) {
+      return await activeTabInstance[methodName]();
+    }
+    // Fallback: If current tab doesn't support it, try switching to field tab
+    if (
+      activeTab !== "field" &&
+      tabInstances["field"] &&
+      tabInstances["field"][methodName]
+    ) {
+      activeTab = "field";
+      await tick();
+      return await tabInstances["field"][methodName]();
+    }
+  }
+
   export async function openAndStartOptimization() {
-    if (activeTabInstance && activeTabInstance.openAndStartOptimization) {
-      return await activeTabInstance.openAndStartOptimization();
-    }
+    return await executeOnTab("openAndStartOptimization");
   }
 
-  export function stopOptimization() {
-    if (activeTabInstance && activeTabInstance.stopOptimization) {
-      activeTabInstance.stopOptimization();
-    }
+  export async function stopOptimization() {
+    await executeOnTab("stopOptimization");
   }
 
-  export function applyOptimization() {
-    if (activeTabInstance && activeTabInstance.applyOptimization) {
-      activeTabInstance.applyOptimization();
-    }
+  export async function applyOptimization() {
+    await executeOnTab("applyOptimization");
   }
 
-  export function discardOptimization() {
-    if (activeTabInstance && activeTabInstance.discardOptimization) {
-      activeTabInstance.discardOptimization();
-    }
+  export async function discardOptimization() {
+    await executeOnTab("discardOptimization");
   }
 
-  export function retryOptimization() {
-    if (activeTabInstance && activeTabInstance.retryOptimization) {
-      activeTabInstance.retryOptimization();
-    }
+  export async function retryOptimization() {
+    await executeOnTab("retryOptimization");
   }
 
   export function copyCode() {
