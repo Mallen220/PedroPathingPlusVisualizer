@@ -80,7 +80,7 @@ export const DEFAULT_KEY_BINDINGS: KeyBinding[] = [
   },
   {
     id: "split-path",
-    key: "k",
+    key: "shift+k",
     description: "Split Path at Current Time",
     action: "splitPath",
     category: "Editing",
@@ -178,14 +178,14 @@ export const DEFAULT_KEY_BINDINGS: KeyBinding[] = [
   },
   {
     id: "focus-name",
-    key: "f2, enter",
+    key: "f2",
     description: "Rename selected item",
     action: "focusName",
     category: "Editing",
   },
   {
     id: "cycle-path-color",
-    key: "shift+k, alt+c",
+    key: "alt+c",
     description: "Cycle Path Color",
     action: "cyclePathColor",
     category: "Editing",
@@ -374,6 +374,7 @@ export const DEFAULT_KEY_BINDINGS: KeyBinding[] = [
     key: "alt+i",
     description: "Toggle Robot Visibility",
     action: "toggleRobotVisibility",
+    category: "View",
   },
   {
     id: "toggle-history",
@@ -472,7 +473,7 @@ export const DEFAULT_KEY_BINDINGS: KeyBinding[] = [
   },
   {
     id: "optimize-apply",
-    key: "ctrl+enter",
+    key: "alt+enter",
     description: "Apply optimized path",
     action: "optimizeApply",
     category: "Optimization",
@@ -788,7 +789,7 @@ export const DEFAULT_KEY_BINDINGS: KeyBinding[] = [
   },
   {
     id: "cancel-dialog",
-    key: "escape",
+    key: "",
     description: "Cancel / Close Dialog",
     action: "cancelDialog",
     category: "Navigation",
