@@ -2,30 +2,25 @@
 
 ## **Features:**
 
-### **Right-Click Context Menus**
+### **Path Optimizer**
+- **Automatic Tuning:** Use the new genetic algorithm optimizer to automatically adjust control points for the fastest possible path.
+- **Obstacle Avoidance:** The optimizer respects obstacles and finds paths that navigate around them.
+- **Preview & Apply:** Review the optimized path and compare stats before applying changes.
 
-- **Faster editing:** Right-click on **Waypoints**, **Control Points**, and **Obstacles** to access quick actions.
-- **Quick Edits:** Delete points, toggle locks, or change heading modes instantly.
-- **Copy Coordinates:** Copy the exact X/Y position of any element from the menu.
-- **Workflow Shortcuts:** Add wait commands and manage obstacles without opening sidebars.
+### **Path Validation**
+- **Real-time Checks:** Instantly detect collisions with obstacles and zero-length path segments.
+- **Visual Feedback:** Problematic areas are highlighted directly on the field with clear markers.
+- **Safety First:** Ensure your path is valid and safe before running it on the robot.
 
-### **Sticky Notes Plugin**
+### **Path Statistics**
+- **Deep Insights:** Analyze your path with detailed charts for velocity, acceleration, and angular velocity.
+- **Segment Breakdown:** View precise metrics for every segment of your path.
+- **Performance Warnings:** Get alerts for potential issues like wheel slip or exceeding velocity limits.
 
-- **Persistent notes:** Place notes directly in your workspace to capture ideas and strategy.
-- **Project Integration:** Notes are saved with your `.pp` project file for automatic recovery.
-- **Show/Hide Control:** Manage visibility from the Plugin Manager or via a workspace toggle.
-
-### **Redesigned Plugin Manager**
-
-- **Card-based interface:** Browse installed and available plugins in a responsive grid.
-- **Richer details:** See descriptions and status badges before installing.
-- **Search & Discover:** Improved search and discovery to find tools faster.
-
-### **Other Changes & Fixes**
-
-- **UX:** Improved discoverability for plugin actions and note controls.
-- **Performance:** Reduced UI lag when opening the Plugin Manager.
-- **Stability:** Fixed several bugs related to context menu state and note persistence.
+### **Telemetry Import**
+- **Log Visualization:** Import CSV or JSON telemetry logs to see your robot's actual path on the field.
+- **Ghost Robot:** Compare your planned path with the actual robot motion using a "ghost" overlay.
+- **Sync Tools:** Adjust time offsets to perfectly align telemetry data with your simulation.
 
 ---
 
