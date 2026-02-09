@@ -357,6 +357,7 @@ describe("fileHandlers", () => {
         (args) => args[0] === "/exported/file.pp",
       );
       expect(callArgs).toBeDefined();
+      if (!callArgs) throw new Error("callArgs is undefined");
 
       const content = JSON.parse(callArgs[1]);
 
