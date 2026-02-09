@@ -961,4 +961,18 @@ export const DEFAULT_KEY_BINDINGS: KeyBinding[] = [
     action: "startTutorial",
     category: "Help",
   },
+  {
+    id: "toggle-telemetry-dialog",
+    key: "alt+shift+t",
+    description: "Toggle Telemetry Dialog",
+    action: "toggleTelemetryDialog",
+    category: "View",
+  },
+  {
+    id: "focus-timeline",
+    key: "alt+shift+a",
+    description: "Focus Timeline Slider",
+    action: "focusTimeline",
+    category: "Navigation",
+  },
 ];

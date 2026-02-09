@@ -2151,6 +2151,11 @@
     cancelDialog: () => {
       (actions as any).deselectAll();
     },
+    toggleTelemetryDialog: () => showTelemetryDialog.update((v) => !v),
+    focusTimeline: () => {
+      const el = document.getElementById("timeline-slider");
+      if (el) el.focus();
+    },
   };
 
   // --- Derived Commands for Search ---

@@ -35,4 +35,20 @@ describe("Keybindings", () => {
     expect(binding?.key).toBe("alt+i");
     expect(binding?.action).toBe("toggleRobotVisibility");
   });
+
+  it("should include toggle-telemetry-dialog", () => {
+    const binding = DEFAULT_KEY_BINDINGS.find(
+      (b) => b.id === "toggle-telemetry-dialog",
+    );
+    expect(binding).toBeDefined();
+    expect(binding?.key).toBe("alt+shift+t");
+    expect(binding?.action).toBe("toggleTelemetryDialog");
+  });
+
+  it("should include focus-timeline", () => {
+    const binding = DEFAULT_KEY_BINDINGS.find((b) => b.id === "focus-timeline");
+    expect(binding).toBeDefined();
+    expect(binding?.key).toBe("alt+shift+a");
+    expect(binding?.action).toBe("focusTimeline");
+  });
 });
