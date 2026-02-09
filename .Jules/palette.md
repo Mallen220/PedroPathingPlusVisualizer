@@ -22,3 +22,7 @@ Action: Use `aria-expanded` on the input to verify state changes in tests rather
 
 Learning: Hardcoding layout utilities (like `ml-1`) in reusable components like `DeleteButtonWithConfirm` limits their use in tight spaces (like tables or dense toolbars).
 Action: Keep reusable components layout-neutral (padding/dimensions only) and delegate spacing/margins to the parent context via className props.
+
+## 2026-05-25 - Live Regions for Search Feedback
+Learning: Visual search results update instantly, but screen reader users get no feedback when filtering lists unless a live region is present.
+Action: Always pair filterable lists with a visually hidden `aria-live="polite"` element that announces "X results found" when the count changes.
