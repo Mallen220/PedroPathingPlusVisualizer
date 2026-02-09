@@ -358,6 +358,7 @@ describe("fileHandlers", () => {
       );
       expect(callArgs).toBeDefined();
 
+      if (!callArgs) throw new Error("callArgs is undefined");
       const content = JSON.parse(callArgs[1]);
 
       expect(content.header).toBeDefined();
