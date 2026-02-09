@@ -22,7 +22,6 @@
   export let setPlaybackSpeed: (factor: number, autoPlay?: boolean) => void;
   export let totalSeconds: number = 0;
   export let settings: Settings | undefined;
-  export let canSplit: boolean = false;
 
   import type { Settings } from "../../types";
   import { fade, fly } from "svelte/transition";
@@ -205,30 +204,6 @@
         stroke-linecap="round"
         stroke-linejoin="round"
         d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99"
-      />
-    </svg>
-  </button>
-
-  <!-- Split Path Button -->
-  <button
-    title="Split path at current position"
-    aria-label="Split Path"
-    disabled={!canSplit}
-    on:click={() => dispatch("splitPath")}
-    class="rounded-md focus:outline-none focus-visible:ring-2 focus-visible:ring-green-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-neutral-900 ml-1 disabled:opacity-30 disabled:cursor-not-allowed text-neutral-500 dark:text-neutral-400 hover:text-purple-600 dark:hover:text-purple-400 transition-colors"
-  >
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      fill="none"
-      viewBox="0 0 24 24"
-      stroke-width="2"
-      stroke="currentColor"
-      class="size-6"
-    >
-      <path
-        stroke-linecap="round"
-        stroke-linejoin="round"
-        d="M14.121 14.121L19 19m-7-7l7-7m-7 7l-2.879 2.879M12 12L9.121 9.121m0 5.758a3 3 0 10-4.243 4.243 3 3 0 004.243-4.243zm0-5.758a3 3 0 10-4.243-4.243 3 3 0 004.243 4.243z"
       />
     </svg>
   </button>
