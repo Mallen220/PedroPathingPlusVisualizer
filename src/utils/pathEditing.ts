@@ -99,7 +99,7 @@ export function splitPathAtPercent(
           : false,
     },
     controlPoints: leftPoints.slice(1, -1),
-    name: `${originalLine.name} Split 1`,
+    name: "",
     eventMarkers: [],
     waitBeforeMs: originalLine.waitBeforeMs,
     waitAfterMs: 0,
@@ -114,7 +114,7 @@ export function splitPathAtPercent(
     // Keep ID
     endPoint: { ...originalLine.endPoint }, // Clone to avoid mutation issues
     controlPoints: rightPoints.slice(1, -1),
-    name: `${originalLine.name} Split 2`,
+    name: "",
     eventMarkers: [],
     waitBeforeMs: 0,
     waitAfterMs: originalLine.waitAfterMs,

@@ -58,8 +58,6 @@
   import { tabRegistry, timelineTransformerRegistry } from "./registries";
   import { diffMode } from "./diffStore";
   import { actionRegistry } from "./actionRegistry";
-  import { splitPathAtPercent } from "../utils/pathEditing";
-  import { selectedPointId, selectedLineId } from "../stores";
 
   export let percent: number;
   export let playing: boolean;
@@ -211,43 +209,6 @@
 
   // Compute timeline markers for the UI (passed to PlaybackControls)
   $: timePrediction = calculatePathTime(startPoint, lines, settings, sequence);
-
-  // Split Path Logic
-  $: canSplit = (() => {
-    if (!timePrediction || timePrediction.totalTime <= 0) return false;
-    const globalTime = (percent / 100) * timePrediction.totalTime;
-    // Find active event
-    // We prioritize the event that covers the current time
-    // For boundaries (endTime == startTime of next), usually find finds the first one.
-    // If we are exactly at the end of a line, we might be at the start of the next line (or wait).
-    // If we are at 100%, we are at end of path.
-    const ev = timePrediction.timeline.find(
-      (e) => globalTime >= e.startTime && globalTime <= e.endTime,
-    );
-    return ev?.type === "travel";
-  })();
-
-  function handleSplitPath() {
-    const res = splitPathAtPercent(percent, timePrediction, lines, sequence);
-    if (res) {
-      lines = res.lines;
-      sequence = res.sequence;
-      recordChange("Split Path");
-
-      // Select the split point (which is the endpoint of the first segment)
-      // The first segment is at res.splitIndex.
-      // Its ID is lines[res.splitIndex].id (but lines is reactive, might not be updated yet in local var?)
-      // Svelte reactivity is async for DOM but synchronous for store updates if bound?
-      // props 'lines' is passed from parent via bind. Assigning to it updates parent store.
-      // However, we have the new lines array in 'res.lines'.
-      const splitLine = res.lines[res.splitIndex];
-      if (splitLine && splitLine.id) {
-        selectedLineId.set(splitLine.id);
-        // Select the split point (which is the endpoint of the newly created first segment)
-        selectedPointId.set(`point-${res.splitIndex + 1}-0`);
-      }
-    }
-  }
 
   $: timelineItems = (() => {
     const items: {
@@ -679,9 +640,7 @@
       {setPlaybackSpeed}
       {totalSeconds}
       {settings}
-      {canSplit}
       on:markerChange={handleMarkerChange}
-      on:splitPath={handleSplitPath}
     />
   </div>
 </div>
