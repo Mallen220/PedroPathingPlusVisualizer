@@ -1,4 +1,4 @@
-<!-- Copyright 2026 Matthew Allen. Licensed under the Apache License, Version 2.0. -->
+<!-- Copyright 2026 Matthew Allen. Licensed under the Modified Apache License, Version 2.0. -->
 <script context="module" lang="ts">
   import { tabRegistry as tabRegistryModule } from "./registries";
   import PathTab from "./components/tabs/PathTab.svelte";

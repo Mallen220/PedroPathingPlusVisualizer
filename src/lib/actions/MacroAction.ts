@@ -1,4 +1,4 @@
-// Copyright 2026 Matthew Allen. Licensed under the Apache License, Version 2.0.
+// Copyright 2026 Matthew Allen. Licensed under the Modified Apache License, Version 2.0.
 import type { ActionDefinition } from "../actionRegistry";
 import MacroTableRow from "../components/table/MacroTableRow.svelte";
 import MacroSection from "../components/sections/MacroSection.svelte";
