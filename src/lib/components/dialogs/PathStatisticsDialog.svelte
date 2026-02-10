@@ -5,6 +5,11 @@
     formatTime,
     calculatePathTime,
   } from "../../../utils/timeCalculator";
+  import {
+    calculatePhysics,
+    type PhysicsParams,
+    type PhysicsResult,
+  } from "../../../utils/physicsCalculator";
   import type {
     Point,
     Line,
@@ -79,11 +84,37 @@
   }
 
   let pathStats: PathStats | null = null;
-  let activeTab: "summary" | "graphs" | "insights" = "summary";
+  let activeTab: "summary" | "graphs" | "insights" | "physics" = "summary";
   let currentTime = 0;
+
+  // Physics State
+  let physicsParams: PhysicsParams = {
+    robotMass: 28, // lbs
+    motorStallTorque: 2.1, // N-m (GoBILDA 5202 approx)
+    motorStallCurrent: 9.2, // A
+    wheelDiameter: 3.78, // in (96mm)
+    gearRatio: 1, // Output shaft is direct
+    numMotors: 4,
+    kFriction: 0.6, // Default Mecanum/Omni
+    driveType: "mecanum",
+  };
+
+  let physicsResult: PhysicsResult | null = null;
 
   $: if (isOpen && lines && sequence && settings) {
     calculateStats();
+  }
+
+  // Update physics when stats or params change
+  $: if (pathStats && physicsParams) {
+    // Sync friction from settings if available (optional, or let user override)
+    // if (settings.kFriction) physicsParams.kFriction = settings.kFriction;
+    physicsResult = calculatePhysics(
+      pathStats.velocityData,
+      pathStats.accelerationData,
+      pathStats.centripetalData,
+      physicsParams,
+    );
   }
 
   $: if (pathStats) {
@@ -543,7 +574,11 @@
   }
 
   function handleCopy() {
-    if (activeTab === "summary" || activeTab === "insights") {
+    if (
+      activeTab === "summary" ||
+      activeTab === "insights" ||
+      activeTab === "physics"
+    ) {
       copyToMarkdown();
     } else {
       copyGraphs();
@@ -552,6 +587,33 @@
 
   function copyToMarkdown() {
     if (!pathStats) return;
+
+    if (activeTab === "physics" && physicsResult) {
+      let md = `### Physics Analysis\n\n`;
+      md += `**Parameters**\n`;
+      md += `- Mass: ${physicsParams.robotMass} lbs\n`;
+      md += `- Stall Torque: ${physicsParams.motorStallTorque} N-m\n`;
+      md += `- Friction Coeff: ${physicsParams.kFriction}\n\n`;
+
+      md += `**Results**\n`;
+      md += `- Peak Torque: ${physicsResult.peakTorque.toFixed(2)} N-m\n`;
+      md += `- Peak Current: ${physicsResult.peakCurrent.toFixed(1)} A\n`;
+      md += `- Peak Force: ${physicsResult.peakForce.toFixed(1)} lbf\n\n`;
+
+      if (physicsResult.insights.length > 0) {
+        md += `**Warnings**\n`;
+        physicsResult.insights.forEach((ins) => {
+          md += `- ${ins.message} (${ins.value.toFixed(1)})\n`;
+        });
+      }
+      navigator.clipboard.writeText(md).then(() => {
+        notification.set({
+          message: "Copied physics stats to clipboard!",
+          type: "success",
+        });
+      });
+      return;
+    }
 
     if (activeTab === "insights") {
       let md = `| Time Range | Type | Message | Max Value |\n|---:|---|---|---:|\n`;
@@ -645,6 +707,12 @@
             on:click={() => (activeTab = "insights")}
           >
             Insights
+          </button>
+          <button
+            class={`px-3 py-1 rounded-md transition-all ${activeTab === "physics" ? "bg-white dark:bg-neutral-600 shadow-sm text-neutral-900 dark:text-white" : "text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300"}`}
+            on:click={() => (activeTab = "physics")}
+          >
+            Physics
           </button>
         </div>
       </div>
@@ -1034,6 +1102,254 @@
                   </div>
                 </div>
               {/each}
+            </div>
+          {/if}
+        </div>
+      {:else if activeTab === "physics"}
+        <div class="overflow-y-auto flex-1 p-4 min-h-0 space-y-4">
+          <!-- Parameter Inputs -->
+          <div
+            class="bg-neutral-100 dark:bg-neutral-900/50 p-4 rounded-lg border border-neutral-200 dark:border-neutral-700"
+          >
+            <h3
+              class="text-xs font-bold text-neutral-500 dark:text-neutral-400 uppercase tracking-wide mb-3"
+            >
+              Simulation Parameters
+            </h3>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div class="flex flex-col gap-1">
+                <label
+                  for="robot-mass"
+                  class="text-xs text-neutral-600 dark:text-neutral-300"
+                  >Mass (lbs)</label
+                >
+                <input
+                  id="robot-mass"
+                  type="number"
+                  bind:value={physicsParams.robotMass}
+                  class="px-2 py-1 rounded border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 text-sm"
+                />
+              </div>
+              <div class="flex flex-col gap-1">
+                <label
+                  for="motor-torque"
+                  class="text-xs text-neutral-600 dark:text-neutral-300"
+                  >Stall Torque (N-m)</label
+                >
+                <input
+                  id="motor-torque"
+                  type="number"
+                  step="0.1"
+                  bind:value={physicsParams.motorStallTorque}
+                  class="px-2 py-1 rounded border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 text-sm"
+                />
+              </div>
+              <div class="flex flex-col gap-1">
+                <label
+                  for="motor-current"
+                  class="text-xs text-neutral-600 dark:text-neutral-300"
+                  >Stall Current (A)</label
+                >
+                <input
+                  id="motor-current"
+                  type="number"
+                  step="0.1"
+                  bind:value={physicsParams.motorStallCurrent}
+                  class="px-2 py-1 rounded border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 text-sm"
+                />
+              </div>
+              <div class="flex flex-col gap-1">
+                <label
+                  for="num-motors"
+                  class="text-xs text-neutral-600 dark:text-neutral-300"
+                  >Num Motors</label
+                >
+                <input
+                  id="num-motors"
+                  type="number"
+                  bind:value={physicsParams.numMotors}
+                  class="px-2 py-1 rounded border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 text-sm"
+                />
+              </div>
+              <div class="flex flex-col gap-1">
+                <label
+                  for="wheel-dia"
+                  class="text-xs text-neutral-600 dark:text-neutral-300"
+                  >Wheel Dia (in)</label
+                >
+                <input
+                  id="wheel-dia"
+                  type="number"
+                  step="0.1"
+                  bind:value={physicsParams.wheelDiameter}
+                  class="px-2 py-1 rounded border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 text-sm"
+                />
+              </div>
+              <div class="flex flex-col gap-1">
+                <label
+                  for="gear-ratio"
+                  class="text-xs text-neutral-600 dark:text-neutral-300"
+                  >Gear Ratio</label
+                >
+                <input
+                  id="gear-ratio"
+                  type="number"
+                  step="0.1"
+                  bind:value={physicsParams.gearRatio}
+                  class="px-2 py-1 rounded border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 text-sm"
+                />
+              </div>
+              <div class="flex flex-col gap-1">
+                <label
+                  for="friction-coeff"
+                  class="text-xs text-neutral-600 dark:text-neutral-300"
+                  >Friction (μ)</label
+                >
+                <input
+                  id="friction-coeff"
+                  type="number"
+                  step="0.05"
+                  bind:value={physicsParams.kFriction}
+                  class="px-2 py-1 rounded border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 text-sm"
+                />
+              </div>
+            </div>
+          </div>
+
+          {#if physicsResult}
+            <!-- Summary Stats -->
+            <div class="grid grid-cols-3 gap-4">
+              <div
+                class="bg-white dark:bg-neutral-900 p-3 rounded-lg border border-neutral-200 dark:border-neutral-700 flex flex-col items-center text-center"
+              >
+                <span class="text-xs text-neutral-500 uppercase">Peak Torque</span>
+                <span
+                  class="text-xl font-bold {physicsResult.peakTorque >
+                  physicsParams.motorStallTorque * 0.9
+                    ? 'text-red-500'
+                    : 'text-neutral-900 dark:text-white'}"
+                >
+                  {physicsResult.peakTorque.toFixed(2)} N-m
+                </span>
+                <span class="text-[10px] text-neutral-400"
+                  >Limit: {(
+                    physicsParams.motorStallTorque * physicsParams.gearRatio
+                  ).toFixed(2)}</span
+                >
+              </div>
+              <div
+                class="bg-white dark:bg-neutral-900 p-3 rounded-lg border border-neutral-200 dark:border-neutral-700 flex flex-col items-center text-center"
+              >
+                <span class="text-xs text-neutral-500 uppercase"
+                  >Peak Total Current</span
+                >
+                <span
+                  class="text-xl font-bold text-neutral-900 dark:text-white"
+                >
+                  {physicsResult.peakCurrent.toFixed(1)} A
+                </span>
+              </div>
+              <div
+                class="bg-white dark:bg-neutral-900 p-3 rounded-lg border border-neutral-200 dark:border-neutral-700 flex flex-col items-center text-center"
+              >
+                <span class="text-xs text-neutral-500 uppercase">Peak Force</span>
+                <span
+                  class="text-xl font-bold text-neutral-900 dark:text-white"
+                >
+                  {physicsResult.peakForce.toFixed(1)} lbf
+                </span>
+              </div>
+            </div>
+
+            <!-- Insights / Warnings -->
+            {#if physicsResult.insights.length > 0}
+              <div class="flex flex-col gap-2">
+                {#each physicsResult.insights as insight}
+                  <div
+                    class={`flex items-start gap-2 p-2 rounded text-sm border ${
+                      insight.type === "error"
+                        ? "bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800 text-red-800 dark:text-red-200"
+                        : "bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-200"
+                    }`}
+                  >
+                    <span class="font-bold shrink-0">
+                      {#if insight.type === "error"}⚠️{:else}⚠️{/if}
+                    </span>
+                    <span class="flex-1"
+                      >{insight.message} at {formatTime(insight.startTime)}</span
+                    >
+                    <span class="font-mono">{insight.value.toFixed(2)}</span>
+                  </div>
+                {/each}
+              </div>
+            {/if}
+
+            <!-- Charts -->
+            <div class="space-y-6">
+              <div
+                class="simple-chart-container bg-white dark:bg-neutral-900 rounded-lg border border-neutral-200 dark:border-neutral-700 p-4"
+              >
+                <h3
+                  class="text-sm font-semibold mb-2 text-neutral-700 dark:text-neutral-300"
+                >
+                  Motor Torque Demand (at Motor Shaft)
+                </h3>
+                <SimpleChart
+                  data={physicsResult.torqueData}
+                  color="#d946ef"
+                  label="Torque"
+                  unit="N-m"
+                  height={150}
+                  {currentTime}
+                />
+              </div>
+
+              <div
+                class="simple-chart-container bg-white dark:bg-neutral-900 rounded-lg border border-neutral-200 dark:border-neutral-700 p-4"
+              >
+                <h3
+                  class="text-sm font-semibold mb-2 text-neutral-700 dark:text-neutral-300"
+                >
+                  Est. Total Current Draw
+                </h3>
+                <SimpleChart
+                  data={physicsResult.currentData}
+                  color="#eab308"
+                  label="Current"
+                  unit="A"
+                  height={150}
+                  {currentTime}
+                />
+              </div>
+
+              <div
+                class="simple-chart-container bg-white dark:bg-neutral-900 rounded-lg border border-neutral-200 dark:border-neutral-700 p-4"
+              >
+                <h3
+                  class="text-sm font-semibold mb-2 text-neutral-700 dark:text-neutral-300"
+                >
+                  Traction Force Demand (Total)
+                </h3>
+                <SimpleChart
+                  data={physicsResult.forceData}
+                  color="#f97316"
+                  label="Force"
+                  unit="lbf"
+                  height={150}
+                  {currentTime}
+                />
+                <div
+                  class="text-xs text-neutral-500 mt-1 text-center"
+                >
+                  Traction Limit (approx): {(
+                    (physicsParams.kFriction *
+                      physicsParams.robotMass *
+                      0.453592 *
+                      9.81 *
+                      0.224809) || 0
+                  ).toFixed(1)} lbf
+                </div>
+              </div>
             </div>
           {/if}
         </div>
