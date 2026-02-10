@@ -34,6 +34,16 @@ You can now split a path segment into two separate segments at the current timel
 - **Performance:** Reduced UI lag when opening the Plugin Manager.
 - **Stability:** Fixed several bugs related to context menu state and note persistence.
 
+### **Microsoft Store Compatibility**
+
+This release includes targeted changes to prepare the app for submission to the **Microsoft Store**:
+- **Packaging:** Added MSIX packaging and build scripts for x64 and ARM64 to produce store-ready artifacts.
+- **Code signing & metadata:** Enabled timestamped code signing and included publisher metadata required by Store certification.
+- **Privacy & telemetry:** Added a clear privacy policy link and a telemetry opt-out toggle to comply with Store policies.
+- **Installer & updates:** Adjusted the update flow to be Store-compliant.
+- **Windows-specific fixes:** Addressed certification issues (high-DPI rendering, file associations, and capability declarations) to improve chances of passing the Windows App Certification Kit checks.
+- **Other:** This version is an updating pre-release. changes are still being made actively to this release. It is highly recommended to use a stable release for now. 
+
 ---
 
 Thanks for the suggestions — these additions make editing and organizing projects faster and more flexible. Keep the feedback coming! ✨
