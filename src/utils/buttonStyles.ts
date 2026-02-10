@@ -1,4 +1,4 @@
-// Copyright 2026 Matthew Allen. Licensed under the Apache License, Version 2.0.
+// Copyright 2026 Matthew Allen. Licensed under the Modified Apache License, Version 2.0.
 // Utility helpers to return full Tailwind class strings for button color variants.
 // Avoids using dynamic `bg-${color}-...` templates so Tailwind JIT includes the classes.
 
