@@ -247,6 +247,12 @@ This project is open for everyone! We believe in the power of open source and co
 
 See the [LICENSE](LICENSE) file for the full Apache 2.0 legal text.
 
+## 🔒 Privacy
+
+Your privacy is important to us. The Pedro Pathing Plus Visualizer is designed to run locally on your machine and does not collect personal data.
+
+For more details, please review our full [Privacy Policy](PRIVACY.md).
+
 ## 🙏 Acknowledgments
 
 - **#16166 Watt's Up**: For the initial concept, development, and inspiration.
