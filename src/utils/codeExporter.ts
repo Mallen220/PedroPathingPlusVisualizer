@@ -2,9 +2,43 @@
 import prettier from "prettier";
 import prettierJavaPlugin from "prettier-plugin-java";
 import type { Point, Line, BasePoint, SequenceItem } from "../types";
-import { getCurvePoint } from "./math";
+import { getCurvePoint, getLineStartHeading } from "./math";
 import pkg from "../../package.json";
 import { actionRegistry } from "../lib/actionRegistry";
+
+export interface StartPose {
+  x: number;
+  y: number;
+  heading: number; // degrees
+}
+
+/**
+ * Calculate the start pose of the robot based on the path data.
+ */
+export function calculateStartPose(
+  startPoint: Point,
+  lines: Line[],
+): StartPose {
+  const x = startPoint.x;
+  const y = startPoint.y;
+  let heading = 0;
+
+  if (lines.length > 0) {
+    heading = getLineStartHeading(lines[0], startPoint);
+  } else {
+    // If no lines, try to determine from startPoint itself if it has heading info
+    if (startPoint.heading === "constant") {
+      heading = startPoint.degrees;
+    } else if (startPoint.heading === "linear") {
+      heading = startPoint.startDeg;
+    } else {
+      // Tangential with no line -> assume 0 or maybe look at 'reverse'?
+      heading = startPoint.reverse ? 180 : 0;
+    }
+  }
+
+  return { x, y, heading };
+}
 
 /**
  * Generate Java code from path data
@@ -28,7 +62,19 @@ export async function generateJavaCode(
   sequence?: SequenceItem[],
   packageName: string = "org.firstinspires.ftc.teamcode.Commands.AutoCommands",
   telemetryImpl: "Standard" | "Dashboard" | "Panels" | "None" = "Panels",
+  options: {
+    customStartPose?: StartPose;
+    className?: string;
+    opModeName?: string;
+    groupName?: string;
+  } = {},
 ): Promise<string> {
+  const startPose =
+    options.customStartPose || calculateStartPose(startPoint, lines);
+  const className = options.className || "PedroAutonomous";
+  const opModeName = options.opModeName || "Pedro Pathing Autonomous";
+  const groupName = options.groupName || "Autonomous";
+
   const headingTypeToFunctionName = {
     constant: "setConstantHeadingInterpolation",
     linear: "setLinearHeadingInterpolation",
@@ -338,9 +384,9 @@ export async function generateJavaCode(
     import com.pedropathing.geometry.Pose;
     ${eventMarkerNames.size > 0 ? "import com.pedropathing.NamedCommands;" : ""}
     
-    @Autonomous(name = "Pedro Pathing Autonomous", group = "Autonomous")
+    @Autonomous(name = "${opModeName}", group = "${groupName}")
     ${classAnnotations}
-    public class PedroAutonomous extends OpMode {
+    public class ${className} extends OpMode {
       ${telemetryField}
       public Follower follower; // Pedro Pathing follower instance
       private int pathState; // Current autonomous path state (state machine)
@@ -352,7 +398,7 @@ export async function generateJavaCode(
         ${telemetryInit}
 
         follower = Constants.createFollower(hardwareMap);
-        follower.setStartingPose(new Pose(72, 8, Math.toRadians(90)));
+        follower.setStartingPose(new Pose(${startPose.x.toFixed(3)}, ${startPose.y.toFixed(3)}, Math.toRadians(${startPose.heading.toFixed(3)})));
 
         pathTimer = new ElapsedTime();
         paths = new Paths(follower); // Build paths

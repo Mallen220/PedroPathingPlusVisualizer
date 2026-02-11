@@ -19,6 +19,8 @@
     generateJavaCode,
     generatePointsArray,
     generateSequentialCommandCode,
+    calculateStartPose,
+    type StartPose,
   } from "../../../utils";
   import { tick, onMount } from "svelte";
   import { get } from "svelte/store";
@@ -49,6 +51,13 @@
   let telemetryImplementation: "Standard" | "Dashboard" | "Panels" | "None" =
     "Panels";
 
+  // Java Export Options
+  let startPose: StartPose = { x: 0, y: 0, heading: 0 };
+  let autoCalculateStartPose = true;
+  let className = "PedroAutonomous";
+  let opModeName = "Pedro Pathing Autonomous";
+  let groupName = "Autonomous";
+
   let exportedCode = "";
   let currentLanguage: typeof java | typeof plaintext | typeof json = java;
   let copied = false;
@@ -63,6 +72,24 @@
   let searchInputRef: HTMLInputElement;
 
   const electronAPI = (window as any).electronAPI;
+
+  // Auto-calculate start pose when needed
+  $: if (autoCalculateStartPose && (startPoint || lines)) {
+    const calculated = calculateStartPose(startPoint, lines);
+    startPose = { ...calculated };
+  }
+
+  // Trigger code refresh when start pose related settings change
+  $: if (
+    exportFormat === "java" &&
+    (!autoCalculateStartPose ||
+      className ||
+      opModeName ||
+      groupName ||
+      startPose)
+  ) {
+    refreshCode();
+  }
 
   async function relativizeSequenceForPreview(seq: SequenceItem[]) {
     const cloned = structuredClone(seq);
@@ -142,6 +169,12 @@
           sequence,
           packageName,
           telemetryImplementation,
+          {
+            customStartPose: autoCalculateStartPose ? undefined : startPose,
+            className,
+            opModeName,
+            groupName,
+          },
         );
         currentLanguage = java;
       } else if (exportFormat === "points") {
@@ -267,7 +300,7 @@
         // Regex to find 'class ClassName'
         const match = exportedCode.match(/class\s+(\w+)/);
         if (match) filename = `${match[1]}.java`;
-        else filename = "AutoPath.java";
+        else filename = `${className}.java`;
       } else if (exportFormat === "points") {
         filename = "points.txt";
       }
@@ -286,7 +319,7 @@
 
       if (exportFormat === "java" || exportFormat === "sequential") {
         const match = exportedCode.match(/class\s+(\w+)/);
-        defaultName = match ? `${match[1]}.java` : "AutoPath.java";
+        defaultName = match ? `${match[1]}.java` : `${className}.java`;
         extensions = ["java"];
         nameFilter = "Java File";
       } else if (exportFormat === "points") {
@@ -721,6 +754,130 @@
               </div>
               <span>Generate Full Class</span>
             </label>
+
+            <div class="w-full h-px bg-neutral-200 dark:bg-neutral-700 my-2" />
+
+            <!-- OpMode Settings -->
+            <div class="flex flex-wrap gap-4 w-full">
+              <div class="flex flex-col gap-1.5 grow">
+                <label
+                  for="class-name-input"
+                  class="text-[10px] font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400"
+                  >Class Name</label
+                >
+                <input
+                  id="class-name-input"
+                  type="text"
+                  bind:value={className}
+                  on:input={refreshCode}
+                  class="px-3 py-1.5 text-sm rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 focus:outline-none focus:ring-2 focus:ring-blue-500 w-full"
+                  placeholder="PedroAutonomous"
+                />
+              </div>
+              <div class="flex flex-col gap-1.5 grow">
+                <label
+                  for="opmode-name-input"
+                  class="text-[10px] font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400"
+                  >OpMode Name</label
+                >
+                <input
+                  id="opmode-name-input"
+                  type="text"
+                  bind:value={opModeName}
+                  on:input={refreshCode}
+                  class="px-3 py-1.5 text-sm rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 focus:outline-none focus:ring-2 focus:ring-blue-500 w-full"
+                  placeholder="Pedro Pathing Autonomous"
+                />
+              </div>
+              <div class="flex flex-col gap-1.5 grow">
+                <label
+                  for="group-name-input"
+                  class="text-[10px] font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400"
+                  >Group Name</label
+                >
+                <input
+                  id="group-name-input"
+                  type="text"
+                  bind:value={groupName}
+                  on:input={refreshCode}
+                  class="px-3 py-1.5 text-sm rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 focus:outline-none focus:ring-2 focus:ring-blue-500 w-full"
+                  placeholder="Autonomous"
+                />
+              </div>
+            </div>
+
+            <div class="w-full h-px bg-neutral-200 dark:bg-neutral-700 my-2" />
+
+            <!-- Start Pose Settings -->
+            <div class="flex flex-col gap-2 w-full">
+              <div class="flex items-center justify-between">
+                <span
+                  class="text-[10px] font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400"
+                  >Robot Start Pose</span
+                >
+                <label
+                  class="flex items-center gap-2 text-xs text-neutral-600 dark:text-neutral-400 cursor-pointer select-none"
+                >
+                  <input
+                    type="checkbox"
+                    bind:checked={autoCalculateStartPose}
+                    class="rounded border-neutral-300 text-blue-600 focus:ring-blue-500 dark:border-neutral-600 dark:bg-neutral-700"
+                  />
+                  Auto-calculate from Path
+                </label>
+              </div>
+
+              <div class="flex gap-4">
+                <div class="flex flex-col gap-1 grow">
+                  <label
+                    for="start-x"
+                    class="text-xs text-neutral-500 dark:text-neutral-400"
+                    >X (inches)</label
+                  >
+                  <input
+                    id="start-x"
+                    type="number"
+                    step="0.1"
+                    bind:value={startPose.x}
+                    disabled={autoCalculateStartPose}
+                    on:input={() => !autoCalculateStartPose && refreshCode()}
+                    class="px-3 py-1.5 text-sm rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 focus:outline-none focus:ring-2 focus:ring-blue-500 w-full disabled:opacity-50 disabled:bg-neutral-100 dark:disabled:bg-neutral-800"
+                  />
+                </div>
+                <div class="flex flex-col gap-1 grow">
+                  <label
+                    for="start-y"
+                    class="text-xs text-neutral-500 dark:text-neutral-400"
+                    >Y (inches)</label
+                  >
+                  <input
+                    id="start-y"
+                    type="number"
+                    step="0.1"
+                    bind:value={startPose.y}
+                    disabled={autoCalculateStartPose}
+                    on:input={() => !autoCalculateStartPose && refreshCode()}
+                    class="px-3 py-1.5 text-sm rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 focus:outline-none focus:ring-2 focus:ring-blue-500 w-full disabled:opacity-50 disabled:bg-neutral-100 dark:disabled:bg-neutral-800"
+                  />
+                </div>
+                <div class="flex flex-col gap-1 grow">
+                  <label
+                    for="start-heading"
+                    class="text-xs text-neutral-500 dark:text-neutral-400"
+                    >Heading (deg)</label
+                  >
+                  <input
+                    id="start-heading"
+                    type="number"
+                    step="1"
+                    bind:value={startPose.heading}
+                    disabled={autoCalculateStartPose}
+                    on:input={() => !autoCalculateStartPose && refreshCode()}
+                    class="px-3 py-1.5 text-sm rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 focus:outline-none focus:ring-2 focus:ring-blue-500 w-full disabled:opacity-50 disabled:bg-neutral-100 dark:disabled:bg-neutral-800"
+                  />
+                </div>
+              </div>
+            </div>
           {/if}
         </div>
       {/if}
