@@ -132,7 +132,8 @@
         "nsis",
         "appx"
       ],
-      "icon": "build/icon.png"
+      "icon": "build/icon.png",
+      "certificateSubjectName": "Pedro Pathing Plus"
     },
     "appx": {
       "identityName": "${env.MSIX_PACKAGE_ID}",
