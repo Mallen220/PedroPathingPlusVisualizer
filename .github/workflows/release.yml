@@ -179,7 +179,7 @@ jobs:
 
       - name: Build (Windows)
         env:
-          WIN_CSC_LINK: msix-signing.pfx
+          WIN_CSC_LINK: ${{ secrets.CSC_LINK }}
           WIN_CSC_KEY_PASSWORD: ${{ secrets.MSIX_CERT_PASSWORD }}
           MSIX_PUBLISHER: ${{ secrets.MSIX_PUBLISHER }}
           MSIX_PACKAGE_ID: ${{ secrets.MSIX_PACKAGE_ID }}
