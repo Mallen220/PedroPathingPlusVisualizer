@@ -19,6 +19,16 @@ if (-not $exe) { throw 'Main exe not found in app dir.' }
 Write-Host "Found exe: $($exe.Name)"
 
 # Prepare config
+# Use explicit fallbacks compatible with Windows PowerShell
+$packageIdentity = $env:MSIX_PACKAGE_ID
+if ([string]::IsNullOrWhiteSpace($packageIdentity)) { $packageIdentity = 'PedroPathingPlus.PedroPathingPlusVisualizer' }
+$publisher = $env:MSIX_PUBLISHER
+if ([string]::IsNullOrWhiteSpace($publisher)) { $publisher = 'CN=PedroPathingPlusVisualizer' }
+$publisherDisplayName = $env:MSIX_PUBLISHER_DISPLAY_NAME
+if ([string]::IsNullOrWhiteSpace($publisherDisplayName)) { $publisherDisplayName = 'Matthew Allen' }
+$packageVersionString = '0.0.0.0'
+if (-not [string]::IsNullOrWhiteSpace($version)) { $packageVersionString = "${version}.0" }
+
 $config = @{
   appDir = $appDir.FullName
   packageAssets = (Resolve-Path 'build').Path
@@ -26,12 +36,12 @@ $config = @{
   packageName = "Pedro-Pathing-Plus-Visualizer-${version}-x64.msix"
   logLevel = 'warn'
   manifestVariables = @{
-    packageIdentity = ($env:MSIX_PACKAGE_ID -or 'PedroPathingPlus.PedroPathingPlusVisualizer')
-    publisher = ($env:MSIX_PUBLISHER -or 'CN=PedroPathingPlusVisualizer')
-    publisherDisplayName = ($env:MSIX_PUBLISHER_DISPLAY_NAME -or 'Matthew Allen')
+    packageIdentity = $packageIdentity
+    publisher = $publisher
+    publisherDisplayName = $publisherDisplayName
     packageDisplayName = 'Pedro Pathing Plus Visualizer'
     packageDescription = 'Pedro Pathing Plus Visualizer'
-    packageVersion = (if ($version) { "${version}.0" } else { '0.0.0.0' })
+    packageVersion = $packageVersionString
     appExecutable = $exe.Name
     targetArch = 'x64'
   }
