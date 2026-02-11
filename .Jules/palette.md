@@ -27,3 +27,8 @@ Action: Keep reusable components layout-neutral (padding/dimensions only) and de
 
 Learning: Visual search results update instantly, but screen reader users get no feedback when filtering lists unless a live region is present.
 Action: Always pair filterable lists with a visually hidden `aria-live="polite"` element that announces "X results found" when the count changes.
+
+## 2026-05-25 - Explaining Disabled States
+
+Learning: A disabled button without explanation (via tooltip) frustrates users who don't understand why the action is unavailable (e.g., "Why can't I move this item up?").
+Action: Always provide dynamic tooltips on disabled interactive elements that explain the specific reason for the disabled state (e.g., "Locked" or "Already at top").

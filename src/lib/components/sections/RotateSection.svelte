@@ -235,7 +235,11 @@
           }}
           disabled={!canMoveUp || rotate.locked}
           class="p-1 rounded-md hover:bg-white dark:hover:bg-neutral-800 text-neutral-500 dark:text-neutral-400 disabled:opacity-30 disabled:hover:bg-transparent transition-all shadow-sm hover:shadow"
-          title="Move Up"
+          title={rotate.locked
+            ? "Rotate is locked"
+            : !canMoveUp
+              ? "Already at top"
+              : "Move Up"}
           aria-label="Move Up"
         >
           <svg
@@ -257,7 +261,11 @@
           }}
           disabled={!canMoveDown || rotate.locked}
           class="p-1 rounded-md hover:bg-white dark:hover:bg-neutral-800 text-neutral-500 dark:text-neutral-400 disabled:opacity-30 disabled:hover:bg-transparent transition-all shadow-sm hover:shadow"
-          title="Move Down"
+          title={rotate.locked
+            ? "Rotate is locked"
+            : !canMoveDown
+              ? "Already at bottom"
+              : "Move Down"}
           aria-label="Move Down"
         >
           <svg
@@ -280,7 +288,7 @@
           if (!rotate.locked && onRemove) onRemove();
         }}
         disabled={rotate.locked}
-        title="Remove Rotate"
+        title={rotate.locked ? "Rotate is locked" : "Remove Rotate"}
       />
     </div>
   </div>
