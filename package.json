@@ -139,8 +139,7 @@
       "identityName": "${env.MSIX_PACKAGE_ID}",
       "publisherDisplayName": "${env.MSIX_PUBLISHER_DISPLAY_NAME}",
       "applicationId": "${env.MSIX_PACKAGE_ID}",
-      "publisher": "${env.MSIX_PUBLISHER}",
-      "publisherName": "${env.MSIX_PUBLISHER_DISPLAY_NAME}"
+      "publisher": "${env.MSIX_PUBLISHER}"
     },
     "nsis": {
       "oneClick": false,
