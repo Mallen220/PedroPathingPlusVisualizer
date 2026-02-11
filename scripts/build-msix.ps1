@@ -74,7 +74,7 @@ node -e "(async ()=>{try{await import('electron-windows-msix');console.log('modu
 if ($LASTEXITCODE -eq 30) { Write-Host 'Installing electron-windows-msix'; npm install --no-save electron-windows-msix }
 
 # Execute the node runner
-$nodeRunner = Join-Path $repoRoot 'scripts' 'build-msix.mjs'
+$nodeRunner = Join-Path $repoRoot 'scripts\build-msix.mjs'
 Write-Host 'Running node runner:' $nodeRunner
 node $nodeRunner
 
