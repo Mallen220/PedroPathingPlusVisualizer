@@ -7,6 +7,10 @@
   import type { SequenceMacroItem, SequenceItem } from "../../../types/index";
   import { actionRegistry } from "../../actionRegistry";
   import { getSmallButtonClass } from "../../../utils/buttonStyles";
+  import {
+    getMoveTooltip,
+    getDeleteTooltip,
+  } from "../../../utils/tooltipUtils";
 
   export let macro: SequenceMacroItem;
   export let sequence: SequenceItem[];
@@ -178,11 +182,7 @@
           }}
           disabled={!canMoveUp || macro.locked}
           class="p-1 rounded-md hover:bg-white dark:hover:bg-neutral-800 text-neutral-500 dark:text-neutral-400 disabled:opacity-30 disabled:hover:bg-transparent transition-all shadow-sm hover:shadow"
-          title={macro.locked
-            ? "Macro is locked"
-            : !canMoveUp
-              ? "Already at top"
-              : "Move Up"}
+          title={getMoveTooltip("up", !!macro.locked, canMoveUp, "Macro")}
           aria-label="Move Up"
         >
           <svg
@@ -204,11 +204,7 @@
           }}
           disabled={!canMoveDown || macro.locked}
           class="p-1 rounded-md hover:bg-white dark:hover:bg-neutral-800 text-neutral-500 dark:text-neutral-400 disabled:opacity-30 disabled:hover:bg-transparent transition-all shadow-sm hover:shadow"
-          title={macro.locked
-            ? "Macro is locked"
-            : !canMoveDown
-              ? "Already at bottom"
-              : "Move Down"}
+          title={getMoveTooltip("down", !!macro.locked, canMoveDown, "Macro")}
           aria-label="Move Down"
         >
           <svg
@@ -231,7 +227,7 @@
           if (!macro.locked && onRemove) onRemove();
         }}
         disabled={macro.locked}
-        title={macro.locked ? "Macro is locked" : "Remove Macro"}
+        title={getDeleteTooltip(!!macro.locked, "Macro", "Remove")}
       />
     </div>
   </div>

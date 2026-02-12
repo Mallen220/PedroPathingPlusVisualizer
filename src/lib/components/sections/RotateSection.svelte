@@ -11,6 +11,10 @@
   import { tooltipPortal } from "../../actions/portal";
   import { actionRegistry } from "../../actionRegistry";
   import { getSmallButtonClass } from "../../../utils/buttonStyles";
+  import {
+    getMoveTooltip,
+    getDeleteTooltip,
+  } from "../../../utils/tooltipUtils";
 
   export let rotate: SequenceRotateItem;
   export let sequence: SequenceItem[];
@@ -235,11 +239,7 @@
           }}
           disabled={!canMoveUp || rotate.locked}
           class="p-1 rounded-md hover:bg-white dark:hover:bg-neutral-800 text-neutral-500 dark:text-neutral-400 disabled:opacity-30 disabled:hover:bg-transparent transition-all shadow-sm hover:shadow"
-          title={rotate.locked
-            ? "Rotate is locked"
-            : !canMoveUp
-              ? "Already at top"
-              : "Move Up"}
+          title={getMoveTooltip("up", !!rotate.locked, canMoveUp, "Rotate")}
           aria-label="Move Up"
         >
           <svg
@@ -261,11 +261,7 @@
           }}
           disabled={!canMoveDown || rotate.locked}
           class="p-1 rounded-md hover:bg-white dark:hover:bg-neutral-800 text-neutral-500 dark:text-neutral-400 disabled:opacity-30 disabled:hover:bg-transparent transition-all shadow-sm hover:shadow"
-          title={rotate.locked
-            ? "Rotate is locked"
-            : !canMoveDown
-              ? "Already at bottom"
-              : "Move Down"}
+          title={getMoveTooltip("down", !!rotate.locked, canMoveDown, "Rotate")}
           aria-label="Move Down"
         >
           <svg
@@ -288,7 +284,7 @@
           if (!rotate.locked && onRemove) onRemove();
         }}
         disabled={rotate.locked}
-        title={rotate.locked ? "Rotate is locked" : "Remove Rotate"}
+        title={getDeleteTooltip(!!rotate.locked, "Rotate", "Remove")}
       />
     </div>
   </div>

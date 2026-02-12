@@ -11,6 +11,10 @@
   import { tooltipPortal } from "../../actions/portal";
   import { actionRegistry } from "../../actionRegistry";
   import { getSmallButtonClass } from "../../../utils/buttonStyles";
+  import {
+    getMoveTooltip,
+    getDeleteTooltip,
+  } from "../../../utils/tooltipUtils";
 
   export let wait: SequenceWaitItem;
   export let sequence: SequenceItem[];
@@ -240,11 +244,7 @@
           }}
           disabled={!canMoveUp || wait.locked}
           class="p-1 rounded-md hover:bg-white dark:hover:bg-neutral-800 text-neutral-500 dark:text-neutral-400 disabled:opacity-30 disabled:hover:bg-transparent transition-all shadow-sm hover:shadow"
-          title={wait.locked
-            ? "Wait is locked"
-            : !canMoveUp
-              ? "Already at top"
-              : "Move Up"}
+          title={getMoveTooltip("up", !!wait.locked, canMoveUp, "Wait")}
           aria-label="Move Up"
         >
           <svg
@@ -266,11 +266,7 @@
           }}
           disabled={!canMoveDown || wait.locked}
           class="p-1 rounded-md hover:bg-white dark:hover:bg-neutral-800 text-neutral-500 dark:text-neutral-400 disabled:opacity-30 disabled:hover:bg-transparent transition-all shadow-sm hover:shadow"
-          title={wait.locked
-            ? "Wait is locked"
-            : !canMoveDown
-              ? "Already at bottom"
-              : "Move Down"}
+          title={getMoveTooltip("down", !!wait.locked, canMoveDown, "Wait")}
           aria-label="Move Down"
         >
           <svg
@@ -293,7 +289,7 @@
           if (!wait.locked && onRemove) onRemove();
         }}
         disabled={wait.locked}
-        title={wait.locked ? "Wait is locked" : "Remove Wait"}
+        title={getDeleteTooltip(!!wait.locked, "Wait", "Remove")}
       />
     </div>
   </div>

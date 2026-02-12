@@ -19,6 +19,10 @@
   import { onMount, onDestroy } from "svelte";
   import { actionRegistry } from "../../actionRegistry";
   import { getSmallButtonClass } from "../../../utils/buttonStyles";
+  import {
+    getMoveTooltip,
+    getDeleteTooltip,
+  } from "../../../utils/tooltipUtils";
 
   export let line: Line;
   export let idx: number;
@@ -278,11 +282,7 @@
             !line.locked && onMoveUp && onMoveUp()}
           disabled={!canMoveUp || line.locked}
           class="p-1 rounded-md hover:bg-white dark:hover:bg-neutral-800 text-neutral-500 dark:text-neutral-400 disabled:opacity-30 disabled:hover:bg-transparent transition-all shadow-sm hover:shadow"
-          title={line.locked
-            ? "Path is locked"
-            : !canMoveUp
-              ? "Already at top"
-              : "Move Up"}
+          title={getMoveTooltip("up", !!line.locked, canMoveUp, "Path")}
           aria-label="Move Up"
         >
           <svg
@@ -303,11 +303,7 @@
             !line.locked && onMoveDown && onMoveDown()}
           disabled={!canMoveDown || line.locked}
           class="p-1 rounded-md hover:bg-white dark:hover:bg-neutral-800 text-neutral-500 dark:text-neutral-400 disabled:opacity-30 disabled:hover:bg-transparent transition-all shadow-sm hover:shadow"
-          title={line.locked
-            ? "Path is locked"
-            : !canMoveDown
-              ? "Already at bottom"
-              : "Move Down"}
+          title={getMoveTooltip("down", !!line.locked, canMoveDown, "Path")}
           aria-label="Move Down"
         >
           <svg
@@ -329,7 +325,7 @@
         <DeleteButtonWithConfirm
           on:click={() => !line.locked && onRemove && onRemove()}
           disabled={line.locked}
-          title={line.locked ? "Path is locked" : "Delete Path"}
+          title={getDeleteTooltip(!!line.locked, "Path")}
           className="ml-1"
         />
       {/if}
