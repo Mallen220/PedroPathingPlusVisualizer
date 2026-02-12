@@ -76,6 +76,8 @@ contextBridge.exposeInMainWorld("electronAPI", {
 
   // Get app version
   getAppVersion: () => ipcRenderer.invoke("app:get-version"),
+  // Check if running in Microsoft Store
+  isWindowsStore: () => ipcRenderer.invoke("app:is-windows-store"),
   // Open external URL in the user's default browser
   openExternal: (url) => ipcRenderer.invoke("app:open-external", url),
 

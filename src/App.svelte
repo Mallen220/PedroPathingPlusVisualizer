@@ -44,6 +44,7 @@
     currentDirectoryStore,
     showPluginManager,
     showTelemetryDialog,
+    selectedLineId,
   } from "./stores";
   import {
     startPointStore,
@@ -121,8 +122,40 @@
     getPathForFile?: (file: File) => string;
     getSavedDirectory?: () => Promise<string>;
     gitShow?: (filePath: string) => Promise<string | null>;
+    isWindowsStore?: () => Promise<boolean>;
   }
   const electronAPI = (window as any).electronAPI as ElectronAPI | undefined;
+
+  async function checkMsStoreTracking() {
+    if (!electronAPI || !electronAPI.isWindowsStore) return;
+    try {
+      const isStore = await electronAPI.isWindowsStore();
+      if (isStore) {
+        const tracked = localStorage.getItem("msStoreTracked");
+        if (!tracked) {
+          // Attempt to fetch the tracking asset to increment the download count on GitHub
+          // This requires a release tagged 'tracker' with a file 'ms-store-tracker.zip'
+          try {
+            const response = await fetch(
+              "https://github.com/Mallen220/PedroPathingPlusVisualizer/releases/download/tracker/ms-store-tracker.zip",
+            );
+            if (response.ok) {
+              localStorage.setItem("msStoreTracked", "true");
+              console.log("Microsoft Store tracking successful");
+            } else {
+              console.warn(
+                "Microsoft Store tracking failed: Asset not found or network error",
+              );
+            }
+          } catch (e) {
+            console.warn("Microsoft Store tracking failed", e);
+          }
+        }
+      }
+    } catch (e) {
+      console.warn("Error checking Microsoft Store status", e);
+    }
+  }
 
   // Delegated handler: open external links in the user's default browser when running in Electron
   function handleLinkClick(e: MouseEvent) {
@@ -151,6 +184,7 @@
   onMount(() => {
     document.addEventListener("click", handleLinkClick);
     window.addEventListener("beforeunload", handleBeforeUnload);
+    checkMsStoreTracking();
   });
 
   onDestroy(() => {
