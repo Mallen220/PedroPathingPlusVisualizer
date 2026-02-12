@@ -224,7 +224,7 @@
     <div class="flex items-center gap-1">
       <ColorPicker
         bind:color={line.color}
-        title="Change Path Color"
+        title={line.locked ? "Path is locked" : "Change Path Color"}
         disabled={line.locked}
       />
 
@@ -278,7 +278,11 @@
             !line.locked && onMoveUp && onMoveUp()}
           disabled={!canMoveUp || line.locked}
           class="p-1 rounded-md hover:bg-white dark:hover:bg-neutral-800 text-neutral-500 dark:text-neutral-400 disabled:opacity-30 disabled:hover:bg-transparent transition-all shadow-sm hover:shadow"
-          title="Move Up"
+          title={line.locked
+            ? "Path is locked"
+            : !canMoveUp
+              ? "Already at top"
+              : "Move Up"}
           aria-label="Move Up"
         >
           <svg
@@ -299,7 +303,11 @@
             !line.locked && onMoveDown && onMoveDown()}
           disabled={!canMoveDown || line.locked}
           class="p-1 rounded-md hover:bg-white dark:hover:bg-neutral-800 text-neutral-500 dark:text-neutral-400 disabled:opacity-30 disabled:hover:bg-transparent transition-all shadow-sm hover:shadow"
-          title="Move Down"
+          title={line.locked
+            ? "Path is locked"
+            : !canMoveDown
+              ? "Already at bottom"
+              : "Move Down"}
           aria-label="Move Down"
         >
           <svg
@@ -321,7 +329,7 @@
         <DeleteButtonWithConfirm
           on:click={() => !line.locked && onRemove && onRemove()}
           disabled={line.locked}
-          title="Delete Path"
+          title={line.locked ? "Path is locked" : "Delete Path"}
           className="ml-1"
         />
       {/if}
