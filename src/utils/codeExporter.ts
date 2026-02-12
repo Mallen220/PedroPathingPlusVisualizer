@@ -2,9 +2,31 @@
 import prettier from "prettier";
 import prettierJavaPlugin from "prettier-plugin-java";
 import type { Point, Line, BasePoint, SequenceItem } from "../types";
-import { getCurvePoint } from "./math";
+import { getCurvePoint, getLineStartHeading } from "./math";
 import pkg from "../../package.json";
 import { actionRegistry } from "../lib/actionRegistry";
+
+/**
+ * Interface for the robot's starting pose
+ */
+export interface StartPose {
+  x: number;
+  y: number;
+  heading: number; // in degrees
+}
+
+/**
+ * Calculate the start pose based on the first line or start point
+ */
+export function calculateStartPose(startPoint: Point, lines: Line[]): StartPose {
+  const heading =
+    lines.length > 0 ? getLineStartHeading(lines[0], startPoint) : 0;
+  return {
+    x: startPoint.x,
+    y: startPoint.y,
+    heading: heading,
+  };
+}
 
 /**
  * Generate Java code from path data
@@ -28,6 +50,10 @@ export async function generateJavaCode(
   sequence?: SequenceItem[],
   packageName: string = "org.firstinspires.ftc.teamcode.Commands.AutoCommands",
   telemetryImpl: "Standard" | "Dashboard" | "Panels" | "None" = "Panels",
+  startPose?: StartPose,
+  className: string = "PedroAutonomous",
+  opModeName: string = "Pedro Pathing Autonomous",
+  groupName: string = "Autonomous",
 ): Promise<string> {
   const headingTypeToFunctionName = {
     constant: "setConstantHeadingInterpolation",
@@ -322,6 +348,9 @@ export async function generateJavaCode(
         telemetry.update();`;
     }
 
+    // Use provided start pose or calculate default
+    const finalStartPose = startPose || calculateStartPose(startPoint, lines);
+
     file = `
     ${AUTO_GENERATED_FILE_WARNING_MESSAGE}
 
@@ -338,9 +367,9 @@ export async function generateJavaCode(
     import com.pedropathing.geometry.Pose;
     ${eventMarkerNames.size > 0 ? "import com.pedropathing.NamedCommands;" : ""}
     
-    @Autonomous(name = "Pedro Pathing Autonomous", group = "Autonomous")
+    @Autonomous(name = "${opModeName}", group = "${groupName}")
     ${classAnnotations}
-    public class PedroAutonomous extends OpMode {
+    public class ${className} extends OpMode {
       ${telemetryField}
       public Follower follower; // Pedro Pathing follower instance
       private int pathState; // Current autonomous path state (state machine)
@@ -352,7 +381,7 @@ export async function generateJavaCode(
         ${telemetryInit}
 
         follower = Constants.createFollower(hardwareMap);
-        follower.setStartingPose(new Pose(72, 8, Math.toRadians(90)));
+        follower.setStartingPose(new Pose(${finalStartPose.x.toFixed(3)}, ${finalStartPose.y.toFixed(3)}, Math.toRadians(${finalStartPose.heading.toFixed(3)})));
 
         pathTimer = new ElapsedTime();
         paths = new Paths(follower); // Build paths

@@ -19,6 +19,8 @@
     generateJavaCode,
     generatePointsArray,
     generateSequentialCommandCode,
+    calculateStartPose,
+    type StartPose,
   } from "../../../utils";
   import { tick, onMount } from "svelte";
   import { get } from "svelte/store";
@@ -49,6 +51,13 @@
   let telemetryImplementation: "Standard" | "Dashboard" | "Panels" | "None" =
     "Panels";
 
+  // Java Export Settings
+  let javaClassName = "PedroAutonomous";
+  let opModeName = "Pedro Pathing Autonomous";
+  let groupName = "Autonomous";
+  let autoCalculateStartPose = true;
+  let startPose: StartPose = { x: 0, y: 0, heading: 0 };
+
   let exportedCode = "";
   let currentLanguage: typeof java | typeof plaintext | typeof json = java;
   let copied = false;
@@ -63,6 +72,14 @@
   let searchInputRef: HTMLInputElement;
 
   const electronAPI = (window as any).electronAPI;
+
+  $: if (autoCalculateStartPose && startPoint && lines) {
+    startPose = calculateStartPose(startPoint, lines);
+    // Trigger refresh if currently in Java mode
+    if (exportFormat === "java" && isOpen) {
+      refreshCode();
+    }
+  }
 
   async function relativizeSequenceForPreview(seq: SequenceItem[]) {
     const cloned = structuredClone(seq);
@@ -142,6 +159,10 @@
           sequence,
           packageName,
           telemetryImplementation,
+          autoCalculateStartPose ? undefined : startPose,
+          javaClassName,
+          opModeName,
+          groupName,
         );
         currentLanguage = java;
       } else if (exportFormat === "points") {
@@ -707,8 +728,59 @@
 
           <!-- Java Controls -->
           {#if exportFormat === "java"}
+            <!-- Class Name -->
+            <div class="flex flex-col gap-1.5 min-w-[140px]">
+              <label
+                for="java-class-name"
+                class="text-[10px] font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400"
+              >
+                Class Name
+              </label>
+              <input
+                id="java-class-name"
+                type="text"
+                bind:value={javaClassName}
+                on:input={refreshCode}
+                class="px-3 py-1.5 text-sm rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono"
+              />
+            </div>
+
+            <!-- OpMode Name -->
+            <div class="flex flex-col gap-1.5 min-w-[180px]">
+              <label
+                for="opmode-name"
+                class="text-[10px] font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400"
+              >
+                OpMode Name
+              </label>
+              <input
+                id="opmode-name"
+                type="text"
+                bind:value={opModeName}
+                on:input={refreshCode}
+                class="px-3 py-1.5 text-sm rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+
+            <!-- Group Name -->
+            <div class="flex flex-col gap-1.5 w-24">
+              <label
+                for="group-name"
+                class="text-[10px] font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400"
+              >
+                Group
+              </label>
+              <input
+                id="group-name"
+                type="text"
+                bind:value={groupName}
+                on:input={refreshCode}
+                class="px-3 py-1.5 text-sm rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+
             <label
-              class="flex items-center gap-2 text-sm text-neutral-700 dark:text-neutral-200 cursor-pointer select-none"
+              class="flex items-center gap-2 text-sm text-neutral-700 dark:text-neutral-200 cursor-pointer select-none self-end pb-2"
               aria-label="Export full Java class with imports"
             >
               <div class="relative flex items-center">
@@ -719,8 +791,80 @@
                   class="peer h-4 w-4 rounded border-neutral-300 text-blue-600 focus:ring-blue-500 dark:border-neutral-600 dark:bg-neutral-700 dark:ring-offset-neutral-800"
                 />
               </div>
-              <span>Generate Full Class</span>
+              <span class="whitespace-nowrap">Full Class</span>
             </label>
+
+            <!-- Start Pose Settings Row -->
+            <div
+              class="basis-full border-t border-neutral-200 dark:border-neutral-700/50 mt-1 pt-3 flex flex-wrap items-center gap-4"
+            >
+              <span
+                class="text-xs font-semibold text-neutral-900 dark:text-neutral-100"
+                >Start Pose:</span
+              >
+
+              <label
+                class="flex items-center gap-2 text-xs text-neutral-600 dark:text-neutral-400 cursor-pointer select-none"
+              >
+                <input
+                  type="checkbox"
+                  bind:checked={autoCalculateStartPose}
+                  on:change={() => {
+                    if (autoCalculateStartPose && startPoint && lines) {
+                      startPose = calculateStartPose(startPoint, lines);
+                    }
+                    refreshCode();
+                  }}
+                  class="rounded border-neutral-300 text-blue-600 focus:ring-blue-500 dark:border-neutral-600 dark:bg-neutral-700"
+                />
+                Auto-calculate
+              </label>
+
+              <div class="flex items-center gap-2">
+                <div class="flex items-center gap-1.5">
+                  <span
+                    class="text-[10px] font-bold uppercase text-neutral-500 dark:text-neutral-400"
+                    >X</span
+                  >
+                  <input
+                    type="number"
+                    step="0.1"
+                    bind:value={startPose.x}
+                    disabled={autoCalculateStartPose}
+                    on:input={() => !autoCalculateStartPose && refreshCode()}
+                    class="w-16 px-2 py-1 text-xs rounded border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 disabled:opacity-50 disabled:bg-neutral-100 dark:disabled:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+                <div class="flex items-center gap-1.5">
+                  <span
+                    class="text-[10px] font-bold uppercase text-neutral-500 dark:text-neutral-400"
+                    >Y</span
+                  >
+                  <input
+                    type="number"
+                    step="0.1"
+                    bind:value={startPose.y}
+                    disabled={autoCalculateStartPose}
+                    on:input={() => !autoCalculateStartPose && refreshCode()}
+                    class="w-16 px-2 py-1 text-xs rounded border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 disabled:opacity-50 disabled:bg-neutral-100 dark:disabled:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+                <div class="flex items-center gap-1.5">
+                  <span
+                    class="text-[10px] font-bold uppercase text-neutral-500 dark:text-neutral-400"
+                    >Deg</span
+                  >
+                  <input
+                    type="number"
+                    step="1"
+                    bind:value={startPose.heading}
+                    disabled={autoCalculateStartPose}
+                    on:input={() => !autoCalculateStartPose && refreshCode()}
+                    class="w-16 px-2 py-1 text-xs rounded border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 disabled:opacity-50 disabled:bg-neutral-100 dark:disabled:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+              </div>
+            </div>
           {/if}
         </div>
       {/if}

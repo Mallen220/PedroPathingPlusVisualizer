@@ -4,6 +4,7 @@ import {
   generateJavaCode,
   generatePointsArray,
   generateSequentialCommandCode,
+  type StartPose,
 } from "../utils/codeExporter";
 import type { Point, Line, SequenceItem } from "../types";
 import { registerCoreUI } from "../lib/coreRegistrations";
@@ -214,6 +215,32 @@ describe("codeExporter", () => {
       // Check initialization - check for assignment
       expect(code).toMatch(/Score = follower/);
       expect(code).toMatch(/Score_1 = follower/);
+    });
+
+    it("should use custom start pose and class settings", async () => {
+      const customStartPose: StartPose = { x: 12.5, y: 24.0, heading: 45 };
+      const code = await generateJavaCode(
+        startPoint,
+        [line1],
+        true,
+        undefined,
+        undefined,
+        "Panels",
+        customStartPose,
+        "MyCustomAuto",
+        "My Custom OpMode",
+        "My Group",
+      );
+
+      expect(code).toContain("public class MyCustomAuto extends OpMode");
+      expect(code).toContain(
+        '@Autonomous(name = "My Custom OpMode", group = "My Group")',
+      );
+      // Check for custom start pose (converted to radians for heading)
+      // 45 deg -> approx 0.785 rad
+      expect(code).toContain(
+        "follower.setStartingPose(new Pose(12.500, 24.000, Math.toRadians(45.000)))",
+      );
     });
   });
 
