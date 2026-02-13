@@ -58,11 +58,13 @@ export interface DiffResult {
 }
 
 export const diffMode = writable(false);
+export const diffSource = writable<"git" | "file">("git");
+export const diffSourcePath = writable<string | null>(null);
 export const committedData = writable<ProjectData | null>(null);
 export const diffResult = writable<DiffResult | null>(null);
 export const isLoadingDiff = writable(false);
 
-export async function toggleDiff() {
+export async function toggleDiff(source: "git" | "file" = "git") {
   const currentMode = get(diffMode);
 
   if (currentMode) {
@@ -70,8 +72,10 @@ export async function toggleDiff() {
     diffMode.set(false);
     committedData.set(null);
     diffResult.set(null);
+    diffSource.set("git");
+    diffSourcePath.set(null);
   } else {
-    // Turn on
+    // Turn on (Default to Git)
     const filePath = get(currentFilePath);
     if (!filePath) {
       console.warn("No file path to diff against");
@@ -95,42 +99,75 @@ export async function toggleDiff() {
       }
 
       const parsed = JSON.parse(content);
-
-      // Normalize data similar to projectStore.loadProjectData
-      const normalizedCommitted: ProjectData = {
-        startPoint: parsed.startPoint || {
-          x: 0,
-          y: 0,
-          heading: "tangential",
-          reverse: false,
-        },
-        lines: normalizeLines(parsed.lines || []),
-        sequence: parsed.sequence || [],
-        shapes: parsed.shapes || [],
-        settings: { ...get(settingsStore), ...parsed.settings }, // Merge with current settings as fallback
-      };
-
-      committedData.set(normalizedCommitted);
-
-      // Compute Diff
-      const current: ProjectData = {
-        startPoint: get(startPointStore),
-        lines: get(linesStore),
-        sequence: get(sequenceStore),
-        shapes: get(shapesStore),
-        settings: get(settingsStore),
-      };
-
-      const result = computeDiff(current, normalizedCommitted);
-      diffResult.set(result);
-
-      diffMode.set(true);
+      processDiffContent(parsed, "git", null);
     } catch (err) {
       console.error("Error toggling diff mode:", err);
     } finally {
       isLoadingDiff.set(false);
     }
   }
+}
+
+export async function compareWithFile() {
+  const api = (window as any).electronAPI;
+  if (!api || !api.selectFile) {
+    console.warn("File selection not available");
+    return;
+  }
+
+  const filePath = await api.selectFile();
+  if (!filePath) return;
+
+  try {
+    isLoadingDiff.set(true);
+    const content = await api.readFile(filePath);
+    if (!content) throw new Error("File is empty or could not be read");
+
+    const parsed = JSON.parse(content);
+    processDiffContent(parsed, "file", filePath);
+  } catch (err) {
+    console.error("Error comparing with file:", err);
+  } finally {
+    isLoadingDiff.set(false);
+  }
+}
+
+function processDiffContent(
+  parsed: any,
+  source: "git" | "file",
+  sourcePath: string | null,
+) {
+  // Normalize data similar to projectStore.loadProjectData
+  const normalizedCommitted: ProjectData = {
+    startPoint: parsed.startPoint || {
+      x: 0,
+      y: 0,
+      heading: "tangential",
+      reverse: false,
+    },
+    lines: normalizeLines(parsed.lines || []),
+    sequence: parsed.sequence || [],
+    shapes: parsed.shapes || [],
+    settings: { ...get(settingsStore), ...parsed.settings }, // Merge with current settings as fallback
+  };
+
+  committedData.set(normalizedCommitted);
+
+  // Compute Diff
+  const current: ProjectData = {
+    startPoint: get(startPointStore),
+    lines: get(linesStore),
+    sequence: get(sequenceStore),
+    shapes: get(shapesStore),
+    settings: get(settingsStore),
+  };
+
+  const result = computeDiff(current, normalizedCommitted);
+  diffResult.set(result);
+
+  diffSource.set(source);
+  diffSourcePath.set(sourcePath);
+  diffMode.set(true);
 }
 
 interface MarkerInfo {

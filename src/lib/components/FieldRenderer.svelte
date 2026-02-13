@@ -50,6 +50,7 @@
     committedData,
     diffResult,
     isLoadingDiff,
+    diffSource,
   } from "../diffStore";
   import {
     telemetryData,
@@ -274,6 +275,9 @@
       gitStatus[currentFile] !== "clean" &&
       gitStatus[currentFile] !== "untracked") ||
     (currentFile && $isUnsaved);
+
+  // Show diff button if we have changes OR if diff mode is currently active (e.g. file comparison)
+  $: showDiffControls = isDirty || $diffMode;
 
   function updateRects() {
     if (two?.renderer?.domElement) {
@@ -2688,14 +2692,18 @@ left: ${x(ghostRobotState.x)}px; transform: translate(-50%, -50%) rotate(${ghost
     <div
       class="absolute bottom-2 right-2 flex flex-col gap-1 z-30 bg-white/80 dark:bg-neutral-800/80 p-1 rounded-md shadow-sm border border-neutral-200 dark:border-neutral-700 backdrop-blur-sm"
     >
-      {#if isDirty}
+      {#if showDiffControls}
         <button
           class="w-7 h-7 flex items-center justify-center rounded transition-colors {isDiffMode
             ? 'bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 hover:bg-purple-200 dark:hover:bg-purple-900/50'
             : 'hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-200'}"
-          on:click={toggleDiff}
-          aria-label={isDiffMode ? "Exit Visual Diff" : "Toggle Visual Diff"}
-          title={isDiffMode ? "Exit Diff Mode" : "Compare with Saved"}
+          on:click={() => toggleDiff("git")}
+          aria-label={isDiffMode ? "Exit Comparison" : "Toggle Visual Diff"}
+          title={$diffMode && $diffSource === "file"
+            ? "Exit Comparison"
+            : isDiffMode
+              ? "Exit Diff Mode"
+              : "Compare with Saved"}
         >
           {#if $isLoadingDiff}
             <svg

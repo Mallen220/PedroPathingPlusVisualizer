@@ -31,6 +31,13 @@
   import { navbarActionRegistry } from "./registries";
   import { menuNavigation } from "./actions/menuNavigation";
   import type { createHistory } from "../utils/history";
+  import {
+    diffMode,
+    diffSource,
+    diffSourcePath,
+    toggleDiff,
+    compareWithFile,
+  } from "./diffStore";
 
   export let startPoint: Point;
   export let lines: Line[];
@@ -172,6 +179,12 @@
   let viewOptionsOpen = false;
   let viewOptionsRef: HTMLElement;
   let viewOptionsButtonRef: HTMLElement;
+
+  $: isGitDirty =
+    settings.gitIntegration &&
+    $currentFilePath &&
+    $gitStatusStore[$currentFilePath] &&
+    $gitStatusStore[$currentFilePath] !== "clean";
 
   $: leftActions = $navbarActionRegistry
     .filter((a) => a.location === "left")
@@ -819,6 +832,94 @@
                 </div>
               </div>
             {/if}
+
+            <div class="h-px bg-neutral-200 dark:bg-neutral-700 my-1"></div>
+            <div
+              class="px-2 py-1 text-xs font-semibold text-neutral-500 uppercase tracking-wider"
+            >
+              Comparison
+            </div>
+
+            <button
+              title={isGitDirty
+                ? "Compare with saved version"
+                : "No unsaved changes"}
+              disabled={!isGitDirty}
+              on:click={() => toggleDiff("git")}
+              class="flex items-center gap-3 w-full px-2 py-1.5 rounded-md hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors group text-left disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <div
+                class="p-0.5 rounded-sm group-hover:bg-white dark:group-hover:bg-neutral-600 transition-colors {$diffMode &&
+                $diffSource === 'git'
+                  ? 'text-purple-600'
+                  : 'text-neutral-500 dark:text-neutral-400'}"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path
+                    d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                  />
+                </svg>
+              </div>
+              <span class="text-sm text-neutral-700 dark:text-neutral-200"
+                >With Saved</span
+              >
+            </button>
+
+            <button
+              title="Compare with another file"
+              on:click={() => {
+                compareWithFile();
+                viewOptionsOpen = false;
+              }}
+              class="flex items-center gap-3 w-full px-2 py-1.5 rounded-md hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors group text-left"
+            >
+              <div
+                class="p-0.5 rounded-sm group-hover:bg-white dark:group-hover:bg-neutral-600 transition-colors {$diffMode &&
+                $diffSource === 'file'
+                  ? 'text-purple-600'
+                  : 'text-neutral-500 dark:text-neutral-400'}"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path
+                    d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"
+                  ></path>
+                  <polyline points="14 2 14 8 20 8"></polyline>
+                  <line x1="16" y1="13" x2="8" y2="13"></line>
+                  <line x1="16" y1="17" x2="8" y2="17"></line>
+                  <polyline points="10 9 9 9 8 9"></polyline>
+                </svg>
+              </div>
+              <div class="flex flex-col">
+                <span class="text-sm text-neutral-700 dark:text-neutral-200"
+                  >With File...</span
+                >
+                {#if $diffMode && $diffSource === "file" && $diffSourcePath}
+                  <span class="text-[10px] text-neutral-500 truncate max-w-[100px]"
+                    >{$diffSourcePath.split(/[\\/]/).pop()}</span
+                  >
+                {/if}
+              </div>
+            </button>
           </div>
         </div>
       {/if}
