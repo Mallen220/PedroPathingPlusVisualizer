@@ -1,3 +1,4 @@
+<!-- Copyright 2026 Matthew Allen. Licensed under the Modified Apache License, Version 2.0. -->
 <!-- src/lib/components/tabs/PathActionButtons.svelte -->
 <script lang="ts">
   import { actionRegistry } from "../../actionRegistry";
@@ -20,9 +21,7 @@
         if (def.isPath) onAddLine();
         else onHandleAddAction(def);
       }}
-      title={def.isPath
-        ? `Add Path${getShortcutFromSettings(settings, "add-path")}`
-        : `Add ${def.label}`}
+      title={`Add ${def.label}${def.shortcutId ? getShortcutFromSettings(settings, def.shortcutId) : ""}`}
       class={`flex items-center gap-2 px-4 py-2 text-sm font-medium text-white rounded-md shadow-sm transition-colors focus:outline-none focus:ring-2 ${getButtonColorClass(def.buttonColor || "gray")}`}
       aria-label={`Add ${def.label}`}
     >

@@ -27,3 +27,8 @@ Action: Keep reusable components layout-neutral (padding/dimensions only) and de
 
 Learning: Visual search results update instantly, but screen reader users get no feedback when filtering lists unless a live region is present.
 Action: Always pair filterable lists with a visually hidden `aria-live="polite"` element that announces "X results found" when the count changes.
+
+## 2026-02-13 - Data-Driven Action Discovery
+
+Learning: When action buttons are generated from a registry (data-driven UI), specialized logic for individual items (like "Add Path" having a shortcut but "Add Wait" not) creates inconsistency and hidden functionality.
+Action: Normalize the data structure (e.g., adding `shortcutId` to the definition) to treat all actions equally, making features like keyboard shortcut discovery automatic for all present and future actions.

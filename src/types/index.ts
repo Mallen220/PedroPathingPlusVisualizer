@@ -594,6 +594,8 @@ export interface ActionDefinition {
     icon?: string;
   };
 
+  shortcutId?: string;
+
   // Type Flags
   isPath?: boolean;
   isWait?: boolean;
