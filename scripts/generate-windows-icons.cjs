@@ -58,12 +58,17 @@ async function resizeWithCanvas(
 
 async function main() {
   const src = path.resolve(__dirname, "..", "public", "icon.png");
-  const outDir = path.resolve(__dirname, "..", "build", "win");
+  // electron-builder defaults to `build/appx` for AppX assets if not specified
+  const outDir = path.resolve(__dirname, "..", "build", "appx");
+  // we also need `build/win` for NSIS icon.ico
+  const winDir = path.resolve(__dirname, "..", "build", "win");
+
   if (!fs.existsSync(src)) {
     console.error("Source icon not found at", src);
     process.exit(2);
   }
   if (!fs.existsSync(outDir)) fs.mkdirSync(outDir, { recursive: true });
+  if (!fs.existsSync(winDir)) fs.mkdirSync(winDir, { recursive: true });
 
   const tiles = [
     { name: "Square44x44Logo", width: 44, height: 44, fit: "cover" },
@@ -119,7 +124,7 @@ async function main() {
     }
   }
 
-  const icoPath = path.join(outDir, "icon.ico");
+  const icoPath = path.join(winDir, "icon.ico");
   if (useSharp) {
     const sharp = require("sharp");
     const buf = await sharp(src).resize(256, 256).png().toBuffer();
