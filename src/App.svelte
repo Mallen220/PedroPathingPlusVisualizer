@@ -49,6 +49,7 @@
     startPointStore,
     linesStore,
     shapesStore,
+    activeFieldObstacles,
     sequenceStore,
     settingsStore,
     robotXYStore,
@@ -590,7 +591,7 @@
         $linesStore,
         $settingsStore,
         $sequenceStore,
-        $shapesStore,
+        [...$shapesStore, ...$activeFieldObstacles],
         true, // silent
         timePrediction.timeline,
       );

@@ -96,3 +96,6 @@ export const fieldViewStore = writable<FieldView>({
 
 // Plugin Redraw Trigger
 export const pluginRedrawTrigger = writable(0);
+
+// Field Obstacles Edit Mode
+export const fieldEditMode = writable(false);

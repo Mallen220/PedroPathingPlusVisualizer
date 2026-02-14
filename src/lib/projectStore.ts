@@ -1,5 +1,5 @@
 // Copyright 2026 Matthew Allen. Licensed under the Modified Apache License, Version 2.0.
-import { writable, get } from "svelte/store";
+import { writable, get, derived } from "svelte/store";
 import type {
   Line,
   Point,
@@ -143,6 +143,69 @@ robotProfilesStore.subscribe((profiles) => {
     console.error("Failed to save robot profiles to localStorage", e);
   }
 });
+
+// Field Obstacles Store
+const STORAGE_KEY_FIELD_OBSTACLES = "pedro_field_obstacles";
+let initialFieldObstacles: Record<string, Shape[]> = {};
+try {
+  if (typeof localStorage !== "undefined") {
+    const stored = localStorage.getItem(STORAGE_KEY_FIELD_OBSTACLES);
+    if (stored) {
+      initialFieldObstacles = JSON.parse(stored);
+    }
+  }
+} catch (e) {
+  console.error("Failed to load field obstacles from localStorage", e);
+}
+
+export const fieldObstaclesStore = writable<Record<string, Shape[]>>(
+  initialFieldObstacles,
+);
+
+fieldObstaclesStore.subscribe((obstacles) => {
+  try {
+    if (typeof localStorage !== "undefined") {
+      localStorage.setItem(
+        STORAGE_KEY_FIELD_OBSTACLES,
+        JSON.stringify(obstacles),
+      );
+    }
+  } catch (e) {
+    console.error("Failed to save field obstacles to localStorage", e);
+  }
+});
+
+// Custom store for active field obstacles
+function createActiveFieldObstaclesStore() {
+  const { subscribe } = derived(
+    [fieldObstaclesStore, settingsStore],
+    ([$obs, $set]) => {
+      const map = $set.fieldMap || "default";
+      return $obs[map] || [];
+    },
+  );
+
+  return {
+    subscribe,
+    set: (newShapes: Shape[]) => {
+      const map = get(settingsStore).fieldMap || "default";
+      fieldObstaclesStore.update((obs) => ({
+        ...obs,
+        [map]: newShapes,
+      }));
+    },
+    update: (fn: (shapes: Shape[]) => Shape[]) => {
+      const map = get(settingsStore).fieldMap || "default";
+      fieldObstaclesStore.update((obs) => {
+        const current = obs[map] || [];
+        const next = fn(current);
+        return { ...obs, [map]: next };
+      });
+    },
+  };
+}
+
+export const activeFieldObstacles = createActiveFieldObstaclesStore();
 
 export function resetProject() {
   startPointStore.set(getDefaultStartPoint());

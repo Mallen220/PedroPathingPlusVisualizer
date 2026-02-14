@@ -6,8 +6,9 @@
     showGrid,
     gridSize,
     focusRequest,
+    fieldEditMode,
   } from "../../../stores";
-  import { settingsStore } from "../../projectStore";
+  import { settingsStore, activeFieldObstacles } from "../../projectStore";
   import TrashIcon from "../icons/TrashIcon.svelte";
   import SaveIcon from "../icons/SaveIcon.svelte";
   import SectionHeader from "../common/SectionHeader.svelte";
@@ -20,6 +21,25 @@
   export let collapsedObstacles: boolean[];
   export let collapsed: boolean = false;
   export let isActive: boolean = true;
+
+  // Determine which shapes to display/edit
+  $: isFieldEdit = $fieldEditMode;
+  $: displayShapes = isFieldEdit ? $activeFieldObstacles : shapes;
+
+  function commitUpdates(newShapes: Shape[]) {
+    if (isFieldEdit) {
+      activeFieldObstacles.set(newShapes);
+    } else {
+      shapes = newShapes;
+    }
+  }
+
+  // Trigger update for deep mutations (e.g. vertex drag/input) in field mode
+  function triggerFieldUpdate() {
+    if (isFieldEdit) {
+      activeFieldObstacles.set(displayShapes);
+    }
+  }
 
   let selectedPresetId: string = "";
   let showSaveDialog = false;
@@ -54,8 +74,7 @@
     $snapToGrid && $showGrid ? `Snapping to ${$gridSize} grid` : "No snapping";
 
   function openSaveDialog() {
-    if (shapes.length === 0) {
-      // Should ideally use a toast, but this is a fallback
+    if (displayShapes.length === 0) {
       return;
     }
     showSaveDialog = true;
@@ -65,7 +84,7 @@
     const newPreset: ObstaclePreset = {
       id: `preset-${Math.random().toString(36).slice(2)}`,
       name: name,
-      shapes: JSON.parse(JSON.stringify(shapes)), // Deep copy
+      shapes: JSON.parse(JSON.stringify(displayShapes)), // Deep copy
     };
 
     $settingsStore.obstaclePresets = [
@@ -82,14 +101,14 @@
     );
     if (!preset) return;
 
-    if (shapes.length > 0) {
-      // Safe replacement check - ideally use a better dialog but standard confirm is robust
+    if (displayShapes.length > 0) {
       if (!confirm("This will replace current obstacles. Continue?")) return;
     }
 
-    shapes = JSON.parse(JSON.stringify(preset.shapes)); // Deep copy
+    const newShapes = JSON.parse(JSON.stringify(preset.shapes)); // Deep copy
+    commitUpdates(newShapes);
     // Reset collapsed states
-    collapsedObstacles = new Array(shapes.length).fill(false);
+    collapsedObstacles = new Array(newShapes.length).fill(false);
   }
 
   function deletePreset() {
@@ -108,20 +127,24 @@
   }
 
   function addObstacle() {
-    shapes = [...shapes, createTriangle(shapes.length)];
+    const newShapes = [...displayShapes, createTriangle(displayShapes.length)];
+    commitUpdates(newShapes);
     // Add a new collapsed state for the new obstacle (default to expanded for better UX)
     collapsedObstacles = [...collapsedObstacles, false];
     // Expand the section if it was collapsed
     if (collapsed) collapsed = false;
   }
 
-  // React to external additions to shapes (e.g. from keybindings)
-  $: if (shapes.length > collapsedObstacles.length) {
-    const diff = shapes.length - collapsedObstacles.length;
+  // React to external additions to shapes (e.g. from keybindings or store updates)
+  $: if (displayShapes.length > collapsedObstacles.length) {
+    const diff = displayShapes.length - collapsedObstacles.length;
     // Default new externally added obstacles to expanded (false) so user can see them immediately
     collapsedObstacles = [...collapsedObstacles, ...Array(diff).fill(false)];
     // Force expand section if a new shape is added externally (e.g. shortcut)
     if (collapsed) collapsed = false;
+  } else if (displayShapes.length < collapsedObstacles.length) {
+    // Trim excess collapsed states
+    collapsedObstacles = collapsedObstacles.slice(0, displayShapes.length);
   }
 </script>
 
@@ -129,22 +152,44 @@
   class="flex flex-col w-full border border-neutral-200 dark:border-neutral-700 rounded-lg bg-white dark:bg-neutral-800 overflow-hidden"
 >
   <SectionHeader
-    title="Obstacles"
+    title={isFieldEdit ? "Field Map Obstacles" : "Obstacles"}
     bind:collapsed
-    count={shapes.length}
+    count={displayShapes.length}
     onAdd={addObstacle}
   />
 
   {#if !collapsed}
-    <!-- Preset Controls (Compact Toolbar) -->
+    <!-- Header Tools: Mode Toggle & Presets -->
     <div
-      class="p-2 border-b border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-900/50 flex flex-row gap-2 items-center"
+      class="p-2 border-b border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-900/50 flex flex-col gap-2"
     >
-      <div
-        class="text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider shrink-0"
-      >
-        Presets
+      <!-- Mode Toggle -->
+      <div class="flex items-center justify-between">
+        <label
+          class="flex items-center gap-2 text-xs font-medium text-neutral-600 dark:text-neutral-300 cursor-pointer"
+        >
+          <input
+            type="checkbox"
+            bind:checked={$fieldEditMode}
+            class="rounded border-neutral-300 text-purple-600 focus:ring-purple-500"
+          />
+          Edit Field Map Obstacles
+        </label>
+        {#if isFieldEdit}
+          <span
+            class="text-[10px] uppercase font-bold text-purple-600 bg-purple-100 px-1.5 py-0.5 rounded dark:bg-purple-900/30 dark:text-purple-400"
+            >Global Mode</span
+          >
+        {/if}
       </div>
+
+      <!-- Presets Toolbar -->
+      <div class="flex flex-row gap-2 items-center pt-1">
+        <div
+          class="text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider shrink-0"
+        >
+          Presets
+        </div>
       <div class="flex-1 min-w-0">
         <select
           bind:value={selectedPresetId}
@@ -184,7 +229,7 @@
 
         <button
           on:click={openSaveDialog}
-          disabled={shapes.length === 0}
+          disabled={displayShapes.length === 0}
           title="Save Current as Preset"
           class="p-1 h-7 w-7 flex items-center justify-center rounded-md text-neutral-500 dark:text-neutral-400 border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
         >
@@ -212,10 +257,12 @@
     />
 
     <div class="p-2 flex flex-col gap-2">
-      {#if shapes.length === 0}
+      {#if displayShapes.length === 0}
         <EmptyState
-          title="No obstacles"
-          description="Click + to add a new obstacle or keep-in zone."
+          title={isFieldEdit ? "No field obstacles" : "No obstacles"}
+          description={isFieldEdit
+            ? "Add obstacles that persist for this field map."
+            : "Click + to add a new obstacle or keep-in zone."}
           compact={true}
         >
           <div slot="icon">
@@ -236,9 +283,11 @@
           </div>
         </EmptyState>
       {:else}
-        {#each shapes as shape, shapeIdx}
+        {#each displayShapes as shape, shapeIdx}
           <div
-            class="flex flex-col w-full justify-start items-start gap-1 p-2 border rounded-md border-neutral-300 dark:border-neutral-600 bg-neutral-50 dark:bg-neutral-900/30"
+            class="flex flex-col w-full justify-start items-start gap-1 p-2 border rounded-md border-neutral-300 dark:border-neutral-600 bg-neutral-50 dark:bg-neutral-900/30 {isFieldEdit
+              ? 'border-purple-300 dark:border-purple-800'
+              : ''}"
           >
             <div class="flex flex-row w-full justify-between items-center">
               <div class="flex flex-row items-center gap-2">
@@ -275,6 +324,7 @@
 
                 <input
                   bind:value={shape.name}
+                  on:input={triggerFieldUpdate}
                   placeholder="{shape.type === 'keep-in'
                     ? 'Keep-In'
                     : 'Obstacle'} {shapeIdx + 1}"
@@ -284,6 +334,7 @@
 
                 <select
                   bind:value={shape.type}
+                  on:change={triggerFieldUpdate}
                   class="h-7 text-xs rounded-md border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 px-1 focus:outline-none focus:ring-1 focus:ring-purple-500"
                   disabled={shape.locked ?? false}
                 >
@@ -298,6 +349,7 @@
                   <input
                     type="color"
                     bind:value={shape.color}
+                    on:input={triggerFieldUpdate}
                     class="opacity-0 absolute inset-0 w-full h-full cursor-pointer"
                     title="Change Obstacle Color"
                     disabled={shape.locked ?? false}
@@ -310,7 +362,11 @@
                   title={shape.visible !== false ? "Hide Shape" : "Show Shape"}
                   on:click={() => {
                     shape.visible = !(shape.visible !== false);
-                    shapes = [...shapes];
+                    if (isFieldEdit) {
+                      activeFieldObstacles.set(displayShapes);
+                    } else {
+                      shapes = [...displayShapes];
+                    }
                   }}
                   class="p-1 rounded-md hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-400 transition-colors"
                 >
@@ -361,7 +417,11 @@
                   aria-pressed={shape.locked ?? false}
                   on:click={() => {
                     shape.locked = !(shape.locked ?? false);
-                    shapes = [...shapes];
+                    if (isFieldEdit) {
+                      activeFieldObstacles.set(displayShapes);
+                    } else {
+                      shapes = [...displayShapes];
+                    }
                   }}
                   class="p-1 rounded-md hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-400 transition-colors"
                 >
@@ -398,8 +458,9 @@
                 <DeleteButtonWithConfirm
                   title="Remove Shape"
                   on:click={() => {
-                    shapes.splice(shapeIdx, 1);
-                    shapes = shapes;
+                    const newShapes = [...displayShapes];
+                    newShapes.splice(shapeIdx, 1);
+                    commitUpdates(newShapes);
                     // Also remove the collapsed state for this obstacle
                     collapsedObstacles.splice(shapeIdx, 1);
                     collapsedObstacles = [...collapsedObstacles];
@@ -428,6 +489,7 @@
                         >
                         <input
                           bind:value={vertex.x}
+                          on:input={triggerFieldUpdate}
                           type="number"
                           min="0"
                           max="144"
@@ -448,6 +510,7 @@
                         >
                         <input
                           bind:value={vertex.y}
+                          on:input={triggerFieldUpdate}
                           type="number"
                           min="0"
                           max="144"
@@ -475,7 +538,12 @@
                             // Duplicate current vertex for easier editing
                             const newVertex = { ...vertex };
                             shape.vertices.splice(vertexIdx + 1, 0, newVertex);
-                            shape.vertices = shape.vertices;
+                            // Trigger update
+                            if (isFieldEdit) {
+                              activeFieldObstacles.set(displayShapes);
+                            } else {
+                              shapes = [...displayShapes];
+                            }
                           }}
                           disabled={shape.locked ?? false}
                         >
@@ -499,7 +567,12 @@
                             title="Remove Vertex"
                             on:click={() => {
                               shape.vertices.splice(vertexIdx, 1);
-                              shape.vertices = shape.vertices;
+                              // Trigger update
+                              if (isFieldEdit) {
+                                activeFieldObstacles.set(displayShapes);
+                              } else {
+                                shapes = [...displayShapes];
+                              }
                             }}
                             disabled={shape.locked ?? false}
                           />

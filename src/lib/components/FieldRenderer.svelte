@@ -36,6 +36,8 @@
     linesStore,
     startPointStore,
     shapesStore,
+    fieldObstaclesStore,
+    activeFieldObstacles,
     settingsStore,
     robotXYStore,
     robotHeadingStore,
@@ -51,6 +53,7 @@
     diffResult,
     isLoadingDiff,
   } from "../diffStore";
+  import { fieldEditMode } from "../../stores";
   import {
     telemetryData,
     showTelemetry,
@@ -247,7 +250,9 @@
   // Derived Values from Stores
   $: startPoint = $startPointStore;
   $: lines = $linesStore;
-  $: shapes = $shapesStore;
+  $: isFieldEdit = $fieldEditMode;
+  $: shapes = isFieldEdit ? $activeFieldObstacles : $shapesStore;
+  $: backgroundShapes = isFieldEdit ? $shapesStore : $activeFieldObstacles;
   $: settings = $settingsStore;
   $: robotXY = $robotXYStore;
   $: robotHeading = $robotHeadingStore;
@@ -357,6 +362,9 @@
         shapeIndex: shapeIdx,
         vertexIndex: vertexIdx,
       };
+    } else if (type === "bg" && parts[1] === "obstacle") {
+      // Background obstacle - ignore for parsing (return null or handle if needed)
+      return null;
     } else if (type === "event") {
       // event-{lineIndex}-{eventIndex}
       const lineIdx = Number(parts[1]);
@@ -1031,6 +1039,84 @@
     return _shapes;
   })();
 
+  // Background Shapes (Non-editable)
+  $: backgroundShapeElements = (() => {
+    let _shapes: Path[] = [];
+    backgroundShapes.forEach((shape, idx) => {
+      if (shape.visible === false) return;
+
+      if (shape.vertices.length >= 3) {
+        let vertices = [];
+        vertices.push(
+          new Two.Anchor(
+            x(shape.vertices[0].x),
+            y(shape.vertices[0].y),
+            0,
+            0,
+            0,
+            0,
+            Two.Commands.move,
+          ),
+        );
+        for (let i = 1; i < shape.vertices.length; i++) {
+          vertices.push(
+            new Two.Anchor(
+              x(shape.vertices[i].x),
+              y(shape.vertices[i].y),
+              0,
+              0,
+              0,
+              0,
+              Two.Commands.line,
+            ),
+          );
+        }
+        vertices.push(
+          new Two.Anchor(
+            x(shape.vertices[0].x),
+            y(shape.vertices[0].y),
+            0,
+            0,
+            0,
+            0,
+            Two.Commands.close,
+          ),
+        );
+        vertices.forEach((point) => (point.relative = false));
+        let shapeElement = new Two.Path(vertices);
+        shapeElement.id = `bg-shape-${idx}`; // Distinct ID
+
+        // Distinct styling for background shapes
+        if (isFieldEdit) {
+          // In edit mode, project shapes are background - make them ghost-like
+          shapeElement.stroke = "#9ca3af"; // Gray-400
+          shapeElement.fill = "transparent";
+          shapeElement.opacity = 0.3;
+          shapeElement.linewidth = uiLength(0.5);
+          shapeElement.dashes = [uiLength(2), uiLength(2)];
+        } else {
+          // In normal mode, field obstacles are background - match regular style but maybe distinct?
+          // Let's use the shape's color but with a lock pattern or slightly different opacity
+          shapeElement.stroke = shape.color;
+          shapeElement.fill = shape.color;
+          shapeElement.linewidth = uiLength(0.8);
+          if (shape.type === "keep-in") {
+            shapeElement.opacity = 0.08;
+            shapeElement.dashes = [uiLength(4), uiLength(4)];
+          } else {
+            shapeElement.opacity = 0.4;
+            // Add hatch pattern or something? Simple opacity is fine.
+            // Maybe a lock indicator? Hard to do in Two.js path.
+          }
+        }
+
+        shapeElement.automatic = false;
+        _shapes.push(shapeElement);
+      }
+    });
+    return _shapes;
+  })();
+
   // Onion Layers
   $: onionLayerElements = (() => {
     let onionLayers: Path[] = [];
@@ -1577,6 +1663,8 @@
 
     two.clear();
 
+    if (Array.isArray(backgroundShapeElements))
+      backgroundShapeElements.forEach((el) => shapeGroup.add(el));
     if (Array.isArray(shapeElements))
       shapeElements.forEach((el) => shapeGroup.add(el));
     onionLayerElements.forEach((el) => shapeGroup.add(el));
@@ -1826,7 +1914,11 @@
           const vertexIdx = Number(parts[2]);
           shapes[shapeIdx].vertices[vertexIdx].x = inchX;
           shapes[shapeIdx].vertices[vertexIdx].y = inchY;
-          shapesStore.set(shapes);
+          if (isFieldEdit) {
+            activeFieldObstacles.set(shapes);
+          } else {
+            shapesStore.set(shapes);
+          }
         } else {
           const line = Number(currentElem.split("-")[1]) - 1;
           const point = Number(currentElem.split("-")[2]);
@@ -2139,7 +2231,9 @@
           action = "Move Event Marker";
         }
 
-        onRecordChange(action); // Notify parent of change
+        if (!isFieldEdit || !currentElem?.startsWith("obstacle-")) {
+          onRecordChange(action); // Notify parent of change
+        }
       }
       isDown = false;
       isPanning = false;
@@ -2485,28 +2579,45 @@
           }
         } else if (parsed.type === "obstacle") {
           const { shapeIndex } = parsed as ParsedObstacle;
-          menuItems.push({ label: "Obstacle", disabled: true });
+          menuItems.push({
+            label: isFieldEdit ? "Field Obstacle" : "Obstacle",
+            disabled: true,
+          });
           menuItems.push({ separator: true });
           menuItems.push({
             label: shapes[shapeIndex].locked ? "Unlock" : "Lock",
             onClick: () => {
-              shapesStore.update((s) => {
-                s[shapeIndex].locked = !s[shapeIndex].locked;
-                return s;
-              });
-              onRecordChange("Toggle Obstacle Lock");
+              const toggleLock = (s: Shape[]) => {
+                const newShapes = [...s];
+                if (newShapes[shapeIndex])
+                  newShapes[shapeIndex].locked = !newShapes[shapeIndex].locked;
+                return newShapes;
+              };
+
+              if (isFieldEdit) {
+                activeFieldObstacles.update(toggleLock);
+              } else {
+                shapesStore.update(toggleLock);
+                onRecordChange("Toggle Obstacle Lock");
+              }
             },
           });
           menuItems.push({
             label: "Delete Obstacle",
             danger: true,
             onClick: () => {
-              shapesStore.update((s) => {
+              const deleteShape = (s: Shape[]) => {
                 const newShapes = [...s];
                 newShapes.splice(shapeIndex, 1);
                 return newShapes;
-              });
-              onRecordChange("Delete Obstacle");
+              };
+
+              if (isFieldEdit) {
+                activeFieldObstacles.update(deleteShape);
+              } else {
+                shapesStore.update(deleteShape);
+                onRecordChange("Delete Obstacle");
+              }
             },
           });
         }

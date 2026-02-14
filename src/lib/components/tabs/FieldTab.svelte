@@ -16,6 +16,7 @@
   import GlobalEventMarkers from "../GlobalEventMarkers.svelte";
   import ObstaclesSection from "../sections/ObstaclesSection.svelte";
   import { validatePath } from "../../../utils/validation";
+  import { activeFieldObstacles } from "../../projectStore";
 
   export let robotXY: BasePoint;
   export let robotHeading: number;
@@ -65,7 +66,10 @@
   }
 
   function handleValidate() {
-    validatePath(startPoint, lines, settings, sequence, shapes);
+    validatePath(startPoint, lines, settings, sequence, [
+      ...shapes,
+      ...$activeFieldObstacles,
+    ]);
   }
 
   function handleOptimizationApply(newLines: Line[]) {
@@ -172,7 +176,7 @@
         {lines}
         {settings}
         {sequence}
-        {shapes}
+        shapes={[...shapes, ...$activeFieldObstacles]}
         onApply={handleOptimizationApply}
         {onPreviewChange}
         onClose={() => (optimizationOpen = false)}
