@@ -438,7 +438,11 @@ describe("codeExporter", () => {
         expect(code).not.toContain('import com.pedropathingplus.PedroPathReader;');
         expect(code).not.toContain('new PedroPathReader');
         expect(code).toContain('new Pose(10.000, 10.000, Math.toRadians(0))'); // startPoint
-        expect(code).toContain('new Pose(20.000, 20.000, Math.toRadians(90))'); // line1 endPoint
+        // Check line1 (constant 90)
+        expect(code).toContain('new Pose(20.000, 20.000, Math.toRadians(90))');
+        // Check line2 (linear 90 -> 180). End point should use endDeg (180)
+        expect(code).toContain('new Pose(30.000, 10.000, Math.toRadians(180))');
+
         expect(code).not.toContain('pp.get(');
 
         // Check hardcoded heading interpolation
