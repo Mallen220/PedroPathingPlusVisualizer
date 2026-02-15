@@ -729,9 +729,17 @@ export async function generateSequentialCommandCode(
       // Determine heading interpolation
       let headingConfig = "";
       if (line.endPoint.heading === "constant") {
-        headingConfig = `setConstantHeadingInterpolation(${endPoseVar}.getHeading())`;
+        if (hardcodeValues) {
+          headingConfig = `setConstantHeadingInterpolation(Math.toRadians(${line.endPoint.degrees || 0}))`;
+        } else {
+          headingConfig = `setConstantHeadingInterpolation(${endPoseVar}.getHeading())`;
+        }
       } else if (line.endPoint.heading === "linear") {
-        headingConfig = `setLinearHeadingInterpolation(${actualStartPose}.getHeading(), ${endPoseVar}.getHeading())`;
+        if (hardcodeValues) {
+          headingConfig = `setLinearHeadingInterpolation(Math.toRadians(${line.endPoint.startDeg || 0}), Math.toRadians(${line.endPoint.endDeg || 0}))`;
+        } else {
+          headingConfig = `setLinearHeadingInterpolation(${actualStartPose}.getHeading(), ${endPoseVar}.getHeading())`;
+        }
       } else {
         headingConfig = `setTangentHeadingInterpolation()`;
       }
