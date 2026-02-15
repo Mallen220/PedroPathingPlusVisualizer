@@ -174,6 +174,11 @@ export const DEFAULT_SETTINGS: Settings = {
   autoExportFullClass: true,
   telemetryImplementation: "Panels",
   followRobot: false,
+  robotMass: 30, // lbs
+  driveMotorType: "gobilda-5203-312",
+  driveGearRatio: 1.0,
+  driveWheelDiameter: 3.78, // inches
+  batteryCapacity: 3000, // mAh
 };
 
 /**

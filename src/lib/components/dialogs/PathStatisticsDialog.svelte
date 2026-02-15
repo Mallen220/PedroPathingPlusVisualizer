@@ -10,7 +10,14 @@
     Line,
     SequenceItem,
     Settings,
+    PathStats,
+    SegmentStat,
+    Insight,
   } from "../../../types/index";
+  import {
+    calculateEnergyUsage,
+    type EnergyStats,
+  } from "../../../utils/physics";
   import { slide } from "svelte/transition";
   import { onMount } from "svelte";
   import { getAngularDifference } from "../../../utils/math";
@@ -47,39 +54,9 @@
         })()
       : `position:fixed; left:36px; right:36px; bottom:36px; height:calc(50vh - 72px); z-index:50;`;
 
-  interface SegmentStat {
-    name: string;
-    length: number;
-    time: number;
-    maxVel: number;
-    maxAngVel: number;
-    degrees: number;
-    color: string;
-  }
-
-  interface Insight {
-    startTime: number;
-    endTime?: number;
-    type: "warning" | "info" | "error";
-    message: string;
-    value?: number;
-  }
-
-  interface PathStats {
-    totalTime: number;
-    totalDistance: number;
-    maxLinearVelocity: number;
-    maxAngularVelocity: number;
-    segments: SegmentStat[];
-    velocityData: { time: number; value: number }[];
-    angularVelocityData: { time: number; value: number }[];
-    accelerationData: { time: number; value: number }[];
-    centripetalData: { time: number; value: number }[];
-    insights: Insight[];
-  }
-
   let pathStats: PathStats | null = null;
-  let activeTab: "summary" | "graphs" | "insights" = "summary";
+  let energyStats: EnergyStats | null = null;
+  let activeTab: "summary" | "graphs" | "insights" | "energy" = "summary";
   let currentTime = 0;
 
   $: if (isOpen && lines && sequence && settings) {
@@ -540,6 +517,8 @@
       centripetalData,
       insights,
     };
+
+    energyStats = calculateEnergyUsage(pathStats, settings);
   }
 
   function handleCopy() {
@@ -645,6 +624,12 @@
             on:click={() => (activeTab = "insights")}
           >
             Insights
+          </button>
+          <button
+            class={`px-3 py-1 rounded-md transition-all ${activeTab === "energy" ? "bg-white dark:bg-neutral-600 shadow-sm text-neutral-900 dark:text-white" : "text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300"}`}
+            on:click={() => (activeTab = "energy")}
+          >
+            Energy
           </button>
         </div>
       </div>
@@ -929,6 +914,88 @@
           >
             Graph resolution depends on optimization settings and simulation
             step size.
+          </div>
+        </div>
+
+        <!-- Energy Tab -->
+      {:else if activeTab === "energy" && energyStats}
+        <div class="overflow-y-auto flex-1 p-4 min-h-0 space-y-6">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div
+              class="bg-neutral-100 dark:bg-neutral-700/50 p-4 rounded-lg flex flex-col items-center justify-center text-center"
+            >
+              <span
+                class="text-xs text-neutral-500 dark:text-neutral-400 uppercase tracking-wide"
+                >Energy Consumed</span
+              >
+              <span
+                class="text-2xl font-bold text-neutral-900 dark:text-white mt-1"
+              >
+                {energyStats.totalEnergyJoules.toFixed(1)} J
+              </span>
+            </div>
+            <div
+              class="bg-neutral-100 dark:bg-neutral-700/50 p-4 rounded-lg flex flex-col items-center justify-center text-center"
+            >
+              <span
+                class="text-xs text-neutral-500 dark:text-neutral-400 uppercase tracking-wide"
+                >Battery Used</span
+              >
+              <span
+                class="text-2xl font-bold text-neutral-900 dark:text-white mt-1"
+              >
+                {energyStats.capacityUsedmAh.toFixed(1)} mAh
+              </span>
+              <span
+                class={`text-sm font-medium mt-1 ${energyStats.batteryPercentageUsed > 10 ? "text-amber-500" : "text-green-500"}`}
+              >
+                ({energyStats.batteryPercentageUsed.toFixed(1)}% of {settings.batteryCapacity ||
+                  3000}mAh)
+              </span>
+            </div>
+          </div>
+
+          <div
+            class="simple-chart-container bg-white dark:bg-neutral-900 rounded-lg border border-neutral-200 dark:border-neutral-700 p-4"
+          >
+            <h3
+              class="text-sm font-semibold mb-2 text-neutral-700 dark:text-neutral-300"
+            >
+              Current Draw (Amps)
+            </h3>
+            <SimpleChart
+              data={energyStats.currentData}
+              color="#eab308"
+              label="Current"
+              unit="A"
+              height={150}
+              {currentTime}
+            />
+          </div>
+
+          <div
+            class="simple-chart-container bg-white dark:bg-neutral-900 rounded-lg border border-neutral-200 dark:border-neutral-700 p-4"
+          >
+            <h3
+              class="text-sm font-semibold mb-2 text-neutral-700 dark:text-neutral-300"
+            >
+              Power Consumption (Watts)
+            </h3>
+            <SimpleChart
+              data={energyStats.powerData}
+              color="#ef4444"
+              label="Power"
+              unit="W"
+              height={150}
+              {currentTime}
+            />
+          </div>
+
+          <div
+            class="text-xs text-neutral-500 dark:text-neutral-400 text-center italic"
+          >
+            Estimates based on {settings.robotMass || 30}lbs robot, {settings.driveMotorType}
+            motors. Actual usage will vary.
           </div>
         </div>
 

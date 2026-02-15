@@ -12,6 +12,7 @@
   import RobotProfileManager from "../settings/RobotProfileManager.svelte";
   import CustomFieldWizard from "../settings/CustomFieldWizard.svelte";
   import SettingsItem from "./SettingsItem.svelte";
+  import { MOTOR_OPTIONS } from "../../../utils/physics";
   import { themesStore } from "../../pluginsStore";
   import {
     showPluginManager,
@@ -900,6 +901,132 @@
                     bind:checked={settings.continuousValidation}
                     class="w-5 h-5 rounded border-neutral-300 dark:border-neutral-600 text-blue-500 focus:ring-2 focus:ring-blue-500 cursor-pointer"
                   />
+                </SettingsItem>
+
+                <SettingsItem
+                  label="Energy Settings"
+                  description="Configuration for energy analysis"
+                  {searchQuery}
+                  section
+                >
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="flex flex-col gap-1">
+                      <label
+                        for="robot-mass"
+                        class="text-sm font-medium text-neutral-700 dark:text-neutral-300"
+                        >Robot Mass (lbs)</label
+                      >
+                      <input
+                        id="robot-mass"
+                        type="number"
+                        bind:value={settings.robotMass}
+                        min="1"
+                        max="100"
+                        step="0.5"
+                        on:change={(e) =>
+                          handleNumberInput(
+                            e.target.value,
+                            "robotMass",
+                            1,
+                            100,
+                            true,
+                          )}
+                        class="w-full px-3 py-2 rounded-md border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      />
+                    </div>
+                    <div class="flex flex-col gap-1">
+                      <label
+                        for="battery-capacity"
+                        class="text-sm font-medium text-neutral-700 dark:text-neutral-300"
+                        >Battery Capacity (mAh)</label
+                      >
+                      <input
+                        id="battery-capacity"
+                        type="number"
+                        bind:value={settings.batteryCapacity}
+                        min="100"
+                        step="100"
+                        on:change={(e) =>
+                          handleNumberInput(
+                            e.target.value,
+                            "batteryCapacity",
+                            100,
+                            undefined,
+                            true,
+                          )}
+                        class="w-full px-3 py-2 rounded-md border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      />
+                    </div>
+                  </div>
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                    <div class="flex flex-col gap-1">
+                      <label
+                        for="drive-motor"
+                        class="text-sm font-medium text-neutral-700 dark:text-neutral-300"
+                        >Drive Motor</label
+                      >
+                      <select
+                        id="drive-motor"
+                        bind:value={settings.driveMotorType}
+                        class="w-full px-3 py-2 rounded-md border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                      >
+                        {#each MOTOR_OPTIONS as motor}
+                          <option value={motor.value}>{motor.label}</option>
+                        {/each}
+                      </select>
+                    </div>
+                    <div class="flex flex-col gap-1">
+                      <label
+                        for="wheel-diameter"
+                        class="text-sm font-medium text-neutral-700 dark:text-neutral-300"
+                        >Wheel Diameter (in)</label
+                      >
+                      <input
+                        id="wheel-diameter"
+                        type="number"
+                        bind:value={settings.driveWheelDiameter}
+                        min="1"
+                        step="0.1"
+                        on:change={(e) =>
+                          handleNumberInput(
+                            e.target.value,
+                            "driveWheelDiameter",
+                            1,
+                            10,
+                            true,
+                          )}
+                        class="w-full px-3 py-2 rounded-md border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      />
+                    </div>
+                  </div>
+                  <div class="mt-4 flex flex-col gap-1">
+                    <label
+                      for="gear-ratio"
+                      class="text-sm font-medium text-neutral-700 dark:text-neutral-300"
+                      >Gear Ratio (External)</label
+                    >
+                    <input
+                      id="gear-ratio"
+                      type="number"
+                      bind:value={settings.driveGearRatio}
+                      min="0.1"
+                      step="0.1"
+                      on:change={(e) =>
+                        handleNumberInput(
+                          e.target.value,
+                          "driveGearRatio",
+                          0.1,
+                          100,
+                          true,
+                        )}
+                      class="w-full px-3 py-2 rounded-md border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                    <div
+                      class="text-xs text-neutral-500 dark:text-neutral-400 mt-1"
+                    >
+                      Use 1.0 for direct drive from the selected motor/gearbox.
+                    </div>
+                  </div>
                 </SettingsItem>
 
                 <SettingsItem

@@ -199,6 +199,42 @@ export interface Settings {
   autoExportFullClass?: boolean;
   telemetryImplementation?: "Standard" | "Dashboard" | "Panels" | "None";
   followRobot?: boolean;
+  robotMass?: number;
+  driveMotorType?: string;
+  driveGearRatio?: number;
+  driveWheelDiameter?: number;
+  batteryCapacity?: number;
+}
+
+export interface SegmentStat {
+  name: string;
+  length: number;
+  time: number;
+  maxVel: number;
+  maxAngVel: number;
+  degrees: number;
+  color: string;
+}
+
+export interface Insight {
+  startTime: number;
+  endTime?: number;
+  type: "warning" | "info" | "error";
+  message: string;
+  value?: number;
+}
+
+export interface PathStats {
+  totalTime: number;
+  totalDistance: number;
+  maxLinearVelocity: number;
+  maxAngularVelocity: number;
+  segments: SegmentStat[];
+  velocityData: { time: number; value: number }[];
+  angularVelocityData: { time: number; value: number }[];
+  accelerationData: { time: number; value: number }[];
+  centripetalData: { time: number; value: number }[];
+  insights: Insight[];
 }
 
 export interface RobotProfile {
