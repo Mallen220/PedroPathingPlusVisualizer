@@ -466,14 +466,18 @@ export async function generateSequentialCommandCode(
     variableName: string,
     lookupName: string = variableName,
     point?: BasePoint,
+    overrideDegrees?: number, // - New parameter
   ): void => {
     if (!declaredPoses.has(variableName)) {
       allPoseDeclarations.push(`    private Pose ${variableName};`);
 
       if (hardcodeValues && point) {
         // Use exact values
+        // Use overrideDegrees if provided, otherwise default to 0
+        const degrees =
+          overrideDegrees !== undefined ? overrideDegrees : point.degrees || 0;
         allPoseInitializations.push(
-          `        ${variableName} = new Pose(${point.x.toFixed(3)}, ${point.y.toFixed(3)}, Math.toRadians(${point.degrees || 0}));`,
+          `        ${variableName} = new Pose(${point.x.toFixed(3)}, ${point.y.toFixed(3)}, Math.toRadians(${degrees}));`,
         );
       } else {
         // Use pp.get
@@ -485,8 +489,19 @@ export async function generateSequentialCommandCode(
     }
   };
 
+  // Determine start degrees
+  let startDegrees = 0;
+  if (startPoint.heading === "constant" && startPoint.degrees !== undefined) {
+    startDegrees = startPoint.degrees;
+  } else if (
+    startPoint.heading === "linear" &&
+    startPoint.startDeg !== undefined
+  ) {
+    startDegrees = startPoint.startDeg;
+  }
+
   // Add start point
-  addPose("startPoint", "startPoint", startPoint);
+  addPose("startPoint", "startPoint", startPoint, startDegrees);
   poseVariableNames.set("startPoint", "startPoint");
 
   // Track used path chain names to handle duplicates
@@ -499,9 +514,23 @@ export async function generateSequentialCommandCode(
       ? line.name.replace(/[^a-zA-Z0-9]/g, "")
       : `point${lineIdx + 1}`;
 
+    // Determine end degrees
+    let endDegrees = 0;
+    if (
+      line.endPoint.heading === "constant" &&
+      line.endPoint.degrees !== undefined
+    ) {
+      endDegrees = line.endPoint.degrees;
+    } else if (
+      line.endPoint.heading === "linear" &&
+      line.endPoint.endDeg !== undefined
+    ) {
+      endDegrees = line.endPoint.endDeg;
+    }
+
     // Add end point declaration (shared poses)
     // Note: line.endPoint includes degrees from BasePoint
-    addPose(endPointName, endPointName, line.endPoint);
+    addPose(endPointName, endPointName, line.endPoint, endDegrees);
     poseVariableNames.set(`point${lineIdx + 1}`, endPointName);
 
     if (line.controlPoints && line.controlPoints.length > 0) {
