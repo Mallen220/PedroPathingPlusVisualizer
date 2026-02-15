@@ -127,7 +127,7 @@ export async function generateJavaCode(
                 : "";
 
           const reverseConfig = line.endPoint.reverse
-            ? ".setReversed(true)"
+            ? ".setReversed()"
             : "";
 
           // Add event markers to the path builder
@@ -880,7 +880,7 @@ ${pathChainDeclarations}
         this.follower = drive.getFollower();
         this.progressTracker = new ProgressTracker(follower, telemetry);
 
-        PedroPathReader pp = new PedroPathReader("${fileName ? fileName.split(/[\\/]/).pop() || "AutoPath.pp" : "AutoPath.pp"}", hw.appContext);
+        PedroPathReader pp = new PedroPathReader("${fileName ? fileName.split(/[\\/]/).pop() + ".pp" || "AutoPath.pp" : "AutoPath.pp"}", hw.appContext);
 
         // Load poses
 ${allPoseInitializations.join("\n")}
