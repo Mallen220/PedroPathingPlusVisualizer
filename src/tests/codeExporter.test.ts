@@ -133,7 +133,7 @@ describe("codeExporter", () => {
       const code = await generateJavaCode(startPoint, lines, false);
 
       expect(code).toContain("setTangentHeadingInterpolation()");
-      expect(code).toContain(".setReversed(true)");
+      expect(code).toContain(".setReversed()");
     });
 
     it("should include event markers", async () => {

@@ -197,6 +197,7 @@ export interface Settings {
   autoExportFormat?: "java" | "sequential" | "points" | "json";
   autoExportTargetLibrary?: "SolversLib" | "NextFTC";
   autoExportFullClass?: boolean;
+  autoExportUseExactPositions?: boolean;
   telemetryImplementation?: "Standard" | "Dashboard" | "Panels" | "None";
   followRobot?: boolean;
 }

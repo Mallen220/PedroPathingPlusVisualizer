@@ -717,6 +717,7 @@ async function handleAutoExport(
           sequence,
           settings.autoExportTargetLibrary ?? "SolversLib",
           settings.javaPackageName,
+          settings.autoExportUseExactPositions,
         );
         extension = "java";
         break;

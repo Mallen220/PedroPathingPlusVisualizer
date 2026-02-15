@@ -49,6 +49,8 @@
   let telemetryImplementation: "Standard" | "Dashboard" | "Panels" | "None" =
     "Panels";
 
+  let useExactPositions = false;
+
   let exportedCode = "";
   let currentLanguage: typeof java | typeof plaintext | typeof json = java;
   let copied = false;
@@ -155,6 +157,7 @@
           sequence,
           targetLibrary,
           packageName,
+          useExactPositions,
         );
         currentLanguage = java;
       } else if (exportFormat === "json") {
@@ -222,12 +225,19 @@
     currentMatchIndex = -1;
 
     // Initialize sequential class name if needed
-    if (format === "sequential" && $currentFilePath) {
-      const fileName = $currentFilePath.split(/[\\/]/).pop();
-      if (fileName) {
-        sequentialClassName = fileName
-          .replace(".pp", "")
-          .replace(/[^a-zA-Z0-9]/g, "_");
+    if (format === "sequential") {
+      if ($currentFilePath) {
+        const fileName = $currentFilePath.split(/[\\/]/).pop();
+        if (fileName) {
+          sequentialClassName = fileName
+            .replace(".pp", "")
+            .replace(/[^a-zA-Z0-9]/g, "_");
+        }
+      }
+      if (settings?.autoExportUseExactPositions !== undefined) {
+        useExactPositions = settings.autoExportUseExactPositions;
+      } else {
+        useExactPositions = false;
       }
     }
 
@@ -703,6 +713,22 @@
                 <span>NextFTC output is <strong>experimental</strong>.</span>
               </div>
             {/if}
+
+            <!-- Use Exact Positions Checkbox -->
+            <label
+              class="flex items-center gap-2 text-sm text-neutral-700 dark:text-neutral-200 cursor-pointer select-none"
+              title="Hardcode positions instead of loading from .pp file"
+            >
+              <div class="relative flex items-center">
+                <input
+                  type="checkbox"
+                  bind:checked={useExactPositions}
+                  on:change={refreshCode}
+                  class="peer h-4 w-4 rounded border-neutral-300 text-blue-600 focus:ring-blue-500 dark:border-neutral-600 dark:bg-neutral-700 dark:ring-offset-neutral-800"
+                />
+              </div>
+              <span>Use Exact Positions</span>
+            </label>
           {/if}
 
           <!-- Java Controls -->
