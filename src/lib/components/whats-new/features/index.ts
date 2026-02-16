@@ -41,20 +41,22 @@ function isNewestTemplate(content: string): boolean {
   return content.trim() === DEFAULT_TEMPLATE.trim();
 }
 
-// Load newest.md separately if it exists
+// Load newest.md separately if it exists — only in dev mode (do not show in packaged Electron)
 let newestFeature: FeatureHighlight | null = null;
-const newestModule = Object.entries(modules).find(([path]) =>
-  path.endsWith("/newest.md"),
-);
-if (newestModule && newestModule[1]) {
-  const content = newestModule[1];
-  // Only use newest.md if it's not just the template
-  if (!isNewestTemplate(content)) {
-    newestFeature = {
-      id: "newest",
-      title: "Latest Highlights",
-      content,
-    };
+if (import.meta.env.DEV) {
+  const newestModule = Object.entries(modules).find(([path]) =>
+    path.endsWith("/newest.md"),
+  );
+  if (newestModule && newestModule[1]) {
+    const content = newestModule[1];
+    // Only use newest.md if it's not just the template
+    if (!isNewestTemplate(content)) {
+      newestFeature = {
+        id: "newest",
+        title: "Latest Highlights",
+        content,
+      };
+    }
   }
 }
 
