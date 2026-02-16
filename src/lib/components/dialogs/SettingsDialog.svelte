@@ -3,7 +3,10 @@
   import { onMount } from "svelte";
   import { cubicInOut } from "svelte/easing";
   import { fade, fly } from "svelte/transition";
-  import { resetSettings } from "../../../utils/settingsPersistence";
+  import {
+    resetSettings,
+    mergeSettings,
+  } from "../../../utils/settingsPersistence";
   import {
     AVAILABLE_FIELD_MAPS,
     DEFAULT_SETTINGS,
@@ -209,6 +212,54 @@
   async function handleSave() {
     await saveSettings(settings);
     isOpen = false;
+  }
+
+  async function handleExport() {
+    try {
+      const dataStr = JSON.stringify(settings, null, 2);
+      const blob = new Blob([dataStr], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const downloadAnchorNode = document.createElement("a");
+      downloadAnchorNode.setAttribute("href", url);
+      downloadAnchorNode.setAttribute("download", "pedro-settings.json");
+      document.body.appendChild(downloadAnchorNode);
+      downloadAnchorNode.click();
+      downloadAnchorNode.remove();
+      URL.revokeObjectURL(url);
+    } catch (e) {
+      alert("Failed to export settings: " + (e as Error).message);
+    }
+  }
+
+  async function handleImport(e: Event) {
+    const target = e.target as HTMLInputElement;
+    const file = target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+      try {
+        if (typeof event.target?.result === "string") {
+          const json = JSON.parse(event.target.result);
+          // Handle if it's wrapped in StoredSettings or raw Settings
+          // StoredSettings has a 'settings' property
+          const rawSettings = json.settings || json;
+          const merged = mergeSettings(rawSettings);
+
+          // Update local state
+          settings = merged;
+
+          // Persist
+          await saveSettings(settings);
+          alert("Settings imported successfully!");
+        }
+      } catch (err) {
+        alert("Error importing settings: " + (err as Error).message);
+      }
+      // Reset input
+      target.value = "";
+    };
+    reader.readAsText(file);
   }
 
   async function handleReset() {
@@ -569,7 +620,62 @@
           </nav>
 
           <!-- Sidebar Footer (Reset) -->
-          <div class="p-4 border-t border-neutral-200 dark:border-neutral-800">
+          <div
+            class="p-4 border-t border-neutral-200 dark:border-neutral-800 space-y-2"
+          >
+            <div class="grid grid-cols-2 gap-2">
+              <button
+                on:click={handleExport}
+                class="flex items-center justify-center gap-2 px-3 py-2 text-xs font-medium text-neutral-700 dark:text-neutral-300 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 rounded-lg transition-colors"
+                title="Export Settings"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke-width={1.5}
+                  stroke="currentColor"
+                  class="size-4"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5m-13.5-9L12 3m0 0 4.5 4.5M12 3v13.5"
+                  />
+                </svg>
+                Export
+              </button>
+              <button
+                on:click={() =>
+                  document.getElementById("settings-import-input")?.click()}
+                class="flex items-center justify-center gap-2 px-3 py-2 text-xs font-medium text-neutral-700 dark:text-neutral-300 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 rounded-lg transition-colors"
+                title="Import Settings"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke-width={1.5}
+                  stroke="currentColor"
+                  class="size-4"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M12 3v13.5m0 0-3.75-3.75M12 16.5l3.75-3.75"
+                  />
+                </svg>
+                Import
+              </button>
+              <input
+                type="file"
+                id="settings-import-input"
+                class="hidden"
+                accept=".json"
+                on:change={handleImport}
+              />
+            </div>
+
             <button
               on:click={handleReset}
               class="w-full flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 bg-red-50 hover:bg-red-100 dark:bg-red-900/20 dark:hover:bg-red-900/30 rounded-lg transition-colors"
