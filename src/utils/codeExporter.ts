@@ -465,7 +465,7 @@ export async function generateSequentialCommandCode(
   const addPose = (
     variableName: string,
     lookupName: string = variableName,
-    point?: BasePoint,
+    point?: Point,
     overrideDegrees?: number, // - New parameter
   ): void => {
     if (!declaredPoses.has(variableName)) {
@@ -475,7 +475,7 @@ export async function generateSequentialCommandCode(
         // Use exact values
         // Use overrideDegrees if provided, otherwise default to 0
         const degrees =
-          overrideDegrees !== undefined ? overrideDegrees : point.degrees || 0;
+          overrideDegrees !== undefined ? overrideDegrees : (point as any).degrees || 0;
         allPoseInitializations.push(
           `        ${variableName} = new Pose(${point.x.toFixed(3)}, ${point.y.toFixed(3)}, Math.toRadians(${degrees}));`,
         );

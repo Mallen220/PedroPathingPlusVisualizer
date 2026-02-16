@@ -149,9 +149,15 @@ export function splitPathAtPercent(
       endDeg: midDeg,
     };
 
-    // Update L2
+    // Update L2 — construct a fresh 'linear' endPoint to avoid carrying an incompatible 'degrees' property
     line2.endPoint = {
-      ...line2.endPoint,
+      x: line2.endPoint.x,
+      y: line2.endPoint.y,
+      // preserve optional metadata fields
+      locked: line2.endPoint.locked,
+      isMacroElement: line2.endPoint.isMacroElement,
+      macroId: line2.endPoint.macroId,
+      originalId: line2.endPoint.originalId,
       heading: "linear",
       startDeg: midDeg,
       endDeg: endDeg,
