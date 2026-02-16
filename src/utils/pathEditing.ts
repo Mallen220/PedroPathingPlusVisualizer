@@ -150,8 +150,21 @@ export function splitPathAtPercent(
     };
 
     // Update L2
+    const {
+      x,
+      y,
+      locked,
+      isMacroElement,
+      macroId,
+      originalId,
+    } = line2.endPoint;
     line2.endPoint = {
-      ...line2.endPoint,
+      x,
+      y,
+      locked,
+      isMacroElement,
+      macroId,
+      originalId,
       heading: "linear",
       startDeg: midDeg,
       endDeg: endDeg,

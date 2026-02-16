@@ -36,6 +36,7 @@
     showStrategySheet,
     showShortcuts,
     exportDialogState,
+    selectedLineId,
     selectedPointId,
     collisionMarkers,
     showFileManager,

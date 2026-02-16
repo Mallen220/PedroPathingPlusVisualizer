@@ -380,7 +380,7 @@ describe("fileHandlers", () => {
       );
       expect(callArgs).toBeDefined();
 
-      const content = JSON.parse(callArgs[1]);
+      const content = JSON.parse(callArgs![1]);
 
       expect(content.header).toBeDefined();
       expect(content.header.info).toBe(
