@@ -23,7 +23,7 @@ async function generate() {
     // Matches "export interface", "export type", "export const" etc.
     content = content.replace(/^export /gm, "");
 
-    const finalContent = `// Copyright 2026 Matthew Allen. Licensed under the Apache License, Version 2.0.
+    const finalContent = `// Copyright 2026 Matthew Allen. Licensed under the Modified Apache License, Version 2.0.
 
 /**
  * Type definitions for Pedro Pathing Plus Visualizer Plugins.
