@@ -933,6 +933,10 @@ ipcMain.handle("app:get-version", () => {
   return app.getVersion();
 });
 
+ipcMain.handle("app:is-windows-store", () => {
+  return process.windowsStore || false;
+});
+
 // Add to existing IPC handlers
 ipcMain.handle("file:rename", async (event, oldPath, newPath) => {
   try {
