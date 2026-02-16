@@ -18,7 +18,7 @@
     <img src="https://img.shields.io/badge/platform-macOS%20|%20Windows%20|%20Linux-lightgrey.svg?style=flat-square" alt="Platform">
     <br/>
     <br/>
-    <a href="https://www.microsoft.com/en-us/p/frc-pathplanner/9nqbkb5dw909?cid=storebadge&ocid=badge&rtc=1&activetab=pivot:overviewtab" target="_blank" rel="noopener noreferrer" style="margin-left:8px;">
+    <a href="https://apps.microsoft.com/detail/9nb7sqkhhct6?cid=DevShareMCLPCS&hl=en-US&gl=US" target="_blank" rel="noopener noreferrer" style="margin-left:8px;">
       <img src="https://upload.wikimedia.org/wikipedia/commons/f/f7/Get_it_from_Microsoft_Badge.svg" height="50" alt="Microsoft Store">
     </a>
   </p>

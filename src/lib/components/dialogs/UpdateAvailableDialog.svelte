@@ -112,7 +112,7 @@
     if (api && api.openExternal) {
       // URL from README
       api.openExternal(
-        "https://www.microsoft.com/en-us/p/frc-pathplanner/9nqbkb5dw909?cid=storebadge&ocid=badge&rtc=1&activetab=pivot:overviewtab",
+        "https://apps.microsoft.com/detail/9nb7sqkhhct6?cid=DevShareMCLPCS&hl=en-US&gl=US",
       );
     }
     close();
@@ -213,7 +213,8 @@
         </div>
 
         <!-- MS Store Recommendation (Friendly Card) -->
-        {#if isWindows && !isStore}
+        {#if true}
+        <!-- {#if isWindows && !isStore} -->
           <div
             class="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/40 dark:to-indigo-950/40 p-1 rounded-2xl"
           >
@@ -223,15 +224,12 @@
               <div
                 class="bg-blue-100 dark:bg-blue-900/50 p-2 rounded-lg text-blue-600 dark:text-blue-400 shrink-0"
               >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill="currentColor"
-                  class="w-5 h-5"
-                >
-                  <path
-                    d="M2 3h9v9H2V3zm9 18H2v-9h9v9zm2-18v9h9V3h-9zm9 18h-9v-9h9v9z"
-                  />
+                <!-- Microsoft 4‑square logo (colored) — increased size -->
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" class="w-6 h-6" aria-hidden="true" focusable="false">
+                  <rect x="5" y="5" width="10" height="10" fill="#F25325" />
+                  <rect x="17" y="5" width="10" height="10" fill="#80BC06" />
+                  <rect x="5" y="17" width="10" height="10" fill="#05A6F0" />
+                  <rect x="17" y="17" width="10" height="10" fill="#FEBA08" />
                 </svg>
               </div>
               <div class="flex-1">
