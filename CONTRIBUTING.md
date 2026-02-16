@@ -60,7 +60,7 @@ https://github.com/Mallen220/PedroPathingPlusVisualizer/issues
 Feature ideas are welcome. When proposing one:
 
 - Clearly describe the problem it solves
-- Explain why it benefits FRC teams
+- Explain why it benefits FTC teams
 - Include mockups or examples if possible
 
 Keep in mind:
