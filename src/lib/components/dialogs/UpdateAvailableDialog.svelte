@@ -213,8 +213,7 @@
         </div>
 
         <!-- MS Store Recommendation (Friendly Card) -->
-        {#if true}
-        <!-- {#if isWindows && !isStore} -->
+        {#if isWindows && !isStore}
           <div
             class="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/40 dark:to-indigo-950/40 p-1 rounded-2xl"
           >
