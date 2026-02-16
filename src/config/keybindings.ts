@@ -193,7 +193,7 @@ export const DEFAULT_KEY_BINDINGS: KeyBinding[] = [
   {
     id: "deselect-all",
     key: "escape",
-    description: "Deselect all",
+    description: "Deselect All / Cancel Dialog",
     action: "deselectAll",
     category: "Navigation",
   },
@@ -411,6 +411,20 @@ export const DEFAULT_KEY_BINDINGS: KeyBinding[] = [
     key: "ctrl+up, cmd+up, shift+tab",
     description: "Select Previous Sequence Item",
     action: "selectPrevSequence",
+    category: "Navigation",
+  },
+  {
+    id: "select-next-item",
+    key: "alt+right",
+    description: "Select Next Item",
+    action: "selectNext",
+    category: "Navigation",
+  },
+  {
+    id: "select-prev-item",
+    key: "alt+left",
+    description: "Select Previous Item",
+    action: "selectPrev",
     category: "Navigation",
   },
   {
@@ -785,13 +799,6 @@ export const DEFAULT_KEY_BINDINGS: KeyBinding[] = [
     key: "ctrl+enter, cmd+enter",
     description: "Confirm Dialog",
     action: "confirmDialog",
-    category: "Navigation",
-  },
-  {
-    id: "cancel-dialog",
-    key: "escape",
-    description: "Cancel / Close Dialog",
-    action: "cancelDialog",
     category: "Navigation",
   },
   {

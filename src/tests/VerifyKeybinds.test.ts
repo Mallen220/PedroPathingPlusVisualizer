@@ -18,12 +18,34 @@ describe("Keybindings", () => {
     expect(selectPrev?.key).toBe("ctrl+up, cmd+up, shift+tab");
   });
 
+  it("should include select-next-item and select-prev-item", () => {
+    const selectNext = DEFAULT_KEY_BINDINGS.find(
+      (b) => b.id === "select-next-item",
+    );
+    const selectPrev = DEFAULT_KEY_BINDINGS.find(
+      (b) => b.id === "select-prev-item",
+    );
+
+    expect(selectNext).toBeDefined();
+    expect(selectNext?.key).toBe("alt+right");
+    expect(selectNext?.action).toBe("selectNext");
+
+    expect(selectPrev).toBeDefined();
+    expect(selectPrev?.key).toBe("alt+left");
+    expect(selectPrev?.action).toBe("selectPrev");
+  });
+
+  it("should not include cancel-dialog (redundant with deselect-all)", () => {
+    const binding = DEFAULT_KEY_BINDINGS.find((b) => b.id === "cancel-dialog");
+    expect(binding).toBeUndefined();
+  });
+
   it("should include cycle-path-color", () => {
     const binding = DEFAULT_KEY_BINDINGS.find(
       (b) => b.id === "cycle-path-color",
     );
     expect(binding).toBeDefined();
-    expect(binding?.key).toBe("shift+k, alt+c");
+    expect(binding?.key).toBe("alt+c");
     expect(binding?.action).toBe("cyclePathColor");
   });
 
