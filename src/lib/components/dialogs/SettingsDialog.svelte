@@ -3,7 +3,10 @@
   import { onMount } from "svelte";
   import { cubicInOut } from "svelte/easing";
   import { fade, fly } from "svelte/transition";
-  import { resetSettings } from "../../../utils/settingsPersistence";
+  import {
+    resetSettings,
+    mergeSettings,
+  } from "../../../utils/settingsPersistence";
   import {
     AVAILABLE_FIELD_MAPS,
     DEFAULT_SETTINGS,
@@ -209,6 +212,54 @@
   async function handleSave() {
     await saveSettings(settings);
     isOpen = false;
+  }
+
+  async function handleExport() {
+    try {
+      const dataStr = JSON.stringify(settings, null, 2);
+      const blob = new Blob([dataStr], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const downloadAnchorNode = document.createElement("a");
+      downloadAnchorNode.setAttribute("href", url);
+      downloadAnchorNode.setAttribute("download", "pedro-settings.json");
+      document.body.appendChild(downloadAnchorNode);
+      downloadAnchorNode.click();
+      downloadAnchorNode.remove();
+      URL.revokeObjectURL(url);
+    } catch (e) {
+      alert("Failed to export settings: " + (e as Error).message);
+    }
+  }
+
+  async function handleImport(e: Event) {
+    const target = e.target as HTMLInputElement;
+    const file = target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+      try {
+        if (typeof event.target?.result === "string") {
+          const json = JSON.parse(event.target.result);
+          // Handle if it's wrapped in StoredSettings or raw Settings
+          // StoredSettings has a 'settings' property
+          const rawSettings = json.settings || json;
+          const merged = mergeSettings(rawSettings);
+
+          // Update local state
+          settings = merged;
+
+          // Persist
+          await saveSettings(settings);
+          alert("Settings imported successfully!");
+        }
+      } catch (err) {
+        alert("Error importing settings: " + (err as Error).message);
+      }
+      // Reset input
+      target.value = "";
+    };
+    reader.readAsText(file);
   }
 
   async function handleReset() {
@@ -782,6 +833,40 @@
                     </SettingsItem>
                   </div>
                 {/if}
+
+                <SettingsItem
+                  label="Transfer Settings"
+                  description="Export or import your settings configuration"
+                  {searchQuery}
+                  layout="row"
+                >
+                  <div class="flex gap-2">
+                    <button
+                      on:click={handleExport}
+                      title="Export Settings"
+                      class="px-3 py-1.5 text-xs font-medium text-neutral-700 dark:text-neutral-300 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 rounded-md transition-colors"
+                    >
+                      Export
+                    </button>
+                    <button
+                      on:click={() =>
+                        document
+                          .getElementById("settings-import-input")
+                          ?.click()}
+                      title="Import Settings"
+                      class="px-3 py-1.5 text-xs font-medium text-neutral-700 dark:text-neutral-300 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 rounded-md transition-colors"
+                    >
+                      Import
+                    </button>
+                    <input
+                      type="file"
+                      id="settings-import-input"
+                      class="hidden"
+                      accept=".json"
+                      on:change={handleImport}
+                    />
+                  </div>
+                </SettingsItem>
               </div>
             {/if}
 
