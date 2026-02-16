@@ -937,6 +937,35 @@ ipcMain.handle("app:is-windows-store", () => {
   return process.windowsStore || false;
 });
 
+ipcMain.handle("update:download", (event, version, url) => {
+  if (appUpdater) {
+    appUpdater.handleDownloadAndInstall(version, url);
+  }
+});
+
+ipcMain.handle("update:skip", (event, version) => {
+  if (appUpdater) {
+    appUpdater.skipVersion(version);
+  }
+});
+
+ipcMain.handle("update:check", async (event) => {
+  try {
+    if (!appUpdater) {
+      const win = BrowserWindow.getFocusedWindow() || windows.values().next().value;
+      if (win) appUpdater = new AppUpdater(win);
+    }
+    if (appUpdater) {
+      await appUpdater.checkForUpdates();
+      return { success: true };
+    }
+    return { success: false, message: "no-updater" };
+  } catch (err) {
+    console.error("Error during manual update check:", err);
+    return { success: false, error: err && err.message ? err.message : String(err) };
+  }
+});
+
 // Add to existing IPC handlers
 ipcMain.handle("file:rename", async (event, oldPath, newPath) => {
   try {

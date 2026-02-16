@@ -1,6 +1,11 @@
 // Copyright 2026 Matthew Allen. Licensed under the Modified Apache License, Version 2.0.
 import { writable } from "svelte/store";
-import type { CollisionMarker, Notification, FieldView } from "./types";
+import type {
+  CollisionMarker,
+  Notification,
+  FieldView,
+  UpdateData,
+} from "./types";
 
 // Math tools stores
 export const showRuler = writable(false);
@@ -28,6 +33,10 @@ export const exportDialogState = writable<{
   format: "java" | "points" | "sequential" | "json" | "custom";
   exporterName?: string;
 }>({ isOpen: false, format: "java" });
+
+// Update Notification Store
+export const showUpdateAvailableDialog = writable(false);
+export const updateDataStore = writable<UpdateData | null>(null);
 
 // File Manager Stores
 export const showFileManager = writable(false);
