@@ -8,6 +8,8 @@
     gridSize,
     isPresentationMode,
   } from "../stores";
+  import { settingsStore } from "./projectStore";
+  import { toDisplay, getUnitLabel, formatDistance } from "../utils";
   import type * as d3 from "d3";
 
   export let x: d3.ScaleLinear<number, number, number>;
@@ -124,11 +126,15 @@
   $: spacing = Math.max(1, $gridSize || 12);
   $: gridPositions = (() => {
     const positions: number[] = [];
-    for (let pos = 0; pos <= FIELD_SIZE; pos += spacing) {
+    // Small epsilon to avoid floating point issues with "approximate" metric values
+    const epsilon = 0.001;
+    for (let pos = 0; pos <= FIELD_SIZE + epsilon; pos += spacing) {
+      if (pos > FIELD_SIZE) break;
       positions.push(Number(pos.toFixed(6)));
     }
-    if (positions[positions.length - 1] !== FIELD_SIZE) {
-      positions.push(FIELD_SIZE);
+    // Ensure last line is drawn if not close to it
+    if (Math.abs(positions[positions.length - 1] - FIELD_SIZE) > epsilon) {
+        positions.push(FIELD_SIZE);
     }
     return positions;
   })();
@@ -155,7 +161,7 @@
         class="fill-gray-600 dark:fill-gray-400 text-xs"
         text-anchor="middle"
       >
-        {position}"
+        {Number(toDisplay(position, $settingsStore.unitSystem).toFixed(1))}{getUnitLabel($settingsStore.unitSystem)}
       </text>
     {/each}
 
@@ -176,7 +182,7 @@
         class="fill-gray-600 dark:fill-gray-400 text-xs"
         text-anchor="middle"
       >
-        {position}"
+        {Number(toDisplay(position, $settingsStore.unitSystem).toFixed(1))}{getUnitLabel($settingsStore.unitSystem)}
       </text>
     {/each}
   </svg>
@@ -228,7 +234,7 @@
       class="fill-blue-600 dark:fill-blue-400 font-semibold pointer-events-none"
       text-anchor="middle"
     >
-      {rulerLength.toFixed(2)}"
+      {formatDistance(rulerLength, $settingsStore.unitSystem)}
     </text>
   </svg>
 {/if}

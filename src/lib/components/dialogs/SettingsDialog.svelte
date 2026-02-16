@@ -22,6 +22,7 @@
     settingsActiveTab,
   } from "../../../stores";
   import { followRobotStore } from "../../projectStore";
+  import { toDisplay, fromDisplay, getUnitLabel } from "../../../utils";
 
   export let isOpen = false;
   export let settings: Settings = { ...DEFAULT_SETTINGS };
@@ -240,6 +241,7 @@
     min?: number,
     max?: number,
     restoreDefaultIfEmpty = false,
+    isDistance = false,
   ) {
     if (value === "" && restoreDefaultIfEmpty) {
       (settings as any)[property] = DEFAULT_SETTINGS[property];
@@ -248,6 +250,9 @@
     }
     let num = parseFloat(value);
     if (isNaN(num)) num = 0;
+    if (isDistance) {
+      num = fromDisplay(num, settings.unitSystem);
+    }
     if (min !== undefined) num = Math.max(min, num);
     if (max !== undefined) num = Math.min(max, num);
     (settings as any)[property] = num;
@@ -271,12 +276,12 @@
 
   function handleLengthInput(e: Event) {
     const target = e.target as HTMLInputElement;
-    handleNumberInput(target.value, "rLength", 1, 36, true);
+    handleNumberInput(target.value, "rLength", 1, 36, true, true);
   }
 
   function handleWidthInput(e: Event) {
     const target = e.target as HTMLInputElement;
-    handleNumberInput(target.value, "rWidth", 1, 36, true);
+    handleNumberInput(target.value, "rWidth", 1, 36, true, true);
   }
 
   function handleImageError(e: Event) {
@@ -286,32 +291,32 @@
 
   function handleSafetyMarginInput(e: Event) {
     const target = e.target as HTMLInputElement;
-    handleNumberInput(target.value, "safetyMargin", 0, 24, true);
+    handleNumberInput(target.value, "safetyMargin", 0, 24, true, true);
   }
 
   function handleXVelocityInput(e: Event) {
     const target = e.target as HTMLInputElement;
-    handleNumberInput(target.value, "xVelocity", 0, undefined, true);
+    handleNumberInput(target.value, "xVelocity", 0, undefined, true, true);
   }
 
   function handleYVelocityInput(e: Event) {
     const target = e.target as HTMLInputElement;
-    handleNumberInput(target.value, "yVelocity", 0, undefined, true);
+    handleNumberInput(target.value, "yVelocity", 0, undefined, true, true);
   }
 
   function handleMaxVelocityInput(e: Event) {
     const target = e.target as HTMLInputElement;
-    handleNumberInput(target.value, "maxVelocity", 0, undefined, true);
+    handleNumberInput(target.value, "maxVelocity", 0, undefined, true, true);
   }
 
   function handleMaxAccelerationInput(e: Event) {
     const target = e.target as HTMLInputElement;
-    handleNumberInput(target.value, "maxAcceleration", 0, undefined, true);
+    handleNumberInput(target.value, "maxAcceleration", 0, undefined, true, true);
   }
 
   function handleMaxDecelerationInput(e: Event) {
     const target = e.target as HTMLInputElement;
-    handleNumberInput(target.value, "maxDeceleration", 0, undefined, true);
+    handleNumberInput(target.value, "maxDeceleration", 0, undefined, true, true);
   }
 
   function handleFrictionInput(e: Event) {
@@ -347,6 +352,7 @@
       "optimizationMutationStrength",
       0.1,
       20,
+      true,
       true,
     );
   }
@@ -810,7 +816,7 @@
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <SettingsItem
-                    label="Robot Length (in)"
+                    label={`Robot Length (${getUnitLabel(settings.unitSystem)})`}
                     description="Length of the robot base"
                     {searchQuery}
                     forId="robot-length"
@@ -818,16 +824,16 @@
                     <input
                       id="robot-length"
                       type="number"
-                      bind:value={settings.rLength}
-                      min="1"
-                      max="36"
-                      step="0.5"
+                      value={Number(toDisplay(settings.rLength, settings.unitSystem).toFixed(2))}
+                      min={toDisplay(1, settings.unitSystem)}
+                      max={toDisplay(36, settings.unitSystem)}
+                      step={toDisplay(0.5, settings.unitSystem)}
                       on:change={handleLengthInput}
                       class="w-full px-3 py-2 rounded-md border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                   </SettingsItem>
                   <SettingsItem
-                    label="Robot Width (in)"
+                    label={`Robot Width (${getUnitLabel(settings.unitSystem)})`}
                     description="Width of the robot base"
                     {searchQuery}
                     forId="robot-width"
@@ -835,10 +841,10 @@
                     <input
                       id="robot-width"
                       type="number"
-                      bind:value={settings.rWidth}
-                      min="1"
-                      max="36"
-                      step="0.5"
+                      value={Number(toDisplay(settings.rWidth, settings.unitSystem).toFixed(2))}
+                      min={toDisplay(1, settings.unitSystem)}
+                      max={toDisplay(36, settings.unitSystem)}
+                      step={toDisplay(0.5, settings.unitSystem)}
                       on:change={handleWidthInput}
                       class="w-full px-3 py-2 rounded-md border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
@@ -846,7 +852,7 @@
                 </div>
 
                 <SettingsItem
-                  label="Safety Margin (in)"
+                  label={`Safety Margin (${getUnitLabel(settings.unitSystem)})`}
                   description="Buffer around obstacles and field boundaries"
                   {searchQuery}
                   forId="safety-margin"
@@ -854,10 +860,10 @@
                   <input
                     id="safety-margin"
                     type="number"
-                    bind:value={settings.safetyMargin}
+                    value={Number(toDisplay(settings.safetyMargin, settings.unitSystem).toFixed(2))}
                     min="0"
-                    max="24"
-                    step="0.5"
+                    max={toDisplay(24, settings.unitSystem)}
+                    step={toDisplay(0.5, settings.unitSystem)}
                     on:change={handleSafetyMarginInput}
                     class="w-full px-3 py-2 rounded-md border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
@@ -1032,14 +1038,14 @@
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <SettingsItem
-                    label="X Velocity (in/s)"
+                    label={`X Velocity (${getUnitLabel(settings.unitSystem)}/s)`}
                     {searchQuery}
                     forId="x-velocity"
                   >
                     <input
                       id="x-velocity"
                       type="number"
-                      bind:value={settings.xVelocity}
+                      value={Number(toDisplay(settings.xVelocity, settings.unitSystem).toFixed(2))}
                       min="0"
                       step="1"
                       on:change={handleXVelocityInput}
@@ -1047,14 +1053,14 @@
                     />
                   </SettingsItem>
                   <SettingsItem
-                    label="Y Velocity (in/s)"
+                    label={`Y Velocity (${getUnitLabel(settings.unitSystem)}/s)`}
                     {searchQuery}
                     forId="y-velocity"
                   >
                     <input
                       id="y-velocity"
                       type="number"
-                      bind:value={settings.yVelocity}
+                      value={Number(toDisplay(settings.yVelocity, settings.unitSystem).toFixed(2))}
                       min="0"
                       step="1"
                       on:change={handleYVelocityInput}
@@ -1128,14 +1134,14 @@
                 </SettingsItem>
 
                 <SettingsItem
-                  label="Max Velocity (in/s)"
+                  label={`Max Velocity (${getUnitLabel(settings.unitSystem)}/s)`}
                   {searchQuery}
                   forId="max-velocity"
                 >
                   <input
                     id="max-velocity"
                     type="number"
-                    bind:value={settings.maxVelocity}
+                    value={Number(toDisplay(settings.maxVelocity, settings.unitSystem).toFixed(2))}
                     min="0"
                     step="1"
                     on:change={handleMaxVelocityInput}
@@ -1145,14 +1151,14 @@
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <SettingsItem
-                    label="Max Acceleration (in/s²)"
+                    label={`Max Acceleration (${getUnitLabel(settings.unitSystem)}/s²)`}
                     {searchQuery}
                     forId="max-acceleration"
                   >
                     <input
                       id="max-acceleration"
                       type="number"
-                      bind:value={settings.maxAcceleration}
+                      value={Number(toDisplay(settings.maxAcceleration, settings.unitSystem).toFixed(2))}
                       min="0"
                       step="1"
                       on:change={handleMaxAccelerationInput}
@@ -1160,14 +1166,14 @@
                     />
                   </SettingsItem>
                   <SettingsItem
-                    label="Max Deceleration (in/s²)"
+                    label={`Max Deceleration (${getUnitLabel(settings.unitSystem)}/s²)`}
                     {searchQuery}
                     forId="max-deceleration"
                   >
                     <input
                       id="max-deceleration"
                       type="number"
-                      bind:value={settings.maxDeceleration}
+                      value={Number(toDisplay(settings.maxDeceleration || 0, settings.unitSystem).toFixed(2))}
                       min="0"
                       step="1"
                       on:change={handleMaxDecelerationInput}
@@ -1205,6 +1211,22 @@
                     Interface
                   </h4>
                 {/if}
+
+                <SettingsItem
+                  label="Unit System"
+                  description="Select preferred unit system for display"
+                  {searchQuery}
+                  forId="unit-system-select"
+                >
+                  <select
+                    id="unit-system-select"
+                    bind:value={settings.unitSystem}
+                    class="w-full px-3 py-2 rounded-md border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="imperial">Imperial (Inches)</option>
+                    <option value="metric">Metric (Centimeters)</option>
+                  </select>
+                </SettingsItem>
 
                 <SettingsItem
                   label="Theme"
@@ -1650,7 +1672,7 @@
 
                     <SettingsItem
                       label="Onion Layer Spacing"
-                      description="Distance in inches between each robot body trace"
+                      description={`Distance in ${settings.unitSystem === "metric" ? "centimeters" : "inches"} between each robot body trace`}
                       {searchQuery}
                     >
                       <div class="flex items-center gap-2">
@@ -1665,7 +1687,7 @@
                         <span
                           class="text-sm font-medium text-neutral-700 dark:text-neutral-300 min-w-[3rem] text-right"
                         >
-                          {settings.onionLayerSpacing || 6}"
+                          {toDisplay(settings.onionLayerSpacing || 6, settings.unitSystem).toFixed(1)} {getUnitLabel(settings.unitSystem)}
                         </span>
                       </div>
                     </SettingsItem>
@@ -1729,17 +1751,17 @@
                   </SettingsItem>
                   <SettingsItem
                     label="Mutation Strength"
-                    description="Max mutation distance (inches)"
+                    description={`Max mutation distance (${getUnitLabel(settings.unitSystem)})`}
                     {searchQuery}
                     layout="col"
                   >
                     <div class="flex items-center gap-2">
                       <input
                         type="number"
-                        min="0.1"
-                        max="20"
-                        step="0.1"
-                        bind:value={settings.optimizationMutationStrength}
+                        min={toDisplay(0.1, settings.unitSystem)}
+                        max={toDisplay(20, settings.unitSystem)}
+                        step={toDisplay(0.1, settings.unitSystem)}
+                        value={Number(toDisplay(settings.optimizationMutationStrength, settings.unitSystem).toFixed(2))}
                         on:change={handleMutationStrengthInput}
                         class="w-32 px-2 py-1.5 rounded border border-neutral-300 dark:border-neutral-600 text-orange-700 dark:text-orange-300 bg-white dark:bg-neutral-800 focus:ring-2 focus:ring-orange-500"
                       />

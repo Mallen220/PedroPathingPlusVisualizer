@@ -38,6 +38,7 @@ export const SETTINGS_TAB_ORDER = [
 ];
 
 export const DEFAULT_SETTINGS: Settings = {
+  unitSystem: "imperial",
   xVelocity: 30,
   yVelocity: 30,
   aVelocity: Math.PI / 2, // 90 deg/s

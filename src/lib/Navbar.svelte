@@ -25,6 +25,9 @@
     calculatePathTime,
     formatTime,
     getShortcutFromSettings,
+    formatDistance,
+    toDisplay,
+    fromDisplay
   } from "../utils";
   import { showShortcuts } from "../stores";
   import { customExportersStore } from "./pluginsStore";
@@ -67,7 +70,13 @@
   let historyDropdownRef: HTMLElement;
 
   let selectedGridSize = 12;
-  const gridSizeOptions = [1, 3, 6, 12, 24];
+
+  const imperialGridOptions = [1, 3, 6, 12, 24];
+  const metricGridOptions = [10, 25, 50, 100]; // cm
+
+  $: gridSizeOptions = settings.unitSystem === "metric"
+    ? metricGridOptions.map(cm => ({ value: fromDisplay(cm, "metric"), label: `${cm} cm` }))
+    : imperialGridOptions.map(inc => ({ value: inc, label: `${inc}"` }));
 
   $: timePrediction = calculatePathTime(startPoint, lines, settings, sequence);
 
@@ -345,7 +354,7 @@
           >Distance</span
         >
         <span class="font-semibold text-neutral-800 dark:text-neutral-200"
-          >{(timePrediction?.totalDistance ?? 0).toFixed(0)} in</span
+          >{formatDistance(timePrediction?.totalDistance ?? 0, settings.unitSystem, 0)}</span
         >
       </div>
     </div>
@@ -354,7 +363,7 @@
       class="flex flex-col md:hidden text-xs text-neutral-600 dark:text-neutral-300"
     >
       <span>{formatTime(timePrediction?.totalTime ?? 0)}</span>
-      <span>{(timePrediction?.totalDistance ?? 0).toFixed(0)} in</span>
+      <span>{formatDistance(timePrediction?.totalDistance ?? 0, settings.unitSystem, 0)}</span>
     </div>
 
     {#each centerActions as action (action.id)}
@@ -812,7 +821,7 @@
                       aria-label="Select grid spacing"
                     >
                       {#each gridSizeOptions as option}
-                        <option value={option}>{option}"</option>
+                        <option value={option.value}>{option.label}</option>
                       {/each}
                     </select>
                   </div>

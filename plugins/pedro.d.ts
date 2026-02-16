@@ -159,6 +159,7 @@ interface CustomFieldConfig {
 }
 
 interface Settings {
+  unitSystem: "imperial" | "metric";
   xVelocity: number;
   yVelocity: number;
   aVelocity: number;

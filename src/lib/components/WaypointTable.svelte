@@ -51,7 +51,7 @@
     getButtonFilledClass,
     getSmallButtonClass,
   } from "../../utils/buttonStyles";
-  import { getShortcutFromSettings } from "../../utils";
+  import { getShortcutFromSettings, toDisplay, fromDisplay, getUnitLabel, formatDistance } from "../../utils";
 
   export let startPoint: Point;
   export let lines: Line[];
@@ -154,7 +154,9 @@
   }
 
   // Use snap stores to determine step size for inputs
-  $: stepSize = $snapToGrid && $showGrid ? $gridSize : 0.1;
+  $: stepSize = $snapToGrid && $showGrid
+    ? toDisplay($gridSize, settings?.unitSystem || "imperial")
+    : 0.1;
 
   function updatePoint(
     point: Point | ControlPoint,
@@ -187,7 +189,8 @@
     const input = e.target as HTMLInputElement;
     const val = parseFloat(input.value);
     if (!isNaN(val)) {
-      updatePoint(point, field, val, lineId);
+      const inches = fromDisplay(val, settings?.unitSystem || "imperial");
+      updatePoint(point, field, inches, lineId);
     }
   }
 
@@ -543,28 +546,30 @@
   let copyButtonText = "Copy Table";
 
   export function copyTableToClipboard() {
+    const unit = settings?.unitSystem || "imperial";
+    const unitLabel = getUnitLabel(unit);
     const rows = [];
-    rows.push("| Name | X (in) / Dur (ms) | Y (in) / Deg |");
+    rows.push(`| Name | X (${unitLabel}) / Dur (ms) | Y (${unitLabel}) / Deg |`);
     rows.push("| :--- | :--- | :--- |");
     rows.push(
-      `| Start Point | ${startPoint.x.toString()} | ${startPoint.y.toString()} |`,
+      `| Start Point | ${toDisplay(startPoint.x, unit).toFixed(3)} | ${toDisplay(startPoint.y, unit).toFixed(3)} |`,
     );
 
     for (const item of displaySequence) {
       if (item.kind === "path") {
         const line = lines.find((l) => l.id === item.lineId);
         if (line) {
-          let xVal = line.endPoint.x.toString();
+          let xVal = toDisplay(line.endPoint.x, unit).toFixed(3);
           if (line.waitBeforeName || line.waitBeforeMs) {
             xVal += ` (${line.waitBeforeName || line.waitBeforeMs})`;
           }
           const lineIdx = lines.findIndex((l) => l.id === line.id);
           rows.push(
-            `| ${line.name || `Path ${lineIdx + 1}`} | ${xVal} | ${line.endPoint.y.toString()} |`,
+            `| ${line.name || `Path ${lineIdx + 1}`} | ${xVal} | ${toDisplay(line.endPoint.y, unit).toFixed(3)} |`,
           );
           line.controlPoints.forEach((cp, idx) => {
             rows.push(
-              `| ↳ Control ${idx + 1} | ${cp.x.toString()} | ${cp.y.toString()} |`,
+              `| ↳ Control ${idx + 1} | ${toDisplay(cp.x, unit).toFixed(3)} | ${toDisplay(cp.y, unit).toFixed(3)} |`,
             );
           });
         }
@@ -1230,11 +1235,11 @@
           >
           <th
             class="px-3 py-2 border-b dark:border-neutral-700 bg-neutral-100 dark:bg-neutral-800"
-            >X (in) / Dur (ms)</th
+            >X ({getUnitLabel(settings?.unitSystem || "imperial")}) / Dur (ms)</th
           >
           <th
             class="px-3 py-2 border-b dark:border-neutral-700 bg-neutral-100 dark:bg-neutral-800"
-            >Y (in) / Deg (°)</th
+            >Y ({getUnitLabel(settings?.unitSystem || "imperial")}) / Deg (°)</th
           >
           <th
             class="px-3 py-2 border-b dark:border-neutral-700 w-10 bg-neutral-100 dark:bg-neutral-800"
@@ -1272,7 +1277,7 @@
               type="number"
               class="w-20 px-2 py-1 rounded border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 focus:ring-2 focus:ring-blue-500 focus:outline-none"
               step={stepSize}
-              value={startPoint.x}
+              value={Number(toDisplay(startPoint.x, settings?.unitSystem || "imperial").toFixed(3))}
               aria-label="Start Point X"
               on:input={(e) => handleInput(e, startPoint, "x")}
               use:focusOnRequest={{ id: "point-0-0", field: "x" }}
@@ -1284,7 +1289,7 @@
               type="number"
               class="w-20 px-2 py-1 rounded border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 focus:ring-2 focus:ring-blue-500 focus:outline-none"
               step={stepSize}
-              value={startPoint.y}
+              value={Number(toDisplay(startPoint.y, settings?.unitSystem || "imperial").toFixed(3))}
               aria-label="Start Point Y"
               on:input={(e) => handleInput(e, startPoint, "y")}
               use:focusOnRequest={{ id: "point-0-0", field: "y" }}
@@ -1432,7 +1437,7 @@
                       type="number"
                       class="w-20 px-2 py-1 rounded border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 focus:ring-2 focus:ring-blue-500 focus:outline-none"
                       step={stepSize}
-                      value={line.endPoint.x}
+                      value={Number(toDisplay(line.endPoint.x, settings?.unitSystem || "imperial").toFixed(3))}
                       aria-label="{line.name || `Path ${lineIdx + 1}`} X"
                       on:input={(e) =>
                         handleInput(e, line.endPoint, "x", line.id)}
@@ -1449,7 +1454,7 @@
                     type="number"
                     class="w-20 px-2 py-1 rounded border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 focus:ring-2 focus:ring-blue-500 focus:outline-none"
                     step={stepSize}
-                    value={line.endPoint.y}
+                    value={Number(toDisplay(line.endPoint.y, settings?.unitSystem || "imperial").toFixed(3))}
                     aria-label="{line.name || `Path ${lineIdx + 1}`} Y"
                     on:input={(e) =>
                       handleInput(e, line.endPoint, "y", line.id)}
@@ -1549,7 +1554,7 @@
                       type="number"
                       class="w-20 px-2 py-1 rounded border border-neutral-300 dark:border-neutral-600 bg-neutral-50 dark:bg-neutral-900/50 focus:ring-2 focus:ring-blue-500 focus:outline-none text-xs"
                       step={stepSize}
-                      value={cp.x}
+                      value={Number(toDisplay(cp.x, settings?.unitSystem || "imperial").toFixed(3))}
                       aria-label="Control Point {j + 1} X for {line.name ||
                         `Path ${lineIdx + 1}`}"
                       on:input={(e) => handleInput(e, cp, "x")}
@@ -1562,7 +1567,7 @@
                       type="number"
                       class="w-20 px-2 py-1 rounded border border-neutral-300 dark:border-neutral-600 bg-neutral-50 dark:bg-neutral-900/50 focus:ring-2 focus:ring-blue-500 focus:outline-none text-xs"
                       step={stepSize}
-                      value={cp.y}
+                      value={Number(toDisplay(cp.y, settings?.unitSystem || "imperial").toFixed(3))}
                       aria-label="Control Point {j + 1} Y for {line.name ||
                         `Path ${lineIdx + 1}`}"
                       on:input={(e) => handleInput(e, cp, "y")}
@@ -1673,7 +1678,7 @@
       class="text-xs text-neutral-500 dark:text-neutral-500 w-2/3 break-words"
     >
       <div>
-        * Coordinates in inches. 0,0 is bottom-left. Drag handle to reorder.
+        * Coordinates in {getUnitLabel(settings?.unitSystem || "imperial")}. 0,0 is bottom-left. Drag handle to reorder.
       </div>
       <div>
         * Right-click a row to add or reorder points. Use keyboard shortcuts for
