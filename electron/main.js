@@ -937,6 +937,18 @@ ipcMain.handle("app:is-windows-store", () => {
   return process.windowsStore || false;
 });
 
+ipcMain.handle("update:download", (event, version, url) => {
+  if (appUpdater) {
+    appUpdater.handleDownloadAndInstall(version, url);
+  }
+});
+
+ipcMain.handle("update:skip", (event, version) => {
+  if (appUpdater) {
+    appUpdater.skipVersion(version);
+  }
+});
+
 // Add to existing IPC handlers
 ipcMain.handle("file:rename", async (event, oldPath, newPath) => {
   try {

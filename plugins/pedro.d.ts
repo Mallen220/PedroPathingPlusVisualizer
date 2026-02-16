@@ -666,6 +666,12 @@ interface ActionDefinition {
   ) => TimeCalculationResult;
 }
 
+interface UpdateData {
+  version: string;
+  releaseNotes: string;
+  url: string;
+}
+
 export {};
 
 // Global variable exposed to plugins

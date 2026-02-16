@@ -25,6 +25,7 @@
   import ExportCodeDialog from "./lib/components/dialogs/ExportCodeDialog.svelte";
   import StrategySheetPreview from "./lib/components/dialogs/StrategySheetPreview.svelte";
   import DialogHost from "./lib/components/DialogHost.svelte";
+  import UpdateAvailableDialog from "./lib/components/dialogs/UpdateAvailableDialog.svelte";
 
   // Stores
   import {
@@ -45,6 +46,8 @@
     showPluginManager,
     showTelemetryDialog,
     selectedLineId,
+    showUpdateAvailableDialog,
+    updateDataStore,
   } from "./stores";
   import {
     startPointStore,
@@ -123,6 +126,9 @@
     getSavedDirectory?: () => Promise<string>;
     gitShow?: (filePath: string) => Promise<string | null>;
     isWindowsStore?: () => Promise<boolean>;
+    onUpdateAvailable?: (callback: (data: any) => void) => void;
+    downloadUpdate?: (version: string, url: string) => void;
+    skipUpdate?: (version: string) => void;
   }
   const electronAPI = (window as any).electronAPI as ElectronAPI | undefined;
 
@@ -185,6 +191,13 @@
     document.addEventListener("click", handleLinkClick);
     window.addEventListener("beforeunload", handleBeforeUnload);
     checkMsStoreTracking();
+
+    if (electronAPI && electronAPI.onUpdateAvailable) {
+      electronAPI.onUpdateAvailable((data: any) => {
+        updateDataStore.set(data);
+        showUpdateAvailableDialog.set(true);
+      });
+    }
   });
 
   onDestroy(() => {
@@ -1492,6 +1505,8 @@
   onDiscard={handleUnsavedDiscard}
   onCancel={handleUnsavedCancel}
 />
+
+<UpdateAvailableDialog bind:show={$showUpdateAvailableDialog} />
 
 <SettingsDialog bind:isOpen={$showSettings} bind:settings={$settingsStore} />
 <TelemetryDialog bind:isOpen={$showTelemetryDialog} />

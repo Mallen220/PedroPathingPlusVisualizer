@@ -657,3 +657,9 @@ export interface ActionDefinition {
     context: TimeCalculationContext,
   ) => TimeCalculationResult;
 }
+
+export interface UpdateData {
+  version: string;
+  releaseNotes: string;
+  url: string;
+}
