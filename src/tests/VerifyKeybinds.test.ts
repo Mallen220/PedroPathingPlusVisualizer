@@ -18,6 +18,21 @@ describe("Keybindings", () => {
     expect(selectPrev?.key).toBe("ctrl+up, cmd+up, shift+tab");
   });
 
+  it("should include select-next-element and select-prev-element", () => {
+    const selectNext = DEFAULT_KEY_BINDINGS.find(
+      (b) => b.id === "select-next-element",
+    );
+    const selectPrev = DEFAULT_KEY_BINDINGS.find(
+      (b) => b.id === "select-prev-element",
+    );
+
+    expect(selectNext).toBeDefined();
+    expect(selectNext?.key).toBe("alt+right");
+
+    expect(selectPrev).toBeDefined();
+    expect(selectPrev?.key).toBe("alt+left");
+  });
+
   it("should include cycle-path-color", () => {
     const binding = DEFAULT_KEY_BINDINGS.find(
       (b) => b.id === "cycle-path-color",

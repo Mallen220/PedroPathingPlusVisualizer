@@ -185,7 +185,7 @@ export const DEFAULT_KEY_BINDINGS: KeyBinding[] = [
   },
   {
     id: "cycle-path-color",
-    key: "alt+c",
+    key: "shift+k, alt+c",
     description: "Cycle Path Color",
     action: "cyclePathColor",
     category: "Editing",
@@ -411,6 +411,20 @@ export const DEFAULT_KEY_BINDINGS: KeyBinding[] = [
     key: "ctrl+up, cmd+up, shift+tab",
     description: "Select Previous Sequence Item",
     action: "selectPrevSequence",
+    category: "Navigation",
+  },
+  {
+    id: "select-next-element",
+    key: "alt+right",
+    description: "Select Next Element",
+    action: "selectNext",
+    category: "Navigation",
+  },
+  {
+    id: "select-prev-element",
+    key: "alt+left",
+    description: "Select Previous Element",
+    action: "selectPrev",
     category: "Navigation",
   },
   {
@@ -740,7 +754,7 @@ export const DEFAULT_KEY_BINDINGS: KeyBinding[] = [
   // Extended Commands
   {
     id: "set-file-manager-directory",
-    key: "",
+    key: "cmd+alt+o, ctrl+alt+o",
     description: "Set File Manager Directory",
     action: "setFileManagerDirectory",
     category: "File",
@@ -796,7 +810,7 @@ export const DEFAULT_KEY_BINDINGS: KeyBinding[] = [
   },
   {
     id: "show-debug",
-    key: "",
+    key: "alt+shift+d",
     description: "Show/Hide Debug Sequence",
     action: "toggleDebugSequence",
     category: "View",
@@ -887,7 +901,7 @@ export const DEFAULT_KEY_BINDINGS: KeyBinding[] = [
   },
   {
     id: "copy-json",
-    key: "",
+    key: "cmd+alt+c, ctrl+alt+c",
     description: "Copy Path JSON to Clipboard",
     action: "copyPathJson",
     category: "Export",
