@@ -87,4 +87,11 @@ contextBridge.exposeInMainWorld("electronAPI", {
   deletePlugin: (filename) => ipcRenderer.invoke("plugins:delete", filename),
   openPluginsFolder: () => ipcRenderer.invoke("plugins:open-folder"),
   transpilePlugin: (code) => ipcRenderer.invoke("plugins:transpile", code),
+
+  // Update
+  onUpdateAvailable: (callback) =>
+    ipcRenderer.on("update-available", (_event, data) => callback(data)),
+  downloadUpdate: (version, url) =>
+    ipcRenderer.invoke("update:download", version, url),
+  skipUpdate: (version) => ipcRenderer.invoke("update:skip", version),
 });
