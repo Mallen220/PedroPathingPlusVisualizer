@@ -16,8 +16,14 @@
       <img src="https://img.shields.io/badge/license-Apache%202.0-green.svg?style=flat-square" alt="License">
     </a>
     <img src="https://img.shields.io/badge/platform-macOS%20|%20Windows%20|%20Linux-lightgrey.svg?style=flat-square" alt="Platform">
+    <br/>
+    <a href="https://www.microsoft.com/en-us/p/frc-pathplanner/9nqbkb5dw909?cid=storebadge&ocid=badge&rtc=1&activetab=pivot:overviewtab" target="_blank" rel="noopener noreferrer" style="margin-left:8px;">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/f/f7/Get_it_from_Microsoft_Badge.svg" height="50" alt="Microsoft Store">
+    </a>
   </p>
 </div>
+
+Windows Users can download from the Microsoft Store to receive auto-updates for stable releases. Manual installs and pre-releases can be found [here](https://github.com/Mallen220/PedroPathingPlusVisualizer/releases).
 
 > ## This project is currently undergoing rapid updates. Please check back regularly for bug fixes and new features. If you find an error, please report it and revert to a previous version.
 
