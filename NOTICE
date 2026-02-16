@@ -249,3 +249,5 @@ src/utils/pathEditing.ts
 tile_verification.png
 .jules/verification/verify_export.py
 LICENSE
+electron/updater.js
+src/lib/components/dialogs/UpdateAvailableDialog.svelte

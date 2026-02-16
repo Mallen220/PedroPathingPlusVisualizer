@@ -16,6 +16,14 @@ class AppUpdater {
 
   async checkForUpdates() {
     try {
+      // Check if running in Microsoft Store context
+      if (process.windowsStore) {
+        console.log(
+          "Running in Microsoft Store context. Skipping GitHub update check.",
+        );
+        return;
+      }
+
       console.log("Checking for updates...");
 
       // GitHub API URL for your repository releases
@@ -101,44 +109,24 @@ class AppUpdater {
   async showUpdateAvailableDialog(releaseData) {
     // Wait a bit for the main window to be fully ready
     setTimeout(() => {
-      const result = dialog.showMessageBoxSync(this.mainWindow, {
-        type: "info",
-        title: "Update Available",
-        message: `A new version of Pedro Pathing Plus Visualizer is available!`,
-        detail: `Current version: ${this.currentVersion}\nLatest version: ${releaseData.tag_name}\n\n\nWould you like to download the update?`,
-        buttons: [
-          "Download and Install",
-          "Open Releases Page",
-          "Skip This Version",
-          "Remind Me Later",
-        ],
-        defaultId: 0,
-        cancelId: 3,
-      });
-
       const version = releaseData.tag_name.replace("v", "");
-
-      switch (result) {
-        case 0: // Download and Install
-          this.handleDownloadAndInstall(version, releaseData.html_url);
-          break;
-        case 1: // Open Releases Page
-          shell.openExternal(releaseData.html_url);
-          break;
-        case 2: // Skip This Version
-          const skippedVersions = this.loadSkippedVersions();
-          const versionToSkip = version;
-          if (!skippedVersions.includes(versionToSkip)) {
-            skippedVersions.push(versionToSkip);
-            this.saveSkippedVersions(skippedVersions);
-            console.log(`User skipped version ${versionToSkip}`);
-          }
-          break;
-        case 3: // Remind Me Later
-          // Do nothing, will check again on next startup
-          break;
+      if (this.mainWindow && this.mainWindow.webContents) {
+        this.mainWindow.webContents.send("update-available", {
+          version: version,
+          releaseNotes: releaseData.body,
+          url: releaseData.html_url,
+        });
       }
     }, 3000);
+  }
+
+  skipVersion(version) {
+    const skippedVersions = this.loadSkippedVersions();
+    if (!skippedVersions.includes(version)) {
+      skippedVersions.push(version);
+      this.saveSkippedVersions(skippedVersions);
+      console.log(`User skipped version ${version}`);
+    }
   }
 
   handleDownloadAndInstall(version, releasesUrl) {
