@@ -731,6 +731,7 @@
   $: path = (() => {
     x;
     y; // Trigger reactivity on pan/zoom
+    dimmedIds; // Trigger reactivity on selection/dimmed changes
     if (isDiffMode) return []; // Don't render standard path in diff mode
     const currentSelectedId = $selectedLineId;
 
