@@ -110,7 +110,7 @@ describe("PathStatisticsDialog", () => {
     expect(getByText("Centripetal Acceleration (in/s²)")).toBeTruthy();
 
     // Check Insights
-    const insightsTab = getByText("Insights");
+    const insightsTab = getByText("Health Check");
     expect(insightsTab).toBeTruthy();
     await fireEvent.click(insightsTab);
   });

@@ -1,6 +1,16 @@
+## 1.8.0 (Unreleased)
+
+- **Feature: Path Health Check (Analyzer)** - A comprehensive diagnostic tool integrated into the Path Statistics Dialog. It actively identifies and flags issues such as:
+  - Collisions with obstacles and Keep-In Zone violations.
+  - Field boundary violations.
+  - Kinematic risks: Excessive velocity, linear acceleration, and centripetal acceleration (risk of wheel slip).
+  - Sequence anomalies: Zero-duration waits, redundant rotations, and duplicate/missing event marker names.
+  - Geometric issues: Zero-length segments.
+  - Clicking on an issue automatically seeks the timeline to the relevant point for visualization.
+
 ## 1.7.3 (2026-02-10)
 
-- Add Sticky Notes plugin, disabled by default. Add Telemetry documentation page. Redesign Plugin Manager UI for better usability and descriptions. More keybinds and fixed conflicts. Users can drag Timeline Event Markers. Remove Discord for now. Add header info to saved .pp files. Prevent dragging on action names. Add heading normalization for Rotate and Path commands. Fix file renaming in FileManager. Fix correctly handling initial rotation in path time calculation. Update LICENSE and Privacy Policy. Add confirmation for obstacle deletion. Add Split Path keybind (K). Add MSIX windows 11 autopackager. Add Windows tile assets and generation tooling. FIX: Should add ".pp" in sequentially exported code. Remove settings from .pp file save. Added hard coded position toggle for sequential commands. 
+- Add Sticky Notes plugin, disabled by default. Add Telemetry documentation page. Redesign Plugin Manager UI for better usability and descriptions. More keybinds and fixed conflicts. Users can drag Timeline Event Markers. Remove Discord for now. Add header info to saved .pp files. Prevent dragging on action names. Add heading normalization for Rotate and Path commands. Fix file renaming in FileManager. Fix correctly handling initial rotation in path time calculation. Update LICENSE and Privacy Policy. Add confirmation for obstacle deletion. Add Split Path keybind (K). Add MSIX windows 11 autopackager. Add Windows tile assets and generation tooling. FIX: Should add ".pp" in sequentially exported code. Remove settings from .pp file save. Added hard coded position toggle for sequential commands.
 
 ## 1.7.2 (2026-02-04)
 

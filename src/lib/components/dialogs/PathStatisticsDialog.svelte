@@ -10,12 +10,15 @@
     Line,
     SequenceItem,
     Settings,
+    Shape,
   } from "../../../types/index";
   import { slide } from "svelte/transition";
   import { onMount } from "svelte";
   import { getAngularDifference } from "../../../utils/math";
   import { notification } from "../../../stores";
+  import { percentStore, shapesStore } from "../../../lib/projectStore";
   import SimpleChart from "../tools/SimpleChart.svelte";
+  import { analyzePath, type PathIssue } from "../../../utils/pathAnalyzer";
 
   export let startPoint: Point;
   export let lines: Line[];
@@ -57,14 +60,6 @@
     color: string;
   }
 
-  interface Insight {
-    startTime: number;
-    endTime?: number;
-    type: "warning" | "info" | "error";
-    message: string;
-    value?: number;
-  }
-
   interface PathStats {
     totalTime: number;
     totalDistance: number;
@@ -75,14 +70,17 @@
     angularVelocityData: { time: number; value: number }[];
     accelerationData: { time: number; value: number }[];
     centripetalData: { time: number; value: number }[];
-    insights: Insight[];
+    issues: PathIssue[];
   }
 
   let pathStats: PathStats | null = null;
-  let activeTab: "summary" | "graphs" | "insights" = "summary";
+  let activeTab: "summary" | "graphs" | "health" = "summary";
   let currentTime = 0;
 
-  $: if (isOpen && lines && sequence && settings) {
+  // Use local shapes variable derived from store
+  $: shapes = $shapesStore;
+
+  $: if (isOpen && lines && sequence && settings && shapes) {
     calculateStats();
   }
 
@@ -104,14 +102,6 @@
     let angularVelocityData: { time: number; value: number }[] = [];
     let accelerationData: { time: number; value: number }[] = [];
     let centripetalData: { time: number; value: number }[] = [];
-    let insights: Insight[] = [];
-
-    // Pre-calculate constants for insight thresholds
-    const maxAccel = settings.maxAcceleration || 30;
-    const maxVel = settings.maxVelocity || 100;
-    const kFriction = settings.kFriction || 0;
-    const gravity = 386.22; // in/s^2
-    const frictionLimitAccel = kFriction * gravity;
 
     let currentHeading =
       startPoint.heading === "linear"
@@ -154,10 +144,6 @@
     let _maxLin = 0;
     let _maxAng = 0;
 
-    // Track active warnings for coalescing
-    let activeVelocityWarning: Insight | null = null;
-    let activeFrictionWarning: Insight | null = null;
-
     // Helper to add data point to charts
     // Avoid duplicate time points if possible, or just push
     const addDataPoint = (
@@ -171,54 +157,6 @@
       angularVelocityData.push({ time: t, value: vAng });
       accelerationData.push({ time: t, value: accLin });
       centripetalData.push({ time: t, value: accCent });
-
-      // --- Insight Logic ---
-
-      // 1. Max Velocity Warning (Info)
-      if (vLin >= maxVel * 0.99) {
-        if (!activeVelocityWarning) {
-          activeVelocityWarning = {
-            startTime: t,
-            type: "info",
-            message: "Max Velocity Reached",
-            value: vLin,
-          };
-        } else {
-          // Update value to max seen in this range
-          if (vLin > (activeVelocityWarning.value || 0)) {
-            activeVelocityWarning.value = vLin;
-          }
-        }
-      } else {
-        // Condition ended
-        if (activeVelocityWarning) {
-          insights.push({ ...(activeVelocityWarning as Insight), endTime: t });
-          activeVelocityWarning = null;
-        }
-      }
-
-      // 2. Centripetal Friction Warning (Error)
-      if (kFriction > 0 && accCent > frictionLimitAccel) {
-        if (!activeFrictionWarning) {
-          activeFrictionWarning = {
-            startTime: t,
-            type: "error",
-            message: "Risk of Wheel Slip (Centripetal)",
-            value: accCent,
-          };
-        } else {
-          // Update value to max seen in this range
-          if (accCent > (activeFrictionWarning.value || 0)) {
-            activeFrictionWarning.value = accCent;
-          }
-        }
-      } else {
-        // Condition ended
-        if (activeFrictionWarning) {
-          insights.push({ ...(activeFrictionWarning as Insight), endTime: t });
-          activeFrictionWarning = null;
-        }
-      }
     };
 
     // Helper to process generic event for graph (implicit or explicit)
@@ -519,14 +457,16 @@
       simHeading = analysis.startHeading + analysis.netRotation;
     });
 
-    // Finalize any open warnings at end of timeline
-    const totalT = timePred.totalTime;
-    if (activeVelocityWarning) {
-      insights.push({ ...(activeVelocityWarning as Insight), endTime: totalT });
-    }
-    if (activeFrictionWarning) {
-      insights.push({ ...(activeFrictionWarning as Insight), endTime: totalT });
-    }
+    // Run Analyzer
+    const issues = analyzePath(
+      startPoint,
+      lines,
+      sequence,
+      settings,
+      shapes,
+      timePred,
+      centripetalData,
+    );
 
     pathStats = {
       totalTime: timePred.totalTime,
@@ -538,12 +478,12 @@
       angularVelocityData,
       accelerationData,
       centripetalData,
-      insights,
+      issues,
     };
   }
 
   function handleCopy() {
-    if (activeTab === "summary" || activeTab === "insights") {
+    if (activeTab === "summary" || activeTab === "health") {
       copyToMarkdown();
     } else {
       copyGraphs();
@@ -553,17 +493,17 @@
   function copyToMarkdown() {
     if (!pathStats) return;
 
-    if (activeTab === "insights") {
-      let md = `| Time Range | Type | Message | Max Value |\n|---:|---|---|---:|\n`;
-      pathStats.insights.forEach((ins) => {
-        const timeStr = ins.endTime
-          ? `${ins.startTime.toFixed(2)}s - ${ins.endTime.toFixed(2)}s`
-          : `${ins.startTime.toFixed(2)}s`;
-        md += `| ${timeStr} | ${ins.type.toUpperCase()} | ${ins.message} | ${ins.value ? ins.value.toFixed(1) : "-"} |\n`;
+    if (activeTab === "health") {
+      let md = `| Time Range | Severity | Issue | Message |\n|---:|---|---|---|\n`;
+      pathStats.issues.forEach((issue) => {
+        const timeStr = issue.endTime
+          ? `${formatTime(issue.startTime || 0)} - ${formatTime(issue.endTime)}`
+          : `${formatTime(issue.startTime || 0)}`;
+        md += `| ${timeStr} | ${issue.severity.toUpperCase()} | ${issue.title} | ${issue.message} |\n`;
       });
       navigator.clipboard.writeText(md).then(() => {
         notification.set({
-          message: "Copied insights to clipboard!",
+          message: "Copied health check to clipboard!",
           type: "success",
         });
       });
@@ -598,6 +538,16 @@
         type: "success",
       });
     });
+  }
+
+  function seekToIssue(issue: PathIssue) {
+    if (issue.startTime !== undefined) {
+      // Calculate percent from time
+      if (pathStats && pathStats.totalTime > 0) {
+        const p = (issue.startTime / pathStats.totalTime) * 100;
+        percentStore.set(p);
+      }
+    }
   }
 </script>
 
@@ -641,10 +591,10 @@
             Graphs
           </button>
           <button
-            class={`px-3 py-1 rounded-md transition-all ${activeTab === "insights" ? "bg-white dark:bg-neutral-600 shadow-sm text-neutral-900 dark:text-white" : "text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300"}`}
-            on:click={() => (activeTab = "insights")}
+            class={`px-3 py-1 rounded-md transition-all ${activeTab === "health" ? "bg-white dark:bg-neutral-600 shadow-sm text-neutral-900 dark:text-white" : "text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300"}`}
+            on:click={() => (activeTab = "health")}
           >
-            Insights
+            Health Check
           </button>
         </div>
       </div>
@@ -932,10 +882,10 @@
           </div>
         </div>
 
-        <!-- Insights Tab -->
-      {:else if activeTab === "insights"}
+        <!-- Health Check Tab -->
+      {:else if activeTab === "health"}
         <div class="overflow-y-auto flex-1 p-4 min-h-0">
-          {#if pathStats.insights.length === 0}
+          {#if pathStats.issues.length === 0}
             <div
               class="flex flex-col items-center justify-center h-full text-neutral-500"
             >
@@ -953,22 +903,26 @@
                   d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
                 />
               </svg>
-              <p>No warnings or insights detected.</p>
+              <p>No issues detected. Path looks good!</p>
             </div>
           {:else}
             <div class="flex flex-col gap-2">
-              {#each pathStats.insights as insight}
-                <div
-                  class={`flex items-start gap-3 p-3 rounded-lg border text-sm ${
-                    insight.type === "error"
-                      ? "bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800 text-red-800 dark:text-red-200"
-                      : insight.type === "warning"
-                        ? "bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-200"
-                        : "bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800 text-blue-800 dark:text-blue-200"
+              {#each pathStats.issues as issue}
+                <button
+                  class={`flex items-start gap-3 p-3 rounded-lg border text-sm text-left transition-colors w-full focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-offset-white dark:focus:ring-offset-neutral-800 ${
+                    issue.severity === "error"
+                      ? "bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800 text-red-800 dark:text-red-200 hover:bg-red-100 dark:hover:bg-red-900/40 focus:ring-red-500"
+                      : issue.severity === "warning"
+                        ? "bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-200 hover:bg-amber-100 dark:hover:bg-amber-900/40 focus:ring-amber-500"
+                        : "bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800 text-blue-800 dark:text-blue-200 hover:bg-blue-100 dark:hover:bg-blue-900/40 focus:ring-blue-500"
                   }`}
+                  on:click={() => seekToIssue(issue)}
+                  title={issue.startTime !== undefined
+                    ? "Click to see on field"
+                    : ""}
                 >
-                  <div class="mt-0.5">
-                    {#if insight.type === "error"}
+                  <div class="mt-0.5 flex-none">
+                    {#if issue.severity === "error"}
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
                         viewBox="0 0 24 24"
@@ -983,7 +937,7 @@
                           d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
                         />
                       </svg>
-                    {:else if insight.type === "warning"}
+                    {:else if issue.severity === "warning"}
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
                         viewBox="0 0 24 24"
@@ -1016,23 +970,30 @@
                     {/if}
                   </div>
                   <div class="flex-1">
-                    <div class="font-semibold">
-                      {insight.message}
+                    <div
+                      class="font-semibold flex justify-between items-center"
+                    >
+                      <span>{issue.title}</span>
+                      {#if issue.startTime !== undefined}
+                        <span
+                          class="text-xs opacity-70 border border-current px-1.5 py-0.5 rounded-full whitespace-nowrap"
+                        >
+                          Jump to {formatTime(issue.startTime)}
+                        </span>
+                      {/if}
                     </div>
-                    <div class="mt-1 opacity-80">
-                      {#if insight.endTime && insight.endTime - insight.startTime > 0.05}
-                        At {formatTime(insight.startTime)} - {formatTime(
-                          insight.endTime,
+                    <div class="mt-1 opacity-90 text-xs sm:text-sm">
+                      {issue.message}
+                    </div>
+                    {#if issue.endTime && issue.startTime && issue.endTime - issue.startTime > 0.05}
+                      <div class="mt-1 text-xs opacity-70">
+                        Duration: {formatTime(issue.startTime)} - {formatTime(
+                          issue.endTime,
                         )}
-                      {:else}
-                        At {formatTime(insight.startTime)}
-                      {/if}
-                      {#if insight.value}
-                        • Max Value: {insight.value.toFixed(1)}
-                      {/if}
-                    </div>
+                      </div>
+                    {/if}
                   </div>
-                </div>
+                </button>
               {/each}
             </div>
           {/if}
