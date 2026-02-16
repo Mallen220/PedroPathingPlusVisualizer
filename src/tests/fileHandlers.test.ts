@@ -289,8 +289,8 @@ describe("fileHandlers", () => {
       await fileHandlers.saveProject();
 
       expect(mockElectronAPI.saveFile).toHaveBeenCalled();
-      const callArgs = mockElectronAPI.saveFile.mock.calls[0];
-      const content = JSON.parse(callArgs[0]);
+      const callArgs = mockElectronAPI.saveFile.mock.calls[0]!;
+      const content = JSON.parse(callArgs[0] as string);
 
       expect(content.version).toBe(pkg.version);
       expect(content.version).toBe(pkg.version);
@@ -320,8 +320,8 @@ describe("fileHandlers", () => {
       await fileHandlers.saveProject();
 
       expect(mockElectronAPI.saveFile).toHaveBeenCalled();
-      const callArgs = mockElectronAPI.saveFile.mock.calls[0];
-      const savedData = JSON.parse(callArgs[0]);
+      const callArgs = mockElectronAPI.saveFile.mock.calls[0]!;
+      const savedData = JSON.parse(callArgs[0] as string);
 
       expect(savedData.settings).toBeUndefined();
     });
@@ -380,7 +380,7 @@ describe("fileHandlers", () => {
       );
       expect(callArgs).toBeDefined();
 
-      const content = JSON.parse(callArgs[1]);
+      const content = JSON.parse(callArgs![1] as string);
 
       expect(content.header).toBeDefined();
       expect(content.header.info).toBe(
