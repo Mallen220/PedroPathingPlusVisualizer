@@ -777,7 +777,7 @@ export async function generateSequentialCommandCode(
 
       // Build reverse config
       const reverseConfig = line.endPoint.reverse
-        ? "\n                .setReversed(true)"
+        ? "\n                .setReversed()"
         : "";
 
       return `        ${pathName} = follower.pathBuilder()
