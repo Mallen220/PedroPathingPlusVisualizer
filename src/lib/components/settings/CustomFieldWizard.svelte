@@ -4,9 +4,15 @@
   import { fade, fly } from "svelte/transition";
   import { cubicInOut } from "svelte/easing";
   import type { CustomFieldConfig } from "../../../types";
+  import {
+    toUserUnit,
+    fromUserUnit,
+    getUnitLabel,
+  } from "../../../utils/units";
 
   export let isOpen = false;
   export let currentConfig: CustomFieldConfig | undefined = undefined;
+  export let unit: "imperial" | "metric" = "imperial";
 
   const dispatch = createEventDispatcher();
 
@@ -346,12 +352,17 @@
                       <label
                         for="w1-x"
                         class="block text-xs font-medium text-neutral-500 dark:text-neutral-400"
-                        >Field X (inches)</label
+                        >Field X ({getUnitLabel(unit)})</label
                       >
                       <input
                         id="w1-x"
                         type="number"
-                        bind:value={w1.x}
+                        value={toUserUnit(w1.x, unit).toFixed(1)}
+                        on:change={(e) =>
+                          (w1.x = fromUserUnit(
+                            parseFloat(e.currentTarget.value),
+                            unit,
+                          ))}
                         class="w-full px-3 py-2 rounded border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800"
                       />
                     </div>
@@ -359,12 +370,17 @@
                       <label
                         for="w1-y"
                         class="block text-xs font-medium text-neutral-500 dark:text-neutral-400"
-                        >Field Y (inches)</label
+                        >Field Y ({getUnitLabel(unit)})</label
                       >
                       <input
                         id="w1-y"
                         type="number"
-                        bind:value={w1.y}
+                        value={toUserUnit(w1.y, unit).toFixed(1)}
+                        on:change={(e) =>
+                          (w1.y = fromUserUnit(
+                            parseFloat(e.currentTarget.value),
+                            unit,
+                          ))}
                         class="w-full px-3 py-2 rounded border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800"
                       />
                     </div>
@@ -398,12 +414,17 @@
                       <label
                         for="w2-x"
                         class="block text-xs font-medium text-neutral-500 dark:text-neutral-400"
-                        >Field X (inches)</label
+                        >Field X ({getUnitLabel(unit)})</label
                       >
                       <input
                         id="w2-x"
                         type="number"
-                        bind:value={w2.x}
+                        value={toUserUnit(w2.x, unit).toFixed(1)}
+                        on:change={(e) =>
+                          (w2.x = fromUserUnit(
+                            parseFloat(e.currentTarget.value),
+                            unit,
+                          ))}
                         class="w-full px-3 py-2 rounded border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800"
                       />
                     </div>
@@ -411,12 +432,17 @@
                       <label
                         for="w2-y"
                         class="block text-xs font-medium text-neutral-500 dark:text-neutral-400"
-                        >Field Y (inches)</label
+                        >Field Y ({getUnitLabel(unit)})</label
                       >
                       <input
                         id="w2-y"
                         type="number"
-                        bind:value={w2.y}
+                        value={toUserUnit(w2.y, unit).toFixed(1)}
+                        on:change={(e) =>
+                          (w2.y = fromUserUnit(
+                            parseFloat(e.currentTarget.value),
+                            unit,
+                          ))}
                         class="w-full px-3 py-2 rounded border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800"
                       />
                     </div>

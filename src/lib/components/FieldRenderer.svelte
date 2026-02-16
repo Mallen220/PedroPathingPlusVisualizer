@@ -85,6 +85,7 @@
     BasePoint,
     SequenceItem,
   } from "../../types/index";
+  import { toUserUnit } from "../../utils/units";
   import MathTools from "../MathTools.svelte";
   import FieldCoordinates from "./FieldCoordinates.svelte";
   import type { Path } from "two.js/src/path";
@@ -2276,7 +2277,9 @@
                 else pt = lines[lineIndex].controlPoints[pointIndex - 1];
               }
               if (pt) {
-                const text = `${pt.x.toFixed(2)}, ${pt.y.toFixed(2)}`;
+                const xVal = toUserUnit(pt.x, settings.units).toFixed(2);
+                const yVal = toUserUnit(pt.y, settings.units).toFixed(2);
+                const text = `${xVal}, ${yVal}`;
                 navigator.clipboard.writeText(text);
                 notification.set({
                   message: `Copied "${text}"`,

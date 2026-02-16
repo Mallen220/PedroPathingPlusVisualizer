@@ -8,6 +8,8 @@
     gridSize,
     isPresentationMode,
   } from "../stores";
+  import { settingsStore } from "./projectStore";
+  import { formatDistance, toUserUnit } from "../utils/units";
   import type * as d3 from "d3";
 
   export let x: d3.ScaleLinear<number, number, number>;
@@ -155,7 +157,7 @@
         class="fill-gray-600 dark:fill-gray-400 text-xs"
         text-anchor="middle"
       >
-        {position}"
+        {formatDistance(position, $settingsStore.units, 0)}
       </text>
     {/each}
 
@@ -176,7 +178,7 @@
         class="fill-gray-600 dark:fill-gray-400 text-xs"
         text-anchor="middle"
       >
-        {position}"
+        {formatDistance(position, $settingsStore.units, 0)}
       </text>
     {/each}
   </svg>
@@ -228,7 +230,7 @@
       class="fill-blue-600 dark:fill-blue-400 font-semibold pointer-events-none"
       text-anchor="middle"
     >
-      {rulerLength.toFixed(2)}"
+      {formatDistance(rulerLength, $settingsStore.units, 2)}
     </text>
   </svg>
 {/if}

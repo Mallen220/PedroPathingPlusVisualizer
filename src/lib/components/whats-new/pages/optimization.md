@@ -14,7 +14,7 @@ The optimizer treats your path like a living organism that evolves. It tries tho
 For the optimizer to work effectively, ensure your **Settings** are accurate:
 
 - **Robot Dimensions**: Set the correct `Length` and `Width` of your robot.
-- **Safety Margin**: Add a buffer (e.g., 2 inches) to ensure you don't graze obstacles. The more precise the drive train the smaller the buffer.
+- **Safety Margin**: Add a buffer (e.g., 2 inches or 5 cm) to ensure you don't graze obstacles. The more precise the drive train the smaller the buffer.
 - **Obstacles**: Define accurate obstacles in the "Obstacles" tab.
 
 ## The Optimization Process
@@ -55,7 +55,7 @@ You can tune the optimizer in the **Settings** menu. Here is what each knob does
 
 ### 4. Mutation Strength
 
-- **What it is**: The maximum distance (in inches) a point can move during a single mutation.
+- **What it is**: The maximum distance (in inches or cm) a point can move during a single mutation.
 - **Effect**:
   - **Low (1.0)**: Small nudges.
   - **High (10.0)**: Large jumps.

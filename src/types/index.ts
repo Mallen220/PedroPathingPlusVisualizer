@@ -150,6 +150,7 @@ export interface CustomFieldConfig {
 }
 
 export interface Settings {
+  units?: "imperial" | "metric";
   xVelocity: number;
   yVelocity: number;
   aVelocity: number;

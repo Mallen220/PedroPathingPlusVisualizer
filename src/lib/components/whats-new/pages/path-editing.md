@@ -16,7 +16,7 @@ Each path segment has a dedicated panel with several controls:
 
 Inside an expanded panel, you can precisely configure the endpoint:
 
-- **Position**: Manually enter **X** and **Y** coordinates (in inches). Inputs respect your grid snapping settings.
+- **Position**: Manually enter **X** and **Y** coordinates (in inches or cm). Inputs respect your grid snapping settings.
 - **Heading Modes**: Control the robot's orientation:
   - **Constant**: Robot maintains a fixed heading (Degrees).
   - **Linear**: Heading changes smoothly from a **Start** angle to an **End** angle.

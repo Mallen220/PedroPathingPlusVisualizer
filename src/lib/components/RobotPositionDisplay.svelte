@@ -2,6 +2,7 @@
 <script lang="ts">
   import type { BasePoint, Settings } from "../../types/index";
   import { getShortcutFromSettings } from "../../utils";
+  import { formatDistance } from "../../utils/units";
 
   export let robotXY: BasePoint;
   export let robotHeading: number;
@@ -18,9 +19,13 @@
   <div class="flex flex-row justify-between items-center w-full">
     <div class="flex flex-row justify-start items-center gap-2">
       <div class="font-extralight">X:</div>
-      <div class="w-16">{robotXY.x.toFixed(3)}</div>
+      <div class="w-16">
+        {formatDistance(robotXY.x, settings.units, 3)}
+      </div>
       <div class="font-extralight">Y:</div>
-      <div class="w-16">{robotXY.y.toFixed(3)}</div>
+      <div class="w-16">
+        {formatDistance(robotXY.y, settings.units, 3)}
+      </div>
       <div class="font-extralight">Heading:</div>
       <div>
         {robotHeading.toFixed(0) === "-0" ? "0" : -robotHeading.toFixed(0)}&deg;

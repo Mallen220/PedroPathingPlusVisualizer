@@ -14,8 +14,8 @@ View and customize key bindings for faster editing.
 
 Set physical dimensions for collision detection.
 
-- **Dimensions**: Set **Length** and **Width** (in inches).
-- **Safety Margin**: Buffer zone around obstacles (in inches).
+- **Dimensions**: Set **Length** and **Width** (in inches or cm).
+- **Safety Margin**: Buffer zone around obstacles (in inches or cm).
 - **Validation**:
   - **Field Boundaries**: Warn if the robot leaves the field or goes close then the safety margin to the field wall.
   - **Restrict Dragging**: Prevent moving points outside the field.
