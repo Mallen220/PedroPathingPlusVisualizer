@@ -50,8 +50,10 @@ export interface ExportImageOptions {
   robotImageSrc?: string;
   robotLengthPx?: number;
   robotWidthPx?: number;
-  // Robot state to render (pixels, degrees)
-  robotState?: { x: number; y: number; heading: number };
+  // Screen Coordinates for background placement
+  backgroundBounds?: { x: number; y: number; width: number; height: number };
+  // Screen Coordinates for robot placement
+  robotScreenState?: { x: number; y: number; heading: number };
 }
 
 // Internal helper to render a single frame to a canvas
@@ -64,7 +66,6 @@ async function renderFrameToCanvas(
   backgroundImage: HTMLImageElement | null,
   robotImage: HTMLImageElement | null,
   scale: number,
-  staticRobotState?: { x: number; y: number; heading: number },
 ): Promise<void> {
   // Serialize the SVG
   const svgString = new XMLSerializer().serializeToString(svgEl);
@@ -85,7 +86,23 @@ async function renderFrameToCanvas(
       // Draw background image first (if available)
       if (backgroundImage) {
         try {
-          ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height);
+          if (
+            "backgroundBounds" in options &&
+            options.backgroundBounds
+          ) {
+            // Draw using screen bounds scaled by resolution scale
+            const b = options.backgroundBounds;
+            ctx.drawImage(
+              backgroundImage,
+              b.x * scale,
+              b.y * scale,
+              b.width * scale,
+              b.height * scale,
+            );
+          } else {
+            // Fallback (Animation mode assumes full canvas usually)
+            ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height);
+          }
         } catch (e) {
           console.warn("Failed to draw background image onto canvas:", e);
         }
@@ -97,8 +114,14 @@ async function renderFrameToCanvas(
       // Draw robot overlay (if provided) on top of SVG
       try {
         if (robotImage) {
-          let state = staticRobotState;
-          if (!state && "getRobotState" in options && options.getRobotState) {
+          let state: { x: number; y: number; heading: number } | undefined;
+
+          // Check if explicit screen state provided (Export Image)
+          if ("robotScreenState" in options && options.robotScreenState) {
+            state = options.robotScreenState;
+          }
+          // Else use calculator (Animation)
+          else if ("getRobotState" in options && options.getRobotState) {
             state = options.getRobotState(percent);
           }
 
@@ -198,7 +221,7 @@ async function urlToDataUri(url: string): Promise<string> {
 export async function exportPathToImage(
   options: ExportImageOptions,
 ): Promise<Blob> {
-  const { two, format, scale = 1, quality = 0.9, robotState } = options;
+  const { two, format, scale = 1, quality = 0.9 } = options;
 
   // 1. Prepare Resources (Field, Robot)
   const { backgroundImage, robotImage } = await prepareResources(options);
@@ -211,73 +234,55 @@ export async function exportPathToImage(
 
   // SVG Export
   if (format === "svg") {
-    // We need to construct an SVG that embeds images
     const twoSvgString = new XMLSerializer().serializeToString(svgEl);
-
-    // Extract inner content of Two.js SVG (strip <svg> tags) or insert into new SVG
-    // Two.js usually produces: <svg ...><defs>...</defs><g>...</g></svg>
-    // We want to preserve defs and content.
-
-    // Let's create a new SVG string
-    // 1. Background Image
-    let backgroundSvg = "";
-    if (options.backgroundImageSrc) {
-      const bgDataUri = await urlToDataUri(options.backgroundImageSrc);
-      if (bgDataUri) {
-        backgroundSvg = `<image href="${bgDataUri}" x="0" y="0" width="${rect.width}" height="${rect.height}" preserveAspectRatio="none" />`;
-      }
-    }
-
-    // 2. Robot Image
-    let robotSvg = "";
-    if (options.robotImageSrc && robotState) {
-      const robotDataUri = await urlToDataUri(options.robotImageSrc);
-      if (robotDataUri) {
-        const rw = options.robotLengthPx ?? (robotImage?.width || 50);
-        const rh = options.robotWidthPx ?? (robotImage?.height || 50);
-
-        // SVG transform for robot
-        // translate(x, y) rotate(deg) translate(-rw/2, -rh/2)
-        const transform = `translate(${robotState.x}, ${robotState.y}) rotate(${robotState.heading}) translate(${-rw / 2}, ${-rh / 2})`;
-        robotSvg = `<image href="${robotDataUri}" width="${rw}" height="${rh}" transform="${transform}" />`;
-      }
-    }
-
-    // Embed Two.js content. We can insert the images *behind* and *in front* of the content.
-    // However, simply wrapping existing SVG string is hard because we need to inject inside <svg>
-    // A simple hack: replace closing </svg> with robot + </svg>, and opening <svg ...> with <svg ...> + background
-    // But two.js SVG might have `viewBox` etc.
-
-    // Better: Parse Two.js SVG
     const parser = new DOMParser();
     const doc = parser.parseFromString(twoSvgString, "image/svg+xml");
     const root = doc.documentElement;
 
-    // Set xmlns:xlink if not present (needed for older viewers/compatibility, though href is enough in modern svg)
     if (!root.hasAttribute("xmlns:xlink")) {
       root.setAttribute("xmlns:xlink", "http://www.w3.org/1999/xlink");
     }
 
-    // Prepend Background
-    if (backgroundSvg) {
-      // Create a dummy container to parse the string
-      const bgFragment = parser.parseFromString(
-        `<svg xmlns="http://www.w3.org/2000/svg">${backgroundSvg}</svg>`,
-        "image/svg+xml",
-      ).documentElement.firstChild;
-      if (bgFragment) {
-        root.insertBefore(bgFragment, root.firstChild);
+    // 1. Background Image
+    if (options.backgroundImageSrc && options.backgroundBounds) {
+      const bgDataUri = await urlToDataUri(options.backgroundImageSrc);
+      if (bgDataUri) {
+        const b = options.backgroundBounds;
+        const bgSvg = `<image href="${bgDataUri}" x="${b.x}" y="${b.y}" width="${b.width}" height="${b.height}" preserveAspectRatio="none" />`;
+        const bgFragment = parser.parseFromString(
+          `<svg xmlns="http://www.w3.org/2000/svg">${bgSvg}</svg>`,
+          "image/svg+xml",
+        ).documentElement.firstChild;
+        if (bgFragment) {
+          root.insertBefore(bgFragment, root.firstChild);
+        }
       }
     }
 
-    // Append Robot
-    if (robotSvg) {
-      const robotFragment = parser.parseFromString(
-        `<svg xmlns="http://www.w3.org/2000/svg">${robotSvg}</svg>`,
-        "image/svg+xml",
-      ).documentElement.firstChild;
-      if (robotFragment) {
-        root.appendChild(robotFragment);
+    // 2. Robot Image
+    if (
+      options.robotImageSrc &&
+      options.robotScreenState &&
+      robotImage
+    ) {
+      const robotDataUri = await urlToDataUri(options.robotImageSrc);
+      if (robotDataUri) {
+        const rw = options.robotLengthPx ?? (robotImage.width || 50);
+        const rh = options.robotWidthPx ?? (robotImage.height || 50);
+        const state = options.robotScreenState;
+
+        // SVG transform for robot
+        // translate(x, y) rotate(deg) translate(-rw/2, -rh/2)
+        const transform = `translate(${state.x}, ${state.y}) rotate(${state.heading}) translate(${-rw / 2}, ${-rh / 2})`;
+        const robotSvg = `<image href="${robotDataUri}" width="${rw}" height="${rh}" transform="${transform}" />`;
+
+        const robotFragment = parser.parseFromString(
+          `<svg xmlns="http://www.w3.org/2000/svg">${robotSvg}</svg>`,
+          "image/svg+xml",
+        ).documentElement.firstChild;
+        if (robotFragment) {
+          root.appendChild(robotFragment);
+        }
       }
     }
 
@@ -297,12 +302,11 @@ export async function exportPathToImage(
     ctx,
     canvas,
     svgEl,
-    0, // percent ignored for static robotState
+    0,
     options,
     backgroundImage,
     robotImage,
     scale,
-    robotState,
   );
 
   return new Promise((resolve, reject) => {

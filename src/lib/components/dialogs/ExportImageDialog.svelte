@@ -3,6 +3,7 @@
   import { createEventDispatcher, onMount, onDestroy } from "svelte";
   import { scale } from "svelte/transition";
   import { exportPathToImage } from "../../../utils/exportAnimation";
+  import { FIELD_SIZE } from "../../../config";
 
   export let show = false;
   export let twoInstance: any;
@@ -11,6 +12,10 @@
   export let robotWidthPx: number;
   export let robotState: { x: number; y: number; heading: number };
   export let electronAPI: any;
+
+  // D3 Scales passed as functions
+  export let xScale: (v: number) => number = (v) => v;
+  export let yScale: (v: number) => number = (v) => v;
 
   const dispatch = createEventDispatcher();
 
@@ -52,6 +57,20 @@
       // Force Two.js update to ensure latest state is rendered
       twoInstance.update();
 
+      // Calculate Screen Coordinates
+      const bgBounds = {
+          x: xScale(0),
+          y: yScale(FIELD_SIZE), // Top-left visual coordinate (since Y is inverted in field space)
+          width: xScale(FIELD_SIZE) - xScale(0),
+          height: yScale(0) - yScale(FIELD_SIZE) // Inverted Y scale: yScale(0) > yScale(FIELD_SIZE)
+      };
+
+      const robotScreenState = {
+          x: xScale(robotState.x),
+          y: yScale(robotState.y),
+          heading: robotState.heading
+      };
+
       const blob = await exportPathToImage({
         two: twoInstance,
         format,
@@ -63,7 +82,8 @@
         robotImageSrc: settings.robotImage || "/robot.png",
         robotLengthPx,
         robotWidthPx,
-        robotState,
+        backgroundBounds: bgBounds,
+        robotScreenState: robotScreenState,
       });
 
       previewBlob = blob;
@@ -76,29 +96,6 @@
       statusMessage = "Error: " + err;
     }
   }
-
-  // Auto-generate preview when options change (debounced?)
-  // For static images, it's fast enough to just re-generate usually.
-  // But maybe let user click "Update" or "Generate" to be safe.
-  // Let's stick to manual Generate for consistency, or auto.
-  // Auto is nice.
-  let debounceTimer: any = null;
-  function triggerUpdate() {
-      if (debounceTimer) clearTimeout(debounceTimer);
-      debounceTimer = setTimeout(() => {
-          generatePreview();
-      }, 500);
-  }
-
-  // Watch for changes
-  $: {
-      if (show) {
-         // triggerUpdate(); // Auto-update on show or change?
-         // Let's just generate on mount/show once
-      }
-  }
-
-  // Actually, let's just use a button like the GIF dialog, simple.
 
   async function downloadImage() {
     if (!previewBlob) {

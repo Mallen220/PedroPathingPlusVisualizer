@@ -1465,10 +1465,15 @@
     {settings}
     robotLengthPx={x(robotLength)}
     robotWidthPx={x(robotWidth)}
+    xScale={x}
+    yScale={y}
     robotState={{
-      x: $robotXYStore.x,
-      y: $robotXYStore.y,
-      heading: $robotHeadingStore,
+      x: $startPointStore.x,
+      y: $startPointStore.y,
+      heading:
+        $startPointStore.heading === "constant"
+          ? $startPointStore.degrees ?? 0
+          : $startPointStore.startDeg ?? 0,
     }}
     {electronAPI}
     on:close={() => showExportImage.set(false)}
