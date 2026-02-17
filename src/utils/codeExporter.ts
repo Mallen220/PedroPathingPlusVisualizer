@@ -350,14 +350,13 @@ export async function generateJavaCode(
         ${telemetryInit}
 
         follower = Constants.createFollower(hardwareMap);
-        follower.setStartingPose(new Pose(${startPoint.x.toFixed(3)}, ${startPoint.y.toFixed(3)}, Math.toRadians(${
-          (lines.length > 0
-            ? getLineStartHeading(lines[0], startPoint)
-            : startPoint.heading === "linear"
-              ? startPoint.startDeg
-              : startPoint.degrees || 90
-          ).toFixed(3)
-        })));
+        follower.setStartingPose(new Pose(${startPoint.x.toFixed(3)}, ${startPoint.y.toFixed(3)}, Math.toRadians(${(lines.length >
+        0
+          ? getLineStartHeading(lines[0], startPoint)
+          : startPoint.heading === "linear"
+            ? startPoint.startDeg
+            : startPoint.degrees || 90
+        ).toFixed(3)})));
 
         pathTimer = new ElapsedTime();
         paths = new Paths(follower); // Build paths
