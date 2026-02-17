@@ -115,7 +115,8 @@ describe("exportPathToImage", () => {
       format: "png",
       scale: 1,
       quality: 0.9,
-      robotState: { x: 50, y: 50, heading: 90 },
+      backgroundBounds: { x: 0, y: 0, width: 100, height: 100 },
+      robotScreenState: { x: 50, y: 50, heading: 90 },
     };
   });
 
@@ -128,9 +129,6 @@ describe("exportPathToImage", () => {
       expect(blob).toBeDefined();
       expect(blob.type).toBe("image/png");
       expect(mockCanvas.toBlob).toHaveBeenCalledWith(expect.any(Function), "image/png", undefined);
-      // Background/Robot drawing via renderFrameToCanvas logic
-      // Note: Since background/robot images are async mocked, wait for them?
-      // renderFrameToCanvas awaits image onload, so it should be fine.
   });
 
   it("should export JPEG blob with quality", async () => {
@@ -158,7 +156,6 @@ describe("exportPathToImage", () => {
 
       await exportPathToImage(options);
 
-      // We can't easily check the blob content here due to mocks, but we can verify fetch was called
       expect(global.fetch).toHaveBeenCalledWith("http://example.com/bg.png");
       expect(global.fetch).toHaveBeenCalledWith("http://example.com/robot.png");
   });
