@@ -151,30 +151,7 @@
   id="playback-controls"
   class="w-full bg-neutral-50 dark:bg-neutral-900 rounded-lg p-3 flex flex-row justify-start items-center gap-3 shadow-lg"
 >
-  <div class="flex items-center gap-1">
-    <!-- Skip to Start Button -->
-    <button
-      title="Skip to Start"
-      aria-label="Skip to start"
-      on:click={() => handleSeek(0)}
-      class="p-1 rounded-md focus:outline-none focus-visible:ring-2 focus-visible:ring-green-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-neutral-900 text-neutral-400 hover:text-neutral-600 dark:text-neutral-500 dark:hover:text-neutral-300 transition-colors"
-    >
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        fill="none"
-        viewBox="0 0 24 24"
-        stroke-width="2"
-        stroke="currentColor"
-        class="size-5"
-      >
-        <path
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          d="M15.75 19.5L8.25 12l7.5-7.5M5.25 19.5V4.5"
-        />
-      </svg>
-    </button>
-
+  <div class="flex items-center gap-0.5">
     <button
       id="play-pause-btn"
       title={`Play/Pause${getShortcutFromSettings(settings, "play-pause")}`}
@@ -221,57 +198,55 @@
       {/if}
     </button>
 
-    <!-- Skip to End Button -->
-    <button
-      title="Skip to End"
-      aria-label="Skip to end"
-      on:click={() => handleSeek(100)}
-      class="p-1 rounded-md focus:outline-none focus-visible:ring-2 focus-visible:ring-green-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-neutral-900 text-neutral-400 hover:text-neutral-600 dark:text-neutral-500 dark:hover:text-neutral-300 transition-colors"
-    >
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        fill="none"
-        viewBox="0 0 24 24"
-        stroke-width="2"
-        stroke="currentColor"
-        class="size-5"
+    <!-- Grouped Skip Buttons (to the right of Play, left of Loop) -->
+    <div class="flex items-center gap-0 ml-0.5">
+      <!-- Skip to Start Button (compact) -->
+      <button
+        title="Skip to Start"
+        aria-label="Skip to start"
+        on:click={() => handleSeek(0)}
+        class="p-0.5 rounded-l-md border-r border-neutral-100 dark:border-neutral-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-green-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-neutral-900 text-neutral-400 hover:text-neutral-600 dark:text-neutral-500 dark:hover:text-neutral-300 transition-colors"
       >
-        <path
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          d="M8.25 4.5l7.5 7.5-7.5 7.5M18.75 4.5v15"
-        />
-      </svg>
-    </button>
-  </div>
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke-width="2"
+          stroke="currentColor"
+          class="size-4"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            d="M15.75 19.5L8.25 12l7.5-7.5M5.25 19.5V4.5"
+          />
+        </svg>
+      </button>
 
-  <!-- Loop Toggle Button -->
-  <button
-    title={loopAnimation ? "Disable Loop" : "Enable Loop"}
-    aria-label="Loop animation"
-    aria-pressed={loopAnimation}
-    on:click={() => {
-      loopAnimation = !loopAnimation;
-    }}
-    class:opacity-100={loopAnimation}
-    class:opacity-50={!loopAnimation}
-    class="rounded-md focus:outline-none focus-visible:ring-2 focus-visible:ring-green-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-neutral-900"
-  >
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      fill="none"
-      viewBox="0 0 24 24"
-      stroke-width="2"
-      stroke="currentColor"
-      class="size-6 stroke-blue-500"
-    >
-      <path
-        stroke-linecap="round"
-        stroke-linejoin="round"
-        d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99"
-      />
-    </svg>
-  </button>
+      <!-- Skip to End Button (compact) -->
+      <button
+        title="Skip to End"
+        aria-label="Skip to end"
+        on:click={() => handleSeek(100)}
+        class="p-0.5 rounded-md focus:outline-none focus-visible:ring-2 focus-visible:ring-green-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-neutral-900 text-neutral-400 hover:text-neutral-600 dark:text-neutral-500 dark:hover:text-neutral-300 transition-colors"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke-width="2"
+          stroke="currentColor"
+          class="size-4"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            d="M8.25 4.5l7.5 7.5-7.5 7.5M18.75 4.5v15"
+          />
+        </svg>
+      </button>
+    </div>
+  </div>
 
   <!-- Playback Speed Indicator (dropdown) -->
   <div class="ml-2 relative">
@@ -511,7 +486,21 @@
       {/if}
     {/each}
   </div>
-
+    <!-- Loop Toggle Button (moved to right of timeline) -->
+    <button
+      title={loopAnimation ? "Disable Loop" : "Enable Loop"}
+      aria-label="Loop animation"
+      aria-pressed={loopAnimation}
+      on:click={() => (loopAnimation = !loopAnimation)}
+      class:opacity-100={loopAnimation}
+      class:opacity-50={!loopAnimation}
+      class="ml-3 rounded-md focus:outline-none focus-visible:ring-2 focus-visible:ring-green-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-neutral-900"
+      aria-live="polite"
+    >
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="size-6 stroke-blue-500">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99"/>
+      </svg>
+    </button>
   <!-- Time Display -->
   <div
     class="px-2 font-mono text-xs text-neutral-600 dark:text-neutral-400 select-none whitespace-nowrap"
