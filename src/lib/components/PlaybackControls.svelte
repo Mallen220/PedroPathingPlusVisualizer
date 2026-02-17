@@ -486,21 +486,32 @@
       {/if}
     {/each}
   </div>
-    <!-- Loop Toggle Button (moved to right of timeline) -->
-    <button
-      title={loopAnimation ? "Disable Loop" : "Enable Loop"}
-      aria-label="Loop animation"
-      aria-pressed={loopAnimation}
-      on:click={() => (loopAnimation = !loopAnimation)}
-      class:opacity-100={loopAnimation}
-      class:opacity-50={!loopAnimation}
-      class="ml-3 rounded-md focus:outline-none focus-visible:ring-2 focus-visible:ring-green-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-neutral-900"
-      aria-live="polite"
+  <!-- Loop Toggle Button (moved to right of timeline) -->
+  <button
+    title={loopAnimation ? "Disable Loop" : "Enable Loop"}
+    aria-label="Loop animation"
+    aria-pressed={loopAnimation}
+    on:click={() => (loopAnimation = !loopAnimation)}
+    class:opacity-100={loopAnimation}
+    class:opacity-50={!loopAnimation}
+    class="ml-3 rounded-md focus:outline-none focus-visible:ring-2 focus-visible:ring-green-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-neutral-900"
+    aria-live="polite"
+  >
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke-width="2"
+      stroke="currentColor"
+      class="size-6 stroke-blue-500"
     >
-      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="size-6 stroke-blue-500">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99"/>
-      </svg>
-    </button>
+      <path
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99"
+      />
+    </svg>
+  </button>
   <!-- Time Display -->
   <div
     class="px-2 font-mono text-xs text-neutral-600 dark:text-neutral-400 select-none whitespace-nowrap"

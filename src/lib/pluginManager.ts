@@ -20,6 +20,7 @@ import {
   timelineTransformerRegistry,
   fieldRenderRegistry,
 } from "./registries";
+import { registerLanguage } from "./languageStore";
 import { actionRegistry } from "./actionRegistry";
 import { registerCoreUI } from "./coreRegistrations";
 import PluginPromptDialog from "./components/dialogs/PluginPromptDialog.svelte";
@@ -199,6 +200,13 @@ export class PluginManager {
       registerTheme: (name: string, css: string) => {
         this.allThemes = this.allThemes.filter((t) => t.name !== name);
         this.allThemes.push({ name, css, pluginName: filename });
+      },
+      registerLanguage: (
+        code: string,
+        name: string,
+        data: Record<string, string>,
+      ) => {
+        registerLanguage(code, name, data);
       },
       registerFeature: (feature: PluginFeature) => {
         try {

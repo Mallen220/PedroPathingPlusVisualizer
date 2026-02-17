@@ -239,12 +239,13 @@ describe("codeExporter", () => {
     });
 
     it("should use default start heading if lines array is empty", async () => {
+      const { degrees, ...rest } = startPoint as any;
       const sp = {
-        ...startPoint,
+        ...rest,
         heading: "linear" as const,
         startDeg: 120,
         endDeg: 180,
-      };
+      } as Point;
       const code = await generateJavaCode(sp, [], true);
       expect(code).toContain(
         "follower.setStartingPose(new Pose(10.000, 10.000, Math.toRadians(120.000)))",

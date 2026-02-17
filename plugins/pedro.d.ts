@@ -1,5 +1,4 @@
 // Copyright 2026 Matthew Allen. Licensed under the Modified Apache License, Version 2.0.
-
 /**
  * Type definitions for Pedro Pathing Plus Visualizer Plugins.
  * These types are automatically available in your .ts plugins.
@@ -175,6 +174,7 @@ interface Settings {
   robotImage?: string;
   javaPackageName?: string;
   theme: "light" | "dark" | "auto" | string;
+  language?: string; // Language code (e.g. "en-US")
   programFontSize?: number; // Scaling factor for the program font size (percentage)
   autosaveMode?: "time" | "change" | "close" | "never";
   autosaveInterval?: number; // minutes
@@ -471,6 +471,18 @@ interface PedroAPI {
    * @param css The CSS string for the theme.
    */
   registerTheme(name: string, css: string): void;
+
+  /**
+   * Register a new language translation.
+   * @param code The language code (e.g. "es-ES").
+   * @param name The display name of the language.
+   * @param translations Key-value pairs of translations.
+   */
+  registerLanguage(
+    code: string,
+    name: string,
+    translations: Record<string, string>,
+  ): void;
 
   /**
    * Register a plugin feature (unified registration).

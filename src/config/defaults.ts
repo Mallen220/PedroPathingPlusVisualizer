@@ -54,6 +54,7 @@ export const DEFAULT_SETTINGS: Settings = {
   robotImage: "/robot.png",
   javaPackageName: "org.firstinspires.ftc.teamcode.Commands.AutoCommands",
   theme: "auto",
+  language: "en-US",
   programFontSize: 100,
   autosaveMode: "never",
   autosaveInterval: 5,

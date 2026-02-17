@@ -68,12 +68,13 @@ function calculateStartPointHeadings(startPoint: Point, lines: Line[]): Point {
     lines[lines.length - 1],
     lines.length > 1 ? lines[lines.length - 2].endPoint : startPoint,
   );
+  const { degrees, ...rest } = startPoint as any;
   return {
-    ...startPoint,
+    ...rest,
     heading: "linear",
     startDeg: startHeading,
     endDeg: endHeading,
-  };
+  } as Point;
 }
 
 function addToRecentFiles(path: string, settings?: Settings) {

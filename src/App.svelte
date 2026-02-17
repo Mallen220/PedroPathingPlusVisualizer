@@ -95,6 +95,7 @@
   import { registerCoreUI } from "./lib/coreRegistrations";
   import { componentRegistry } from "./lib/registries";
   import { POTATO_THEME_CSS, firePotatoConfetti } from "./utils/potatoTheme";
+  import { t } from "./lib/languageStore";
 
   // Register Default Components/Tabs
   registerCoreUI();
@@ -1560,9 +1561,11 @@
           d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
         />
       </svg>
-      <h2 class="text-2xl font-bold mb-2 dark:text-white">Drop to Open</h2>
+      <h2 class="text-2xl font-bold mb-2 dark:text-white">
+        {$t("app.dropToOpen")}
+      </h2>
       <p class="text-neutral-500 dark:text-neutral-400">
-        Release the file to open project
+        {$t("app.releaseFile")}
       </p>
     </div>
   </div>

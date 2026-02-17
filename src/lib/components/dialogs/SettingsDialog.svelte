@@ -16,6 +16,7 @@
   import CustomFieldWizard from "../settings/CustomFieldWizard.svelte";
   import SettingsItem from "./SettingsItem.svelte";
   import { themesStore } from "../../pluginsStore";
+  import { t, availableLanguages } from "../../languageStore";
   import {
     showPluginManager,
     showShortcuts,
@@ -69,37 +70,37 @@
   const tabs = [
     {
       id: "general",
-      label: "General",
+      label: "settings.general",
       icon: "M10.5 6h9.75M10.5 6a1.5 1.5 0 1 1-3 0m3 0a1.5 1.5 0 1 0-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m-9.75 0h9.75",
     },
     {
       id: "robot",
-      label: "Robot",
+      label: "settings.robot",
       icon: "M9 17.25v1.007a3 3 0 0 1-.879 2.122L7.5 21h9l-.621-.621A3 3 0 0 1 15 18.257V17.25m6-12V15a2.25 2.25 0 0 1-2.25 2.25H5.25A2.25 2.25 0 0 1 3 15V5.25A2.25 2.25 0 0 1 5.25 3h13.5A2.25 2.25 0 0 1 21 5.25Z",
     },
     {
       id: "motion",
-      label: "Motion",
+      label: "settings.motion",
       icon: "M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z",
     },
     {
       id: "interface",
-      label: "Interface",
+      label: "settings.interface",
       icon: "M9.53 16.122a3 3 0 0 0-5.78 1.128 2.25 2.25 0 0 1-2.4 2.245 4.5 4.5 0 0 0 8.4-2.245c0-.399-.078-.78-.22-1.128Zm0 0a15.998 15.998 0 0 0 3.388-1.62m-5.043-.025a15.994 15.994 0 0 1 1.622-3.395m3.42 3.42a15.995 15.995 0 0 0 4.764-4.648l3.876-5.814a1.151 1.151 0 0 0-1.597-1.597L14.146 6.32a15.996 15.996 0 0 0-4.649 4.763m3.42 3.42a6.776 6.776 0 0 0-3.42-3.42",
     },
     {
       id: "code-export",
-      label: "Code Export",
+      label: "settings.codeExport",
       icon: "M17.25 6.75 22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3-4.5 16.5",
     },
     {
       id: "advanced",
-      label: "Advanced",
+      label: "settings.advanced",
       icon: "M11.42 15.17 17.25 21A2.652 2.652 0 0 0 21 17.25l-5.877-5.877M11.42 15.17l2.496-3.03c.317-.384.74-.626 1.208-.766M11.42 15.17l-4.655 5.653a2.548 2.548 0 1 1-3.586-3.586l6.837-5.63m5.108-.233c.55-.164 1.163-.188 1.743-.14a4.5 4.5 0 0 0 4.486-6.336l-3.276 3.277a3.004 3.004 0 0 1-2.25-2.25l3.276-3.276a4.5 4.5 0 0 0-6.336 4.486c.091 1.076-.071 2.264-.904 2.95l-.102.085m-1.745 1.437L5.909 7.5H4.5L2.25 3.75l1.5-1.5L7.5 4.5v1.409l4.26 4.26m-1.745 1.437 1.745-1.437m6.615 8.206L15.75 15.75M4.867 19.125h.008v.008h-.008v-.008Z",
     },
     {
       id: "about",
-      label: "About",
+      label: "settings.about",
       icon: "M11.48 3.499a.562.562 0 0 1 1.04 0l2.125 5.111a.563.563 0 0 0 .475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 0 0-.182.557l1.285 5.385a.562.562 0 0 1-.84.61l-4.725-2.885a.562.562 0 0 0-.586 0L6.982 20.54a.562.562 0 0 1-.84-.61l1.285-5.386a.562.562 0 0 0-.182-.557l-4.204-3.602a.562.562 0 0 1 .321-.988l5.518-.442a.563.563 0 0 0 .475-.345L11.48 3.5Z",
     },
   ] as const;
@@ -552,21 +553,24 @@
               id="settings-title"
               class="text-xl font-bold text-neutral-900 dark:text-white pl-1"
             >
-              Settings
+              {$t("settings.title")}
             </h2>
             <div
               class="flex items-center gap-2 mb-4 pl-1 text-xs font-medium text-neutral-500 dark:text-neutral-400"
             >
-              <span>Version {appVersion}</span>
+              <span>{$t("settings.version")} {appVersion}</span>
               {#if downloadCount}
-                <span>• {downloadCount.toLocaleString()} Downloads</span>
+                <span
+                  >• {downloadCount.toLocaleString()}
+                  {$t("settings.downloads")}</span
+                >
               {/if}
             </div>
 
             <div class="relative">
               <input
                 type="text"
-                placeholder="Search settings..."
+                placeholder={$t("settings.searchPlaceholder")}
                 bind:value={searchQuery}
                 class="w-full pl-9 pr-3 py-2 bg-white dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
@@ -614,7 +618,7 @@
                     d={tab.icon}
                   />
                 </svg>
-                {tab.label}
+                {$t(tab.label)}
               </button>
             {/each}
           </nav>
@@ -639,7 +643,7 @@
                   d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99"
                 />
               </svg>
-              Reset Defaults
+              {$t("settings.resetDefaults")}
             </button>
           </div>
         </div>
@@ -656,7 +660,9 @@
               {#if searchQuery}
                 Search Results
               {:else}
-                {activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}
+                {$t(
+                  `settings.${activeTab === "code-export" ? "codeExport" : activeTab}`,
+                )}
               {/if}
             </h3>
             <div class="flex gap-2 items-center">
@@ -664,7 +670,7 @@
                 on:click={handleSave}
                 class="px-4 py-1.5 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md transition-colors shadow-sm"
               >
-                Save
+                {$t("settings.save")}
               </button>
               <button
                 on:click={() => (isOpen = false)}
@@ -713,10 +719,11 @@
                 />
               </svg>
               <div class="text-sm text-amber-900 dark:text-amber-100">
-                <span class="font-semibold block mb-0.5">UI Settings Only</span>
+                <span class="font-semibold block mb-0.5"
+                  >{$t("settings.uiSettingsOnly")}</span
+                >
                 <span class="opacity-90"
-                  >These settings only affect the visualizer interface. Make
-                  sure your robot code matches these values.</span
+                  >{$t("settings.uiSettingsWarning")}</span
                 >
               </div>
             </div>
@@ -728,13 +735,13 @@
                   <h4
                     class="text-xs font-bold text-neutral-500 uppercase tracking-wider mb-4 border-b border-neutral-100 dark:border-neutral-800 pb-1"
                   >
-                    General
+                    {$t("settings.general")}
                   </h4>
                 {/if}
 
                 <SettingsItem
-                  label="Keyboard Shortcuts"
-                  description="View and customize keyboard shortcuts"
+                  label={$t("settings.general.keyboardShortcuts")}
+                  description={$t("settings.general.keyboardShortcutsDesc")}
                   {searchQuery}
                   layout="row"
                 >
@@ -742,13 +749,13 @@
                     on:click={() => showShortcuts.set(true)}
                     class="text-sm font-medium text-blue-600 dark:text-blue-400 hover:underline"
                   >
-                    Open Editor
+                    {$t("settings.general.openEditor")}
                   </button>
                 </SettingsItem>
 
                 <SettingsItem
-                  label="Welcome Tutorial"
-                  description="Learn how to use the application"
+                  label={$t("settings.general.welcomeTutorial")}
+                  description={$t("settings.general.welcomeTutorialDesc")}
                   {searchQuery}
                   layout="row"
                 >
@@ -759,13 +766,13 @@
                     }}
                     class="text-sm font-medium text-blue-600 dark:text-blue-400 hover:underline"
                   >
-                    Start Tutorial
+                    {$t("settings.general.startTutorial")}
                   </button>
                 </SettingsItem>
 
                 <SettingsItem
-                  label="Plugin Manager"
-                  description="Manage installed plugins"
+                  label={$t("settings.general.pluginManager")}
+                  description={$t("settings.general.pluginManagerDesc")}
                   {searchQuery}
                   layout="row"
                 >
@@ -776,7 +783,7 @@
                     }}
                     class="text-sm font-medium text-blue-600 dark:text-blue-400 hover:underline"
                   >
-                    Open Manager
+                    {$t("settings.general.openManager")}
                   </button>
                 </SettingsItem>
 
@@ -1292,8 +1299,25 @@
                 {/if}
 
                 <SettingsItem
-                  label="Theme"
-                  description="Interface color scheme"
+                  label={$t("settings.interface.language")}
+                  description={$t("settings.interface.languageDesc")}
+                  {searchQuery}
+                  forId="language-select"
+                >
+                  <select
+                    id="language-select"
+                    bind:value={settings.language}
+                    class="w-full px-3 py-2 rounded-md border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    {#each $availableLanguages as lang}
+                      <option value={lang.code}>{lang.name}</option>
+                    {/each}
+                  </select>
+                </SettingsItem>
+
+                <SettingsItem
+                  label={$t("settings.interface.theme")}
+                  description={$t("settings.interface.themeDesc")}
                   {searchQuery}
                   forId="theme-select"
                 >
