@@ -23,7 +23,7 @@ describe("PlaybackControls", () => {
       },
     });
 
-    const btn = screen.getByLabelText("Play animation");
+    const btn = screen.getByLabelText("Play");
     expect(btn).toBeInTheDocument();
 
     await fireEvent.click(btn);
@@ -47,7 +47,7 @@ describe("PlaybackControls", () => {
       },
     });
 
-    const btn = screen.getByLabelText("Pause animation");
+    const btn = screen.getByLabelText("Pause");
     expect(btn).toBeInTheDocument();
 
     await fireEvent.click(btn);
