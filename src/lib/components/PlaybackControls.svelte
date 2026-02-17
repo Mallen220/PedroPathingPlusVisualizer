@@ -69,6 +69,23 @@
     handleSeek(parseFloat(target.value));
   }
 
+  function handleSliderKeydown(e: KeyboardEvent) {
+    const step = 5;
+    if (e.key === "ArrowLeft") {
+      e.preventDefault();
+      handleSeek(Math.max(0, percent - step));
+    } else if (e.key === "ArrowRight") {
+      e.preventDefault();
+      handleSeek(Math.min(100, percent + step));
+    } else if (e.key === "Home") {
+      e.preventDefault();
+      handleSeek(0);
+    } else if (e.key === "End") {
+      e.preventDefault();
+      handleSeek(100);
+    }
+  }
+
   // Drag Handlers
   function handleMarkerDragStart(
     e: MouseEvent,
@@ -134,79 +151,102 @@
   id="playback-controls"
   class="w-full bg-neutral-50 dark:bg-neutral-900 rounded-lg p-3 flex flex-row justify-start items-center gap-3 shadow-lg"
 >
-  <button
-    id="play-pause-btn"
-    title={`Play/Pause${getShortcutFromSettings(settings, "play-pause")}`}
-    aria-label={playing ? "Pause animation" : "Play animation"}
-    on:click={() => {
-      if (playing) {
-        pause();
-      } else {
-        play();
-      }
-    }}
-    class="rounded-md focus:outline-none focus-visible:ring-2 focus-visible:ring-green-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-neutral-900"
-  >
-    {#if !playing}
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        fill="none"
-        viewBox="0 0 24 24"
-        stroke-width="2"
-        stroke="currentColor"
-        class="size-6 stroke-green-500"
-      >
-        <path
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 0 1 0 1.972l-11.54 6.347a1.125 1.125 0 0 1-1.667-.986V5.653Z"
-        />
-      </svg>
-    {:else}
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        fill="none"
-        viewBox="0 0 24 24"
-        stroke-width="2"
-        stroke="currentColor"
-        class="size-6 stroke-green-500"
-      >
-        <path
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          d="M15.75 5.25v13.5m-7.5-13.5v13.5"
-        />
-      </svg>
-    {/if}
-  </button>
-
-  <!-- Loop Toggle Button -->
-  <button
-    title={loopAnimation ? "Disable Loop" : "Enable Loop"}
-    aria-label="Loop animation"
-    aria-pressed={loopAnimation}
-    on:click={() => {
-      loopAnimation = !loopAnimation;
-    }}
-    class:opacity-100={loopAnimation}
-    class:opacity-50={!loopAnimation}
-    class="rounded-md focus:outline-none focus-visible:ring-2 focus-visible:ring-green-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-neutral-900"
-  >
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      fill="none"
-      viewBox="0 0 24 24"
-      stroke-width="2"
-      stroke="currentColor"
-      class="size-6 stroke-blue-500"
+  <div class="flex items-center gap-0.5">
+    <button
+      id="play-pause-btn"
+      title={`Play/Pause${getShortcutFromSettings(settings, "play-pause")}`}
+      aria-label={playing ? "Pause animation" : "Play animation"}
+      on:click={() => {
+        if (playing) {
+          pause();
+        } else {
+          play();
+        }
+      }}
+      class="rounded-md focus:outline-none focus-visible:ring-2 focus-visible:ring-green-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-neutral-900"
     >
-      <path
-        stroke-linecap="round"
-        stroke-linejoin="round"
-        d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99"
-      />
-    </svg>
-  </button>
+      {#if !playing}
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke-width="2"
+          stroke="currentColor"
+          class="size-6 stroke-green-500"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 0 1 0 1.972l-11.54 6.347a1.125 1.125 0 0 1-1.667-.986V5.653Z"
+          />
+        </svg>
+      {:else}
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke-width="2"
+          stroke="currentColor"
+          class="size-6 stroke-green-500"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            d="M15.75 5.25v13.5m-7.5-13.5v13.5"
+          />
+        </svg>
+      {/if}
+    </button>
+
+    <!-- Grouped Skip Buttons (to the right of Play, left of Loop) -->
+    <div class="flex items-center gap-0 ml-0.5">
+      <!-- Skip to Start Button (compact) -->
+      <button
+        title="Skip to Start"
+        aria-label="Skip to start"
+        on:click={() => handleSeek(0)}
+        class="p-0.5 rounded-l-md border-r border-neutral-100 dark:border-neutral-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-green-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-neutral-900 text-neutral-400 hover:text-neutral-600 dark:text-neutral-500 dark:hover:text-neutral-300 transition-colors"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke-width="2"
+          stroke="currentColor"
+          class="size-4"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            d="M15.75 19.5L8.25 12l7.5-7.5M5.25 19.5V4.5"
+          />
+        </svg>
+      </button>
+
+      <!-- Skip to End Button (compact) -->
+      <button
+        title="Skip to End"
+        aria-label="Skip to end"
+        on:click={() => handleSeek(100)}
+        class="p-0.5 rounded-md focus:outline-none focus-visible:ring-2 focus-visible:ring-green-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-neutral-900 text-neutral-400 hover:text-neutral-600 dark:text-neutral-500 dark:hover:text-neutral-300 transition-colors"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke-width="2"
+          stroke="currentColor"
+          class="size-4"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            d="M8.25 4.5l7.5 7.5-7.5 7.5M18.75 4.5v15"
+          />
+        </svg>
+      </button>
+    </div>
+  </div>
 
   <!-- Playback Speed Indicator (dropdown) -->
   <div class="ml-2 relative">
@@ -371,6 +411,7 @@
       class="w-full appearance-none slider focus:outline-none focus-visible:ring-2 focus-visible:ring-green-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-neutral-900 rounded-full bg-transparent dark:bg-transparent relative z-10 timeline-slider"
       style={draggingMarkerIndex !== null ? "pointer-events: none;" : ""}
       on:input={handleSeekInput}
+      on:keydown={handleSliderKeydown}
     />
 
     <!-- Event Markers Layer (Top, Map Pins) -->
@@ -445,7 +486,21 @@
       {/if}
     {/each}
   </div>
-
+    <!-- Loop Toggle Button (moved to right of timeline) -->
+    <button
+      title={loopAnimation ? "Disable Loop" : "Enable Loop"}
+      aria-label="Loop animation"
+      aria-pressed={loopAnimation}
+      on:click={() => (loopAnimation = !loopAnimation)}
+      class:opacity-100={loopAnimation}
+      class:opacity-50={!loopAnimation}
+      class="ml-3 rounded-md focus:outline-none focus-visible:ring-2 focus-visible:ring-green-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-neutral-900"
+      aria-live="polite"
+    >
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="size-6 stroke-blue-500">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99"/>
+      </svg>
+    </button>
   <!-- Time Display -->
   <div
     class="px-2 font-mono text-xs text-neutral-600 dark:text-neutral-400 select-none whitespace-nowrap"
