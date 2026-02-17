@@ -262,6 +262,42 @@
     reader.readAsText(file);
   }
 
+  let isCheckingForUpdates = false;
+
+  async function handleCheckForUpdates() {
+    const electronAPI = (window as any).electronAPI;
+    if (electronAPI && electronAPI.checkForUpdates) {
+      isCheckingForUpdates = true;
+      try {
+        const result = await electronAPI.checkForUpdates();
+        if (result.success) {
+          if (result.updateAvailable) {
+            isOpen = false;
+            // The global listener in App.svelte will handle opening the update dialog
+          } else {
+            if (result.reason === "store") {
+              alert("Updates are managed by the Microsoft Store.");
+            } else {
+              alert("You are on the newest version.");
+            }
+          }
+        } else {
+          // Fallback if success is false but no error thrown
+          alert(
+            "Failed to check for updates: " +
+              (result.message || "Unknown error"),
+          );
+        }
+      } catch (e) {
+        alert("Failed to check for updates: " + (e as Error).message);
+      } finally {
+        isCheckingForUpdates = false;
+      }
+    } else {
+      alert("Update check not supported in this environment.");
+    }
+  }
+
   async function handleReset() {
     if (
       confirm(
@@ -866,6 +902,21 @@
                       on:change={handleImport}
                     />
                   </div>
+                </SettingsItem>
+
+                <SettingsItem
+                  label="Software Update"
+                  description="Check for new versions of the application"
+                  {searchQuery}
+                  layout="row"
+                >
+                  <button
+                    on:click={handleCheckForUpdates}
+                    disabled={isCheckingForUpdates}
+                    class="px-3 py-1.5 text-xs font-medium text-neutral-700 dark:text-neutral-300 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 rounded-md transition-colors disabled:opacity-50"
+                  >
+                    {isCheckingForUpdates ? "Checking..." : "Check for Updates"}
+                  </button>
                 </SettingsItem>
               </div>
             {/if}
