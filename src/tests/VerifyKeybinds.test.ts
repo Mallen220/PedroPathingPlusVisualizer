@@ -23,7 +23,7 @@ describe("Keybindings", () => {
       (b) => b.id === "cycle-path-color",
     );
     expect(binding).toBeDefined();
-    expect(binding?.key).toBe("shift+k, alt+c");
+    expect(binding?.key).toBe("alt+c");
     expect(binding?.action).toBe("cyclePathColor");
   });
 

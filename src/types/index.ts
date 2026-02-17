@@ -200,6 +200,17 @@ export interface Settings {
   autoExportEmbedPoseData?: boolean; // Embed pose data in the generated code
   telemetryImplementation?: "Standard" | "Dashboard" | "Panels" | "None";
   followRobot?: boolean;
+  extensions?: RobotExtension[];
+}
+
+export interface RobotExtension {
+  id: string;
+  name: string;
+  width: number;
+  length: number;
+  xOffset: number; // inches from center, +x is front
+  yOffset: number; // inches from center, +y is left (or right, matching coord system)
+  color?: string; // custom color for visualization
 }
 
 export interface RobotProfile {
@@ -215,6 +226,7 @@ export interface RobotProfile {
   xVelocity: number;
   yVelocity: number;
   robotImage?: string;
+  extensions?: RobotExtension[];
 }
 
 export interface Shape {

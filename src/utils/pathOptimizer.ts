@@ -13,7 +13,11 @@ import type {
 } from "../types";
 import { calculatePathTime } from "./timeCalculator";
 import { FIELD_SIZE } from "../config";
-import { pointInPolygon, getRobotCorners } from "./geometry";
+import {
+  pointInPolygon,
+  getRobotCorners,
+  getRobotExtensionCorners,
+} from "./geometry";
 import {
   getCurvePoint,
   easeInOutQuad,
@@ -345,6 +349,22 @@ export class PathOptimizer {
 
       const corners = getRobotCorners(x, y, heading, rLength, rWidth);
 
+      // Extension Corners (Inflated by Safety Margin)
+      const extensionCornersList: import("../types").BasePoint[][] = [];
+      if (this.settings.extensions) {
+        const safety = this.settings.safetyMargin || 0;
+        for (const ext of this.settings.extensions) {
+          const inflatedExt = {
+            ...ext,
+            length: ext.length + safety * 2,
+            width: ext.width + safety * 2,
+          };
+          extensionCornersList.push(
+            getRobotExtensionCorners(x, y, heading, inflatedExt),
+          );
+        }
+      }
+
       let isColliding = false;
       let collisionType: "obstacle" | "boundary" | "keep-in" = "obstacle";
 
@@ -374,11 +394,10 @@ export class PathOptimizer {
         // starting flush to an edge with safety margins applied.
         const nearStartBuffer = exclusionDist * 1.5;
 
-        if (activeEvent.lineIndex === 0 && distToStart <= nearStartBuffer) {
-          continue;
-        }
-
-        if (distToStart > exclusionDist) {
+        if (
+          !(activeEvent.lineIndex === 0 && distToStart <= nearStartBuffer) &&
+          distToStart > exclusionDist
+        ) {
           const BOUNDARY_EPSILON = 0.05;
           for (const corner of corners) {
             if (
@@ -390,6 +409,24 @@ export class PathOptimizer {
               isColliding = true;
               collisionType = "boundary";
               break;
+            }
+          }
+
+          if (!isColliding) {
+            for (const extCorners of extensionCornersList) {
+              for (const corner of extCorners) {
+                if (
+                  corner.x < -BOUNDARY_EPSILON ||
+                  corner.x > FIELD_SIZE + BOUNDARY_EPSILON ||
+                  corner.y < -BOUNDARY_EPSILON ||
+                  corner.y > FIELD_SIZE + BOUNDARY_EPSILON
+                ) {
+                  isColliding = true;
+                  collisionType = "boundary";
+                  break;
+                }
+              }
+              if (isColliding) break;
             }
           }
         }
@@ -407,6 +444,18 @@ export class PathOptimizer {
           }
           if (isColliding) break;
 
+          // Check if any extension corner is in shape
+          for (const extCorners of extensionCornersList) {
+            for (const corner of extCorners) {
+              if (pointInPolygon([corner.x, corner.y], shape.vertices)) {
+                isColliding = true;
+                break;
+              }
+            }
+            if (isColliding) break;
+          }
+          if (isColliding) break;
+
           // Also check if any shape vertex is inside the robot
           for (const v of shape.vertices) {
             if (pointInPolygon([v.x, v.y], corners)) {
@@ -415,13 +464,25 @@ export class PathOptimizer {
             }
           }
           if (isColliding) break;
+
+          // Check if any shape vertex is inside any extension
+          for (const v of shape.vertices) {
+            for (const extCorners of extensionCornersList) {
+              if (pointInPolygon([v.x, v.y], extCorners)) {
+                isColliding = true;
+                break;
+              }
+            }
+            if (isColliding) break;
+          }
+          if (isColliding) break;
         }
       }
 
       // 3. Keep-In Zone Checks
-      // Robot must be strictly INSIDE at least one keep-in zone
+      // Robot (and extensions) must be strictly INSIDE at least one keep-in zone
       if (!isColliding && this.activeKeepInZones.length > 0) {
-        // Recalculate corners WITHOUT safety margin
+        // Recalculate corners WITHOUT safety margin for main robot
         // Pass full dimensions; getRobotCorners expects full length and calculates extents
         const rawCorners = getRobotCorners(
           x,
@@ -434,12 +495,27 @@ export class PathOptimizer {
         let insideAnyZone = false;
         for (const zone of this.activeKeepInZones) {
           let allCornersIn = true;
+          // Check robot chassis
           for (const corner of rawCorners) {
             if (!pointInPolygon([corner.x, corner.y], zone.vertices)) {
               allCornersIn = false;
               break;
             }
           }
+
+          // Check extensions (using corners calculated with safety margin)
+          if (allCornersIn) {
+            for (const extCorners of extensionCornersList) {
+              for (const corner of extCorners) {
+                if (!pointInPolygon([corner.x, corner.y], zone.vertices)) {
+                  allCornersIn = false;
+                  break;
+                }
+              }
+              if (!allCornersIn) break;
+            }
+          }
+
           if (allCornersIn) {
             insideAnyZone = true;
             break;

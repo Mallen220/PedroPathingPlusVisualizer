@@ -80,6 +80,7 @@
     updateRobotImageDisplay,
     easeInOutQuad,
     getAngularDifference,
+    getRobotExtensionCorners,
   } from "../../utils";
   import { updateLinkedWaypoints } from "../../utils/pointLinking";
   import type {
@@ -1170,6 +1171,55 @@
     return [path];
   })();
 
+  // Robot Extensions
+  $: extensionElements = (() => {
+    let _extensions: Path[] = [];
+    if (
+      !isDiffMode &&
+      $showRobot &&
+      settings.extensions &&
+      settings.extensions.length > 0
+    ) {
+      // We render extension at current robot pose
+      const heading = robotHeading;
+      const rx = robotXY.x;
+      const ry = robotXY.y;
+
+      settings.extensions.forEach((ext, idx) => {
+        const corners = getRobotExtensionCorners(rx, ry, heading, ext);
+
+        // Create Path from corners
+        let vertices = corners.map(
+          (c) =>
+            new Two.Anchor(x(c.x), y(c.y), 0, 0, 0, 0, Two.Commands.line),
+        );
+        // Close path
+        vertices.push(
+          new Two.Anchor(
+            x(corners[0].x),
+            y(corners[0].y),
+            0,
+            0,
+            0,
+            0,
+            Two.Commands.close,
+          ),
+        );
+        vertices.forEach((p) => (p.relative = false));
+
+        const path = new Two.Path(vertices);
+        path.id = `extension-${idx}`;
+        path.fill = ext.color || "#facc15";
+        path.stroke = "#000000";
+        path.linewidth = uiLength(0.5);
+        path.opacity = 0.5; // Semi-transparent
+
+        _extensions.push(path);
+      });
+    }
+    return _extensions;
+  })();
+
   // Ghost Robot State for Telemetry
   $: ghostRobotState = (() => {
     if (
@@ -1583,6 +1633,8 @@
 
     const shapeGroup = new Two.Group();
     shapeGroup.id = "shape-group";
+    const extensionGroup = new Two.Group();
+    extensionGroup.id = "extension-group";
     const lineGroup = new Two.Group();
     lineGroup.id = "line-group";
     const pointGroup = new Two.Group();
@@ -1599,6 +1651,7 @@
     if (Array.isArray(shapeElements))
       shapeElements.forEach((el) => shapeGroup.add(el));
     onionLayerElements.forEach((el) => shapeGroup.add(el));
+    extensionElements.forEach((el) => extensionGroup.add(el));
 
     path.forEach((el) => lineGroup.add(el));
     diffPathElements.forEach((el) => lineGroup.add(el));
@@ -1618,6 +1671,7 @@
     }
 
     two.add(shapeGroup);
+    two.add(extensionGroup);
     two.add(lineGroup);
     two.add(eventGroup);
     two.add(pointGroup);

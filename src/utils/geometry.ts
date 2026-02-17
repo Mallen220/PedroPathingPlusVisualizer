@@ -2,7 +2,7 @@
 /**
  * Geometry utility functions for obstacle detection and polygon operations
  */
-import type { BasePoint } from "../types";
+import type { BasePoint, RobotExtension } from "../types";
 
 /**
  * Determines if a point is inside a polygon using ray casting algorithm
@@ -153,6 +153,56 @@ export function getRobotCorners(
     x: x + corner.dx * cos - corner.dy * sin,
     y: y + corner.dx * sin + corner.dy * cos,
   }));
+}
+
+/**
+ * Calculate the four corner points of a robot extension at a given position and heading
+ * @param x - Robot center X position (in inches)
+ * @param y - Robot center Y position (in inches)
+ * @param heading - Robot heading in degrees
+ * @param extension - The extension definition
+ * @returns Array of 4 corner points in order: [front-left, front-right, back-right, back-left]
+ */
+export function getRobotExtensionCorners(
+  x: number,
+  y: number,
+  heading: number,
+  extension: RobotExtension,
+): BasePoint[] {
+  // Convert heading from degrees to radians
+  const headingRad = (heading * Math.PI) / 180;
+  const cos = Math.cos(headingRad);
+  const sin = Math.sin(headingRad);
+
+  // Extension center relative to robot center (unrotated)
+  // xOffset: +Forward (along heading)
+  // yOffset: +Right (perpendicular to heading, downwards on screen at 0 deg)
+  const cx = extension.xOffset;
+  const cy = extension.yOffset;
+
+  const hl = extension.length / 2;
+  const hw = extension.width / 2;
+
+  // Corners relative to EXTENSION center (unrotated aligned with robot)
+  const relCorners = [
+    { dx: -hl, dy: -hw }, // front-left (relative to ext center)
+    { dx: hl, dy: -hw }, // front-right
+    { dx: hl, dy: hw }, // back-right
+    { dx: -hl, dy: hw }, // back-left
+  ];
+
+  // Transform to Field Coordinates
+  return relCorners.map((corner) => {
+    // Position relative to robot center (unrotated)
+    const totalDx = cx + corner.dx;
+    const totalDy = cy + corner.dy;
+
+    // Rotate and translate
+    return {
+      x: x + totalDx * cos - totalDy * sin,
+      y: y + totalDx * sin + totalDy * cos,
+    };
+  });
 }
 
 /**

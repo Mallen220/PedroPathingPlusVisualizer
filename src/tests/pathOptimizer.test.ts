@@ -197,6 +197,85 @@ describe("PathOptimizer", () => {
     expect(result.bestTime).toBeGreaterThan(10000);
   });
 
+  it("should detect collision with robot extension", () => {
+    // Robot static at (20, 20) heading 0 (Right)
+    // Size 12x12, Safety 2 -> Footprint 16x16 (Radius 8)
+    // X Range: [12, 28]
+
+    // Add Extension: 10x4, Offset 8 forward.
+    // Center at 20+8 = 28. Half-length 5.
+    // X Range: [23, 33]
+
+    // Obstacle at X=30
+    // Make it smaller in Y to ensure vertices are strictly inside extension Y range [16, 24]
+    // so corner-in-polygon check passes.
+    shapes = [
+      {
+        id: "obs1",
+        vertices: [
+          { x: 30, y: 19 },
+          { x: 30, y: 21 },
+          { x: 35, y: 21 },
+          { x: 35, y: 19 },
+        ],
+        color: "red",
+        fillColor: "red",
+      },
+    ];
+
+    settings.extensions = [
+      {
+        id: "ext1",
+        name: "Arm",
+        length: 10,
+        width: 4,
+        xOffset: 8,
+        yOffset: 0
+      }
+    ];
+
+    // Check purely based on static point calculation simulation
+    // We can use getCollisions directly
+
+    const optimizer = new PathOptimizer(
+      { x: 20, y: 20, heading: "constant", degrees: 0 }, // Start point
+      [], // No lines needed if we simulate a single point via timeline or rely on start
+      settings,
+      [],
+      shapes
+    );
+
+    // Mock a timeline event where robot sits at start
+    const timeline = [
+      {
+        type: "wait",
+        duration: 1,
+        startTime: 0,
+        endTime: 1,
+        atPoint: { x: 20, y: 20 },
+        startHeading: 0,
+        targetHeading: 0
+      } as any
+    ];
+
+    const markers = optimizer.getCollisions(timeline, []);
+    // Should find collision
+    expect(markers.length).toBeGreaterThan(0);
+    expect(markers[0].type).toBe("obstacle");
+
+    // Now remove extension and verify no collision
+    settings.extensions = [];
+    const optimizer2 = new PathOptimizer(
+      { x: 20, y: 20, heading: "constant", degrees: 0 },
+      [],
+      settings,
+      [],
+      shapes
+    );
+    const markers2 = optimizer2.getCollisions(timeline, []);
+    expect(markers2.length).toBe(0);
+  });
+
   it("should mutate lines to avoid obstacles", async () => {
     // Ensure this obstacle is also detectable by current logic
     // A small block at 25,25 (center of path)
