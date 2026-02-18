@@ -123,6 +123,10 @@
   // Smart Snapping State
   let snapGuides: InstanceType<typeof Two.Line>[] = [];
 
+  // Alt Key State for Snapping
+  let isAltHeld = false;
+  $: isSnapping = (settings.smartSnapping !== false) ? !isAltHeld : isAltHeld;
+
   // Context Menu State
   let showContextMenu = false;
   let contextMenuX = 0;
@@ -1696,6 +1700,11 @@
     });
 
     two.renderer.domElement.addEventListener("mousemove", (evt: MouseEvent) => {
+      // Sync Alt state in case key events were missed (e.g. Alt-Tab)
+      if (isAltHeld !== evt.altKey) {
+        isAltHeld = evt.altKey;
+      }
+
       // Optimization: Use cached rect to prevent layout thrashing
       const rect =
         cachedRect || two.renderer.domElement.getBoundingClientRect();
@@ -2601,6 +2610,15 @@
   });
 </script>
 
+<svelte:window
+  on:keydown={(e) => {
+    if (e.key === "Alt") isAltHeld = true;
+  }}
+  on:keyup={(e) => {
+    if (e.key === "Alt") isAltHeld = false;
+  }}
+/>
+
 <div
   class="relative"
   style={`width: ${width}px; height: ${height}px;`}
@@ -2722,6 +2740,7 @@ left: ${x(ghostRobotState.x)}px; transform: translate(-50%, -50%) rotate(${ghost
       y={currentMouseY}
       visible={isMouseOverField}
       isObstructed={isObstructingHUD}
+      {isSnapping}
     />
 
     <!-- Zoom Controls -->
