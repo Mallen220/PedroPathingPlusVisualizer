@@ -18,6 +18,7 @@
     showPluginManager,
     showStrategySheet,
     showHistory,
+    showCheckpoints,
   } from "../stores";
   import { getRandomColor } from "../utils";
   import { SaveIcon } from "./components/icons";
@@ -414,6 +415,29 @@
             stroke-linecap="round"
             stroke-linejoin="round"
             d="M15 9l6 6m0 0-6 6m6-6H9a6 6 0 1 1 0-12h3"
+          />
+        </svg>
+      </button>
+
+      <!-- Checkpoints -->
+      <button
+        title="Checkpoints"
+        aria-label="Checkpoints"
+        on:click={() => showCheckpoints.set(true)}
+        class="p-1.5 rounded-md hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-600 dark:text-neutral-300 transition-colors"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          class="size-5"
+          stroke-width="2"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            d="M3 3v1.5M3 21v-6m0 0 2.77-.693a9 9 0 0 1 6.208.682l.108.054a9 9 0 0 0 6.086.71l3.114-.732a48.524 48.524 0 0 1-.005-10.499l-3.11.732a9 9 0 0 1-6.085-.711l-.108-.054a9 9 0 0 0-6.208-.682L3 4.5M3 15V4.5"
           />
         </svg>
       </button>

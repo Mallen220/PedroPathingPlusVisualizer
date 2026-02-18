@@ -19,6 +19,7 @@ import {
   updateMacroContent,
   loadProjectData,
 } from "../lib/projectStore";
+import { saveCheckpointsToPath } from "../lib/checkpointStore";
 import { loadTrajectoryFromFile, downloadTrajectory } from "./index";
 import {
   generateJavaCode,
@@ -271,6 +272,7 @@ async function performSave(
       // Use the new saveFile API if available (mocked in tests)
       const result = await electronAPI.saveFile(jsonString, targetPath);
       if (result.success) {
+        saveCheckpointsToPath(result.filepath);
         projectMetadataStore.update((m) => ({
           ...m,
           filepath: result.filepath,
@@ -319,6 +321,7 @@ async function performSave(
       if (!targetPath) return false; // Should have been determined above
 
       await electronAPI.writeFile(targetPath, jsonString);
+      saveCheckpointsToPath(targetPath);
       projectMetadataStore.update((m) => ({ ...m, filepath: targetPath! }));
       currentFilePath.set(targetPath);
       addToRecentFiles(targetPath, settings);

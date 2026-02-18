@@ -17,6 +17,7 @@
   import WhatsNewDialog from "./lib/components/whats-new/WhatsNewDialog.svelte";
   import SaveNameDialog from "./lib/components/dialogs/SaveNameDialog.svelte";
   import UnsavedChangesDialog from "./lib/components/dialogs/UnsavedChangesDialog.svelte";
+  import CheckpointDialog from "./lib/components/dialogs/CheckpointDialog.svelte";
   import FileManager from "./lib/FileManager.svelte";
   import SettingsDialog from "./lib/components/dialogs/SettingsDialog.svelte";
   import TelemetryDialog from "./lib/components/dialogs/TelemetryDialog.svelte";
@@ -1515,6 +1516,7 @@
   bind:settings={$settingsStore}
 />
 <PluginManagerDialog bind:isOpen={$showPluginManager} />
+<CheckpointDialog />
 
 {#if $showFileManager}
   <FileManager
