@@ -42,3 +42,8 @@ Action: Avoid fixed widths for form controls in resizable containers; use flex-g
 
 Learning: Default browser behavior for `input[type="range"]` uses the `step` attribute for keyboard navigation (Arrow keys). When a slider requires high precision (e.g., `step="0.000001"` for smooth animation), standard keyboard navigation becomes imperceptible and practically useless.
 Action: Implement custom `keydown` handlers to override default arrow key behavior with a meaningful step size (e.g., 5%) while preserving fine-grained mouse control.
+
+## 2026-02-19 - Contextual Disabled States
+
+Learning: Disabled buttons often leave users guessing "why?". Standard `title` attributes on disabled buttons are often suppressed by browsers or screen readers, but when they work (or when customized), simply repeating the action name (e.g., "Move Up") is useless.
+Action: Dynamically update `title` attributes on disabled actions to explain the *reason* (e.g., "Cannot move up (Start of list)" or "Cannot move (Locked)"), turning a dead end into helpful feedback.

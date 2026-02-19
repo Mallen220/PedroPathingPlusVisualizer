@@ -235,7 +235,11 @@
           }}
           disabled={!canMoveUp || rotate.locked}
           class="p-1 rounded-md hover:bg-white dark:hover:bg-neutral-800 text-neutral-500 dark:text-neutral-400 disabled:opacity-30 disabled:hover:bg-transparent transition-all shadow-sm hover:shadow"
-          title="Move Up"
+          title={rotate.locked
+            ? "Cannot move (Locked)"
+            : !canMoveUp
+              ? "Cannot move up (Start of list)"
+              : "Move Up"}
           aria-label="Move Up"
         >
           <svg
@@ -257,7 +261,11 @@
           }}
           disabled={!canMoveDown || rotate.locked}
           class="p-1 rounded-md hover:bg-white dark:hover:bg-neutral-800 text-neutral-500 dark:text-neutral-400 disabled:opacity-30 disabled:hover:bg-transparent transition-all shadow-sm hover:shadow"
-          title="Move Down"
+          title={rotate.locked
+            ? "Cannot move (Locked)"
+            : !canMoveDown
+              ? "Cannot move down (End of list)"
+              : "Move Down"}
           aria-label="Move Down"
         >
           <svg
