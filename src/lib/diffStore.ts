@@ -62,8 +62,41 @@ export const committedData = writable<ProjectData | null>(null);
 export const diffResult = writable<DiffResult | null>(null);
 export const isLoadingDiff = writable(false);
 
-export async function toggleDiff() {
+export async function toggleDiff(referenceData?: ProjectData) {
   const currentMode = get(diffMode);
+
+  if (referenceData) {
+    // Force enable with specific reference data
+    try {
+      isLoadingDiff.set(true);
+
+      // Ensure data is normalized
+      const normalizedReference: ProjectData = {
+        ...referenceData,
+        lines: normalizeLines(referenceData.lines || []),
+      };
+
+      committedData.set(normalizedReference);
+
+      // Compute Diff
+      const current: ProjectData = {
+        startPoint: get(startPointStore),
+        lines: get(linesStore),
+        sequence: get(sequenceStore),
+        shapes: get(shapesStore),
+        settings: get(settingsStore),
+      };
+
+      const result = computeDiff(current, normalizedReference);
+      diffResult.set(result);
+      diffMode.set(true);
+    } catch (err) {
+      console.error("Error computing diff with reference data:", err);
+    } finally {
+      isLoadingDiff.set(false);
+    }
+    return;
+  }
 
   if (currentMode) {
     // Turn off

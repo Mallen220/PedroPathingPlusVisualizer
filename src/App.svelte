@@ -26,6 +26,7 @@
   import StrategySheetPreview from "./lib/components/dialogs/StrategySheetPreview.svelte";
   import DialogHost from "./lib/components/DialogHost.svelte";
   import UpdateAvailableDialog from "./lib/components/dialogs/UpdateAvailableDialog.svelte";
+  import CheckpointDialog from "./lib/components/dialogs/CheckpointDialog.svelte";
 
   // Stores
   import {
@@ -48,6 +49,7 @@
     selectedLineId,
     showUpdateAvailableDialog,
     updateDataStore,
+    showCheckpoints,
   } from "./stores";
   import {
     startPointStore,
@@ -1515,6 +1517,10 @@
   bind:settings={$settingsStore}
 />
 <PluginManagerDialog bind:isOpen={$showPluginManager} />
+<CheckpointDialog
+  bind:isOpen={$showCheckpoints}
+  {recordChange}
+/>
 
 {#if $showFileManager}
   <FileManager
