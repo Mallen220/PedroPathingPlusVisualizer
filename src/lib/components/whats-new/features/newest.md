@@ -1,4 +1,4 @@
-### What's New!
+### What's New in 1.7.4!
 
 ## **Features:**
 
@@ -24,3 +24,5 @@
 ### **Field Accuracy Update**
 
 - **Refined Goal Positions**: The Red and Blue Goal obstacles for the DECODE 2025-2026 field have been updated with more accurate dimensions and placement.
+
+
