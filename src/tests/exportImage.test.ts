@@ -48,18 +48,18 @@ global.DOMParser = class {
         setAttribute: vi.fn(),
         insertBefore: vi.fn(),
         appendChild: vi.fn(),
-      }
+      },
     } as any;
   }
 } as any;
 
 // Mock FileReader
 global.FileReader = class {
-    readAsDataURL() {
-        setTimeout(() => this.onloadend(), 5);
-    }
-    onloadend: any = () => {};
-    result = "data:image/png;base64,mock";
+  readAsDataURL() {
+    setTimeout(() => this.onloadend(), 5);
+  }
+  onloadend: any = () => {};
+  result = "data:image/png;base64,mock";
 } as any;
 
 describe("exportPathToImage", () => {
@@ -69,9 +69,13 @@ describe("exportPathToImage", () => {
   let options: ExportImageOptions;
 
   beforeEach(() => {
-    vi.stubGlobal("fetch", vi.fn().mockResolvedValue({
-        blob: () => Promise.resolve(new Blob(["image-data"], { type: "image/png" })),
-    }));
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue({
+        blob: () =>
+          Promise.resolve(new Blob(["image-data"], { type: "image/png" })),
+      }),
+    );
 
     // Mock Canvas Context
     mockCtx = {
@@ -89,7 +93,7 @@ describe("exportPathToImage", () => {
       height: 100,
       getContext: vi.fn().mockReturnValue(mockCtx),
       toBlob: vi.fn((cb, type, quality) => {
-          cb(new Blob(["canvas-data"], { type }));
+        cb(new Blob(["canvas-data"], { type }));
       }),
     };
 
@@ -125,38 +129,46 @@ describe("exportPathToImage", () => {
   });
 
   it("should export PNG blob", async () => {
-      const blob = await exportPathToImage(options);
-      expect(blob).toBeDefined();
-      expect(blob.type).toBe("image/png");
-      expect(mockCanvas.toBlob).toHaveBeenCalledWith(expect.any(Function), "image/png", undefined);
+    const blob = await exportPathToImage(options);
+    expect(blob).toBeDefined();
+    expect(blob.type).toBe("image/png");
+    expect(mockCanvas.toBlob).toHaveBeenCalledWith(
+      expect.any(Function),
+      "image/png",
+      undefined,
+    );
   });
 
   it("should export JPEG blob with quality", async () => {
-      options.format = "jpeg";
-      options.quality = 0.5;
-      const blob = await exportPathToImage(options);
-      expect(blob).toBeDefined();
-      expect(blob.type).toBe("image/jpeg");
-      expect(mockCanvas.toBlob).toHaveBeenCalledWith(expect.any(Function), "image/jpeg", 0.5);
+    options.format = "jpeg";
+    options.quality = 0.5;
+    const blob = await exportPathToImage(options);
+    expect(blob).toBeDefined();
+    expect(blob.type).toBe("image/jpeg");
+    expect(mockCanvas.toBlob).toHaveBeenCalledWith(
+      expect.any(Function),
+      "image/jpeg",
+      0.5,
+    );
   });
 
   it("should export SVG blob", async () => {
-      options.format = "svg";
-      const blob = await exportPathToImage(options);
-      expect(blob).toBeDefined();
-      expect(blob.type).toMatch(/svg/);
-      // Should not use canvas for SVG
-      expect(mockCanvas.toBlob).not.toHaveBeenCalled();
+    options.format = "svg";
+    const blob = await exportPathToImage(options);
+    expect(blob).toBeDefined();
+    expect(blob.type).toMatch(/svg/);
+    // Should not use canvas for SVG
+    expect(mockCanvas.toBlob).not.toHaveBeenCalled();
   });
 
   it("should embed background and robot images in SVG", async () => {
-      options.format = "svg";
-      options.backgroundImageSrc = "http://example.com/bg.png";
-      options.robotImageSrc = "http://example.com/robot.png";
+    options.format = "svg";
+    options.backgroundImageSrc = "http://example.com/bg.png";
+    options.robotImageSrc = "http://example.com/robot.png";
 
-      await exportPathToImage(options);
+    await exportPathToImage(options);
 
-      expect(global.fetch).toHaveBeenCalledWith("http://example.com/bg.png");
-      expect(global.fetch).toHaveBeenCalledWith("http://example.com/robot.png");
+    expect(global.fetch).toHaveBeenCalledWith("http://example.com/bg.png");
+    expect(global.fetch).toHaveBeenCalledWith("http://example.com/robot.png");
   });
 });
