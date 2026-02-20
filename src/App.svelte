@@ -24,6 +24,7 @@
   import KeyboardShortcutsDialog from "./lib/components/dialogs/KeyboardShortcutsDialog.svelte";
   import ExportCodeDialog from "./lib/components/dialogs/ExportCodeDialog.svelte";
   import StrategySheetPreview from "./lib/components/dialogs/StrategySheetPreview.svelte";
+  import CheckpointDialog from "./lib/components/dialogs/CheckpointDialog.svelte";
   import DialogHost from "./lib/components/DialogHost.svelte";
   import UpdateAvailableDialog from "./lib/components/dialogs/UpdateAvailableDialog.svelte";
 
@@ -1536,6 +1537,7 @@
   settings={$settingsStore}
 />
 
+<CheckpointDialog {recordChange} />
 <DialogHost />
 
 <!-- Drag Overlay -->

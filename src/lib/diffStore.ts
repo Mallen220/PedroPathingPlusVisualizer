@@ -62,6 +62,29 @@ export const committedData = writable<ProjectData | null>(null);
 export const diffResult = writable<DiffResult | null>(null);
 export const isLoadingDiff = writable(false);
 
+export function startDiffWith(data: ProjectData) {
+  isLoadingDiff.set(true);
+  try {
+    committedData.set(data);
+
+    const current: ProjectData = {
+      startPoint: get(startPointStore),
+      lines: get(linesStore),
+      sequence: get(sequenceStore),
+      shapes: get(shapesStore),
+      settings: get(settingsStore),
+    };
+
+    const result = computeDiff(current, data);
+    diffResult.set(result);
+    diffMode.set(true);
+  } catch (err) {
+    console.error("Error starting diff with provided data:", err);
+  } finally {
+    isLoadingDiff.set(false);
+  }
+}
+
 export async function toggleDiff() {
   const currentMode = get(diffMode);
 
