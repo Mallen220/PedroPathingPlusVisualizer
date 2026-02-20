@@ -86,10 +86,7 @@ async function renderFrameToCanvas(
       // Draw background image first (if available)
       if (backgroundImage) {
         try {
-          if (
-            "backgroundBounds" in options &&
-            options.backgroundBounds
-          ) {
+          if ("backgroundBounds" in options && options.backgroundBounds) {
             // Draw using screen bounds scaled by resolution scale
             const b = options.backgroundBounds;
             ctx.drawImage(
@@ -260,11 +257,7 @@ export async function exportPathToImage(
     }
 
     // 2. Robot Image
-    if (
-      options.robotImageSrc &&
-      options.robotScreenState &&
-      robotImage
-    ) {
+    if (options.robotImageSrc && options.robotScreenState && robotImage) {
       const robotDataUri = await urlToDataUri(options.robotImageSrc);
       if (robotDataUri) {
         const rw = options.robotLengthPx ?? (robotImage.width || 50);
