@@ -380,7 +380,7 @@ install_mac() {
     fi
     # Also remove prior installs that used the new product name (if present)
     if [ -d "/Applications/Pedro Pathing Plus Visualizer.app" ]; then
-        print_status "Removing prior install (Plus naming)..."
+        print_status "Removing prior install..."
         sudo rm -rf "/Applications/Pedro Pathing Plus Visualizer.app"
     fi
 
