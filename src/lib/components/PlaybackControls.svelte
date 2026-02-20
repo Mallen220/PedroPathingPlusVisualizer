@@ -252,7 +252,7 @@
   >
     <!-- Timeline Track & Highlights -->
     <div
-      class="absolute left-0 right-0 top-1/2 -translate-y-1/2 h-2 w-full pointer-events-none overflow-hidden rounded-full bg-neutral-200 dark:bg-neutral-700 shadow-inner"
+      class="absolute left-0 right-0 top-1/2 -translate-y-1/2 h-2.5 w-full pointer-events-none overflow-hidden rounded-full bg-neutral-200 dark:bg-neutral-700 shadow-inner"
     >
       {#each timelineItems as item}
         {#if item.type === "wait"}

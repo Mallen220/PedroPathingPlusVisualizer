@@ -322,7 +322,10 @@ export async function generateJavaCode(
 
     // compute heading used in exported Java before building the file template
     const startDegForExport = ((): number => {
-      if (startPoint.heading === "constant" && typeof (startPoint as any).degrees === "number") {
+      if (
+        startPoint.heading === "constant" &&
+        typeof (startPoint as any).degrees === "number"
+      ) {
         return (startPoint as any).degrees;
       }
 
@@ -330,7 +333,10 @@ export async function generateJavaCode(
         return getLineStartHeading(lines[0], startPoint);
       }
 
-      if (startPoint.heading === "linear" && typeof (startPoint as any).startDeg === "number") {
+      if (
+        startPoint.heading === "linear" &&
+        typeof (startPoint as any).startDeg === "number"
+      ) {
         return (startPoint as any).startDeg;
       }
 
