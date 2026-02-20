@@ -1,3 +1,7 @@
+## 1.7.4 (2026-02-20)
+
+- New UI for the update prompt and add ms store support. Add manual update check. Add ability to optimize individual paths. Several critical fixes to code exporting. Add ability to import and export settings. Fix start position data being written incorrectly. Show actual .pp file content in Export dialog. Better playback controls. Add export image option. Fixed Plugins icon. 
+
 ## 1.7.3 (2026-02-10)
 
 - Add Sticky Notes plugin, disabled by default. Add Telemetry documentation page. Redesign Plugin Manager UI for better usability and descriptions. More keybinds and fixed conflicts. Users can drag Timeline Event Markers. Remove Discord for now. Add header info to saved .pp files. Prevent dragging on action names. Add heading normalization for Rotate and Path commands. Fix file renaming in FileManager. Fix correctly handling initial rotation in path time calculation. Update LICENSE and Privacy Policy. Add confirmation for obstacle deletion. Add Split Path keybind (K). Add MSIX windows 11 autopackager. Add Windows tile assets and generation tooling. FIX: Should add ".pp" in sequentially exported code. Remove settings from .pp file save. Added hard coded position toggle for sequential commands.
