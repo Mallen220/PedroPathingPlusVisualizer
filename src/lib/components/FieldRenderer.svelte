@@ -82,6 +82,7 @@
     getAngularDifference,
     getLineStartHeading,
   } from "../../utils";
+  import { toUserCoordinate } from "../../utils/coordinates";
   import { updateLinkedWaypoints } from "../../utils/pointLinking";
   import type {
     Line,
@@ -2316,7 +2317,10 @@
                 else pt = lines[lineIndex].controlPoints[pointIndex - 1];
               }
               if (pt) {
-                const text = `${pt.x.toFixed(2)}, ${pt.y.toFixed(2)}`;
+                const system = settings.coordinateSystem || "Pedro";
+                const px = toUserCoordinate(pt.x, system);
+                const py = toUserCoordinate(pt.y, system);
+                const text = `${px.toFixed(2)}, ${py.toFixed(2)}`;
                 navigator.clipboard.writeText(text);
                 notification.set({
                   message: `Copied "${text}"`,

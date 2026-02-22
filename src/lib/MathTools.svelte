@@ -8,6 +8,8 @@
     gridSize,
     isPresentationMode,
   } from "../stores";
+  import { settingsStore } from "./projectStore";
+  import { toUserCoordinate } from "../utils/coordinates";
   import type * as d3 from "d3";
 
   export let x: d3.ScaleLinear<number, number, number>;
@@ -155,7 +157,7 @@
         class="fill-gray-600 dark:fill-gray-400 text-xs"
         text-anchor="middle"
       >
-        {position}"
+        {toUserCoordinate(position, $settingsStore.coordinateSystem || "Pedro")}"
       </text>
     {/each}
 
@@ -176,7 +178,7 @@
         class="fill-gray-600 dark:fill-gray-400 text-xs"
         text-anchor="middle"
       >
-        {position}"
+        {toUserCoordinate(position, $settingsStore.coordinateSystem || "Pedro")}"
       </text>
     {/each}
   </svg>

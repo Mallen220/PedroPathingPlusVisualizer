@@ -15,6 +15,8 @@
     handleWaypointRename,
     isLineLinked,
   } from "../../../utils/pointLinking";
+  import { settingsStore } from "../../projectStore";
+  import { toUserCoordinate, toFieldCoordinate } from "../../../utils/coordinates";
   import { tooltipPortal } from "../../actions/portal";
   import { onMount, onDestroy } from "svelte";
   import { actionRegistry } from "../../actionRegistry";
@@ -355,9 +357,15 @@
                 class="w-full pl-6 pr-2 py-1.5 text-sm bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-lg focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 outline-none transition-all"
                 step={$snapToGrid && $showGrid ? $gridSize : 0.1}
                 type="number"
-                min="0"
-                max="144"
-                bind:value={line.endPoint.x}
+                min={$settingsStore.coordinateSystem === "FTC" ? "-72" : "0"}
+                max={$settingsStore.coordinateSystem === "FTC" ? "72" : "144"}
+                value={toUserCoordinate(line.endPoint.x, $settingsStore.coordinateSystem || "Pedro")}
+                on:input={(e) => {
+                  const val = parseFloat(e.currentTarget.value);
+                  if (!isNaN(val)) {
+                    line.endPoint.x = toFieldCoordinate(val, $settingsStore.coordinateSystem || "Pedro");
+                  }
+                }}
                 disabled={line.locked}
                 title={snapToGridTitle}
                 aria-label="Target X position"
@@ -373,10 +381,16 @@
                 bind:this={yInput}
                 class="w-full pl-6 pr-2 py-1.5 text-sm bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-lg focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 outline-none transition-all"
                 step={$snapToGrid && $showGrid ? $gridSize : 0.1}
-                min="0"
-                max="144"
+                min={$settingsStore.coordinateSystem === "FTC" ? "-72" : "0"}
+                max={$settingsStore.coordinateSystem === "FTC" ? "72" : "144"}
                 type="number"
-                bind:value={line.endPoint.y}
+                value={toUserCoordinate(line.endPoint.y, $settingsStore.coordinateSystem || "Pedro")}
+                on:input={(e) => {
+                  const val = parseFloat(e.currentTarget.value);
+                  if (!isNaN(val)) {
+                    line.endPoint.y = toFieldCoordinate(val, $settingsStore.coordinateSystem || "Pedro");
+                  }
+                }}
                 disabled={line.locked}
                 title={snapToGridTitle}
                 aria-label="Target Y position"
