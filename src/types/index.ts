@@ -290,6 +290,8 @@ export interface CollisionMarker {
   endX?: number;
   endY?: number;
   segmentEndIndex?: number;
+  obstacleId?: string;
+  obstacleName?: string;
 }
 
 export interface Notification {

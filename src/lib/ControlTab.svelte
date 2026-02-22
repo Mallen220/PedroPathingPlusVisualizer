@@ -6,6 +6,7 @@
   import TableTab from "./components/tabs/TableTab.svelte";
   import DiffTab from "./components/tabs/DiffTab.svelte";
   import CodeTab from "./components/tabs/CodeTab.svelte";
+  import ValidationTab from "./components/tabs/ValidationTab.svelte";
 
   // Register default tabs; callable so plugin reloads can restore baseline tabs
   export const registerDefaultControlTabs = () => {
@@ -36,6 +37,13 @@
       component: CodeTab,
       order: 3,
       icon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" class="size-4" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.25 6.75L22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3l-4.5 16.5" /></svg>`,
+    });
+    tabRegistryModule.register({
+      id: "validate",
+      label: "Issues",
+      component: ValidationTab,
+      order: 4,
+      icon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" class="size-4" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" /></svg>`,
     });
   };
 

@@ -347,6 +347,7 @@ export class PathOptimizer {
 
       let isColliding = false;
       let collisionType: "obstacle" | "boundary" | "keep-in" = "obstacle";
+      let collidingShape: Shape | null = null;
 
       // 1. Boundary Checks (if enabled)
       if (this.settings.validateFieldBoundaries !== false) {
@@ -402,6 +403,7 @@ export class PathOptimizer {
           for (const corner of corners) {
             if (pointInPolygon([corner.x, corner.y], shape.vertices)) {
               isColliding = true;
+              collidingShape = shape;
               break;
             }
           }
@@ -411,6 +413,7 @@ export class PathOptimizer {
           for (const v of shape.vertices) {
             if (pointInPolygon([v.x, v.y], corners)) {
               isColliding = true;
+              collidingShape = shape;
               break;
             }
           }
@@ -459,7 +462,9 @@ export class PathOptimizer {
         const shouldExtend =
           currentCollision &&
           currentCollision.type === collisionType &&
-          currentCollision.segmentEndIndex === currentSegmentIndex;
+          currentCollision.segmentEndIndex === currentSegmentIndex &&
+          (collisionType !== "obstacle" ||
+            currentCollision.obstacleId === collidingShape?.id);
 
         if (shouldExtend) {
           // Extend current collision within the same segment
@@ -485,6 +490,8 @@ export class PathOptimizer {
             endX: x,
             endY: y,
             segmentEndIndex: currentSegmentIndex,
+            obstacleId: collidingShape?.id,
+            obstacleName: collidingShape?.name,
           };
         }
       } else {

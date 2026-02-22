@@ -259,3 +259,4 @@ src/lib/components/common/LoadingSpinner.svelte
 src/lib/components/icons/PuzzleIcon.svelte
 src/lib/components/dialogs/ExportImageDialog.svelte
 src/tests/exportImage.test.ts
+src/lib/components/tabs/ValidationTab.svelte
