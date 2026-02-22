@@ -42,3 +42,8 @@ Action: Avoid fixed widths for form controls in resizable containers; use flex-g
 
 Learning: Default browser behavior for `input[type="range"]` uses the `step` attribute for keyboard navigation (Arrow keys). When a slider requires high precision (e.g., `step="0.000001"` for smooth animation), standard keyboard navigation becomes imperceptible and practically useless.
 Action: Implement custom `keydown` handlers to override default arrow key behavior with a meaningful step size (e.g., 5%) while preserving fine-grained mouse control.
+
+## 2026-06-03 - Playwright Strict Mode & Overlays
+
+Learning: Playwright's strict mode can fail `get_by_text` if the text appears in multiple places (e.g. heading vs description). Using `get_by_role` is more specific. Also, driver.js overlays can intercept clicks, requiring robust dismissal logic (ESC key multiple times) in verification scripts.
+Action: Prefer `get_by_role` for text assertions and ensure overlay dismissal is handled before interacting with UI elements.
