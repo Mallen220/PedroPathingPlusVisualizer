@@ -9,7 +9,7 @@
     focusRequest,
   } from "../../../stores";
   import { settingsStore } from "../../projectStore";
-  import { toUserCoordinate, toFieldCoordinate } from "../../../utils/coordinates";
+  import { toUser, toField } from "../../../utils/coordinates";
   import type { Line } from "../../../types/index";
   import {
     calculateDragPosition,
@@ -330,7 +330,7 @@
                 >
                 <input
                   bind:this={xInputs[idx]}
-                  value={toUserCoordinate(point.x, $settingsStore.coordinateSystem || "Pedro")}
+                  value={toUser(point, $settingsStore.coordinateSystem || "Pedro").x}
                   type="number"
                   min={$settingsStore.coordinateSystem === "FTC" ? "-72" : "0"}
                   max={$settingsStore.coordinateSystem === "FTC" ? "72" : "144"}
@@ -340,7 +340,13 @@
                   on:input={(e) => {
                     const val = parseFloat(e.currentTarget.value);
                     if (!isNaN(val)) {
-                      point.x = toFieldCoordinate(val, $settingsStore.coordinateSystem || "Pedro");
+                      const userPt = toUser(point, $settingsStore.coordinateSystem || "Pedro");
+                      const newPt = toField(
+                        { x: val, y: userPt.y },
+                        $settingsStore.coordinateSystem || "Pedro",
+                      );
+                      point.x = newPt.x;
+                      point.y = newPt.y;
                       line.controlPoints = [...line.controlPoints];
                     }
                   }}
@@ -355,7 +361,7 @@
                 >
                 <input
                   bind:this={yInputs[idx]}
-                  value={toUserCoordinate(point.y, $settingsStore.coordinateSystem || "Pedro")}
+                  value={toUser(point, $settingsStore.coordinateSystem || "Pedro").y}
                   type="number"
                   min={$settingsStore.coordinateSystem === "FTC" ? "-72" : "0"}
                   max={$settingsStore.coordinateSystem === "FTC" ? "72" : "144"}
@@ -365,7 +371,13 @@
                   on:input={(e) => {
                     const val = parseFloat(e.currentTarget.value);
                     if (!isNaN(val)) {
-                      point.y = toFieldCoordinate(val, $settingsStore.coordinateSystem || "Pedro");
+                      const userPt = toUser(point, $settingsStore.coordinateSystem || "Pedro");
+                      const newPt = toField(
+                        { x: userPt.x, y: val },
+                        $settingsStore.coordinateSystem || "Pedro",
+                      );
+                      point.x = newPt.x;
+                      point.y = newPt.y;
                       line.controlPoints = [...line.controlPoints];
                     }
                   }}

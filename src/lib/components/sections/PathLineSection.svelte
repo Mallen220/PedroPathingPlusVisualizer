@@ -16,7 +16,7 @@
     isLineLinked,
   } from "../../../utils/pointLinking";
   import { settingsStore } from "../../projectStore";
-  import { toUserCoordinate, toFieldCoordinate } from "../../../utils/coordinates";
+  import { toUser, toField } from "../../../utils/coordinates";
   import { tooltipPortal } from "../../actions/portal";
   import { onMount, onDestroy } from "svelte";
   import { actionRegistry } from "../../actionRegistry";
@@ -72,6 +72,11 @@
 
     return () => ro.disconnect();
   });
+
+  $: userPoint = toUser(
+    line.endPoint,
+    $settingsStore.coordinateSystem || "Pedro",
+  );
 
   // Listen for focus requests
   $: if ($focusRequest) {
@@ -359,11 +364,16 @@
                 type="number"
                 min={$settingsStore.coordinateSystem === "FTC" ? "-72" : "0"}
                 max={$settingsStore.coordinateSystem === "FTC" ? "72" : "144"}
-                value={toUserCoordinate(line.endPoint.x, $settingsStore.coordinateSystem || "Pedro")}
+                value={userPoint.x}
                 on:input={(e) => {
                   const val = parseFloat(e.currentTarget.value);
                   if (!isNaN(val)) {
-                    line.endPoint.x = toFieldCoordinate(val, $settingsStore.coordinateSystem || "Pedro");
+                    const newPt = toField(
+                      { x: val, y: userPoint.y },
+                      $settingsStore.coordinateSystem || "Pedro",
+                    );
+                    line.endPoint.x = newPt.x;
+                    line.endPoint.y = newPt.y;
                   }
                 }}
                 disabled={line.locked}
@@ -384,11 +394,16 @@
                 min={$settingsStore.coordinateSystem === "FTC" ? "-72" : "0"}
                 max={$settingsStore.coordinateSystem === "FTC" ? "72" : "144"}
                 type="number"
-                value={toUserCoordinate(line.endPoint.y, $settingsStore.coordinateSystem || "Pedro")}
+                value={userPoint.y}
                 on:input={(e) => {
                   const val = parseFloat(e.currentTarget.value);
                   if (!isNaN(val)) {
-                    line.endPoint.y = toFieldCoordinate(val, $settingsStore.coordinateSystem || "Pedro");
+                    const newPt = toField(
+                      { x: userPoint.x, y: val },
+                      $settingsStore.coordinateSystem || "Pedro",
+                    );
+                    line.endPoint.x = newPt.x;
+                    line.endPoint.y = newPt.y;
                   }
                 }}
                 disabled={line.locked}
