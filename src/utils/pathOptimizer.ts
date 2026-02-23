@@ -347,6 +347,7 @@ export class PathOptimizer {
 
       let isColliding = false;
       let collisionType: "obstacle" | "boundary" | "keep-in" = "obstacle";
+      let collidingShape: Shape | null = null;
 
       // 1. Boundary Checks (if enabled)
       if (this.settings.validateFieldBoundaries !== false) {
@@ -405,7 +406,10 @@ export class PathOptimizer {
               break;
             }
           }
-          if (isColliding) break;
+          if (isColliding) {
+            collidingShape = shape;
+            break;
+          }
 
           // Also check if any shape vertex is inside the robot
           for (const v of shape.vertices) {
@@ -414,7 +418,10 @@ export class PathOptimizer {
               break;
             }
           }
-          if (isColliding) break;
+          if (isColliding) {
+            collidingShape = shape;
+            break;
+          }
         }
       }
 
@@ -485,6 +492,8 @@ export class PathOptimizer {
             endX: x,
             endY: y,
             segmentEndIndex: currentSegmentIndex,
+            obstacleId: collidingShape?.id,
+            obstacleName: collidingShape?.name,
           };
         }
       } else {
