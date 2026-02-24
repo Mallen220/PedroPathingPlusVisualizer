@@ -10,6 +10,7 @@
   // Fixed incorrect relative import: WaypointTable is one level up from the tabs folder
   import WaypointTable from "../WaypointTable.svelte";
   import { validatePath } from "../../../utils/validation";
+  import { validationTabTemporaryVisible } from "../../../stores";
 
   export let startPoint: Point;
   export let lines: Line[];
@@ -30,6 +31,7 @@
 
   function handleValidate() {
     validatePath(startPoint, lines, settings, sequence, shapes);
+    validationTabTemporaryVisible.set(true);
   }
 
   function handleOptimizationApply(newLines: Line[]) {

@@ -31,6 +31,7 @@
   // Re-run validation manually
   function handleValidate() {
     validatePath(startPoint, lines, settings, sequence, shapes);
+    // Keep tab open or reopen if it was somehow closed while active (unlikely)
   }
 
   function focusIssue(marker: CollisionMarker) {

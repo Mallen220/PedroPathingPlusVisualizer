@@ -66,6 +66,7 @@
   import { tabRegistry, timelineTransformerRegistry } from "./registries";
   import { diffMode } from "./diffStore";
   import { actionRegistry } from "./actionRegistry";
+  import { validationTabTemporaryVisible } from "../stores";
 
   export let percent: number;
   export let playing: boolean;
@@ -515,6 +516,23 @@
   // Use the registry for tabs
   $: currentTab =
     $tabRegistry.find((t) => t.id === activeTab) || $tabRegistry[0];
+
+  // Logic for transient validation tab
+  $: if ($validationTabTemporaryVisible && activeTab !== "validate") {
+    activeTab = "validate";
+  }
+
+  $: if (activeTab !== "validate" && !settings.alwaysShowValidationTab) {
+    validationTabTemporaryVisible.set(false);
+  }
+
+  $: visibleTabs = $tabRegistry.filter((t) => {
+    if (t.id === "code" && !settings.autoExportCode) return false;
+    if (t.id === "validate") {
+      return settings.alwaysShowValidationTab || $validationTabTemporaryVisible;
+    }
+    return true;
+  });
 </script>
 
 <div
@@ -556,25 +574,23 @@
         role="tablist"
         aria-label="Editor View Selection"
       >
-        {#each $tabRegistry as tab (tab.id)}
-          {#if tab.id !== "code" || settings?.autoExportCode}
-            <button
-              role="tab"
-              aria-selected={activeTab === tab.id}
-              aria-controls="{tab.id}-panel"
-              id="{tab.id}-tab"
-              class="flex-1 min-w-[80px] px-3 py-2 text-sm font-semibold rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-purple-500/50 flex items-center justify-center gap-2 {activeTab ===
-              tab.id
-                ? 'bg-white dark:bg-neutral-700 shadow-sm text-neutral-900 dark:text-white ring-1 ring-black/5 dark:ring-white/5'
-                : 'text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300 hover:bg-neutral-50/50 dark:hover:bg-neutral-700/50'}"
-              on:click={() => (activeTab = tab.id)}
-            >
-              {#if tab.icon}
-                {@html tab.icon}
-              {/if}
-              {tab.label}
-            </button>
-          {/if}
+        {#each visibleTabs as tab (tab.id)}
+          <button
+            role="tab"
+            aria-selected={activeTab === tab.id}
+            aria-controls="{tab.id}-panel"
+            id="{tab.id}-tab"
+            class="flex-1 min-w-[80px] px-3 py-2 text-sm font-semibold rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-purple-500/50 flex items-center justify-center gap-2 {activeTab ===
+            tab.id
+              ? 'bg-white dark:bg-neutral-700 shadow-sm text-neutral-900 dark:text-white ring-1 ring-black/5 dark:ring-white/5'
+              : 'text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300 hover:bg-neutral-50/50 dark:hover:bg-neutral-700/50'}"
+            on:click={() => (activeTab = tab.id)}
+          >
+            {#if tab.icon}
+              {@html tab.icon}
+            {/if}
+            {tab.label}
+          </button>
         {/each}
       </div>
       <button
@@ -610,25 +626,23 @@
       id="{activeTab}-panel"
       aria-labelledby="{activeTab}-tab"
     >
-      {#each $tabRegistry as tab (tab.id)}
-        {#if tab.id !== "code" || settings?.autoExportCode}
-          <div class:hidden={activeTab !== tab.id} class="w-full h-full">
-            <svelte:component
-              this={tab.component}
-              bind:this={tabInstances[tab.id]}
-              bind:startPoint
-              bind:lines
-              bind:sequence
-              bind:shapes
-              bind:settings
-              bind:robotXY
-              bind:robotHeading
-              {recordChange}
-              {onPreviewChange}
-              isActive={activeTab === tab.id}
-            />
-          </div>
-        {/if}
+      {#each visibleTabs as tab (tab.id)}
+        <div class:hidden={activeTab !== tab.id} class="w-full h-full">
+          <svelte:component
+            this={tab.component}
+            bind:this={tabInstances[tab.id]}
+            bind:startPoint
+            bind:lines
+            bind:sequence
+            bind:shapes
+            bind:settings
+            bind:robotXY
+            bind:robotHeading
+            {recordChange}
+            {onPreviewChange}
+            isActive={activeTab === tab.id}
+          />
+        </div>
       {/each}
     </div>
   {/if}

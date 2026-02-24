@@ -32,6 +32,7 @@
     selectedLineId,
     selectedPointId,
     toggleCollapseAllTrigger,
+    validationTabTemporaryVisible,
   } from "../../../stores";
   import { loadMacro } from "../../../lib/projectStore";
   import { getShortcutFromSettings } from "../../../utils";

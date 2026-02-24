@@ -107,3 +107,5 @@ export const fieldViewStore = writable<FieldView>({
 // Plugin Redraw Trigger
 export const pluginRedrawTrigger = writable(0);
 export const dimmedLinesStore = writable<string[]>([]);
+
+export const validationTabTemporaryVisible = writable(false);

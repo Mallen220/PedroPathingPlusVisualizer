@@ -31,6 +31,7 @@
     showExportGif,
     notification,
     showRobot,
+    validationTabTemporaryVisible,
   } from "../../stores";
   import {
     startPointStore,
@@ -1949,6 +1950,7 @@
     },
     validatePath: () => {
       validatePath(startPoint, lines, settings, sequence, shapes);
+      validationTabTemporaryVisible.set(true);
     },
     clearObstacles: () => {
       shapesStore.set([]);
