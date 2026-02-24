@@ -465,9 +465,6 @@
 
   // Delete helpers
   function deleteLine(lineId: string) {
-    // Prevent deleting the last remaining path
-    if (lines.length <= 1) return;
-
     const idx = lines.findIndex((l) => l.id === lineId);
     if (idx >= 0) {
       lines.splice(idx, 1);
@@ -745,9 +742,7 @@
       label: "Delete",
       onClick: () => deleteSequenceItem(seqIndex),
       danger: true,
-      disabled:
-        isLocked ||
-        (lines.length <= 1 && !!actionRegistry.get(item.kind)?.isPath),
+      disabled: isLocked,
     });
 
     contextMenuItems = items;
