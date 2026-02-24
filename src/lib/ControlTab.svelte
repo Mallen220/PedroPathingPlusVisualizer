@@ -526,11 +526,17 @@
     validationTabTemporaryVisible.set(false);
   }
 
-  $: visibleTabs = $tabRegistry.filter((t) => {
+  $: tabButtons = $tabRegistry.filter((t) => {
     if (t.id === "code" && !settings.autoExportCode) return false;
     if (t.id === "validate") {
       return settings.alwaysShowValidationTab || $validationTabTemporaryVisible;
     }
+    return true;
+  });
+
+  // Render all enabled tabs to keep them in DOM, matching previous behavior
+  $: renderedTabs = $tabRegistry.filter((t) => {
+    if (t.id === "code" && !settings.autoExportCode) return false;
     return true;
   });
 </script>
@@ -574,7 +580,7 @@
         role="tablist"
         aria-label="Editor View Selection"
       >
-        {#each visibleTabs as tab (tab.id)}
+        {#each tabButtons as tab (tab.id)}
           <button
             role="tab"
             aria-selected={activeTab === tab.id}
@@ -626,7 +632,7 @@
       id="{activeTab}-panel"
       aria-labelledby="{activeTab}-tab"
     >
-      {#each visibleTabs as tab (tab.id)}
+      {#each renderedTabs as tab (tab.id)}
         <div class:hidden={activeTab !== tab.id} class="w-full h-full">
           <svelte:component
             this={tab.component}
