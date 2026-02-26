@@ -2,6 +2,8 @@
 <script lang="ts">
   import { createEventDispatcher } from "svelte";
   import { transformAngle } from "../../utils/math";
+  import HeadingIndicator from "./common/HeadingIndicator.svelte";
+
   export let endPoint: any;
   export let locked: boolean = false;
   export let tabindex: number | undefined = undefined;
@@ -108,13 +110,18 @@
   {#if endPoint.heading === "linear"}
     <div class="flex items-center gap-2 flex-[2]">
       <div class="relative flex-1">
+        <HeadingIndicator
+          degrees={endPoint.startDeg}
+          size={14}
+          className="absolute left-2 top-1/2 -translate-y-1/2 text-neutral-400 dark:text-neutral-500"
+        />
         <span
-          class="absolute left-2 top-1/2 -translate-y-1/2 text-[10px] font-bold text-neutral-400 select-none uppercase tracking-wider"
+          class="absolute left-7 top-1/2 -translate-y-1/2 text-[10px] font-bold text-neutral-400 select-none uppercase tracking-wider"
           >Start</span
         >
         <input
           bind:this={startInput}
-          class="w-full pl-12 py-1.5 text-sm bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-lg focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 outline-none transition-all"
+          class="w-full pl-16 py-1.5 text-sm bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-lg focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 outline-none transition-all"
           class:pr-6={isStartOutOfBounds}
           class:pr-1={!isStartOutOfBounds}
           class:border-yellow-500={isStartOutOfBounds}
@@ -125,6 +132,7 @@
           on:input={() => dispatch("change")}
           on:blur={() => dispatch("commit")}
           title="The heading the robot starts this line at (in degrees)"
+          aria-label="Start Heading"
           disabled={locked}
           {tabindex}
         />
@@ -154,13 +162,18 @@
         {/if}
       </div>
       <div class="relative flex-1">
+        <HeadingIndicator
+          degrees={endPoint.endDeg}
+          size={14}
+          className="absolute left-2 top-1/2 -translate-y-1/2 text-neutral-400 dark:text-neutral-500"
+        />
         <span
-          class="absolute left-2 top-1/2 -translate-y-1/2 text-[10px] font-bold text-neutral-400 select-none uppercase tracking-wider"
+          class="absolute left-7 top-1/2 -translate-y-1/2 text-[10px] font-bold text-neutral-400 select-none uppercase tracking-wider"
           >End</span
         >
         <input
           bind:this={endInput}
-          class="w-full pl-8 py-1.5 text-sm bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-lg focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 outline-none transition-all"
+          class="w-full pl-14 py-1.5 text-sm bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-lg focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 outline-none transition-all"
           class:pr-6={isEndOutOfBounds}
           class:pr-1={!isEndOutOfBounds}
           class:border-yellow-500={isEndOutOfBounds}
@@ -171,6 +184,7 @@
           on:input={() => dispatch("change")}
           on:blur={() => dispatch("commit")}
           title="The heading the robot ends this line at (in degrees)"
+          aria-label="End Heading"
           disabled={locked}
           {tabindex}
         />
@@ -203,13 +217,14 @@
   {:else if endPoint.heading === "constant"}
     <div class="flex items-center gap-2 flex-[2]">
       <div class="relative flex-1">
-        <span
-          class="absolute left-2 top-1/2 -translate-y-1/2 text-xs font-bold text-neutral-400 select-none"
-          >°</span
-        >
+        <HeadingIndicator
+          degrees={endPoint.degrees || 0}
+          size={16}
+          className="absolute left-2 top-1/2 -translate-y-1/2 text-neutral-400 dark:text-neutral-500"
+        />
         <input
           bind:this={constantInput}
-          class="w-full pl-6 py-1.5 text-sm bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-lg focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 outline-none transition-all"
+          class="w-full pl-8 py-1.5 text-sm bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-lg focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 outline-none transition-all"
           class:pr-6={isConstantOutOfBounds}
           class:pr-2={!isConstantOutOfBounds}
           class:border-yellow-500={isConstantOutOfBounds}
@@ -220,6 +235,7 @@
           on:input={handleConstantInput}
           on:blur={handleConstantBlur}
           title="The constant heading the robot maintains throughout this line (in degrees)"
+          aria-label="Constant Heading"
           disabled={locked}
           {tabindex}
         />
