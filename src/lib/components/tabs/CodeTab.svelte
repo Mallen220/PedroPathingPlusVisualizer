@@ -82,10 +82,13 @@
           settings.coordinateSystem,
         );
       } else {
+        const filePath = get(currentFilePath);
+        const fileName = filePath ? filePath.split(/[\\/]/).pop() : null;
+
         newCode = await generateSequentialCommandCode(
           startPoint,
           lines,
-          null,
+          fileName,
           sequence,
           targetLibrary,
           settings.javaPackageName,
