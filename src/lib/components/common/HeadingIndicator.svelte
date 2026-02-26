@@ -13,25 +13,16 @@
   <svg
     xmlns="http://www.w3.org/2000/svg"
     viewBox="0 0 24 24"
-    fill="currentColor"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="2.5"
+    stroke-linecap="round"
+    stroke-linejoin="round"
     class="w-full h-full text-purple-600 dark:text-purple-400"
   >
-    <!-- Circle border -->
-    <circle
-      cx="12"
-      cy="12"
-      r="10"
-      fill="none"
-      stroke="currentColor"
-      stroke-width="2"
-      class="opacity-30"
-    />
     <!-- Arrow pointing RIGHT (0 degrees) -->
-    <!-- Simple triangle: Tip at (17, 12), Base at (9, 7) and (9, 17) -->
-    <!-- Wait, let's make it look like a compass needle or simple arrow -->
-    <path d="M17 12L7 7V17L17 12Z" />
-
-    <!-- Center dot -->
-    <circle cx="12" cy="12" r="2" fill="currentColor" />
+    <!-- Line: (4, 12) -> (20, 12) -->
+    <!-- Head: (14, 6) -> (20, 12) -> (14, 18) -->
+    <path d="M4 12h16m-6-6l6 6-6 6" />
   </svg>
 </div>
