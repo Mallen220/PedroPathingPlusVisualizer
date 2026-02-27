@@ -10,14 +10,20 @@ def run():
         print("Navigating to app...")
         page.goto("http://localhost:4173")
 
-        # 1. Handle "What's New" Dialog
+        # 1. Handle "What's New" Dialog (Aggressive)
+        print("Handling dialogs...")
         try:
-            page.wait_for_timeout(2000)
-            whats_new_close = page.locator("button[aria-label='Close']")
-            if whats_new_close.count() > 0 and whats_new_close.first.is_visible():
+            # Wait for dialog to appear if it's going to
+            page.wait_for_timeout(3000)
+
+            # Try finding the close button specifically within the dialog
+            close_btn = page.locator("div[role='dialog'] button[aria-label='Close']")
+            if close_btn.count() > 0 and close_btn.first.is_visible():
                 print("Dismissing 'What's New' dialog...")
-                whats_new_close.first.click()
+                close_btn.first.click()
                 page.wait_for_timeout(1000)
+            else:
+                print("No 'What's New' dialog found.")
         except Exception as e:
             print(f"Error handling What's New: {e}")
 
@@ -35,11 +41,17 @@ def run():
             if not menu_btn.is_visible():
                  menu_btn = page.locator("button:has(svg.lucide-eye)")
 
+            # Ensure menu button is clickable (no overlays)
             if menu_btn.count() > 0:
-                 menu_btn.first.click()
+                 menu_btn.first.click(force=True) # Force click to bypass checks if needed (though risky)
                  page.wait_for_timeout(500)
-                 page.get_by_text("Ruler").click()
-                 print("Clicked Ruler toggle.")
+
+                 ruler_option = page.get_by_text("Ruler")
+                 if ruler_option.is_visible():
+                     ruler_option.click()
+                     print("Clicked Ruler toggle.")
+                 else:
+                     print("Ruler option not visible after clicking menu.")
 
                  # Close menu by clicking elsewhere (e.g. top left safe zone)
                  page.mouse.click(10, 10)
@@ -70,12 +82,13 @@ def run():
                     page.wait_for_timeout(200) # Wait for event
 
                     # Move diagonally
-                    page.mouse.move(cx - 50, cy + 50, steps=10)
+                    page.mouse.move(cx - 100, cy + 100, steps=10)
                     page.wait_for_timeout(200)
                     page.mouse.up()
                     print("Drag completed.")
 
             page.wait_for_timeout(1000) # Wait for Vue/Svelte update
+            page.screenshot(path="smart_ruler_final_check_v2.png")
 
             content = page.content()
 
@@ -105,11 +118,9 @@ def run():
             else:
                 print("OVERALL FAILURE: Missing critical labels.")
 
-            page.screenshot(path="smart_ruler_final_check.png")
-
         except Exception as e:
             print(f"Verification failed: {e}")
-            page.screenshot(path="smart_ruler_failed.png")
+            page.screenshot(path="smart_ruler_failed_v2.png")
 
         browser.close()
 

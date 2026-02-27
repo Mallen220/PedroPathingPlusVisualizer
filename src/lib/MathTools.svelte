@@ -121,6 +121,37 @@
     (180 / Math.PI);
   $: displayAngle = ((rulerAngle % 360) + 360) % 360;
 
+  // Smart Label Positioning
+  $: startPx = { x: x(rulerStart.x), y: y(rulerStart.y) };
+  $: endPx = { x: x(rulerEnd.x), y: y(rulerEnd.y) };
+
+  // Calculate Length Label Position (Perpendicular to hypotenuse, away from corner)
+  $: lengthLabelPos = (() => {
+    // Corner in pixels (Right angle vertex)
+    const cornerPx = { x: endPx.x, y: startPx.y };
+    // Midpoint of hypotenuse
+    const midPx = {
+      x: (startPx.x + endPx.x) / 2,
+      y: (startPx.y + endPx.y) / 2,
+    };
+    // Vector from Corner to Midpoint
+    const dx = midPx.x - cornerPx.x;
+    const dy = midPx.y - cornerPx.y;
+    // Normalize and scale
+    const len = Math.sqrt(dx * dx + dy * dy);
+    const offset = 15; // Distance from line
+    if (len < 0.001) return { x: midPx.x, y: midPx.y - 15 }; // Fallback
+    return {
+      x: midPx.x + (dx / len) * offset,
+      y: midPx.y + (dy / len) * offset,
+    };
+  })();
+
+  // Delta Label Visibility Thresholds (in pixels)
+  const MIN_LABEL_PX = 30;
+  $: showDeltaX = Math.abs(endPx.x - startPx.x) > MIN_LABEL_PX;
+  $: showDeltaY = Math.abs(endPx.y - startPx.y) > MIN_LABEL_PX;
+
   // Calculate protractor position - lock to robot if enabled
   $: actualProtractorPos = $protractorLockToRobot
     ? robotXY // robotXY is now in inches
@@ -233,23 +264,26 @@
     />
 
     <!-- Smart Labels -->
-    {#if deltaX > 0.1}
+    {#if showDeltaX}
       <text
-        x={(x(rulerStart.x) + x(rulerEnd.x)) / 2}
-        y={y(rulerStart.y) + (rulerEnd.y > rulerStart.y ? 15 : -5)}
-        class="fill-blue-600 dark:fill-blue-400 text-xs pointer-events-none"
+        x={(startPx.x + endPx.x) / 2}
+        y={startPx.y + (endPx.y > startPx.y ? -12 : 18)}
+        class="fill-blue-600 dark:fill-blue-400 text-xs pointer-events-none stroke-white dark:stroke-neutral-900 stroke-[3px]"
+        style="paint-order: stroke fill;"
         text-anchor="middle"
+        dominant-baseline="middle"
       >
         Δx: {deltaX.toFixed(1)}"
       </text>
     {/if}
 
-    {#if deltaY > 0.1}
+    {#if showDeltaY}
       <text
-        x={x(rulerEnd.x) + (rulerEnd.x > rulerStart.x ? 5 : -5)}
-        y={(y(rulerStart.y) + y(rulerEnd.y)) / 2}
-        class="fill-blue-600 dark:fill-blue-400 text-xs pointer-events-none"
-        text-anchor={rulerEnd.x > rulerStart.x ? "start" : "end"}
+        x={endPx.x + (endPx.x > startPx.x ? 12 : -12)}
+        y={(startPx.y + endPx.y) / 2}
+        class="fill-blue-600 dark:fill-blue-400 text-xs pointer-events-none stroke-white dark:stroke-neutral-900 stroke-[3px]"
+        style="paint-order: stroke fill;"
+        text-anchor={endPx.x > startPx.x ? "start" : "end"}
         dominant-baseline="middle"
       >
         Δy: {deltaY.toFixed(1)}"
@@ -258,9 +292,10 @@
 
     <!-- Angle Label (near start) -->
     <text
-      x={x(rulerStart.x) + Math.cos(rulerAngle * (Math.PI / 180)) * 25}
-      y={y(rulerStart.y) - Math.sin(rulerAngle * (Math.PI / 180)) * 25}
-      class="fill-blue-600 dark:fill-blue-400 text-xs font-bold pointer-events-none"
+      x={startPx.x + Math.cos(rulerAngle * (Math.PI / 180)) * 25}
+      y={startPx.y - Math.sin(rulerAngle * (Math.PI / 180)) * 25}
+      class="fill-blue-600 dark:fill-blue-400 text-xs font-bold pointer-events-none stroke-white dark:stroke-neutral-900 stroke-[3px]"
+      style="paint-order: stroke fill;"
       text-anchor="middle"
       dominant-baseline="middle"
     >
@@ -269,8 +304,8 @@
 
     <!-- Start handle -->
     <circle
-      cx={x(rulerStart.x)}
-      cy={y(rulerStart.y)}
+      cx={startPx.x}
+      cy={startPx.y}
       r="8"
       fill="#3b82f6"
       class="cursor-move pointer-events-auto"
@@ -282,8 +317,8 @@
 
     <!-- End handle -->
     <circle
-      cx={x(rulerEnd.x)}
-      cy={y(rulerEnd.y)}
+      cx={endPx.x}
+      cy={endPx.y}
       r="8"
       fill="#3b82f6"
       class="cursor-move pointer-events-auto"
@@ -295,10 +330,12 @@
 
     <!-- Length label -->
     <text
-      x={(x(rulerStart.x) + x(rulerEnd.x)) / 2}
-      y={(y(rulerStart.y) + y(rulerEnd.y)) / 2 - 10}
-      class="fill-blue-600 dark:fill-blue-400 font-semibold pointer-events-none"
+      x={lengthLabelPos.x}
+      y={lengthLabelPos.y}
+      class="fill-blue-600 dark:fill-blue-400 font-bold pointer-events-none stroke-white dark:stroke-neutral-900 stroke-[3px]"
+      style="paint-order: stroke fill;"
       text-anchor="middle"
+      dominant-baseline="middle"
     >
       {rulerLength.toFixed(2)}"
     </text>
