@@ -5,6 +5,7 @@
 - **Full Control over Path Deletion:** You can now delete the last remaining path segment using the delete button or keyboard shortcuts (Backspace/Delete), allowing for a completely empty workspace.
 - **Cleaner Starting Point UI:** To keep the interface focused, "Initial Heading" controls in the Starting Point section are now hidden when path segments exist. They automatically reappear when the path is cleared.
 - **Animation Improvements:** Sequence events like "Rotate" now animate correctly even without a drawn path, and the robot is properly visualized in these scenarios.
+- **Smart Path Validation:** The path validator now detects zero-length segments and provides clearer feedback, distinguishing between field boundaries, obstacles, and invalid path geometry.
 
 ## **Bug Fixes:**
 
