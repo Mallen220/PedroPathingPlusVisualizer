@@ -440,7 +440,7 @@
                   bind:value={renameInput}
                   use:focusInput
                   class="w-full px-1 py-0.5 text-sm border border-blue-400 rounded focus:outline-none dark:bg-neutral-700"
-                  on:keydown={(e) => {
+                  on:keydown|stopPropagation={(e) => {
                     if (e.key === "Enter") dispatch("rename-save", renameInput);
                     if (e.key === "Escape") dispatch("rename-cancel");
                   }}
