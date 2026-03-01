@@ -2627,6 +2627,129 @@
         },
       });
 
+      menuItems.push({
+        label: "Paste Waypoint",
+        onClick: async () => {
+          try {
+            const text = await navigator.clipboard.readText();
+            let pasteX = fieldX;
+            let pasteY = fieldY;
+            let pasteHeading = "tangential";
+            let pasteReverse = false;
+            let pasteDegrees: number | undefined = undefined;
+            let pasteStartDeg: number | undefined = undefined;
+            let pasteEndDeg: number | undefined = undefined;
+
+            let isJson = false;
+            try {
+              const obj = JSON.parse(text);
+              if (
+                obj &&
+                typeof obj.x === "number" &&
+                typeof obj.y === "number"
+              ) {
+                pasteX = obj.x;
+                pasteY = obj.y;
+                if (obj.heading) pasteHeading = obj.heading;
+                if (typeof obj.reverse === "boolean")
+                  pasteReverse = obj.reverse;
+                if (typeof obj.degrees === "number") pasteDegrees = obj.degrees;
+                if (typeof obj.startDeg === "number")
+                  pasteStartDeg = obj.startDeg;
+                if (typeof obj.endDeg === "number") pasteEndDeg = obj.endDeg;
+                isJson = true;
+              }
+            } catch (e) {
+              // Not valid JSON, ignore and try comma parsing
+            }
+
+            if (!isJson) {
+              const parts = text.split(",");
+              if (parts.length === 2) {
+                const parsedX = parseFloat(parts[0].trim());
+                const parsedY = parseFloat(parts[1].trim());
+                if (!isNaN(parsedX) && !isNaN(parsedY)) {
+                  // Convert back from user coordinates if needed
+                  const system = settings.coordinateSystem || "Pedro";
+                  // If it's pure Pedro coordinates, just use them. Otherwise, inverse translation.
+                  // Assuming it's pasted in the same format it was copied
+                  if (system === "Pedro") {
+                    pasteX = parsedX;
+                    pasteY = parsedY;
+                  } else {
+                    // Approximate reverse or just use as-is (this is basic fallback)
+                    // `toUser` translates, so ideally we use `fromUser`. Here we'll stick to simple 144 translation
+                    if (system === "RR") {
+                      pasteX = 72 - parsedY;
+                      pasteY = 72 - parsedX;
+                    }
+                  }
+                }
+              }
+            }
+
+            linesStore.update((l) => {
+              const newLines = [...l];
+              const prevPoint =
+                newLines.length > 0
+                  ? newLines[newLines.length - 1].endPoint
+                  : startPoint;
+              const newId = `line-${Math.random().toString(36).slice(2)}`;
+
+              const newEndPoint: any = {
+                x: pasteX,
+                y: pasteY,
+                heading: pasteHeading,
+                reverse: pasteReverse,
+              };
+              if (pasteDegrees !== undefined)
+                newEndPoint.degrees = pasteDegrees;
+              if (pasteStartDeg !== undefined)
+                newEndPoint.startDeg = pasteStartDeg;
+              if (pasteEndDeg !== undefined) newEndPoint.endDeg = pasteEndDeg;
+
+              newLines.push({
+                id: newId,
+                name: "",
+                endPoint: newEndPoint,
+                controlPoints: [
+                  {
+                    x: prevPoint.x + (pasteX - prevPoint.x) * 0.25,
+                    y: prevPoint.y + (pasteY - prevPoint.y) * 0.25,
+                  },
+                  {
+                    x: prevPoint.x + (pasteX - prevPoint.x) * 0.75,
+                    y: prevPoint.y + (pasteY - prevPoint.y) * 0.75,
+                  },
+                ],
+                color: getRandomColor(),
+                locked: false,
+              });
+              sequenceStore.update((s) => [
+                ...s,
+                {
+                  kind: "path",
+                  lineId: newId,
+                  name: `Path ${newLines.length}`,
+                  durationMs: 0,
+                },
+              ]);
+              return newLines;
+            });
+            onRecordChange("Paste Waypoint");
+            notification.set({
+              message: `Pasted waypoint from clipboard`,
+              type: "success",
+            });
+          } catch (e) {
+            notification.set({
+              message: `Failed to paste from clipboard: ${e}`,
+              type: "error",
+            });
+          }
+        },
+      });
+
       menuItems.push({ separator: true });
 
       menuItems.push({
