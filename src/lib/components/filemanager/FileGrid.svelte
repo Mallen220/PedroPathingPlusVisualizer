@@ -273,11 +273,16 @@
     sortMode === "date" ? groupFilesByDate(files) : [{ title: "Files", files }];
 
   function groupFilesByDate(files: FileInfo[]) {
+    const folders: FileInfo[] = [];
     const today: FileInfo[] = [];
     const yesterday: FileInfo[] = [];
     const older: FileInfo[] = [];
 
     files.forEach((f) => {
+      if (f.isDirectory) {
+        folders.push(f);
+        return;
+      }
       const d = new Date(f.modified);
       if (isToday(d)) today.push(f);
       else if (isYesterday(d)) yesterday.push(f);
@@ -285,6 +290,7 @@
     });
 
     const result = [];
+    if (folders.length) result.push({ title: "Folders", files: folders });
     if (today.length) result.push({ title: "Today", files: today });
     if (yesterday.length) result.push({ title: "Yesterday", files: yesterday });
     if (older.length) result.push({ title: "Older", files: older });
@@ -477,7 +483,22 @@
               </div>
             {/if}
 
-            {#if previews[file.path]?.startPoint}
+            {#if file.isDirectory}
+              <div
+                class="w-[80px] h-[80px] rounded flex items-center justify-center text-blue-500 dark:text-blue-400 bg-neutral-50 dark:bg-neutral-900/50 border border-neutral-200 dark:border-neutral-700"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke-width="1.5"
+                  stroke="currentColor"
+                  class="size-12"
+                >
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12.75V12A2.25 2.25 0 0 1 4.5 9.75h15A2.25 2.25 0 0 1 21.75 12v.75m-8.69-6.44-2.12-2.12a1.5 1.5 0 0 0-1.061-.44H4.5A2.25 2.25 0 0 0 2.25 6v12a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9a2.25 2.25 0 0 0-2.25-2.25h-5.379a1.5 1.5 0 0 1-1.06-.44Z" />
+                </svg>
+              </div>
+            {:else if previews[file.path]?.startPoint}
               <PathPreview
                 startPoint={previews[file.path]?.startPoint || {
                   x: 0,
@@ -578,11 +599,13 @@
                   {file.error}
                 </div>
               {/if}
-              <div
-                class="text-[10px] text-neutral-500 dark:text-neutral-400 mt-1"
-              >
-                {formatFileSize(file.size)}
-              </div>
+              {#if !file.isDirectory}
+                <div
+                  class="text-[10px] text-neutral-500 dark:text-neutral-400 mt-1"
+                >
+                  {formatFileSize(file.size)}
+                </div>
+              {/if}
             {/if}
           </div>
         </div>

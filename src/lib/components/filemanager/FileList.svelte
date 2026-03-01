@@ -249,11 +249,16 @@
     sortMode === "date" ? groupFilesByDate(files) : [{ title: "Files", files }];
 
   function groupFilesByDate(files: FileInfo[]) {
+    const folders: FileInfo[] = [];
     const today: FileInfo[] = [];
     const yesterday: FileInfo[] = [];
     const older: FileInfo[] = [];
 
     files.forEach((f) => {
+      if (f.isDirectory) {
+        folders.push(f);
+        return;
+      }
       const d = new Date(f.modified);
       if (isToday(d)) today.push(f);
       else if (isYesterday(d)) yesterday.push(f);
@@ -261,6 +266,7 @@
     });
 
     const result = [];
+    if (folders.length) result.push({ title: "Folders", files: folders });
     if (today.length) result.push({ title: "Today", files: today });
     if (yesterday.length) result.push({ title: "Yesterday", files: yesterday });
     if (older.length) result.push({ title: "Older", files: older });
@@ -371,7 +377,20 @@
         >
           <!-- Icon -->
           <div class="mr-3 text-blue-500 dark:text-blue-400 shrink-0">
-            {#if previews[file.path]?.startPoint}
+            {#if file.isDirectory}
+              <div class="w-12 h-12 flex items-center justify-center text-blue-500 dark:text-blue-400">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke-width="1.5"
+                  stroke="currentColor"
+                  class="size-8"
+                >
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12.75V12A2.25 2.25 0 0 1 4.5 9.75h15A2.25 2.25 0 0 1 21.75 12v.75m-8.69-6.44-2.12-2.12a1.5 1.5 0 0 0-1.061-.44H4.5A2.25 2.25 0 0 0 2.25 6v12a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9a2.25 2.25 0 0 0-2.25-2.25h-5.379a1.5 1.5 0 0 1-1.06-.44Z" />
+                </svg>
+              </div>
+            {:else if previews[file.path]?.startPoint}
               <PathPreview
                 startPoint={previews[file.path]?.startPoint}
                 lines={previews[file.path]?.lines ?? []}
@@ -503,9 +522,13 @@
               <div
                 class="flex items-center gap-2 text-xs text-neutral-500 dark:text-neutral-400"
               >
-                <span>{formatFileSize(file.size)}</span>
-                {#if sortMode === "name"}
+                {#if !file.isDirectory}
+                  <span>{formatFileSize(file.size)}</span>
+                {/if}
+                {#if sortMode === "name" && !file.isDirectory}
                   <span>•</span>
+                {/if}
+                {#if sortMode === "name" || file.isDirectory}
                   <span>{formatDate(file.modified)}</span>
                 {/if}
               </div>

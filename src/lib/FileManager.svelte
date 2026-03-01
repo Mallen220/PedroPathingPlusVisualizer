@@ -86,6 +86,10 @@
   let creatingNewFile = false;
   let newFileName = "";
 
+  // New folder state
+  let creatingNewFolder = false;
+  let newFolderName = "";
+
   const supportedFileTypes = [".pp"];
   const electronAPI = window.electronAPI;
 
@@ -109,10 +113,15 @@
   // New file input reference for programmatic focus
   import { tick } from "svelte";
   let newFileInput: HTMLInputElement | null = null;
+  let newFolderInput: HTMLInputElement | null = null;
 
   $: if (creatingNewFile) {
     // Focus the input after it renders
     tick().then(() => newFileInput?.focus());
+  }
+
+  $: if (creatingNewFolder) {
+    tick().then(() => newFolderInput?.focus());
   }
 
   $: if ($fileManagerNewFileMode) {
@@ -280,15 +289,13 @@
       files = allFiles
         .map((file) => ({
           ...file,
-          error: supportedFileTypes.includes(
+          error: file.isDirectory || supportedFileTypes.includes(
             path.extname(file.name).toLowerCase(),
           )
             ? undefined
             : `Unsupported type`,
         }))
-        .filter((file) =>
-          supportedFileTypes.includes(path.extname(file.name).toLowerCase()),
-        );
+        .filter((file) => file.isDirectory || supportedFileTypes.includes(path.extname(file.name).toLowerCase()));
 
       sortFiles();
       errorMessage = "";
@@ -302,12 +309,17 @@
 
   function sortFiles() {
     if (sortMode === "name") {
-      files.sort((a, b) => a.name.localeCompare(b.name));
+      files.sort((a, b) => {
+        if (a.isDirectory && !b.isDirectory) return -1;
+        if (!a.isDirectory && b.isDirectory) return 1;
+        return a.name.localeCompare(b.name);
+      });
     } else if (sortMode === "date") {
-      files.sort(
-        (a, b) =>
-          new Date(b.modified).getTime() - new Date(a.modified).getTime(),
-      );
+      files.sort((a, b) => {
+        if (a.isDirectory && !b.isDirectory) return -1;
+        if (!a.isDirectory && b.isDirectory) return 1;
+        return new Date(b.modified).getTime() - new Date(a.modified).getTime();
+      });
     }
     files = files; // trigger update
   }
@@ -603,6 +615,26 @@
     }
   }
 
+  async function createNewFolder(name: string) {
+    if (!name.trim()) return;
+
+    const dirPath = path.join(currentDirectory, name.trim());
+    try {
+      if (await electronAPI.fileExists(dirPath)) {
+        showToast(`Folder "${name}" already exists.`, "error");
+        return;
+      }
+
+      await electronAPI.createDirectory(dirPath);
+      creatingNewFolder = false;
+      newFolderName = "";
+      await refreshDirectory();
+      showToast(`Created folder: ${name}`, "success");
+    } catch (error) {
+      showToast(`Failed to create folder: ${getErrorMessage(error)}`, "error");
+    }
+  }
+
   async function createNewFile(name: string) {
     if (!name.trim()) return;
 
@@ -761,7 +793,12 @@
     const { action, file } = e.detail || e;
     switch (action) {
       case "open":
-        loadFile(file);
+        if (file.isDirectory) {
+          currentDirectory = file.path;
+          refreshDirectory();
+        } else {
+          loadFile(file);
+        }
         break;
       case "rename-start":
         renamingFile = file;
@@ -911,6 +948,7 @@
       on:refresh={handleRefresh}
       on:change-dir={changeDirectoryDialog}
       on:new-file={() => (creatingNewFile = true)}
+      on:new-folder={() => (creatingNewFolder = true)}
       on:import-file={handleImportFile}
       on:import-telemetry={() => {
         isOpen = false;
@@ -930,6 +968,38 @@
         class="px-4 py-2 bg-red-50 dark:bg-red-900/20 text-xs text-red-600 dark:text-red-400 border-b border-red-100 dark:border-red-900/30"
       >
         {errorMessage}
+      </div>
+    {/if}
+
+    <!-- New Folder Input -->
+    {#if creatingNewFolder}
+      <div
+        class="p-3 bg-neutral-50 dark:bg-neutral-800/50 border-b border-neutral-200 dark:border-neutral-700"
+      >
+        <div class="text-xs font-medium text-neutral-500 mb-1">
+          New Folder Name
+        </div>
+        <input
+          bind:value={newFolderName}
+          bind:this={newFolderInput}
+          class="w-full px-2 py-1.5 text-sm border border-blue-400 rounded focus:outline-none bg-white dark:bg-neutral-700 mb-2"
+          placeholder="New Folder"
+          on:keydown={(e) => {
+            if (e.key === "Enter") createNewFolder(newFolderName);
+            if (e.key === "Escape") creatingNewFolder = false;
+          }}
+        />
+
+        <div class="flex gap-2">
+          <button
+            class="flex-1 py-1 text-xs bg-blue-500 text-white rounded hover:bg-blue-600"
+            on:click={() => createNewFolder(newFolderName)}>Create</button
+          >
+          <button
+            class="flex-1 py-1 text-xs bg-neutral-400 text-white rounded hover:bg-neutral-500"
+            on:click={() => (creatingNewFolder = false)}>Cancel</button
+          >
+        </div>
       </div>
     {/if}
 
