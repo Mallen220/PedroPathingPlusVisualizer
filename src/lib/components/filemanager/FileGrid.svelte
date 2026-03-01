@@ -588,7 +588,7 @@
                   use:focusInput
                   on:click|stopPropagation
                   class="w-full text-xs text-center border border-blue-400 rounded focus:outline-none dark:bg-neutral-700 py-0.5"
-                  on:keydown={(e) => {
+                  on:keydown|stopPropagation={(e) => {
                     if (e.key === "Enter") dispatch("rename-save", renameInput);
                     if (e.key === "Escape") dispatch("rename-cancel");
                   }}
