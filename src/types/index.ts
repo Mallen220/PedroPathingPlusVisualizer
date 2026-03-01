@@ -282,6 +282,7 @@ export interface FileInfo {
   modified: Date;
   error?: string;
   gitStatus?: "modified" | "staged" | "untracked" | "ignored" | "clean";
+  isDirectory?: boolean;
 }
 
 export interface CollisionMarker {
