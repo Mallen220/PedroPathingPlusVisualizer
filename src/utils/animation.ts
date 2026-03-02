@@ -76,14 +76,19 @@ export function calculateRobotState(
     // --- MOVEMENT TRAVEL ---
     let currentLine: Line;
     let prevPoint: Point;
+    let previousLine: Line | undefined;
 
     if (activeEvent.line && activeEvent.prevPoint) {
       currentLine = activeEvent.line;
       prevPoint = activeEvent.prevPoint;
+      if (activeEvent.lineIndex !== undefined && activeEvent.lineIndex > 0) {
+          previousLine = lines[activeEvent.lineIndex - 1];
+      }
     } else {
       const lineIdx = activeEvent.lineIndex!;
       currentLine = lines[lineIdx];
       prevPoint = lineIdx === 0 ? startPoint : lines[lineIdx - 1].endPoint;
+      if (lineIdx > 0) previousLine = lines[lineIdx - 1];
     }
 
     let linePercent = 0;
@@ -113,9 +118,16 @@ export function calculateRobotState(
           i++;
         }
 
+        const maxT =
+          currentLine.constraints?.tValue !== undefined &&
+          currentLine.constraints.tValue >= 0.0 &&
+          currentLine.constraints.tValue <= 1.0
+            ? currentLine.constraints.tValue
+            : 1.0;
+
         // Interpolate t
-        const tStart = i / (profile.length - 1);
-        const tEnd = (i + 1) / (profile.length - 1);
+        const tStart = (i / (profile.length - 1)) * maxT;
+        const tEnd = ((i + 1) / (profile.length - 1)) * maxT;
         const timeStart = profile[i];
         const timeEnd = profile[i + 1];
 
@@ -143,17 +155,66 @@ export function calculateRobotState(
       // Fallback to linear time interpolation
       const timeProgress =
         (currentSeconds - activeEvent.startTime) / activeEvent.duration;
-      linePercent = easeInOutQuad(Math.max(0, Math.min(1, timeProgress)));
+      const basePercent = easeInOutQuad(Math.max(0, Math.min(1, timeProgress)));
+
+      const maxT =
+        currentLine.constraints?.tValue !== undefined &&
+        currentLine.constraints.tValue >= 0.0 &&
+        currentLine.constraints.tValue <= 1.0
+          ? currentLine.constraints.tValue
+          : 1.0;
+      linePercent = basePercent * maxT;
     }
 
-    linePercent = Math.max(0, Math.min(1, linePercent));
+    const maxT =
+      currentLine.constraints?.tValue !== undefined &&
+      currentLine.constraints.tValue >= 0.0 &&
+      currentLine.constraints.tValue <= 1.0
+        ? currentLine.constraints.tValue
+        : 1.0;
+    linePercent = Math.max(0, Math.min(maxT, linePercent));
 
     // Calculate Position
-    const robotInchesXY = getCurvePoint(linePercent, [
+    let robotInchesXY = getCurvePoint(linePercent, [
       prevPoint,
       ...currentLine.controlPoints,
       currentLine.endPoint,
     ]);
+
+    // If maxT < 1.0, to prevent "teleporting" to the next path's visual start point,
+    // we smoothly interpolate the remaining physical gap during the last 20% of the movement
+    // or just let it cut the corner depending on how it's modeled.
+
+    // To prevent a visual gap/teleportation at the START of this path:
+    if (previousLine && previousLine.constraints?.tValue !== undefined && previousLine.constraints.tValue < 1.0) {
+      const prevT = previousLine.constraints.tValue;
+
+      // Where did the previous path actually end?
+      const prevStartPoint = activeEvent.lineIndex! > 1 ? lines[activeEvent.lineIndex! - 2].endPoint : startPoint;
+      const actualStartInchesXY = getCurvePoint(prevT, [
+        prevStartPoint,
+        ...previousLine.controlPoints,
+        previousLine.endPoint,
+      ]);
+
+      // How much are we blending? Fade out the offset over the first 20% of the current path
+      const blendFactor = Math.max(0, 1.0 - (linePercent / 0.2));
+
+      if (blendFactor > 0) {
+        // Find the visual gap at t=0
+        const intendedStartXY = getCurvePoint(0, [
+          prevPoint,
+          ...currentLine.controlPoints,
+          currentLine.endPoint,
+        ]);
+
+        const offsetX = actualStartInchesXY.x - intendedStartXY.x;
+        const offsetY = actualStartInchesXY.y - intendedStartXY.y;
+
+        robotInchesXY.x += offsetX * blendFactor;
+        robotInchesXY.y += offsetY * blendFactor;
+      }
+    }
 
     const robotXY = { x: xScale(robotInchesXY.x), y: yScale(robotInchesXY.y) };
     let robotHeading = 0;

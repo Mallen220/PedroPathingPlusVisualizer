@@ -201,6 +201,7 @@ export function analyzePathSegment(
   end: BasePoint,
   samples: number = 50,
   initialHeading: number, // Unwrapped starting heading
+  tValueConstraint?: number, // The optional tValue parameter
 ): PathAnalysis {
   const cps = controlPoints || [];
 
@@ -321,8 +322,18 @@ export function analyzePathSegment(
     adaptiveSamples = Math.max(20, Math.min(target, samples));
   }
 
-  for (let i = 0; i <= adaptiveSamples; i++) {
-    const t = i / adaptiveSamples;
+  const maxT =
+    tValueConstraint !== undefined &&
+    tValueConstraint >= 0.0 &&
+    tValueConstraint <= 1.0
+      ? tValueConstraint
+      : 1.0;
+
+  // Only sample up to maxT
+  const actualSamples = Math.ceil(adaptiveSamples * maxT);
+
+  for (let i = 0; i <= actualSamples; i++) {
+    const t = actualSamples > 0 ? (i / actualSamples) * maxT : maxT;
 
     let px = 0,
       py = 0;
@@ -508,6 +519,8 @@ export function calculateRotationTime(
 function calculateMotionProfileDetailed(
   steps: PathStep[],
   settings: Settings,
+  velocityConstraint?: number,
+  tValueConstraint?: number
 ): { totalTime: number; profile: number[]; velocityProfile: number[] } {
   const maxVelGlobal = settings.maxVelocity || 100;
   const maxAcc = settings.maxAcceleration || 30;
@@ -541,7 +554,16 @@ function calculateMotionProfileDetailed(
   }
 
   // 2. Backward Pass
-  vAtPoints[n] = 0;
+  let endVelocity = 0;
+  // If the path isn't fully completed geometrically (tValue < 1.0), it shouldn't be forced to 0
+  // Or if there is a velocity constraint, it must be below that velocity (but doesn't have to be 0)
+  if (velocityConstraint !== undefined && velocityConstraint >= 0) {
+    endVelocity = velocityConstraint;
+  } else if (tValueConstraint !== undefined && tValueConstraint < 1.0) {
+    endVelocity = maxVelGlobal;
+  }
+
+  vAtPoints[n] = endVelocity;
   for (let i = n - 1; i >= 0; i--) {
     const dist = steps[i].deltaLength;
     const maxReachable = Math.sqrt(
@@ -758,12 +780,16 @@ export function calculatePathTime(
 
       // --- TRAVEL ANALYSIS ---
       // Pass currentHeading to start tracking
+      const tValue = line.constraints?.tValue;
+      const velocityConstraint = line.constraints?.velocity;
+
       const analysis = analyzePathSegment(
         prevPoint,
         line.controlPoints as any,
         line.endPoint as any,
         100,
         currentHeading,
+        tValue,
       );
       const length = analysis.length;
       segmentLengths.push(length);
@@ -777,6 +803,8 @@ export function calculatePathTime(
         const result = calculateMotionProfileDetailed(
           analysis.steps,
           safeSettings,
+          velocityConstraint,
+          tValue
         );
         translationTime = result.totalTime;
         motionProfile = result.profile;

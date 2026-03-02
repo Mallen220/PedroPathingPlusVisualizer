@@ -59,6 +59,7 @@
   let collapsedSections = {
     lines: lines.map(() => false),
     controlPoints: lines.map(() => true), // Start with control points collapsed
+    constraints: lines.map(() => true), // Start with constraints collapsed
     // Generic map for all sequence items by ID (waits, rotates, macros, etc.)
     items: {} as Record<string, boolean>,
   };
@@ -358,6 +359,7 @@
       allCollapsed ? true : false,
     );
     collapsedSections.controlPoints.splice(lineIndex + 1, 0, true);
+    collapsedSections.constraints.splice(lineIndex + 1, 0, true);
     collapsedEventMarkers.splice(lineIndex + 1, 0, false);
 
     collapsedSections = { ...collapsedSections };
@@ -381,6 +383,7 @@
 
     collapsedSections.lines.splice(idx, 1);
     collapsedSections.controlPoints.splice(idx, 1);
+    collapsedSections.constraints.splice(idx, 1);
     collapsedEventMarkers.splice(idx, 1);
     recordChange("Remove Path");
   }
@@ -406,6 +409,7 @@
     sequence = [...sequence, { kind: "path", lineId: newLine.id! }];
     collapsedSections.lines.push(allCollapsed ? true : false);
     collapsedSections.controlPoints.push(true);
+    collapsedSections.constraints.push(true);
     selectedLineId.set(newLine.id!);
     const newIndex = lines.findIndex((l) => l.id === newLine.id!);
     selectedPointId.set(`point-${newIndex + 1}-0`);
@@ -425,6 +429,7 @@
   function collapseAll() {
     collapsedSections.lines = lines.map(() => true);
     collapsedSections.controlPoints = lines.map(() => true);
+    collapsedSections.constraints = lines.map(() => true);
     collapsedEventMarkers = lines.map(() => true);
 
     const newItems = { ...collapsedSections.items };
@@ -442,6 +447,7 @@
   function expandAll() {
     collapsedSections.lines = lines.map(() => false);
     collapsedSections.controlPoints = lines.map(() => false);
+    collapsedSections.constraints = lines.map(() => false);
     collapsedEventMarkers = lines.map(() => false);
 
     const newItems = { ...collapsedSections.items };
@@ -460,6 +466,7 @@
     collapsedSections.lines.length > 0 &&
     collapsedSections.lines.every((v) => v) &&
     collapsedSections.controlPoints.every((v) => v) &&
+    collapsedSections.constraints.every((v) => v) &&
     collapsedEventMarkers.every((v) => v) &&
     sequence
       .filter((s) => s.kind !== "path")
@@ -527,6 +534,7 @@
       true,
       ...collapsedSections.controlPoints,
     ];
+    collapsedSections.constraints = [true, ...collapsedSections.constraints];
     collapsedEventMarkers = [
       allCollapsed ? true : false,
       ...collapsedEventMarkers,
@@ -587,6 +595,7 @@
 
     collapsedSections.lines.push(allCollapsed ? true : false);
     collapsedSections.controlPoints.push(true);
+    collapsedSections.constraints.push(true);
     collapsedEventMarkers.push(false);
 
     collapsedSections = { ...collapsedSections };
@@ -861,6 +870,11 @@
             }
             bind:collapsedControlPoints={
               collapsedSections.controlPoints[
+                lines.findIndex((l) => l.id === ln.id)
+              ]
+            }
+            bind:collapsedConstraints={
+              collapsedSections.constraints[
                 lines.findIndex((l) => l.id === ln.id)
               ]
             }

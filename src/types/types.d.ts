@@ -97,11 +97,20 @@ type Point = BasePoint &
 
 type ControlPoint = BasePoint;
 
+interface PathConstraints {
+  timeout?: number;
+  tValue?: number;
+  velocity?: number;
+  translational?: number;
+  heading?: number;
+}
+
 interface Line {
   id?: string;
   endPoint: Point;
   controlPoints: ControlPoint[];
   color: string;
+  constraints?: PathConstraints;
   name?: string;
   eventMarkers?: EventMarker[];
   locked?: boolean;
