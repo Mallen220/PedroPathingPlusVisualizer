@@ -151,7 +151,7 @@ function transformMacroData(
     }
     // Tangential reverse logic?
     if (
-      newData.startPoint.heading === "tangential" &&
+      (newData.startPoint.heading === "tangential" || newData.startPoint.heading === "facingPoint") &&
       t.type === "flip" &&
       newData.startPoint.reverse !== undefined
     ) {
@@ -378,6 +378,12 @@ export function expandMacro(
           if (line.endPoint.heading === "tangential") {
             const tangent = endHeadingRaw;
             currentHeading = unwrapAngle(tangent, currentHeading);
+          } else if (line.endPoint.heading === "facingPoint") {
+            const fdx = line.endPoint.pointX - line.endPoint.x;
+            const fdy = line.endPoint.pointY - line.endPoint.y;
+            let h = Math.atan2(fdy, fdx);
+            if (line.endPoint.reverse) h += Math.PI;
+            currentHeading = (h * 180) / Math.PI;
           } else if (line.endPoint.heading === "constant") {
             currentHeading = line.endPoint.degrees;
           } else if (line.endPoint.heading === "linear") {
@@ -484,6 +490,13 @@ export function regenerateProjectMacros(
   if (startPoint.heading === "linear") currentHeading = startPoint.startDeg;
   else if (startPoint.heading === "constant")
     currentHeading = startPoint.degrees;
+  else if (startPoint.heading === "facingPoint") {
+    const fdx = startPoint.pointX - startPoint.x;
+    const fdy = startPoint.pointY - startPoint.y;
+    let h = Math.atan2(fdy, fdx);
+    if (startPoint.reverse) h += Math.PI;
+    currentHeading = (h * 180) / Math.PI;
+  }
 
   // Special handling for initial tangential heading
   if (startPoint.heading === "tangential") {
@@ -518,6 +531,12 @@ export function regenerateProjectMacros(
         if (line.endPoint.heading === "tangential") {
           const tangent = endHeadingRaw;
           currentHeading = unwrapAngle(tangent, currentHeading);
+        } else if (line.endPoint.heading === "facingPoint") {
+          const fdx = line.endPoint.pointX - line.endPoint.x;
+          const fdy = line.endPoint.pointY - line.endPoint.y;
+          let h = Math.atan2(fdy, fdx);
+          if (line.endPoint.reverse) h += Math.PI;
+          currentHeading = (h * 180) / Math.PI;
         } else if (line.endPoint.heading === "constant") {
           currentHeading = line.endPoint.degrees;
         } else if (line.endPoint.heading === "linear") {

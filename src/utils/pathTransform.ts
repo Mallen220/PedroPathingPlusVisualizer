@@ -11,6 +11,11 @@ export function mirrorPointHeading(point: Point): Point {
     };
   if (point.heading === "constant")
     return { ...point, degrees: 180 - point.degrees };
+  if (point.heading === "facingPoint")
+    return {
+      ...point,
+      pointX: 144 - point.pointX
+    };
   // Tangential reverse flag stays same
   return point;
 }

@@ -92,6 +92,17 @@ type Point = BasePoint &
         startDeg?: never;
         endDeg?: never;
         reverse: boolean;
+        pointX?: never;
+        pointY?: never;
+      }
+    | {
+        heading: "facingPoint";
+        pointX: number;
+        pointY: number;
+        reverse: boolean;
+        degrees?: never;
+        startDeg?: never;
+        endDeg?: never;
       }
   );
 

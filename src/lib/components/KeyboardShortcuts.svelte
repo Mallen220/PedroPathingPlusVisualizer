@@ -1307,7 +1307,7 @@
     if (lineNum === 0 && ptIdx === 0) {
       if (startPoint.locked) return;
       // Cycle: tangential -> constant -> linear
-      const modes = ["tangential", "constant", "linear"];
+      const modes = ["tangential", "constant", "linear", "facingPoint"];
       const current = startPoint.heading;
       const next = modes[(modes.indexOf(current) + 1) % modes.length];
 
@@ -1332,6 +1332,18 @@
           startDeg: undefined,
           endDeg: undefined,
         });
+      } else if (next === "facingPoint") {
+        // @ts-ignore
+        startPointStore.set({
+          ...startPoint,
+          heading: "facingPoint",
+          pointX: 0,
+          pointY: 0,
+          reverse: false,
+          degrees: undefined,
+          startDeg: undefined,
+          endDeg: undefined,
+        });
       } else {
         // @ts-ignore
         startPointStore.set({
@@ -1352,7 +1364,7 @@
       const line = lines[lineIndex];
       if (!line || line.locked) return;
 
-      const modes = ["tangential", "constant", "linear"];
+      const modes = ["tangential", "constant", "linear", "facingPoint"];
       const current = line.endPoint.heading;
       const next = modes[(modes.indexOf(current) + 1) % modes.length];
 
@@ -1373,6 +1385,18 @@
           heading: "constant",
           degrees: 0,
           reverse: undefined,
+          startDeg: undefined,
+          endDeg: undefined,
+        };
+      } else if (next === "facingPoint") {
+        // @ts-ignore
+        line.endPoint = {
+          ...line.endPoint,
+          heading: "facingPoint",
+          pointX: 0,
+          pointY: 0,
+          reverse: false,
+          degrees: undefined,
           startDeg: undefined,
           endDeg: undefined,
         };

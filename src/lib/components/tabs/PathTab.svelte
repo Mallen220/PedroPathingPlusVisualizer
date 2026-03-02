@@ -322,6 +322,15 @@
         heading: "constant",
         degrees: currentLine.endPoint.degrees,
       };
+    } else if (currentLine.endPoint.heading === "facingPoint") {
+      newPoint = {
+        x: _.random(36, 108),
+        y: _.random(36, 108),
+        heading: "facingPoint",
+        pointX: currentLine.endPoint.pointX,
+        pointY: currentLine.endPoint.pointY,
+        reverse: currentLine.endPoint.reverse,
+      };
     } else {
       newPoint = {
         x: _.random(36, 108),

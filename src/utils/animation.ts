@@ -190,6 +190,22 @@ export function calculateRobotState(
             robotHeading = radiansToDegrees(angle);
           }
           break;
+        case "facingPoint":
+          const faceTarget = {
+            x: xScale(currentLine.endPoint.pointX),
+            y: yScale(currentLine.endPoint.pointY),
+          };
+          const fdx = faceTarget.x - robotXY.x;
+          const fdy = faceTarget.y - robotXY.y;
+
+          if (fdx !== 0 || fdy !== 0) {
+            let angle = Math.atan2(fdy, fdx);
+            robotHeading = radiansToDegrees(angle);
+            if (currentLine.endPoint.reverse) {
+               robotHeading += 180;
+            }
+          }
+          break;
       }
     }
 
@@ -507,6 +523,15 @@ export function generateOnionLayers(
           const tdy = nextPos.y - robotPosInches.y;
           if (tdx !== 0 || tdy !== 0) {
             heading = radiansToDegrees(Math.atan2(tdy, tdx));
+          }
+        } else if (line.endPoint.heading === "facingPoint") {
+          const fdx = line.endPoint.pointX - robotPosInches.x;
+          const fdy = line.endPoint.pointY - robotPosInches.y;
+          if (fdx !== 0 || fdy !== 0) {
+            heading = radiansToDegrees(Math.atan2(fdy, fdx));
+            if (line.endPoint.reverse) {
+              heading += 180;
+            }
           }
         }
 

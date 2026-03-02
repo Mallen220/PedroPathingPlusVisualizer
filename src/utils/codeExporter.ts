@@ -35,6 +35,7 @@ export async function generateJavaCode(
     constant: "setConstantHeadingInterpolation",
     linear: "setLinearHeadingInterpolation",
     tangential: "setTangentHeadingInterpolation",
+    facingPoint: "setHeadingInterpolation",
   };
 
   // Collect all unique event marker names
@@ -142,6 +143,12 @@ export async function generateJavaCode(
               const uhStart = toUserHeading(line.endPoint.startDeg || 0, "FTC");
               const uhEnd = toUserHeading(line.endPoint.endDeg || 0, "FTC");
               headingConfig = `Math.toRadians(${uhStart.toFixed(3)}), Math.toRadians(${uhEnd.toFixed(3)})`;
+            } else if (line.endPoint.heading === "facingPoint") {
+              const uFace = toUser({ x: line.endPoint.pointX || 0, y: line.endPoint.pointY || 0 }, "FTC");
+              headingConfig = `com.pedropathing.pathgen.MathFunctions.HeadingInterpolator.facingPoint(new com.pedropathing.localization.Point(${uFace.x.toFixed(3)}, ${uFace.y.toFixed(3)}))`;
+              if (line.endPoint.reverse) {
+                headingConfig += '.reversed()';
+              }
             } else {
               headingConfig = "";
             }
@@ -167,7 +174,9 @@ export async function generateJavaCode(
                 ? `Math.toRadians(${line.endPoint.degrees})`
                 : line.endPoint.heading === "linear"
                   ? `Math.toRadians(${line.endPoint.startDeg}), Math.toRadians(${line.endPoint.endDeg})`
-                  : "";
+                  : line.endPoint.heading === "facingPoint"
+                    ? `com.pedropathing.pathgen.MathFunctions.HeadingInterpolator.facingPoint(new com.pedropathing.localization.Point(${(line.endPoint.pointX || 0).toFixed(3)}, ${(line.endPoint.pointY || 0).toFixed(3)}))${line.endPoint.reverse ? '.reversed()' : ''}`
+                    : "";
           }
 
           const curveType =
@@ -895,6 +904,15 @@ export async function generateSequentialCommandCode(
         } else {
           headingConfig = `setLinearHeadingInterpolation(${actualStartPose}.getHeading(), ${endPoseVar}.getHeading())`;
         }
+      } else if (line.endPoint.heading === "facingPoint") {
+        let x = (line.endPoint.pointX || 0).toFixed(3);
+        let y = (line.endPoint.pointY || 0).toFixed(3);
+        if (coordinateSystem === "FTC") {
+          const uFace = toUser({ x: parseFloat(x), y: parseFloat(y) }, "FTC");
+          x = uFace.x.toFixed(3);
+          y = uFace.y.toFixed(3);
+        }
+        headingConfig = `setHeadingInterpolation(com.pedropathing.pathgen.MathFunctions.HeadingInterpolator.facingPoint(new com.pedropathing.localization.Point(${x}, ${y}))${line.endPoint.reverse ? '.reversed()' : ''})`;
       } else {
         headingConfig = `setTangentHeadingInterpolation()`;
       }

@@ -33,11 +33,19 @@
   let endInput: HTMLInputElement;
   let reverseInput: HTMLInputElement;
 
+  let pointXInput: HTMLInputElement;
+  let pointYInput: HTMLInputElement;
+
+
   export function focus() {
     if (endPoint.heading === "constant" && constantInput) constantInput.focus();
     else if (endPoint.heading === "linear" && startInput) startInput.focus();
+
     else if (endPoint.heading === "tangential" && reverseInput)
       reverseInput.focus();
+    else if (endPoint.heading === "facingPoint" && pointXInput)
+      pointXInput.focus();
+
   }
 
   $: isStartOutOfBounds =
@@ -89,6 +97,14 @@
         if (typeof endPoint.degrees !== "number") {
           endPoint.degrees = endPoint.endDeg ?? endPoint.startDeg ?? 0;
         }
+      } else if (endPoint.heading === "tangential") {
+        if (typeof endPoint.reverse !== "boolean") {
+          endPoint.reverse = false;
+        }
+      } else if (endPoint.heading === "facingPoint") {
+        if (typeof endPoint.pointX !== "number") endPoint.pointX = 0;
+        if (typeof endPoint.pointY !== "number") endPoint.pointY = 0;
+        if (typeof endPoint.reverse !== "boolean") endPoint.reverse = false;
       }
 
       dispatch("change");
@@ -105,6 +121,7 @@
     <option value="constant">Constant</option>
     <option value="linear">Linear</option>
     <option value="tangential">Tangential</option>
+    <option value="facingPoint">Facing Point</option>
   </select>
 
   {#if endPoint.heading === "linear"}
@@ -291,6 +308,54 @@
           class="text-sm text-neutral-600 dark:text-neutral-400 select-none truncate"
           >Reverse</span
         >
+      </label>
+    </div>
+  {:else if endPoint.heading === "facingPoint"}
+    <div class="flex items-center gap-2 flex-[2] bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-lg px-2 min-w-0 py-0.5">
+      <div class="flex items-center gap-1 flex-1">
+        <span class="text-[10px] font-bold text-neutral-400 select-none uppercase tracking-wider">X</span>
+        <input
+          bind:this={pointXInput}
+          class="w-full px-1 py-1 text-sm bg-transparent outline-none"
+          type="number"
+          step="0.1"
+          bind:value={endPoint.pointX}
+          on:input={() => dispatch("change")}
+          on:blur={() => dispatch("commit")}
+          title="X coordinate to face"
+          disabled={locked}
+          {tabindex}
+        />
+      </div>
+      <div class="w-px h-4 bg-neutral-300 dark:bg-neutral-600"></div>
+      <div class="flex items-center gap-1 flex-1">
+        <span class="text-[10px] font-bold text-neutral-400 select-none uppercase tracking-wider">Y</span>
+        <input
+          bind:this={pointYInput}
+          class="w-full px-1 py-1 text-sm bg-transparent outline-none"
+          type="number"
+          step="0.1"
+          bind:value={endPoint.pointY}
+          on:input={() => dispatch("change")}
+          on:blur={() => dispatch("commit")}
+          title="Y coordinate to face"
+          disabled={locked}
+          {tabindex}
+        />
+      </div>
+      <div class="w-px h-4 bg-neutral-300 dark:bg-neutral-600"></div>
+      <label class="flex items-center gap-1 cursor-pointer py-1">
+        <input
+          type="checkbox"
+          bind:checked={endPoint.reverse}
+          on:change={() => dispatch("change")}
+          on:blur={() => dispatch("commit")}
+          title="Face away from the point"
+          disabled={locked}
+          {tabindex}
+          class="rounded text-purple-600 focus:ring-purple-500"
+        />
+        <span class="text-xs text-neutral-600 dark:text-neutral-400 select-none">Rev</span>
       </label>
     </div>
   {/if}
