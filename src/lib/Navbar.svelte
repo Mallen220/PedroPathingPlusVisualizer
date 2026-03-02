@@ -20,6 +20,7 @@
     showHistory,
     showFeedbackDialog,
     gitStatusStore,
+    showRobot,
   } from "../stores";
   import { getRandomColor } from "../utils";
   import { SaveIcon } from "./components/icons";
