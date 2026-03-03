@@ -754,6 +754,7 @@
     previewOptimizedLines = null;
     history.record(getAppState(), description);
     if (isLoaded) isUnsaved.set(true);
+    if (isLoaded && animationController) animationController.seekToPercent(0);
 
     // Autosave on change
     if (isLoaded && settings?.autosaveMode === "change") {
