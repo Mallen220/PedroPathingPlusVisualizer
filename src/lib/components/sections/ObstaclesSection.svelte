@@ -241,6 +241,14 @@
               />
             </svg>
           </div>
+          <div slot="action">
+            <button
+              on:click={addObstacle}
+              class="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium rounded-md shadow-sm transition-colors"
+            >
+              Add Obstacle
+            </button>
+          </div>
         </EmptyState>
       {:else}
         {#each shapes as shape, shapeIdx}
@@ -540,16 +548,20 @@
                             />
                           </svg>
                         </button>
-                        {#if shape.vertices.length > 3}
-                          <DeleteButtonWithConfirm
-                            title="Remove Vertex"
-                            on:click={() => {
-                              shape.vertices.splice(vertexIdx, 1);
-                              shape.vertices = shape.vertices;
-                            }}
-                            disabled={shape.locked ?? false}
-                          />
-                        {/if}
+                        <DeleteButtonWithConfirm
+                          title="Remove Vertex"
+                          disabledTitle={shape.locked
+                            ? "Obstacle is locked"
+                            : shape.vertices.length <= 3
+                              ? "A shape must have at least 3 vertices"
+                              : ""}
+                          on:click={() => {
+                            shape.vertices.splice(vertexIdx, 1);
+                            shape.vertices = shape.vertices;
+                          }}
+                          disabled={(shape.locked ?? false) ||
+                            shape.vertices.length <= 3}
+                        />
                       </div>
                     </div>
                   {/each}

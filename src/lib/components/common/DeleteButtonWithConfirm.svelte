@@ -6,6 +6,7 @@
 
   export let disabled = false;
   export let title = "Delete";
+  export let disabledTitle = "";
   export let className = "";
 
   const dispatch = createEventDispatcher();
@@ -55,7 +56,7 @@
   on:click={handleClick}
   on:blur={handleBlur}
   {disabled}
-  {title}
+  title={disabled && disabledTitle ? disabledTitle : title}
   type="button"
   aria-label={confirming ? "Confirm Deletion" : title}
   aria-live="polite"
