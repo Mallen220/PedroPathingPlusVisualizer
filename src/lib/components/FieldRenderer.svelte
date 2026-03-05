@@ -251,9 +251,13 @@
     // if Y goes up in your field space (e.g. standard FTC field), vy might already be correct.
     // However, if Y goes down in screen coordinates (which calculateRobotState might output without negative depending on setup),
     // you may need to invert vy for it to represent mathematical +Y forward.
-    // Assuming 'vy' is mathematically forward (+Y is up):
-    const forwardVel = vy;
-    const strafeVel = vx;
+    // The user clarified: "0º is facing right (+X)".
+    // So when heading is 0, moving +X is forward, and moving +Y is left (which is negative strafe in standard right-hand rule, but could be positive in left-hand).
+    // Let's map it so that:
+    // When facing 0º (+X): forward = vx, strafe = -vy (assuming +Y is left and left is -strafe).
+    // When facing 90º (+Y): forward = vy, strafe = vx (moving +X is right, which is +strafe).
+    const forwardVel = vx;
+    const strafeVel = -vy;
 
     // Angular velocity
     // shortestRotation is a utility. Let's just use simple diff for now:
