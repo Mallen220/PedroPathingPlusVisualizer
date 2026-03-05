@@ -2862,7 +2862,7 @@
         <!-- Current (Green Square) -->
         <div
           class="flex items-center justify-center relative shadow-sm"
-          style={`position: absolute; top: ${y(robotXY.y)}px; left: ${x(robotXY.x)}px; transform: translate(-50%, -50%) rotate(${robotHeading}deg); z-index: 20; width: ${Math.abs(x(settings.rLength || DEFAULT_ROBOT_LENGTH) - x(0))}px; height: ${Math.abs(x(settings.rWidth || DEFAULT_ROBOT_WIDTH) - x(0))}px; pointer-events: none; background-color: rgba(34, 197, 94, 0.3); border: 2px solid #16a34a; border-radius: 8px;`}
+          style={`position: absolute; top: ${y(robotXY.y)}px; left: ${x(robotXY.x)}px; transform: translate(-50%, -50%) rotate(${robotHeading}deg); z-index: 20; width: ${Math.abs(x(settings.rLength || DEFAULT_ROBOT_LENGTH) - x(0))}px; height: ${Math.abs(x(settings.rWidth || DEFAULT_ROBOT_WIDTH) - x(0))}px; pointer-events: none; background-color: rgba(34, 197, 94, 0.10); border: 2px solid #16a34a; border-radius: 8px;`}
         >
           <!-- Mecanum wheel arrows -->
           {#each ["frontLeft", "frontRight", "backLeft", "backRight"] as wheel}
@@ -2900,7 +2900,7 @@
           {/each}
 
           <!-- heading arrow indicator for no-image robot -->
-          <div style="position:absolute; top:50%; right:2px; transform: translateY(-50%); color: {settings.fakeHeadingArrowColor || '#ef4444'};">
+          <div style="position:absolute; top:50%; left:50%; transform: translate(-50%, -50%); color: rgba(34, 197, 94, 1.0);">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="3" stroke="currentColor" class="w-6 h-6" style="filter: drop-shadow(0px 0px 2px rgba(255,255,255,0.8));">
               <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
             </svg>
@@ -2921,7 +2921,7 @@
             }}
           />
           {#if settings.showFakeHeadingArrow && settings.robotImage !== "/robot.png"}
-            <div style="position: absolute; top: 50%; right: 2px; transform: translateY(-50%); color: {settings.fakeHeadingArrowColor || '#ef4444'};">
+            <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: {settings.fakeHeadingArrowColor || '#ffffff'};">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="3" stroke="currentColor" class="w-6 h-6" style="filter: drop-shadow(0px 0px 2px rgba(255,255,255,0.8));">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
               </svg>
@@ -2959,7 +2959,7 @@
           }}
         />
         {#if settings.showFakeHeadingArrow && settings.robotImage !== "/robot.png"}
-          <div style="position: absolute; top: 50%; right: 2px; transform: translateY(-50%); color: {settings.fakeHeadingArrowColor || '#ef4444'}; opacity: 0.5;">
+          <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: {settings.fakeHeadingArrowColor || '#ffffff'}; opacity: 0.5;">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="3" stroke="currentColor" class="w-6 h-6" style="filter: drop-shadow(0px 0px 2px rgba(255,255,255,0.4));">
               <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
             </svg>
