@@ -177,6 +177,7 @@ export interface Settings {
   fieldMap: string;
   fieldRotation?: number; // 0, 90, 180, 270
   robotImage?: string;
+  showRobotHeadingArrow?: boolean;
   javaPackageName?: string;
   theme: "light" | "dark" | "auto" | string;
   programFontSize?: number; // Scaling factor for the program font size (percentage)

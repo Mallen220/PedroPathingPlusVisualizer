@@ -1076,6 +1076,19 @@
                 </SettingsItem>
 
                 <SettingsItem
+                  label="Show Robot Heading Arrow"
+                  description="Displays an arrow on the robot to indicate forward direction"
+                  {searchQuery}
+                  layout="row"
+                >
+                  <input
+                    type="checkbox"
+                    bind:checked={settings.showRobotHeadingArrow}
+                    class="w-5 h-5 rounded border-neutral-300 dark:border-neutral-600 text-blue-500 focus:ring-2 focus:ring-blue-500 cursor-pointer"
+                  />
+                </SettingsItem>
+
+                <SettingsItem
                   label="Robot Image"
                   description="Upload a custom image for your robot"
                   {searchQuery}
