@@ -140,6 +140,9 @@
   let isPanning = false;
   let startPan = { x: 0, y: 0 };
 
+  // Cache identity scale to avoid GC pressure during frame-by-frame physics calculations
+  const IDENTITY_SCALE = d3.scaleLinear();
+
   // D3 Scales
   $: zoom = $fieldZoom;
   $: pan = $fieldPan;
@@ -290,23 +293,21 @@
     const futurePercent = (futureSeconds / totalDuration) * 100;
 
     // Use a neutral scale for calculation so we get real field inches
-    const scale = d3.scaleLinear().domain([0, 1]).range([0, 1]);
-
     const state1 = calculateRobotState(
       $percentStore,
       timePrediction.timeline,
       lines,
       startPoint,
-      scale,
-      scale,
+      IDENTITY_SCALE,
+      IDENTITY_SCALE,
     );
     const state2 = calculateRobotState(
       futurePercent,
       timePrediction.timeline,
       lines,
       startPoint,
-      scale,
-      scale,
+      IDENTITY_SCALE,
+      IDENTITY_SCALE,
     );
 
     // Calculate velocity in inches per second
@@ -1335,6 +1336,29 @@
     return _shapes;
   })();
 
+  // Determine active line index for onion skinning optimization
+  // Isolating this prevents `onionLayerElements` from re-evaluating on every single frame
+  $: activeLineIndex = (() => {
+    if (!settings.onionSkinCurrentPathOnly || !timePrediction?.timeline?.length)
+      return -1;
+    const totalDuration =
+      timePrediction.timeline[timePrediction.timeline.length - 1].endTime;
+    const currentSeconds = ($percentStore / 100) * totalDuration;
+    const activeEvent =
+      timePrediction.timeline.find(
+        (e: any) =>
+          currentSeconds >= e.startTime && currentSeconds <= e.endTime,
+      ) || timePrediction.timeline[timePrediction.timeline.length - 1];
+
+    if (
+      activeEvent?.type === "travel" &&
+      typeof activeEvent.lineIndex === "number"
+    ) {
+      return activeEvent.lineIndex;
+    }
+    return -1;
+  })();
+
   // Onion Layers
   // Rendered as SVG overlay to avoid clearing Two.js scene.
   $: onionLayerElements = (() => {
@@ -1344,34 +1368,17 @@
       let targetLines = lines;
       let targetStartPoint = startPoint;
 
-      // If "Current Path Only" is enabled, filter the lines based on animation time
+      // If "Current Path Only" is enabled, filter the lines based on activeLineIndex
       if (settings.onionSkinCurrentPathOnly) {
-        if (timePrediction && timePrediction.timeline) {
-          const totalDuration =
-            timePrediction.timeline[timePrediction.timeline.length - 1]
-              ?.endTime || 0;
-          const currentSeconds = ($percentStore / 100) * totalDuration;
-          const activeEvent =
-            timePrediction.timeline.find(
-              (e: any) =>
-                currentSeconds >= e.startTime && currentSeconds <= e.endTime,
-            ) || timePrediction.timeline[timePrediction.timeline.length - 1];
-
-          if (
-            activeEvent &&
-            activeEvent.type === "travel" &&
-            typeof activeEvent.lineIndex === "number"
-          ) {
-            const idx = activeEvent.lineIndex;
-            if (lines[idx]) {
-              targetLines = [lines[idx]];
-              targetStartPoint =
-                idx === 0 ? startPoint : lines[idx - 1].endPoint;
-            }
-          } else {
-            // Not traveling (e.g. waiting), show nothing
-            targetLines = [];
-          }
+        if (activeLineIndex >= 0 && lines[activeLineIndex]) {
+          targetLines = [lines[activeLineIndex]];
+          targetStartPoint =
+            activeLineIndex === 0
+              ? startPoint
+              : lines[activeLineIndex - 1].endPoint;
+        } else {
+          // Not traveling (e.g. waiting), show nothing
+          targetLines = [];
         }
       }
 
@@ -1432,13 +1439,19 @@
     // Apply offset
     const targetTime = currentSimTime + tOffset;
 
-    // Find point just before targetTime
+    // Binary search for point just before targetTime (optimizes frame-by-frame lookup)
+    let left = 0;
+    let right = telemetry.length - 1;
     let idx = -1;
-    for (let i = 0; i < telemetry.length; i++) {
-      if (telemetry[i].time > targetTime) {
-        break;
+
+    while (left <= right) {
+      const mid = Math.floor((left + right) / 2);
+      if (telemetry[mid].time <= targetTime) {
+        idx = mid;
+        left = mid + 1;
+      } else {
+        right = mid - 1;
       }
-      idx = i;
     }
 
     if (idx === -1) return null; // Before start
