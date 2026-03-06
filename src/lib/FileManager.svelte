@@ -44,7 +44,7 @@
     gitStatusStore,
     showTelemetryDialog,
   } from "../stores";
-  import { settingsStore, loadMacro, loadProjectData } from "./projectStore";
+  import { settingsStore, loadMacro, loadProjectData, macrosStore, updateMacroContent } from "./projectStore";
   import { saveProject } from "../utils/fileHandlers";
   import { saveAutoPathsDirectory } from "../utils/directorySettings";
   import { hookRegistry } from "./registries";
@@ -584,6 +584,34 @@
           selectedFile = { ...selectedFile, path: newPath };
           currentFilePath.set(newPath);
         }
+        // Update sequence references if this file was used as a macro
+        let macrosChanged = false;
+        sequence = sequence.map((item) => {
+          if (item.kind === "macro" && item.filePath === sourceFile.path) {
+            macrosChanged = true;
+            return { ...item, filePath: newPath };
+          }
+          return item;
+        });
+
+        // Update macrosStore
+        const macros = get(macrosStore);
+        if (macros.has(sourceFile.path)) {
+          const macroData = macros.get(sourceFile.path);
+          if (macroData) {
+             updateMacroContent(newPath, macroData);
+             macrosStore.update(m => {
+                m.delete(sourceFile.path);
+                return m;
+             });
+          }
+          macrosChanged = true;
+        }
+
+        if (macrosChanged) {
+           isUnsaved.set(true); // Since we modified sequence, the file needs saving
+        }
+
         showToast(
           `Moved to ${targetDir.name === ".." ? "parent folder" : targetDir.name}`,
           "success",

@@ -205,6 +205,11 @@
     dragOverTarget = null;
     if (!file.isDirectory) return;
 
+    // Stop the event from bubbling up to the main window drop handlers
+    // which might try to interpret this as importing a new macro
+    e.preventDefault();
+    e.stopPropagation();
+
     try {
       const data = e.dataTransfer?.getData("application/json");
       if (data) {
