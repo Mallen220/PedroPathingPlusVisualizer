@@ -203,8 +203,9 @@
     // Wheel velocity = V + (omega x r)
     // Vx = V_strafe - omega * r_y
     // Vy = V_forward + omega * r_x
-    const vxFL = rotStrafe - rotate * ryFL;
-    const vyFL = rotForward + rotate * rxFL;
+    const vxFL = rotStrafe + rotate * ryFL;
+    const vyFL = rotForward - rotate * rxFL;
+
 
     const vxFR = rotStrafe - rotate * ryFR;
     const vyFR = rotForward + rotate * rxFR;
@@ -212,8 +213,8 @@
     const vxBL = rotStrafe - rotate * ryBL;
     const vyBL = rotForward + rotate * rxBL;
 
-    const vxBR = rotStrafe - rotate * ryBR;
-    const vyBR = rotForward + rotate * rxBR;
+    const vxBR = rotStrafe + rotate * ryBR;
+    const vyBR = rotForward - rotate * rxBR;
 
     // Special case for not moving or turning
     if (Math.hypot(rotForward, rotStrafe) < 0.05 && Math.abs(rotate) <= 0.05) {
