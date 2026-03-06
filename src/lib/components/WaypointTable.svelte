@@ -329,15 +329,15 @@
   })();
 
   // Computed debug values to keep template expressions simple
-  $: debugLinesIds = Array.isArray(lines) ? lines.map((l) => l.id) : [];
+  $: debugLinesIds = Array.isArray(lines) ? lines.map((l) => l.id as string) : [];
   $: debugSequenceIds = Array.isArray(sequence)
     ? sequence.map((s) =>
-        actionRegistry.get(s.kind)?.isPath ? (s as any).lineId : (s as any).id,
+        (actionRegistry.get(s.kind)?.isPath ? (s as any).lineId : (s as any).id) as string,
       )
     : [];
   $: debugDisplayIds = Array.isArray(displaySequence)
     ? displaySequence.map((d) =>
-        actionRegistry.get(d.kind)?.isPath ? (d as any).lineId : (d as any).id,
+        (actionRegistry.get(d.kind)?.isPath ? (d as any).lineId : (d as any).id) as string,
       )
     : [];
   $: debugMissing = debugLinesIds.filter(

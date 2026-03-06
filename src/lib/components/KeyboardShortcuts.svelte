@@ -330,17 +330,26 @@
   }
 
   function addEventMarker() {
-    // Check if a wait is selected
-    if ($selectedPointId && $selectedPointId.startsWith("wait-")) {
-      const waitId = $selectedPointId.substring(5);
-      const waitItem = sequence.find(
-        (s) => actionRegistry.get(s.kind)?.isWait && (s as any).id === waitId,
-      ) as any;
+    // Check if a sequence item (wait, rotate, etc.) that supports event markers is selected
+    if ($selectedPointId) {
+      let targetItem: any = null;
 
-      if (waitItem) {
-        if (waitItem.locked) return;
-        waitItem.eventMarkers = waitItem.eventMarkers || [];
-        waitItem.eventMarkers.push({
+      if ($selectedPointId.startsWith("wait-")) {
+        const waitId = $selectedPointId.substring(5);
+        targetItem = sequence.find(
+          (s) => actionRegistry.get(s.kind)?.isWait && (s as any).id === waitId,
+        );
+      } else if ($selectedPointId.startsWith("rotate-")) {
+        const rotateId = $selectedPointId.substring(7);
+        targetItem = sequence.find(
+          (s) => actionRegistry.get(s.kind)?.isRotate && (s as any).id === rotateId,
+        );
+      }
+
+      if (targetItem) {
+        if (targetItem.locked) return;
+        targetItem.eventMarkers = targetItem.eventMarkers || [];
+        targetItem.eventMarkers.push({
           id: `event-${Date.now()}`,
           name: "",
           position: 0.5,

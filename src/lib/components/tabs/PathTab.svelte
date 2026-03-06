@@ -65,9 +65,9 @@
   };
 
   // Debug helpers
-  $: debugLinesIds = Array.isArray(lines) ? lines.map((l) => l.id) : [];
+  $: debugLinesIds = Array.isArray(lines) ? lines.map((l) => l.id as string) : [];
   $: debugSequenceIds = Array.isArray(sequence)
-    ? sequence.filter((s) => s.kind === "path").map((s: any) => s.lineId)
+    ? sequence.filter((s) => s.kind === "path").map((s: any) => s.lineId as string)
     : [];
   $: debugMissing = debugLinesIds.filter(
     (id) => !debugSequenceIds.includes(id),
