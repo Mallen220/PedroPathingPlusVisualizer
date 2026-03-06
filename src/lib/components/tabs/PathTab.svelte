@@ -327,6 +327,38 @@
     return { x, y, heading: "tangential", reverse: prev.reverse ?? false };
   }
 
+  function duplicateLine(seqIndex: number) {
+    const seqItem = sequence[seqIndex];
+    if (!seqItem || seqItem.kind !== "path") return;
+    const lineIndex = lines.findIndex((l) => l.id === seqItem.lineId);
+    const originalLine = lines[lineIndex];
+
+    const newLine: Line = {
+      ...structuredClone(originalLine),
+      id: makeId(),
+      name: originalLine.name ? `${originalLine.name} (Copy)` : "",
+      eventMarkers: [],
+    };
+
+    const newLines = [...lines];
+    newLines.splice(lineIndex + 1, 0, newLine);
+    lines = newLines;
+
+    const newSeq = [...sequence];
+    newSeq.splice(seqIndex + 1, 0, { kind: "path", lineId: newLine.id! });
+    sequence = newSeq;
+
+    collapsedSections.lines.splice(lineIndex + 1, 0, false);
+    collapsedSections.controlPoints.splice(lineIndex + 1, 0, true);
+    collapsedEventMarkers.splice(lineIndex + 1, 0, false);
+
+    collapsedSections = { ...collapsedSections };
+    collapsedEventMarkers = [...collapsedEventMarkers];
+
+    selectedLineId.set(newLine.id!);
+    recordChange("Duplicate Path");
+  }
+
   function insertLineAfter(seqIndex: number) {
     const seqItem = sequence[seqIndex];
     if (!seqItem || seqItem.kind !== "path") return;
@@ -890,6 +922,7 @@
               ]
             }
             onRemove={() => removeLine(lines.findIndex((l) => l.id === ln.id))}
+            onDuplicate={() => duplicateLine(sIdx)}
             onInsertAfter={() => insertLineAfter(sIdx)}
             onAddWaitAfter={() =>
               handleAddActionAfter(sIdx, $actionRegistry["wait"])}
