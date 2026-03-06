@@ -172,6 +172,65 @@
     backRight: number;
   }
 
+  export function calculateSwerveDriveAngles(
+    forward: number,
+    strafe: number,
+    rotate: number,
+    botHeading: number,
+    rWidth: number,
+    rLength: number
+  ): WheelSpeeds {
+    // Rotate the movement direction counter to the bot's rotation
+    const rotStrafe =
+      strafe * Math.cos(-botHeading) - forward * Math.sin(-botHeading);
+    const rotForward =
+      strafe * Math.sin(-botHeading) + forward * Math.cos(-botHeading);
+
+    // Wheel coordinates relative to center
+    // X is right (+), Y is forward (+)
+    const rxFL = -rWidth / 2;
+    const ryFL = rLength / 2;
+    
+    const rxFR = rWidth / 2;
+    const ryFR = rLength / 2;
+    
+    const rxBL = -rWidth / 2;
+    const ryBL = -rLength / 2;
+    
+    const rxBR = rWidth / 2;
+    const ryBR = -rLength / 2;
+
+    // Wheel velocity = V + (omega x r)
+    // Vx = V_strafe - omega * r_y
+    // Vy = V_forward + omega * r_x
+    const vxFL = rotStrafe + rotate * ryFL;
+    const vyFL = rotForward - rotate * rxFL;
+
+
+    const vxFR = rotStrafe - rotate * ryFR;
+    const vyFR = rotForward + rotate * rxFR;
+
+    const vxBL = rotStrafe - rotate * ryBL;
+    const vyBL = rotForward + rotate * rxBL;
+
+    const vxBR = rotStrafe + rotate * ryBR;
+    const vyBR = rotForward - rotate * rxBR;
+
+    // Special case for not moving or turning
+    if (Math.hypot(rotForward, rotStrafe) < 0.05 && Math.abs(rotate) <= 0.05) {
+      return { frontLeft: 0, backLeft: 0, frontRight: 0, backRight: 0 };
+    }
+
+    const radToDeg = 180 / Math.PI;
+
+    return {
+      frontLeft: Math.atan2(vyFL, vxFL) * radToDeg,
+      backLeft: Math.atan2(vyBL, vxBL) * radToDeg,
+      frontRight: Math.atan2(vyFR, vxFR) * radToDeg,
+      backRight: Math.atan2(vyBR, vxBR) * radToDeg,
+    };
+  }
+
   // helper to safely index WheelSpeeds from a string value. We
   // occasionally iterate over a hardcoded list of wheel names in
   // markup; this keeps the TypeScript happy and avoids `any` casts
@@ -286,12 +345,23 @@
     const normalizedStrafe = strafeVel / maxV;
     const normalizedRotate = omega / maxOmega;
 
-    return calculateFieldCentricMecanum(
-      normalizedForward,
-      normalizedStrafe,
-      normalizedRotate,
-      headingRad,
-    );
+    if (settings.robotDriveType === "swerve") {
+      return calculateSwerveDriveAngles(
+        normalizedForward,
+        normalizedStrafe,
+        normalizedRotate,
+        headingRad,
+        settings.rWidth || DEFAULT_ROBOT_WIDTH,
+        settings.rLength || DEFAULT_ROBOT_LENGTH
+      );
+    } else {
+      return calculateFieldCentricMecanum(
+        normalizedForward,
+        normalizedStrafe,
+        normalizedRotate,
+        headingRad,
+      );
+    }
   })();
 
   // Follow Robot Logic (Reactive for scrubbing/stepping)
@@ -2873,45 +2943,63 @@
           class="flex items-center justify-center relative shadow-sm"
           style={`position: absolute; top: ${y(robotXY.y)}px; left: ${x(robotXY.x)}px; transform: translate(-50%, -50%) rotate(${robotHeading}deg); z-index: 20; width: ${Math.abs(x(settings.rLength || DEFAULT_ROBOT_LENGTH) - x(0))}px; height: ${Math.abs(x(settings.rWidth || DEFAULT_ROBOT_WIDTH) - x(0))}px; pointer-events: none; background-color: rgba(34, 197, 94, 0.10); border: 2px solid #16a34a; border-radius: 8px;`}
         >
-          <!-- Mecanum wheel arrows -->
-          {#each ["frontLeft", "frontRight", "backLeft", "backRight"] as wheel}
-            {@const speed = speedForWheel(wheel, mecanumSpeeds)}
-            {@const arrowSize = 10 + Math.abs(speed) * 15}
-            <!-- scale size dynamically -->
-            <div
-              class="absolute flex justify-center items-center"
-              style={`
-                width: 24px;
-                height: 24px;
-                ${wheel.includes("front") ? "top: 4px;" : "bottom: 4px;"}
-                ${wheel.includes("Left") ? "left: 4px;" : "right: 4px;"}
-                opacity: ${Math.abs(speed) > 0.05 ? 0.8 : 0.2};
-              `}
-            >
-              <svg
-                width={arrowSize}
-                height={arrowSize}
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="#16a34a"
-                stroke-width="3"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                style={`transform: rotate(${speed >= 0 ? 90 : 270}deg); transition: transform 0.1s;`}
+          {#if settings.robotDriveType !== "none"}
+            <!-- Mecanum / Swerve wheel arrows -->
+            {#each ["frontLeft", "frontRight", "backLeft", "backRight"] as wheel}
+              {@const val = speedForWheel(wheel, mecanumSpeeds)}
+              {@const isSwerve = settings.robotDriveType === "swerve"}
+              {@const arrowSize = isSwerve ? 15 : 10 + Math.abs(val) * 15}
+              {@const rot = isSwerve ? val : val >= 0 ? 90 : 270}
+              <!-- scale size dynamically for mecanum, fixed for swerve -->
+              <div
+                class="absolute flex justify-center items-center"
+                style={`
+                  width: 24px;
+                  height: 24px;
+                  ${wheel.includes("front") ? "top: 4px;" : "bottom: 4px;"}
+                  ${wheel.includes("Left") ? "left: 4px;" : "right: 4px;"}
+                  opacity: ${isSwerve ? 0.8 : Math.abs(val) > 0.05 ? 0.8 : 0.2};
+                `}
               >
-                <!-- Arrow now points forward when the wheel should drive
-                     in the robot's +X direction (original SVG is still an
-                     up‑arrow, but we pre‑rotate it here) -->
-                <line x1="12" y1="19" x2="12" y2="5"></line>
-                <polyline points="5 12 12 5 19 12"></polyline>
-              </svg>
-            </div>
-          {/each}
+                <svg
+                  width={arrowSize}
+                  height={arrowSize}
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="#16a34a"
+                  stroke-width="3"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  style={`transform: rotate(${rot}deg); transition: transform 0.1s;`}
+                >
+                  <!-- Arrow now points forward when the wheel should drive
+                       in the robot's +X direction (original SVG is still an
+                       up‑arrow, but we pre‑rotate it here) -->
+                  <line x1="12" y1="19" x2="12" y2="5"></line>
+                  <polyline points="5 12 12 5 19 12"></polyline>
+                </svg>
+              </div>
+            {/each}
+          {/if}
 
           <!-- heading arrow indicator for no-image robot -->
-          <div style="position:absolute; top:50%; left:50%; transform: translate(-50%, -50%); color: rgba(34, 197, 94, 1.0);">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="3" stroke="currentColor" class="w-6 h-6" style="filter: drop-shadow(0px 0px 2px rgba(255,255,255,0.8));">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+          <div
+            style="position:absolute; top:50%; left:50%; transform: translate(-50%, -50%); color: rgba(34, 197, 94, 1.0);"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke-width="3"
+              stroke="currentColor"
+              class="w-6 h-6"
+              style="filter: drop-shadow(0px 0px 2px rgba(255,255,255,0.8));"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M8.25 4.5l7.5 7.5-7.5 7.5"
+              />
             </svg>
           </div>
         </div>
@@ -2930,9 +3018,24 @@
             }}
           />
           {#if settings.showFakeHeadingArrow && settings.robotImage !== "/robot.png"}
-            <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: {settings.fakeHeadingArrowColor || '#ffffff'};">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="3" stroke="currentColor" class="w-6 h-6" style="filter: drop-shadow(0px 0px 2px rgba(255,255,255,0.8));">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+            <div
+              style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: {settings.fakeHeadingArrowColor ||
+                '#ffffff'};"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke-width="3"
+                stroke="currentColor"
+                class="w-6 h-6"
+                style="filter: drop-shadow(0px 0px 2px rgba(255,255,255,0.8));"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M8.25 4.5l7.5 7.5-7.5 7.5"
+                />
               </svg>
             </div>
           {/if}
@@ -2975,9 +3078,24 @@
           />
         {/if}
         {#if settings.showFakeHeadingArrow && settings.robotImage !== "/robot.png"}
-          <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: {settings.fakeHeadingArrowColor || '#ffffff'}; opacity: 0.5;">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="3" stroke="currentColor" class="w-6 h-6" style="filter: drop-shadow(0px 0px 2px rgba(255,255,255,0.4));">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+          <div
+            style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: {settings.fakeHeadingArrowColor ||
+              '#ffffff'}; opacity: 0.5;"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke-width="3"
+              stroke="currentColor"
+              class="w-6 h-6"
+              style="filter: drop-shadow(0px 0px 2px rgba(255,255,255,0.4));"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M8.25 4.5l7.5 7.5-7.5 7.5"
+              />
             </svg>
           </div>
         {/if}

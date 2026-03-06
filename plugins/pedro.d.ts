@@ -186,6 +186,7 @@ interface Settings {
   fieldMap: string;
   fieldRotation?: number; // 0, 90, 180, 270
   robotImage?: string;
+  robotDriveType?: "holonomic" | "swerve" | "none"; // Drive train type for visualization
   showFakeHeadingArrow?: boolean;
   fakeHeadingArrowColor?: string;
   javaPackageName?: string;
@@ -245,6 +246,7 @@ interface RobotProfile {
   xVelocity: number;
   yVelocity: number;
   robotImage?: string;
+  robotDriveType?: "holonomic" | "swerve" | "none"; // Drive train type for visualization
   showFakeHeadingArrow?: boolean;
   fakeHeadingArrowColor?: string;
 }
