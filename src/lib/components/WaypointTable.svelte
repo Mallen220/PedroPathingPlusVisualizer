@@ -775,6 +775,14 @@
       // Let's allow duplication.
     });
 
+    if (item.kind === "path") {
+      items.push({
+        label: "Duplicate & Reverse",
+        onClick: () => duplicateAndReversePath(seqIndex),
+        disabled: isLocked,
+      });
+    }
+
     items.push({ separator: true });
 
     // Insert options
@@ -870,6 +878,73 @@
     } else {
       sequence = newSeq;
     }
+    recordChange();
+  }
+
+  function duplicateAndReversePath(seqIndex: number) {
+    const item = sequence[seqIndex];
+    if (!item || item.kind !== "path") return;
+
+    const line = lines.find((l) => l.id === (item as any).lineId);
+    if (!line) return;
+
+    // Find the start point of the original line.
+    // The start point is the end point of the previous path segment, or the global start point.
+    let prevPoint: Point = startPoint;
+    if (seqIndex > 0) {
+      for (let i = seqIndex - 1; i >= 0; i--) {
+        if (sequence[i].kind === "path") {
+          const pl = lines.find((l) => l.id === (sequence[i] as any).lineId);
+          if (pl) {
+            prevPoint = pl.endPoint;
+            break;
+          }
+        }
+      }
+    }
+
+    const newLine = structuredClone(line);
+    newLine.id = makeId();
+    newLine.locked = false;
+
+    // Append (Reverse) to the name, or preserve empty
+    if (line.name && line.name.trim() !== "") {
+      newLine.name = generateName(
+        line.name + " (Reverse)",
+        lines.map((l) => l.name || ""),
+      );
+    } else {
+      newLine.name = "";
+    }
+
+    // The new end point is the start point of the original line.
+    newLine.endPoint = structuredClone(prevPoint);
+    // Ensure we don't carry over linked names for the endpoint
+    delete (newLine.endPoint as any)._linkedName;
+
+    // By reversing the control points, we create the exact same Bezier curve geometrically,
+    // just traversed in the opposite direction.
+    newLine.controlPoints = [...line.controlPoints].reverse();
+
+    // Invert event marker positions (e.g., 20% on forward path -> 80% on reverse path)
+    if (newLine.eventMarkers) {
+      newLine.eventMarkers = newLine.eventMarkers.map((m) => ({
+        ...m,
+        id: makeId(),
+        position: 1.0 - m.position,
+      }));
+    }
+
+    // Insert the new path right after the current one
+    const lineIdx = lines.findIndex((l) => l.id === item.lineId);
+    lines.splice(lineIdx + 1, 0, newLine);
+    lines = [...lines]; // trigger reactivity
+
+    const newSeq = [...sequence];
+    newSeq.splice(seqIndex + 1, 0, { kind: "path", lineId: newLine.id! });
+    sequence = newSeq;
+
+    lines = renumberDefaultPathNames(lines);
     recordChange();
   }
 
