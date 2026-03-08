@@ -1227,6 +1227,26 @@ ipcMain.handle("file:exists", async (event, filePath) => {
   }
 });
 
+ipcMain.handle("docs:get-cache", async () => {
+  const cachePath = path.join(app.getPath("userData"), "docs-cache.json");
+  try {
+    return await fs.readFile(cachePath, "utf-8");
+  } catch (error) {
+    return null;
+  }
+});
+
+ipcMain.handle("docs:set-cache", async (event, data) => {
+  const cachePath = path.join(app.getPath("userData"), "docs-cache.json");
+  try {
+    await fs.writeFile(cachePath, data, "utf-8");
+    return true;
+  } catch (error) {
+    console.error("Error writing docs cache:", error);
+    return false;
+  }
+});
+
 ipcMain.handle("file:resolve-path", (event, base, relative) => {
   if (!base || !relative) return relative;
   try {

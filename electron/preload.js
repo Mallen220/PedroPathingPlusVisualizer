@@ -82,6 +82,10 @@ contextBridge.exposeInMainWorld("electronAPI", {
   // Open external URL in the user's default browser
   openExternal: (url) => ipcRenderer.invoke("app:open-external", url),
 
+  // Docs Cache
+  readDocsCache: () => ipcRenderer.invoke("docs:get-cache"),
+  writeDocsCache: (data) => ipcRenderer.invoke("docs:set-cache", data),
+
   // Plugin System
   listPlugins: () => ipcRenderer.invoke("plugins:list"),
   readPlugin: (filename) => ipcRenderer.invoke("plugins:read", filename),

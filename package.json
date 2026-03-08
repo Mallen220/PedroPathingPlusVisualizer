@@ -53,6 +53,7 @@
     "fast-check": "^4.5.3",
     "hotkeys-js": "^3.13.9",
     "jsdom": "^28.1.0",
+    "playwright": "^1.58.2",
     "postcss": "^8.5.8",
     "prettier": "^3.8.1",
     "prettier-plugin-svelte": "^3.5.1",

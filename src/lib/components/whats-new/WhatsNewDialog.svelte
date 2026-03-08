@@ -10,6 +10,7 @@
   } from "./features";
   import { pages, type Page } from "./pages";
   import { highlightText, highlightSnippet, getSnippet } from "./searchUtils";
+  import { fetchOnlineDocContent, fetchOnlineDocsCache, fetchAllOnlineDocsAndCache } from "./docs/fetcher";
   // @ts-ignore
   import changelogContent from "../../../../CHANGELOG.md?raw";
   // Import app version from package.json so the UI shows the real version at build time
@@ -28,6 +29,9 @@
     linkify: true,
     typographer: true,
   });
+
+  // All pages (local + dynamic online docs)
+  let allPages: Page[] = [...pages];
 
   // Navigation state
   let activeTab: "home" | "changelog" = "home";
@@ -53,9 +57,28 @@
   // use runtime-discovered ones. Use getAllFeatures() to include newest.md if it's not a template.
   $: displayedFeatures = features.length ? getAllFeatures() : runtimeFeatures;
 
+  async function loadOnlineDocs() {
+    let onlineDocs = await fetchOnlineDocsCache();
+    if (onlineDocs.length > 0) {
+      allPages = [...pages, ...onlineDocs];
+    }
+
+    // Always attempt to fetch the latest list metadata in the background
+    try {
+      const freshDocs = await fetchAllOnlineDocsAndCache();
+      if (freshDocs.length > 0) {
+        allPages = [...pages, ...freshDocs];
+      }
+    } catch (err) {
+      console.warn("Could not fetch online docs, using cache or default if offline:", err);
+    }
+  }
+
   // If the static import produced no features (e.g., in the renderer during
   // Electron runtime), attempt to dynamically import them at runtime.
   onMount(async () => {
+    loadOnlineDocs();
+
     if (
       features.length === 0 &&
       typeof (import.meta as any).glob === "function"
@@ -184,7 +207,7 @@
     const query = searchQuery.toLowerCase();
 
     // Search pages
-    const matchedPages = pages
+    const matchedPages = allPages
       .map((p) => {
         if (p.type === "changelog") return null;
 
@@ -308,6 +331,36 @@
       activePage = page;
       previousView = "grid";
       currentView = "content";
+
+      // If the content is loading and we have a url, fetch it
+      if (activePage.content === "Loading..." && activePage.url) {
+        fetchOnlineDocContent({
+          id: activePage.id,
+          title: activePage.title,
+          description: activePage.description,
+          icon: activePage.icon,
+          url: activePage.url,
+          category: ""
+        }).then(content => {
+          if (activePage && activePage.id === page.id) {
+            activePage = { ...activePage, content };
+          }
+          // Update the cache/allPages
+          const idx = allPages.findIndex(p => p.id === page.id);
+          if (idx !== -1) {
+            allPages[idx] = { ...allPages[idx], content };
+            allPages = [...allPages];
+            // Update cache in background
+            const onlineOnlyCache = allPages.filter(p => p.id.startsWith("online-"));
+            (window as any).electronAPI.writeDocsCache(JSON.stringify(onlineOnlyCache)).catch(() => {});
+          }
+        }).catch(err => {
+          console.error("Failed to fetch doc content:", err);
+          if (activePage && activePage.id === page.id) {
+            activePage = { ...activePage, content: "*Failed to load content. Please check your internet connection.*" };
+          }
+        });
+      }
     }
   }
 
@@ -481,7 +534,7 @@
 
       if (filename) {
         // Try to find page or feature
-        const foundPage = pages.find((p) => p.id === filename);
+        const foundPage = allPages.find((p) => p.id === filename);
         if (foundPage) {
           handlePageClick(foundPage);
         } else {
@@ -755,7 +808,7 @@
             class="flex-1 overflow-y-auto p-4 md:p-8 max-w-5xl mx-auto animate-fade-in w-full"
           >
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-              {#each pages as page}
+              {#each allPages as page}
                 <button
                   class="group flex flex-col items-start p-6 rounded-xl border border-neutral-200 dark:border-neutral-700 hover:border-purple-500 dark:hover:border-purple-500 bg-neutral-50 dark:bg-neutral-800/50 hover:bg-white dark:hover:bg-neutral-800 transition-all duration-200 shadow-sm hover:shadow-md text-left w-full h-full"
                   on:click={() => handlePageClick(page)}
@@ -880,7 +933,7 @@
               <button
                 class="text-purple-600 dark:text-purple-400 font-bold hover:underline text-sm flex items-center gap-1"
                 on:click={() => {
-                  const ppPage = pages.find(
+                  const ppPage = allPages.find(
                     (p) => p.id === "pedro-pathing-plus",
                   );
                   if (ppPage) handlePageClick(ppPage);
