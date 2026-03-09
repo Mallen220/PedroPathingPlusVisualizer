@@ -329,7 +329,9 @@
   })();
 
   // Computed debug values to keep template expressions simple
-  $: debugLinesIds = Array.isArray(lines) ? lines.map((l) => l.id) : [];
+  $: debugLinesIds = Array.isArray(lines)
+    ? lines.map((l) => l.id).filter((id): id is string => id != null)
+    : [];
   $: debugSequenceIds = Array.isArray(sequence)
     ? sequence.map((s) =>
         actionRegistry.get(s.kind)?.isPath ? (s as any).lineId : (s as any).id,
@@ -344,7 +346,7 @@
     (id) => !debugSequenceIds.includes(id),
   );
   $: debugInvalidRefs = debugSequenceIds.filter(
-    (id) => id && !debugLinesIds.includes(id),
+    (id) => id != null && !debugLinesIds.includes(id),
   );
 
   $: {

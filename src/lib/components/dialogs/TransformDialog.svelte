@@ -57,7 +57,11 @@
         sequence: get(sequenceStore),
       };
 
-      let transformedData;
+      // Use the PathData interface so the optional sequence field is recognised
+      // pathTransform.ts lives under src/utils so we must ascend three levels.
+      let transformedData:
+        | import("../../../utils/pathTransform").PathData
+        | undefined;
 
       if (activeTab === "translate") {
         if (translateX === 0 && translateY === 0) return;
@@ -109,7 +113,7 @@
         if (transformedData.shapes) {
           shapesStore.set(transformedData.shapes);
         }
-        if (transformedData.sequence) {
+        if (transformedData?.sequence) {
           sequenceStore.set(transformedData.sequence);
         }
         isUnsaved.set(true);

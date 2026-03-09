@@ -127,7 +127,8 @@ describe("pathTransform", () => {
         ],
       };
       const mirrored = mirrorPathData(data);
-      const shape = mirrored.shapes[0];
+      // shapes is optional on PathData, but we know we provided it above
+      const shape = mirrored.shapes![0];
 
       expect(shape.vertices[0].x).toBe(134); // 144 - 10
       expect(shape.vertices[1].x).toBe(124); // 144 - 20
@@ -490,39 +491,44 @@ describe("pathTransform", () => {
     });
 
     it("should reverse event markers and swap tangential reverse flags", () => {
-        const data = {
-          startPoint: { x: 0, y: 0, heading: "tangential", reverse: false } as Point,
-          lines: [
-            {
-              id: "L1",
-              endPoint: {
-                x: 10,
-                y: 10,
-                heading: "tangential",
-                reverse: false,
-              } as Point,
-              controlPoints: [],
-              color: "blue",
-              eventMarkers: [
-                  { id: "e1", name: "Ev1", position: 0.25 },
-                  { id: "e2", name: "Ev2", position: 0.8 },
-              ]
-            } as Line,
-          ],
-        };
+      const data = {
+        startPoint: {
+          x: 0,
+          y: 0,
+          heading: "tangential",
+          reverse: false,
+        } as Point,
+        lines: [
+          {
+            id: "L1",
+            endPoint: {
+              x: 10,
+              y: 10,
+              heading: "tangential",
+              reverse: false,
+            } as Point,
+            controlPoints: [],
+            color: "blue",
+            eventMarkers: [
+              { id: "e1", name: "Ev1", position: 0.25 },
+              { id: "e2", name: "Ev2", position: 0.8 },
+            ],
+          } as Line,
+        ],
+      };
 
-        const reversed = reversePathData(data);
+      const reversed = reversePathData(data);
 
-        expect(reversed.startPoint.reverse).toBe(true);
-        expect(reversed.lines[0].endPoint.reverse).toBe(true);
+      expect(reversed.startPoint.reverse).toBe(true);
+      expect(reversed.lines[0].endPoint.reverse).toBe(true);
 
-        const markers = reversed.lines[0].eventMarkers!;
-        expect(markers).toHaveLength(2);
-        // Reversed: original at 0.8 becomes 0.2 (first), original at 0.25 becomes 0.75 (second)
-        expect(markers[0].id).toBe("e2");
-        expect(markers[0].position).toBeCloseTo(0.2);
-        expect(markers[1].id).toBe("e1");
-        expect(markers[1].position).toBeCloseTo(0.75);
-      });
+      const markers = reversed.lines[0].eventMarkers!;
+      expect(markers).toHaveLength(2);
+      // Reversed: original at 0.8 becomes 0.2 (first), original at 0.25 becomes 0.75 (second)
+      expect(markers[0].id).toBe("e2");
+      expect(markers[0].position).toBeCloseTo(0.2);
+      expect(markers[1].id).toBe("e1");
+      expect(markers[1].position).toBeCloseTo(0.75);
+    });
   });
 });
