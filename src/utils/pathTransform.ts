@@ -1,6 +1,15 @@
 // Copyright 2026 Matthew Allen. Licensed under the Modified Apache License, Version 2.0.
 import type { Point, ControlPoint, Line, Shape, SequenceItem } from "../types";
 
+// Represents a set of data used for path editing operations. Sequence is optional
+// because many helpers only care about the geometric portion.
+export interface PathData {
+  startPoint: Point;
+  lines: Line[];
+  shapes?: Shape[];
+  sequence?: SequenceItem[];
+}
+
 // Helper to mirror a single point's heading
 export function mirrorPointHeading(point: Point): Point {
   if (point.heading === "linear")
@@ -16,11 +25,7 @@ export function mirrorPointHeading(point: Point): Point {
 }
 
 // Mirror path data across the center Y-axis (X = 72)
-export function mirrorPathData(data: {
-  startPoint: Point;
-  lines: Line[];
-  shapes: Shape[];
-}) {
+export function mirrorPathData(data: PathData) {
   const m = structuredClone(data);
 
   if (m.startPoint) {
@@ -51,10 +56,10 @@ export function mirrorPathData(data: {
 
 // Translate path data by a given (dx, dy) offset
 export function translatePathData(
-  data: { startPoint: Point; lines: Line[]; shapes?: Shape[] },
+  data: PathData,
   dx: number,
   dy: number,
-) {
+): PathData {
   const t = structuredClone(data);
 
   if (t.startPoint) {
@@ -97,11 +102,11 @@ export function translatePathData(
 
 // Rotate path data by a given angle (in degrees) around a pivot point
 export function rotatePathData(
-  data: { startPoint: Point; lines: Line[]; shapes?: Shape[] },
+  data: PathData,
   degrees: number,
   pivotX: number,
   pivotY: number,
-) {
+): PathData {
   const r = structuredClone(data);
   const rad = (degrees * Math.PI) / 180;
   const cos = Math.cos(rad);
@@ -184,12 +189,12 @@ export function rotatePathData(
 
 // Flip path data horizontally and/or vertically around a pivot point
 export function flipPathData(
-  data: { startPoint: Point; lines: Line[]; shapes?: Shape[] },
+  data: PathData,
   horizontal: boolean,
   vertical: boolean,
   pivotX: number,
   pivotY: number,
-) {
+): PathData {
   const f = structuredClone(data);
 
   const flipPoint = (x: number, y: number) => {
