@@ -200,7 +200,7 @@
   // Trigger update when dependencies change
   $: if (
     isActive &&
-    (startPoint || lines || sequence || settings || format || targetLibrary)
+    (startPoint || lines || sequence || settings || (settings as Settings)?.codeUnits || format || targetLibrary)
   ) {
     updateCode();
   }
