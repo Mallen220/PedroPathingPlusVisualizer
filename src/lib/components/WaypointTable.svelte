@@ -341,10 +341,10 @@
       )
     : [];
   $: debugMissing = debugLinesIds.filter(
-    (id) => !debugSequenceIds.includes(id),
+    (id): id is string => id !== undefined && !debugSequenceIds.includes(id),
   );
   $: debugInvalidRefs = debugSequenceIds.filter(
-    (id) => id && !debugLinesIds.includes(id),
+    (id): id is string => id !== undefined && !debugLinesIds.includes(id),
   );
 
   $: {
