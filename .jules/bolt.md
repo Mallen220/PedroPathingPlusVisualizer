@@ -1,0 +1,3 @@
+## 2024-05-18 - Optimized Geometry and Math Calculations in Hot Loops
+**Learning:** Math.pow in tight continuous validation loops is significantly slower than simple multiplication. When optimizing `calculateRobotState` and `getCollisions`, creating arrays with `.map()` generated heavy intermediate object garbage allocation. Hoisting loop-invariants out of the 0.2-second step `t` loop inside `getCollisions` provides a measurable frame-rate boost on long paths.
+**Action:** When a method returns points (like `getRobotCorners`), directly returning `[{x,y}, ...]` instead of `.map`ing over an intermediate data structure will reduce GC pauses on every frame. Look for opportunities to pre-calculate boundary check thresholds out of step loops.

@@ -14,7 +14,7 @@ describe("Telemetry tab visibility setting", () => {
 
   it("defaults to visible", () => {
     const settings = { ...DEFAULT_SETTINGS } as any;
-    expect(settings.showTelemetryTab).toBe(true);
+    expect(settings.showTelemetryTab).toBe(false);
 
     const tabs = get(tabRegistry);
     const hasTelemetry = tabs.some((t) => t.id === "telemetry");

@@ -140,19 +140,26 @@ export function getRobotCorners(
   // dx corresponds to Length (hl).
   // dy corresponds to Width (hw).
 
-  const corners = [
-    { dx: -hl, dy: -hw }, // front-left
-    { dx: hl, dy: -hw }, // front-right
-    { dx: hl, dy: hw }, // back-right
-    { dx: -hl, dy: hw }, // back-left
-  ];
-
-  // Rotate and translate corners
+  // Rotate and translate corners directly to avoid creating intermediate objects and arrays
   // Using standard 2D rotation matrix for screen coordinates
-  return corners.map((corner) => ({
-    x: x + corner.dx * cos - corner.dy * sin,
-    y: y + corner.dx * sin + corner.dy * cos,
-  }));
+  return [
+    {
+      x: x + -hl * cos - -hw * sin,
+      y: y + -hl * sin + -hw * cos,
+    }, // front-left
+    {
+      x: x + hl * cos - -hw * sin,
+      y: y + hl * sin + -hw * cos,
+    }, // front-right
+    {
+      x: x + hl * cos - hw * sin,
+      y: y + hl * sin + hw * cos,
+    }, // back-right
+    {
+      x: x + -hl * cos - hw * sin,
+      y: y + -hl * sin + hw * cos,
+    }, // back-left
+  ];
 }
 
 /**

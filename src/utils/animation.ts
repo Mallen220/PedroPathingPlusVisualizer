@@ -164,11 +164,12 @@ export function calculateRobotState(
     linePercent = Math.max(0, Math.min(1, linePercent));
 
     // Calculate Position
-    const robotInchesXY = getCurvePoint(linePercent, [
+    const curvePoints = [
       prevPoint,
       ...currentLine.controlPoints,
       currentLine.endPoint,
-    ]);
+    ];
+    const robotInchesXY = getCurvePoint(linePercent, curvePoints);
 
     const robotXY = { x: xScale(robotInchesXY.x), y: yScale(robotInchesXY.y) };
     let robotHeading = 0;
@@ -204,7 +205,7 @@ export function calculateRobotState(
         case "tangential": {
           const nextPointInches = getCurvePoint(
             linePercent + (currentLine.endPoint.reverse ? -0.01 : 0.01),
-            [prevPoint, ...currentLine.controlPoints, currentLine.endPoint],
+            curvePoints,
           );
           const nextPoint = {
             x: xScale(nextPointInches.x),
@@ -222,20 +223,14 @@ export function calculateRobotState(
         case "facingPoint": {
           const targetX = (currentLine.endPoint as any).targetX || 0;
           const targetY = (currentLine.endPoint as any).targetY || 0;
-          // Compute position on curve at linePercent in field-space (inches)
-          const curvePos = getCurvePoint(linePercent, [
-            prevPoint,
-            ...currentLine.controlPoints,
-            currentLine.endPoint,
-          ]);
           // Use field-space (inches) to compute angle, then apply scales just for sign
-          const dx = targetX - curvePos.x;
-          const dy = targetY - curvePos.y;
+          const dx = targetX - robotInchesXY.x;
+          const dy = targetY - robotInchesXY.y;
           if (dx !== 0 || dy !== 0) {
             // xScale and yScale are linear; yScale may be inverted (screen y is flipped)
             // We compute the screen-space angle to account for axis flipping
-            const sdx = xScale(targetX) - xScale(curvePos.x);
-            const sdy = yScale(targetY) - yScale(curvePos.y);
+            const sdx = xScale(targetX) - robotXY.x;
+            const sdy = yScale(targetY) - robotXY.y;
             let angle = Math.atan2(sdy, sdx);
             if ((currentLine.endPoint as any).reverse) angle += Math.PI;
             robotHeading = radiansToDegrees(angle);

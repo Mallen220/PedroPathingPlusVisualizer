@@ -237,6 +237,15 @@ export class PathOptimizer {
       this.settings.rLength + (this.settings.safetyMargin || 0) * 2;
     const rWidth = this.settings.rWidth + (this.settings.safetyMargin || 0) * 2;
 
+    // Pre-calculate boundary validation variables outside the loop
+    const halfDiag = Math.sqrt((rLength / 2) * (rLength / 2) + (rWidth / 2) * (rWidth / 2));
+    const exclusionDist = Math.max(
+      2,
+      (this.settings.safetyMargin || 0) * 2,
+      halfDiag + 0.1,
+    );
+    const nearStartBuffer = exclusionDist * 1.5;
+
     let eventIdx = 0;
 
     for (let t = 0; t <= totalTime; t += step) {
@@ -354,25 +363,13 @@ export class PathOptimizer {
         // does not immediately trigger boundary collisions while the center is
         // still within the robot’s own radius.
         const distToStart = Math.sqrt(
-          Math.pow(x - this.startPoint.x, 2) +
-            Math.pow(y - this.startPoint.y, 2),
-        );
-
-        const halfDiag = Math.sqrt(
-          Math.pow(rLength / 2, 2) + Math.pow(rWidth / 2, 2),
-        );
-
-        const exclusionDist = Math.max(
-          2,
-          (this.settings.safetyMargin || 0) * 2,
-          halfDiag + 0.1,
+          (x - this.startPoint.x) * (x - this.startPoint.x) +
+          (y - this.startPoint.y) * (y - this.startPoint.y),
         );
 
         // Extra guard for the first segment: allow the robot body to clear the
         // start area before boundary checks, which avoids false positives when
         // starting flush to an edge with safety margins applied.
-        const nearStartBuffer = exclusionDist * 1.5;
-
         if (activeEvent.lineIndex === 0 && distToStart <= nearStartBuffer) {
           continue;
         }
