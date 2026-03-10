@@ -647,7 +647,7 @@
     _points.push(startPointElem);
 
     lines.forEach((line, idx) => {
-      if (!line || !line.endPoint) return;
+      if (!line || !line.endPoint || line.hidden) return;
       [line.endPoint, ...line.controlPoints].forEach((point, idx1) => {
         if (idx1 > 0) {
           let pointGroup = new Two.Group();
@@ -795,8 +795,9 @@
     isHeatmapEnabled: boolean = false,
   ) {
     let _path: (Path | PathLine)[] = [];
+
     targetLines.forEach((line, idx) => {
-      if (!line || !line.endPoint) return;
+      if (!line || !line.endPoint || line.hidden) return;
       let _startPoint =
         idx === 0 ? targetStartPoint : targetLines[idx - 1]?.endPoint || null;
       if (!_startPoint) return;
@@ -1526,13 +1527,7 @@
     }
 
     lines.forEach((line, idx) => {
-      if (
-        !line ||
-        !line.endPoint ||
-        !line.eventMarkers ||
-        line.eventMarkers.length === 0
-      )
-        return;
+      if (!line || !line.endPoint || line.hidden) return;
 
       let _startPoint = startPointMap.get(line.id!);
       if (!_startPoint) {
@@ -1541,6 +1536,7 @@
       }
 
       if (!_startPoint) return;
+      if (!line.eventMarkers || line.eventMarkers.length === 0) return;
 
       line.eventMarkers.forEach((ev, evIdx) => {
         const isHovered = $hoveredMarkerId === ev.id;
@@ -1579,6 +1575,7 @@
     ) {
       // Use Registry for registered actions (e.g. Wait)
       sequence.forEach((item) => {
+        if ((item as any).hidden) return;
         const action = actionRegistry.get(item.kind);
         if (action && action.renderField) {
           const elems = action.renderField(item, {
