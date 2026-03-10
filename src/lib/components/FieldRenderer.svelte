@@ -430,7 +430,7 @@
     if (e.ctrlKey || e.metaKey) {
       followRobotStore.set(false);
       e.preventDefault();
-      const rect = wrapperDiv.getBoundingClientRect();
+      const rect = cachedWrapperRect || wrapperDiv.getBoundingClientRect();
       const transformed = getTransformedCoordinates(
         e.clientX,
         e.clientY,
@@ -2291,7 +2291,8 @@
         // Calculate drag offset
         let objectX = 0;
         let objectY = 0;
-        const rectForMouse = two.renderer.domElement.getBoundingClientRect();
+        const rectForMouse =
+          cachedRect || two.renderer.domElement.getBoundingClientRect();
         const transformedForMouse = getTransformedCoordinates(
           evt.clientX,
           evt.clientY,
@@ -2389,7 +2390,7 @@
       )
         return;
 
-      const rect = two.renderer.domElement.getBoundingClientRect();
+      const rect = cachedRect || two.renderer.domElement.getBoundingClientRect();
       const transformed = getTransformedCoordinates(
         evt.clientX,
         evt.clientY,
@@ -2505,7 +2506,7 @@
     }
 
     // Calculate field coordinates
-    const rect = twoElement.getBoundingClientRect();
+    const rect = cachedRect || twoElement.getBoundingClientRect();
     const transformed = getTransformedCoordinates(
       e.clientX,
       e.clientY,

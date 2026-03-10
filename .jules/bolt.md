@@ -1,0 +1,3 @@
+## 2024-05-18 - Optimized getBoundingClientRect calls in FieldRenderer
+**Learning:** React/Svelte components using `getBoundingClientRect` inside frequently fired events (like `mousemove`, `wheel`, drag handlers) can cause significant layout thrashing and drop frames. In this codebase, `FieldRenderer.svelte` handles high-frequency pointer events for a canvas/SVG rendering area.
+**Action:** Caching the output of `getBoundingClientRect` (or reusing an already cached value if appropriate) during these frequent events avoids forcing synchronous layout calculations. I've updated `handleWheel`, drag calculation blocks, and context menu handlers to prefer `cachedRect` and `cachedWrapperRect` to improve rendering performance.
