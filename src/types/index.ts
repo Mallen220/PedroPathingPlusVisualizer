@@ -187,6 +187,8 @@ export interface Settings {
   showFakeHeadingArrow?: boolean;
   fakeHeadingArrowColor?: string;
   javaPackageName?: string;
+  exportTargetLibrary?: "SolversLib" | "NextFTC";
+  exportEmbedPoseData?: boolean;
   theme: "light" | "dark" | "auto" | string;
   programFontSize?: number; // Scaling factor for the program font size (percentage)
   autosaveMode?: "time" | "change" | "close" | "never";

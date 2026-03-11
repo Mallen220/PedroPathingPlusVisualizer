@@ -105,14 +105,20 @@
 
   // Load settings on mount
   onMount(async () => {
-    const settings = await loadSettings();
-    if (settings.javaPackageName) {
-      packageName = settings.javaPackageName;
+    const loadedSettings = await loadSettings();
+    if (loadedSettings.javaPackageName) {
+      packageName = loadedSettings.javaPackageName;
     } else {
       packageName = DEFAULT_PACKAGE;
     }
-    if (settings.telemetryImplementation) {
-      telemetryImplementation = settings.telemetryImplementation;
+    if (loadedSettings.telemetryImplementation) {
+      telemetryImplementation = loadedSettings.telemetryImplementation;
+    }
+    if (loadedSettings.exportTargetLibrary) {
+      targetLibrary = loadedSettings.exportTargetLibrary;
+    }
+    if (loadedSettings.exportEmbedPoseData !== undefined) {
+      embedPoseData = loadedSettings.exportEmbedPoseData;
     }
   });
 
@@ -130,6 +136,14 @@
   async function savePackageName() {
     const settings = await loadSettings();
     settings.javaPackageName = packageName;
+    await saveSettings(settings);
+  }
+
+  // Save target library and embed poses flag to settings
+  async function saveExportSettings() {
+    const settings = await loadSettings();
+    settings.exportTargetLibrary = targetLibrary;
+    settings.exportEmbedPoseData = embedPoseData;
     await saveSettings(settings);
   }
 
@@ -660,6 +674,7 @@
                   on:click={() => {
                     targetLibrary = "SolversLib";
                     refreshCode();
+                    saveExportSettings();
                   }}
                 >
                   SolversLib
@@ -674,6 +689,7 @@
                   on:click={() => {
                     targetLibrary = "NextFTC";
                     refreshCode();
+                    saveExportSettings();
                   }}
                 >
                   NextFTC
@@ -714,7 +730,7 @@
                   <input
                     type="checkbox"
                     bind:checked={embedPoseData}
-                    on:change={refreshCode}
+                    on:change={() => { refreshCode(); saveExportSettings(); }}
                     class="peer h-4 w-4 rounded border-neutral-300 text-blue-600 focus:ring-blue-500 dark:border-neutral-600 dark:bg-neutral-700 dark:ring-offset-neutral-800"
                   />
                 </div>

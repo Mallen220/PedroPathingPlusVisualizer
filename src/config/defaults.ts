@@ -59,6 +59,8 @@ export const DEFAULT_SETTINGS: Settings = {
   showFakeHeadingArrow: false,
   fakeHeadingArrowColor: "#ef4444",
   javaPackageName: "org.firstinspires.ftc.teamcode.Commands.AutoCommands",
+  exportTargetLibrary: "SolversLib",
+  exportEmbedPoseData: false,
   theme: "auto",
   programFontSize: 100,
   autosaveMode: "never",
