@@ -44,6 +44,7 @@
   let sequentialClassName = "AutoPath";
   let targetLibrary: "SolversLib" | "NextFTC" = "SolversLib";
   let embedPoseData = false;
+  let coordinateSystem: "Pedro" | "FTC" = "Pedro";
   const DEFAULT_PACKAGE =
     "org.firstinspires.ftc.teamcode.Commands.AutoCommands";
   let packageName = DEFAULT_PACKAGE;
@@ -114,6 +115,15 @@
     if (settings.telemetryImplementation) {
       telemetryImplementation = settings.telemetryImplementation;
     }
+    if (settings.autoExportEmbedPoseData !== undefined) {
+      embedPoseData = settings.autoExportEmbedPoseData;
+    }
+    if (settings.autoExportTargetLibrary) {
+      targetLibrary = settings.autoExportTargetLibrary;
+    }
+    if (settings.coordinateSystem) {
+      coordinateSystem = settings.coordinateSystem;
+    }
   });
 
   async function handlePackageKeydown(event: KeyboardEvent) {
@@ -158,7 +168,7 @@
           targetLibrary,
           packageName,
           embedPoseData,
-          settings?.coordinateSystem,
+          coordinateSystem,
         );
         currentLanguage = java;
       } else if (exportFormat === "json") {
