@@ -5,6 +5,7 @@
   import FieldTab from "./components/tabs/FieldTab.svelte";
   import TableTab from "./components/tabs/TableTab.svelte";
   import DiffTab from "./components/tabs/DiffTab.svelte";
+  import TelemetryTab from "./components/tabs/TelemetryTab.svelte";
   import CodeTab from "./components/tabs/CodeTab.svelte";
 
   // Register default tabs; callable so plugin reloads can restore baseline tabs
@@ -29,6 +30,13 @@
       component: TableTab,
       order: 2,
       icon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" class="size-4" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="1.5" stroke-width="2"/><rect x="3" y="4" width="18" height="5" rx="1.5" fill="currentColor" opacity="0.06" stroke="none"/><line x1="3" y1="10" x2="21" y2="10" stroke-width="2" stroke-linecap="round"/><line x1="9" y1="10" x2="9" y2="20" stroke-width="1.5" stroke-linecap="round"/><line x1="15" y1="10" x2="15" y2="20" stroke-width="1.5" stroke-linecap="round"/></svg>`,
+    });
+    tabRegistryModule.register({
+      id: "telemetry",
+      label: "Telemetry",
+      component: TelemetryTab,
+      order: 3,
+      icon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" class="size-4" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>`,
     });
     tabRegistryModule.register({
       id: "code",
@@ -97,6 +105,15 @@
     activeTab === "code" &&
     settings &&
     settings.autoExportCode === false
+  ) {
+    activeTab = "path";
+  }
+
+  // collapse telemetry tab if user disabled it
+  $: if (
+    activeTab === "telemetry" &&
+    settings &&
+    settings.showTelemetryTab === false
   ) {
     activeTab = "path";
   }
@@ -550,7 +567,7 @@
         aria-label="Editor View Selection"
       >
         {#each $tabRegistry as tab (tab.id)}
-          {#if tab.id !== "code" || settings?.autoExportCode}
+          {#if (tab.id !== "code" || settings?.autoExportCode) && (tab.id !== "telemetry" || settings?.showTelemetryTab)}
             <button
               role="tab"
               aria-selected={activeTab === tab.id}
@@ -604,7 +621,7 @@
       aria-labelledby="{activeTab}-tab"
     >
       {#each $tabRegistry as tab (tab.id)}
-        {#if tab.id !== "code" || settings?.autoExportCode}
+        {#if (tab.id !== "code" || settings?.autoExportCode) && (tab.id !== "telemetry" || settings?.showTelemetryTab)}
           <div class:hidden={activeTab !== tab.id} class="w-full h-full">
             <svelte:component
               this={tab.component}

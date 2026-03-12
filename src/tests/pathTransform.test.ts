@@ -4,6 +4,9 @@ import {
   mirrorPointHeading,
   mirrorPathData,
   reversePathData,
+  translatePathData,
+  rotatePathData,
+  flipPathData,
 } from "../utils/pathTransform";
 import type { Point, Line, Shape, SequenceItem } from "../types";
 import { actionRegistry } from "../lib/actionRegistry";
@@ -124,7 +127,8 @@ describe("pathTransform", () => {
         ],
       };
       const mirrored = mirrorPathData(data);
-      const shape = mirrored.shapes[0];
+      // shapes is optional on PathData, but we know we provided it above
+      const shape = mirrored.shapes![0];
 
       expect(shape.vertices[0].x).toBe(134); // 144 - 10
       expect(shape.vertices[1].x).toBe(124); // 144 - 20
@@ -139,6 +143,153 @@ describe("pathTransform", () => {
       // Should not throw
       const mirrored = mirrorPathData(data);
       expect(mirrored.startPoint).toBeDefined();
+    });
+  });
+
+  describe("translatePathData", () => {
+    it("should translate start point and lines correctly", () => {
+      const data = {
+        startPoint: { x: 10, y: 10, heading: "tangential" } as Point,
+        lines: [
+          {
+            endPoint: {
+              x: 20,
+              y: 20,
+              heading: "facingPoint",
+              targetX: 50,
+              targetY: 50,
+            } as Point,
+            controlPoints: [{ x: 15, y: 15 }],
+            id: "line1",
+          } as Line,
+        ],
+        shapes: [
+          {
+            type: "obstacle",
+            vertices: [{ x: 5, y: 5 }],
+          } as Shape,
+        ],
+      };
+
+      const translated = translatePathData(data, 5, -5);
+
+      expect(translated.startPoint.x).toBe(15);
+      expect(translated.startPoint.y).toBe(5);
+
+      expect(translated.lines[0].endPoint.x).toBe(25);
+      expect(translated.lines[0].endPoint.y).toBe(15);
+      expect((translated.lines[0].endPoint as any).targetX).toBe(55);
+      expect((translated.lines[0].endPoint as any).targetY).toBe(45);
+
+      expect(translated.lines[0].controlPoints[0].x).toBe(20);
+      expect(translated.lines[0].controlPoints[0].y).toBe(10);
+
+      expect(translated.shapes![0].vertices[0].x).toBe(10);
+      expect(translated.shapes![0].vertices[0].y).toBe(0);
+    });
+  });
+
+  describe("rotatePathData", () => {
+    it("should rotate points around a pivot correctly (90 degrees)", () => {
+      const data = {
+        startPoint: { x: 10, y: 0, heading: "constant", degrees: 0 } as Point,
+        lines: [
+          {
+            endPoint: {
+              x: 20,
+              y: 0,
+              heading: "linear",
+              startDeg: 10,
+              endDeg: 20,
+            } as Point,
+            controlPoints: [{ x: 15, y: 0 }],
+            id: "line1",
+          } as Line,
+        ],
+        shapes: [
+          {
+            type: "obstacle",
+            vertices: [{ x: 5, y: 0 }],
+          } as Shape,
+        ],
+      };
+
+      // Rotate 90 degrees around origin (0, 0)
+      const rotated = rotatePathData(data, 90, 0, 0);
+
+      // x = 10, y = 0 -> x = 0, y = 10
+      expect(rotated.startPoint.x).toBeCloseTo(0, 5);
+      expect(rotated.startPoint.y).toBeCloseTo(10, 5);
+      expect(rotated.startPoint.degrees).toBe(90);
+
+      expect(rotated.lines[0].endPoint.x).toBeCloseTo(0, 5);
+      expect(rotated.lines[0].endPoint.y).toBeCloseTo(20, 5);
+      expect(rotated.lines[0].endPoint.startDeg).toBe(100);
+      expect(rotated.lines[0].endPoint.endDeg).toBe(110);
+
+      expect(rotated.lines[0].controlPoints[0].x).toBeCloseTo(0, 5);
+      expect(rotated.lines[0].controlPoints[0].y).toBeCloseTo(15, 5);
+
+      expect(rotated.shapes![0].vertices[0].x).toBeCloseTo(0, 5);
+      expect(rotated.shapes![0].vertices[0].y).toBeCloseTo(5, 5);
+    });
+  });
+
+  describe("flipPathData", () => {
+    it("should flip points horizontally around a pivot", () => {
+      const data = {
+        startPoint: { x: 10, y: 10, heading: "constant", degrees: 30 } as Point,
+        lines: [
+          {
+            endPoint: {
+              x: 20,
+              y: 20,
+              heading: "linear",
+              startDeg: 10,
+              endDeg: 20,
+            } as Point,
+            controlPoints: [{ x: 15, y: 15 }],
+            id: "line1",
+          } as Line,
+        ],
+        shapes: [],
+      };
+
+      // Flip horizontally around x=15
+      const flipped = flipPathData(data, true, false, 15, 15);
+
+      // x: 10 -> pivot: 15. 15 - (10 - 15) = 20
+      expect(flipped.startPoint.x).toBe(20);
+      expect(flipped.startPoint.y).toBe(10); // unchanged
+      // angle: 180 - 30 = 150
+      expect(flipped.startPoint.degrees).toBe(150);
+
+      // x: 20 -> pivot: 15. 15 - (20 - 15) = 10
+      expect(flipped.lines[0].endPoint.x).toBe(10);
+      expect(flipped.lines[0].endPoint.y).toBe(20); // unchanged
+      expect(flipped.lines[0].endPoint.startDeg).toBe(170); // 180 - 10
+      expect(flipped.lines[0].endPoint.endDeg).toBe(160); // 180 - 20
+
+      // control point x: 15 -> pivot 15 -> 15
+      expect(flipped.lines[0].controlPoints[0].x).toBe(15);
+      expect(flipped.lines[0].controlPoints[0].y).toBe(15);
+    });
+
+    it("should flip points vertically around a pivot", () => {
+      const data = {
+        startPoint: { x: 10, y: 10, heading: "constant", degrees: 30 } as Point,
+        lines: [],
+        shapes: [],
+      };
+
+      // Flip vertically around y=15
+      const flipped = flipPathData(data, false, true, 15, 15);
+
+      expect(flipped.startPoint.x).toBe(10); // unchanged
+      // y: 10 -> pivot: 15. 15 - (10 - 15) = 20
+      expect(flipped.startPoint.y).toBe(20);
+      // angle: -30 = 330
+      expect(flipped.startPoint.degrees).toBe(330);
     });
   });
 
@@ -337,6 +488,47 @@ describe("pathTransform", () => {
       expect((reversed.sequence![0] as any).lineId).toBe("L2");
       expect((reversed.sequence![1] as any).id).toBe("W1");
       expect((reversed.sequence![2] as any).lineId).toBe("L1");
+    });
+
+    it("should reverse event markers and swap tangential reverse flags", () => {
+      const data = {
+        startPoint: {
+          x: 0,
+          y: 0,
+          heading: "tangential",
+          reverse: false,
+        } as Point,
+        lines: [
+          {
+            id: "L1",
+            endPoint: {
+              x: 10,
+              y: 10,
+              heading: "tangential",
+              reverse: false,
+            } as Point,
+            controlPoints: [],
+            color: "blue",
+            eventMarkers: [
+              { id: "e1", name: "Ev1", position: 0.25 },
+              { id: "e2", name: "Ev2", position: 0.8 },
+            ],
+          } as Line,
+        ],
+      };
+
+      const reversed = reversePathData(data);
+
+      expect(reversed.startPoint.reverse).toBe(true);
+      expect(reversed.lines[0].endPoint.reverse).toBe(true);
+
+      const markers = reversed.lines[0].eventMarkers!;
+      expect(markers).toHaveLength(2);
+      // Reversed: original at 0.8 becomes 0.2 (first), original at 0.25 becomes 0.75 (second)
+      expect(markers[0].id).toBe("e2");
+      expect(markers[0].position).toBeCloseTo(0.2);
+      expect(markers[1].id).toBe("e1");
+      expect(markers[1].position).toBeCloseTo(0.75);
     });
   });
 });

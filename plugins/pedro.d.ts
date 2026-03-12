@@ -87,6 +87,7 @@ interface Line {
   name?: string;
   eventMarkers?: EventMarker[];
   locked?: boolean;
+  hidden?: boolean;
   waitBefore?: WaitSegment;
   waitAfter?: WaitSegment;
   waitBeforeMs?: number;
@@ -102,6 +103,7 @@ interface Line {
 type SequencePathItem = {
   kind: "path";
   lineId: string;
+  hidden?: boolean;
 };
 
 type SequenceWaitItem = {
@@ -110,6 +112,7 @@ type SequenceWaitItem = {
   name: string;
   durationMs: number;
   locked?: boolean;
+  hidden?: boolean;
   eventMarkers?: EventMarker[];
   _linkedName?: string; // Metadata for linked names
 };
@@ -120,6 +123,7 @@ type SequenceRotateItem = {
   name: string;
   degrees: number;
   locked?: boolean;
+  hidden?: boolean;
   eventMarkers?: EventMarker[];
   _linkedName?: string; // Metadata for linked names
 };
@@ -142,6 +146,7 @@ type SequenceMacroItem = {
   filePath: string; // The macro file path
   name: string;
   locked?: boolean;
+  hidden?: boolean;
   eventMarkers?: EventMarker[]; // Maybe macros can have markers too?
   sequence?: SequenceItem[]; // The expanded sequence for this macro instance
   transformations?: Transformation[];
@@ -233,6 +238,8 @@ interface Settings {
   coordinateSystem?: "Pedro" | "FTC";
   visualizerUnits?: "imperial" | "metric";
   codeUnits?: "imperial" | "metric";
+  // UI control: show or hide the telemetry tab in the control panel
+  showTelemetryTab?: boolean;
 }
 
 interface RobotProfile {
@@ -562,6 +569,55 @@ interface PedroAPI {
   graphics: {
     requestRedraw: () => void;
   };
+}
+
+// Telemetry Types
+interface RobotPose {
+  x: number;
+  y: number;
+  heading: number; // radians
+}
+
+type FieldOperation =
+  | {
+      type: "circle";
+      x: number;
+      y: number;
+      r: number;
+      color: string;
+      stroke?: boolean;
+    }
+  | {
+      type: "line";
+      x1: number;
+      y1: number;
+      x2: number;
+      y2: number;
+      color: string;
+      strokeWidth?: number;
+    }
+  | {
+      type: "polygon";
+      xPoints: number[];
+      yPoints: number[];
+      color: string;
+      fill?: boolean;
+      stroke?: boolean;
+    }
+  | {
+      type: "text";
+      x: number;
+      y: number;
+      content: string;
+      color: string;
+      fontSize?: number;
+    };
+
+interface TelemetryPacket {
+  timestamp: number;
+  robotPose?: RobotPose;
+  data: Record<string, string | number | boolean>;
+  fieldOverlay?: FieldOperation | FieldOperation[];
 }
 
 interface FieldRenderContext {

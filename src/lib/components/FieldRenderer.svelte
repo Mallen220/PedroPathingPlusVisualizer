@@ -52,17 +52,19 @@
     isLoadingDiff,
   } from "../diffStore";
   import {
-    telemetryData,
     showTelemetry,
     showTelemetryGhost,
+    telemetryData,
     telemetryOffset,
-    type TelemetryPoint,
   } from "../telemetryStore";
+  import LiveRobotLayer from "./telemetry/LiveRobotLayer.svelte";
+  import LiveFieldLayer from "./telemetry/LiveFieldLayer.svelte";
   import {
     currentFilePath,
     gitStatusStore,
     isUnsaved,
     dimmedLinesStore,
+    showTransformDialog,
   } from "../../stores";
   import {
     POINT_RADIUS,
@@ -118,6 +120,8 @@
 
   // Local state
   let two: Two;
+  let ghostRobotState: { x: number; y: number; heading: number } | null = null;
+
   let twoElement: HTMLDivElement;
   let wrapperDiv: HTMLDivElement;
   let overlayContainer: HTMLDivElement;
@@ -481,10 +485,31 @@
   }
 
   // Telemetry State
-  $: telemetry = $telemetryData;
   $: isTelemetryVisible = $showTelemetry;
   $: isTelemetryGhostVisible = $showTelemetryGhost;
-  $: tOffset = $telemetryOffset;
+
+  // compute ghost robot based on imported telemetry data and offset
+  $: if (
+    $telemetryData &&
+    $telemetryData.length > 0 &&
+    isTelemetryGhostVisible
+  ) {
+    const pts = $telemetryData;
+    const baseTime = pts[0].time;
+    const offset = $telemetryOffset || 0;
+    const targetTime = baseTime + offset;
+    // find first point at or after targetTime
+    let target = pts[0];
+    for (const pt of pts) {
+      if (pt.time >= targetTime) {
+        target = pt;
+        break;
+      }
+    }
+    ghostRobotState = { x: target.x, y: target.y, heading: target.heading };
+  } else {
+    ghostRobotState = null;
+  }
 
   // Diff Mode State
   $: isDiffMode = $diffMode;
@@ -622,7 +647,7 @@
     _points.push(startPointElem);
 
     lines.forEach((line, idx) => {
-      if (!line || !line.endPoint) return;
+      if (!line || !line.endPoint || line.hidden) return;
       [line.endPoint, ...line.controlPoints].forEach((point, idx1) => {
         if (idx1 > 0) {
           let pointGroup = new Two.Group();
@@ -770,8 +795,9 @@
     isHeatmapEnabled: boolean = false,
   ) {
     let _path: (Path | PathLine)[] = [];
+
     targetLines.forEach((line, idx) => {
-      if (!line || !line.endPoint) return;
+      if (!line || !line.endPoint || line.hidden) return;
       let _startPoint =
         idx === 0 ? targetStartPoint : targetLines[idx - 1]?.endPoint || null;
       if (!_startPoint) return;
@@ -1386,81 +1412,6 @@
     return [];
   })();
 
-  // Telemetry Path
-  $: telemetryPathElements = (() => {
-    x;
-    y; // Trigger reactivity on pan/zoom
-    if (!isTelemetryVisible || !telemetry || telemetry.length < 2) return [];
-
-    const vertices = telemetry.map(
-      (pt: TelemetryPoint) =>
-        new Two.Anchor(x(pt.x), y(pt.y), 0, 0, 0, 0, Two.Commands.line),
-    );
-    vertices[0].command = Two.Commands.move;
-
-    const path = new Two.Path(vertices, false, false);
-    path.noFill();
-    path.stroke = "#6b7280"; // Gray-500
-    path.linewidth = uiLength(1.0);
-    path.opacity = 0.6;
-    path.dashes = [uiLength(4), uiLength(4)];
-
-    return [path];
-  })();
-
-  // Ghost Robot State for Telemetry
-  $: ghostRobotState = (() => {
-    if (
-      !isTelemetryVisible ||
-      !isTelemetryGhostVisible ||
-      !telemetry ||
-      telemetry.length === 0
-    )
-      return null;
-
-    // Calculate current simulation time from percentStore
-    // If timePrediction is available, use it to map percent to seconds
-    let currentSimTime = 0;
-
-    if (timePrediction && timePrediction.totalTime > 0) {
-      currentSimTime = ($percentStore / 100) * timePrediction.totalTime;
-    } else {
-      // If no path, we can't really sync.
-      return null;
-    }
-
-    // Apply offset
-    const targetTime = currentSimTime + tOffset;
-
-    // Find point just before targetTime
-    let idx = -1;
-    for (let i = 0; i < telemetry.length; i++) {
-      if (telemetry[i].time > targetTime) {
-        break;
-      }
-      idx = i;
-    }
-
-    if (idx === -1) return null; // Before start
-    if (idx === telemetry.length - 1) return telemetry[idx]; // After end
-
-    // Interpolate
-    const p1 = telemetry[idx];
-    const p2 = telemetry[idx + 1];
-    const t = (targetTime - p1.time) / (p2.time - p1.time);
-
-    // Interpolate heading with wrapping
-    const h1 = p1.heading;
-    const h2 = p2.heading;
-    const diff = getAngularDifference(h1, h2);
-
-    return {
-      x: p1.x + (p2.x - p1.x) * t,
-      y: p1.y + (p2.y - p1.y) * t,
-      heading: h1 + diff * t,
-    };
-  })();
-
   // Preview Paths
   $: previewPathElements = (() => {
     let _previewPaths: Path[] = [];
@@ -1576,13 +1527,7 @@
     }
 
     lines.forEach((line, idx) => {
-      if (
-        !line ||
-        !line.endPoint ||
-        !line.eventMarkers ||
-        line.eventMarkers.length === 0
-      )
-        return;
+      if (!line || !line.endPoint || line.hidden) return;
 
       let _startPoint = startPointMap.get(line.id!);
       if (!_startPoint) {
@@ -1591,6 +1536,7 @@
       }
 
       if (!_startPoint) return;
+      if (!line.eventMarkers || line.eventMarkers.length === 0) return;
 
       line.eventMarkers.forEach((ev, evIdx) => {
         const isHovered = $hoveredMarkerId === ev.id;
@@ -1629,6 +1575,7 @@
     ) {
       // Use Registry for registered actions (e.g. Wait)
       sequence.forEach((item) => {
+        if ((item as any).hidden) return;
         const action = actionRegistry.get(item.kind);
         if (action && action.renderField) {
           const elems = action.renderField(item, {
@@ -1840,7 +1787,6 @@
     path.forEach((el) => lineGroup.add(el));
     diffPathElements.forEach((el) => lineGroup.add(el));
     previewPathElements.forEach((el) => lineGroup.add(el));
-    telemetryPathElements.forEach((el) => lineGroup.add(el));
 
     if (!$isPresentationMode && !isDiffMode) {
       points.forEach((el) => pointGroup.add(el));
@@ -2866,6 +2812,18 @@
           }));
         }
       }
+
+      // Add global actions
+      if (menuItems.length > 0) {
+        menuItems.push({ separator: true });
+      }
+      menuItems.push({
+        label: "Transform Path",
+        onClick: () => {
+          showTransformDialog.set(true);
+          showContextMenu = false;
+        },
+      });
     }
 
     if (menuItems.length === 0) return;
@@ -2913,6 +2871,16 @@
       class="absolute inset-0 pointer-events-none z-30"
     ></div>
 
+    {#if isTelemetryVisible}
+      <LiveFieldLayer {x} {y} {width} {height} />
+      <svg
+        style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 20;"
+      >
+        {#if isTelemetryGhostVisible}
+          <LiveRobotLayer {x} {y} />
+        {/if}
+      </svg>
+    {/if}
     <!-- SVG Overlay for animated paths/layers -->
     <svg
       class="absolute inset-0 pointer-events-none"

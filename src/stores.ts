@@ -32,6 +32,7 @@ export const showFeedbackDialog = writable(false);
 export const showRatingDialog = writable(false);
 export const ratingDialogAutoOpened = writable(false);
 export const showHistory = writable(false);
+export const showTransformDialog = writable(false);
 export const exportDialogState = writable<{
   isOpen: boolean;
   format: "java" | "points" | "sequential" | "json" | "custom";
@@ -41,6 +42,12 @@ export const exportDialogState = writable<{
 // Update Notification Store
 export const showUpdateAvailableDialog = writable(false);
 export const updateDataStore = writable<UpdateData | null>(null);
+
+// expose some stores globally (fallback for bundler issues)
+if (typeof window !== "undefined") {
+  // these names are intentionally global to support legacy references in compiled code
+  (window as any).showUpdateAvailableDialog = showUpdateAvailableDialog;
+}
 
 // File Manager Stores
 export const showFileManager = writable(false);
