@@ -27,11 +27,17 @@
     showTelemetryDialog,
     showStrategySheet,
     showHistory,
+    showTransformDialog,
     protractorLockToRobot,
     showExportGif,
     notification,
     showRobot,
+    showUpdateAvailableDialog as _showUpdateAvailableDialog,
+    showFeedbackDialog,
+    showRatingDialog,
   } from "../../stores";
+  // keep a local binding for the update-available store
+  const showUpdateAvailableDialog = _showUpdateAvailableDialog;
   import {
     startPointStore,
     linesStore,
@@ -51,6 +57,7 @@
   } from "../../utils/pointLinking";
   import { loadFile, loadRecentFile } from "../../utils/fileHandlers";
   import { validatePath } from "../../utils/validation";
+  import { reversePathData } from "../../utils/pathTransform";
   import type { Line, SequenceItem } from "../../types/index";
   import { createTriangle } from "../../utils";
   import { toggleDiff } from "../../lib/diffStore";
@@ -2057,6 +2064,7 @@
     toggleHistory: () => showHistory.update((v) => !v),
     toggleStrategySheet: () => showStrategySheet.update((v) => !v),
     toggleProtractorLock: () => protractorLockToRobot.update((v) => !v),
+    toggleTransformDialog: () => showTransformDialog.update((v) => !v),
     addObstacle: () => {
       shapesStore.update((s) => [...s, createTriangle(s.length)]);
       activeControlTab = "field";
@@ -2116,6 +2124,26 @@
       }
       if ($showStrategySheet) {
         showStrategySheet.set(false);
+        return;
+      }
+      if ($showFeedbackDialog) {
+        showFeedbackDialog.set(false);
+        return;
+      }
+      if ($showRatingDialog) {
+        showRatingDialog.set(false);
+        return;
+      }
+      if ($showTransformDialog) {
+        showTransformDialog.set(false);
+        return;
+      }
+      if ($showUpdateAvailableDialog) {
+        showUpdateAvailableDialog.set(false);
+        return;
+      }
+      if (showCommandPalette) {
+        showCommandPalette = false;
         return;
       }
 
@@ -2179,6 +2207,39 @@
     },
     validatePath: () => {
       validatePath(startPoint, lines, settings, sequence, shapes);
+    },
+    reversePath: () => {
+      try {
+        const transformedData = reversePathData({
+          startPoint,
+          lines,
+          shapes,
+          sequence,
+        });
+
+        if (transformedData) {
+          startPointStore.set(transformedData.startPoint);
+          linesStore.set(transformedData.lines);
+          if (transformedData.shapes) {
+            shapesStore.set(transformedData.shapes);
+          }
+          if (transformedData.sequence) {
+            sequenceStore.set(transformedData.sequence);
+          }
+          recordChange("Reverse Path");
+          notification.set({
+            message: `Path reversed`,
+            type: "success",
+            timeout: 2000,
+          });
+        }
+      } catch (e: any) {
+        notification.set({
+          message: `Failed to reverse path: ${e.message}`,
+          type: "error",
+          timeout: 5000,
+        });
+      }
     },
     clearObstacles: () => {
       shapesStore.set([]);
@@ -2391,6 +2452,11 @@
       else if ($showExportGif) showExportGif.set(false);
       else if ($exportDialogState.isOpen)
         exportDialogState.update((s) => ({ ...s, isOpen: false }));
+      else if ($showFeedbackDialog) showFeedbackDialog.set(false);
+      else if ($showRatingDialog) showRatingDialog.set(false);
+      else if ($showTransformDialog) showTransformDialog.set(false);
+      else if ($showUpdateAvailableDialog) showUpdateAvailableDialog.set(false);
+      else if (showCommandPalette) showCommandPalette = false;
       // Add more as needed
     },
     cancelDialog: () => {

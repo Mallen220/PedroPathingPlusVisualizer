@@ -188,6 +188,7 @@ export const DEFAULT_SETTINGS: Settings = {
   coordinateSystem: "Pedro",
   visualizerUnits: "imperial",
   codeUnits: "imperial",
+  showTelemetryTab: false,
 };
 
 /**

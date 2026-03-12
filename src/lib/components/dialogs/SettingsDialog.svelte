@@ -892,6 +892,19 @@
                 </SettingsItem>
 
                 <SettingsItem
+                  label="Show Telemetry Tab"
+                  description="Toggle visibility of the telemetry control tab"
+                  {searchQuery}
+                  layout="row"
+                >
+                  <input
+                    type="checkbox"
+                    bind:checked={settings.showTelemetryTab}
+                    class="w-5 h-5 rounded border-neutral-300 dark:border-neutral-600 text-blue-500 focus:ring-2 focus:ring-blue-500 cursor-pointer"
+                  />
+                </SettingsItem>
+
+                <SettingsItem
                   label="Keyboard Shortcuts"
                   description="View and customize keyboard shortcuts"
                   {searchQuery}
@@ -2479,24 +2492,6 @@
                     </div>
 
                     <div class="flex gap-4 text-sm font-medium mb-8">
-                      <a
-                        href="https://mallen220.github.io/Portfolio/"
-                        target="_blank"
-                        class="text-blue-600 dark:text-blue-400 hover:underline"
-                        >Portfolio</a
-                      >
-                      <span class="text-neutral-300 dark:text-neutral-600"
-                        >•</span
-                      >
-                      <a
-                        href="https://www.linkedin.com/in/allenmc220/"
-                        target="_blank"
-                        class="text-blue-600 dark:text-blue-400 hover:underline"
-                        >LinkedIn</a
-                      >
-                      <span class="text-neutral-300 dark:text-neutral-600"
-                        >•</span
-                      >
                       <a
                         href="https://github.com/Mallen220/PedroPathingPlusVisualizer"
                         target="_blank"
