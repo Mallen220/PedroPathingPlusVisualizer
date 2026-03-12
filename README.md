@@ -263,6 +263,15 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 4.  Push to the branch (`git push origin feature/AmazingFeature`).
 5.  Open a Pull Request.
 
+## AI Assistance
+
+Artificial intelligence plays a supporting role in the development of Pedro Pathing Plus Visualizer.  We use AI tools to help prototype features, write boilerplate, and speed up the rate at which improvements can be explored.  However, **no code or documentation from AI is merged without
+thorough human review and testing**.  Every Pull Request is validated by real developers and undergoes the same security and
+validity checks as any other change.  This policy reflects our stance that AI should augment human effort, never replace it.  It also
+acknowledges the broader conversation about AI in the workplace—contributors are welcomed regardless of their tools, and no one is
+prohibited from participating in this project.
+
+
 ## 📄 License
 
 This project is open for everyone! We believe in the power of open source and community collaboration. You are free to use, modify, and distribute this software as you see fit. All we ask is that you give credit to the original developers and any contributors who have helped shape this tool. If you make improvements, please consider sharing them back with the community!
