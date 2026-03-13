@@ -96,7 +96,7 @@ describe("PlaybackControls", () => {
       },
     });
 
-    const speedBtn = screen.getByLabelText("Playback speed options");
+    const speedBtn = screen.getByLabelText(/Playback speed options/i);
     await fireEvent.click(speedBtn);
 
     const speedOption = screen.getByText("2.00x");

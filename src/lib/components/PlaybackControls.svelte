@@ -492,7 +492,9 @@
     <div class="relative">
       <button
         title="Open playback speed menu"
-        aria-label="Playback speed options"
+        aria-label="Playback speed options. Current speed: {(
+          playbackSpeed ?? 1
+        ).toFixed(2)}x"
         aria-haspopup="menu"
         aria-expanded={showSpeedMenu}
         on:click|stopPropagation={toggleSpeedMenu}
@@ -759,7 +761,9 @@
       <!-- Section Loop Toggle Button -->
       <button
         title="Toggle Section Looping"
-        aria-label="Toggle Section Looping"
+        aria-label={loopRangeActive
+          ? "Disable Section Looping"
+          : "Enable Section Looping"}
         aria-pressed={loopRangeActive}
         on:click={() => {
           const newVal = !loopRangeActive;
