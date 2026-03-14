@@ -8,3 +8,7 @@ Action: Ensure I continue to verify that buttons, especially icon-only ones, hav
 
 Learning: Many small utility buttons, like closing modals, switching tabs, or adjusting values, were missing accessible `aria-label`s despite earlier audits. This makes it difficult for screen reader users to understand their function.
 Action: I will actively search for buttons that use icons without text, or tab controls without `aria-label`s and fix them to improve accessibility across the UI.
+
+## 2024-03-14 - Telemetry Button Accessibility
+Learning: A connection toggle button was lacking an `aria-label`, leaving screen readers without context about its current state and action.
+Action: Add dynamic `aria-label` attributes to toggle buttons that clearly describe the action (e.g., "Connect Telemetry", "Disconnect Telemetry") based on state.

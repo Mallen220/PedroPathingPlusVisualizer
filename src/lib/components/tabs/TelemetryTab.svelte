@@ -136,6 +136,7 @@
       />
     </div>
     <button
+      aria-label={$isConnected ? "Disconnect Telemetry" : "Connect Telemetry"}
       on:click={toggleConnection}
       class="w-full py-2 rounded-lg font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2
             {$isConnected
