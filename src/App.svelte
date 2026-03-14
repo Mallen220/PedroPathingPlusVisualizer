@@ -169,7 +169,7 @@
           // This requires a release tagged 'tracker' with a file 'ms-store-tracker.zip'
           try {
             const response = await fetch(
-              "https://github.com/Mallen220/PedroPathingPlusVisualizer/releases/download/tracker/ms-store-tracker.zip",
+              "https://github.com/Mallen220/TurtleTracer/releases/download/tracker/ms-store-tracker.zip",
             );
             if (response.ok) {
               localStorage.setItem("msStoreTracked", "true");
@@ -812,10 +812,10 @@
         const projectData = {
           version: pkg.version,
           header: {
-            info: "Created with Pedro Pathing Plus Visualizer",
+            info: "Created with Turtle Tracer",
             copyright:
               "Copyright 2026 Matthew Allen. Licensed under the Modified Apache License, Version 2.0.",
-            link: "https://github.com/Mallen220/PedroPathingPlusVisualizer",
+            link: "https://github.com/Mallen220/TurtleTracer",
           },
           startPoint: get(startPointStore),
           lines: get(linesStore),

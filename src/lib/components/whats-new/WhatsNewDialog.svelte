@@ -775,7 +775,7 @@
             <div
               class="mt-12 text-center text-sm text-neutral-400 dark:text-neutral-600"
             >
-              Pedro Pathing Plus Visualizer v{appVersion}
+              Turtle Tracer v{appVersion}
             </div>
           </div>
         {:else if activeTab === "home" && currentView === "release-list"}
@@ -863,10 +863,10 @@
                 class="text-lg font-bold text-neutral-900 dark:text-white mb-2 flex items-center gap-2"
               >
                 {@html icons["sparkles"]}
-                Install PedroPathingPlus
+                Install TurtleTracerLib
               </h3>
               <p class="text-neutral-600 dark:text-neutral-300 text-sm mb-3">
-                Install <strong>PedroPathingPlus</strong> to run
+                Install <strong>TurtleTracerLib</strong> to run
                 <code>.pp</code> files directly and enable advanced commands.
               </p>
               <button

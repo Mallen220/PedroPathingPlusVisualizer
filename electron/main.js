@@ -289,7 +289,7 @@ const createWindow = async () => {
   let newWindow = new BrowserWindow({
     width: 1360,
     height: 800,
-    title: "Pedro Pathing Plus Visualizer",
+    title: "Turtle Tracer",
     webPreferences: {
       nodeIntegration: false, // Security: Sandbox the web code
       contextIsolation: true, // Security: Sandbox the web code
@@ -613,7 +613,7 @@ const createMenu = () => {
           label: "See Project on GitHub",
           click: async () => {
             await shell.openExternal(
-              "https://github.com/Mallen220/PedroPathingPlusVisualizer",
+              "https://github.com/Mallen220/TurtleTracer",
             );
           },
         },

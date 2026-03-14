@@ -1,10 +1,10 @@
-# Privacy Policy for Pedro Pathing Plus Visualizer
+# Privacy Policy for Turtle Tracer
 
 _Last Updated: 2026-02-10_
 
 ## Introduction
 
-Pedro Pathing Plus Visualizer ("the Application") is an open-source desktop application designed to visualize and plan autonomous routines for FIRST Tech Challenge. We respect your privacy and are committed to protecting it.
+Turtle Tracer ("the Application") is an open-source desktop application designed to visualize and plan autonomous routines for FIRST Tech Challenge. We respect your privacy and are committed to protecting it.
 
 This Privacy Policy explains what information the Application collects, how it is used, and your rights regarding your data.
 

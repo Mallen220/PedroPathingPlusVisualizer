@@ -3,7 +3,7 @@
 ## **Features:**
 
 - **Item Visibility Toggles:** You can now quickly hide or show individual paths and sequence items on the field. Just click the new eye icon in the Sequence list to declutter your view.
-- **Telemetry Integration:** A new Telemetry tab allows you to connect and monitor your robot live on the field. You can show or hide this tab from the settings menu. Ensure code is updated with PedroPathingPlus to use this feature.
+- **Telemetry Integration:** A new Telemetry tab allows you to connect and monitor your robot live on the field. You can show or hide this tab from the settings menu. Ensure code is updated with TurtleTracerLib to use this feature.
 - **Path Transformation:** Modify entire paths using the new Transform tool. You can easily translate, rotate, flip horizontally or vertically, and reverse your path direction. Right click the field to use.
 - **Interactive Field Setup:** The Custom Field Map Wizard now features an intuitive, interactive bounding box—just drag and resize to calibrate your custom field images.
 - **File Manager Drag & Drop:** Easily organize your files with new drag-and-drop support, including moving items into parent folders.
@@ -28,3 +28,7 @@
 - **Macro File Updates:** Moving files in the File Manager now reliably updates their references inside macros.
 - **UI Adjustments:** Resolved display issues with Onion Skinning and Facing Point headers.
 - **Menu Stability:** Fixed an issue that could cause application menus to stop responding on macOS.
+
+## **Important Changes:**
+
+- **Renamed to Turtle Tracer:** The project has been renamed from **Pedro Pathing Plus Visualizer** to **Turtle Tracer** to better distinguish it from the original program and reflect its enhanced feature set.
