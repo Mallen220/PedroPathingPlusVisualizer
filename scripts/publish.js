@@ -46,19 +46,19 @@ async function checkGitHubAuth() {
 
 async function createGitHubRelease(version) {
   const tag = `v${version}`;
-  const title = `Pedro Pathing Plus Visualizer ${version}`;
+  const title = `Turtle Tracer ${version}`;
 
   // NOTE CONTENT IS UNCHANGED
   let notes = `## 🚀 Quick Update
 
-Refer to the README installation section for instructions on installing or updating Pedro Pathing Plus Visualizer. Below is a condensed version of the instructions for quick reference. 
+Refer to the README installation section for instructions on installing or updating Turtle Tracer. Below is a condensed version of the instructions for quick reference. 
 
 This repo is regularly updated with new features and bug fixes but tested primarily on macOS. Should an issue arise, please report it via the GitHub Issues page and revert to the previous stable version if needed.
 
 #### **macOS / Linux**
 Run the following command in terminal and provide your password when prompted:
 \`\`\`bash
-curl -fsSL https://raw.githubusercontent.com/Mallen220/PedroPathingPlusVisualizer/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/Mallen220/TurtleTracer/main/install.sh | bash
 \`\`\`
 
 #### **Windows**
@@ -108,7 +108,7 @@ Download and install via the  \`.exe\` installer below.
 }
 
 async function main() {
-  console.log("Pedro Pathing Plus Visualizer Release Process");
+  console.log("Turtle Tracer Release Process");
   console.log("======================================\n");
 
   const rl = readline.createInterface({
@@ -157,7 +157,7 @@ async function main() {
     if (createRelease.toLowerCase().startsWith("y")) {
       await createGitHubRelease(version);
       console.log(
-        "Draft release created: https://github.com/Mallen220/PedroPathingPlusVisualizer/releases",
+        "Draft release created: https://github.com/Mallen220/TurtleTracer/releases",
       );
     } else {
       console.log("GitHub release creation skipped");

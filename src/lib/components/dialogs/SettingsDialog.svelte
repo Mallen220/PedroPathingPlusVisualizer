@@ -113,7 +113,7 @@
 
       while (hasMore) {
         const response = await fetch(
-          `https://api.github.com/repos/Mallen220/PedroPathingPlusVisualizer/releases?per_page=100&page=${page}`,
+          `https://api.github.com/repos/Mallen220/TurtleTracer/releases?per_page=100&page=${page}`,
         );
 
         if (response.ok) {
@@ -2465,7 +2465,7 @@
                 {/if}
 
                 <SettingsItem
-                  label="Pedro Pathing Plus Visualizer"
+                  label="Turtle Tracer"
                   description={`Version ${appVersion}`}
                   {searchQuery}
                   section
@@ -2479,8 +2479,13 @@
                     <h3
                       class="text-xl font-bold text-neutral-900 dark:text-white"
                     >
-                      Pedro Pathing Plus Visualizer
+                      Turtle Tracer
                     </h3>
+                    <p
+                      class="text-xs text-neutral-500 dark:text-neutral-400 mb-2"
+                    >
+                      Formerly Pedro Pathing Plus Visualizer (originally Pedro Pathing Visualizer)
+                    </p>
                     <p
                       class="text-sm text-neutral-500 dark:text-neutral-400 mb-6"
                     >
@@ -2494,7 +2499,7 @@
 
                     <div class="flex gap-4 text-sm font-medium mb-8">
                       <a
-                        href="https://github.com/Mallen220/PedroPathingPlusVisualizer"
+                        href="https://github.com/Mallen220/TurtleTracer"
                         target="_blank"
                         class="text-blue-600 dark:text-blue-400 hover:underline"
                         >GitHub</a
@@ -2518,7 +2523,7 @@
                         <h4 class="font-semibold mb-2">Project Links</h4>
                         <div class="flex flex-wrap gap-3 text-xs">
                           <a
-                            href="https://github.com/Mallen220/PedroPathingPlusVisualizer/issues"
+                            href="https://github.com/Mallen220/TurtleTracer/issues"
                             target="_blank"
                             class="text-blue-600 dark:text-blue-400 hover:underline"
                             >Issues</a
@@ -2527,7 +2532,7 @@
                             >•</span
                           >
                           <a
-                            href="https://github.com/Mallen220/PedroPathingPlusVisualizer/releases"
+                            href="https://github.com/Mallen220/TurtleTracer/releases"
                             target="_blank"
                             class="text-blue-600 dark:text-blue-400 hover:underline"
                             >Releases</a
@@ -2536,7 +2541,7 @@
                             >•</span
                           >
                           <a
-                            href="https://github.com/Mallen220/PedroPathingPlusVisualizer/blob/main/README.md"
+                            href="https://github.com/Mallen220/TurtleTracer/blob/main/README.md"
                             target="_blank"
                             class="text-blue-600 dark:text-blue-400 hover:underline"
                             >README</a
@@ -2545,7 +2550,7 @@
                             >•</span
                           >
                           <a
-                            href="https://github.com/Mallen220/PedroPathingPlusVisualizer/blob/main/CODE_OF_CONDUCT.md"
+                            href="https://github.com/Mallen220/TurtleTracer/blob/main/CODE_OF_CONDUCT.md"
                             target="_blank"
                             class="text-blue-600 dark:text-blue-400 hover:underline"
                             >Code of Conduct</a
@@ -2554,7 +2559,7 @@
                             >•</span
                           >
                           <a
-                            href="https://github.com/Mallen220/PedroPathingPlusVisualizer/blob/main/CONTRIBUTING.md"
+                            href="https://github.com/Mallen220/TurtleTracer/blob/main/CONTRIBUTING.md"
                             target="_blank"
                             class="text-blue-600 dark:text-blue-400 hover:underline"
                             >Contributing</a
@@ -2563,7 +2568,7 @@
                             >•</span
                           >
                           <a
-                            href="https://github.com/Mallen220/PedroPathingPlusVisualizer/blob/main/LICENSE"
+                            href="https://github.com/Mallen220/TurtleTracer/blob/main/LICENSE"
                             target="_blank"
                             class="text-blue-600 dark:text-blue-400 hover:underline"
                             >License</a
@@ -2572,7 +2577,7 @@
                             >•</span
                           >
                           <a
-                            href="https://github.com/Mallen220/PedroPathingPlusVisualizer/blob/main/SECURITY.md"
+                            href="https://github.com/Mallen220/TurtleTracer/blob/main/SECURITY.md"
                             target="_blank"
                             class="text-blue-600 dark:text-blue-400 hover:underline"
                             >Security</a

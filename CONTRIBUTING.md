@@ -1,6 +1,6 @@
-# Contributing to Pedro Pathing Plus Visualizer
+# Contributing to Turtle Tracer
 
-First off—thank you for your interest in contributing to **Pedro Pathing Plus Visualizer**. This project exists to help FIRST Robotics teams build better autonomous routines, and community involvement is what keeps it improving.
+First off—thank you for your interest in contributing to **Turtle Tracer**. This project exists to help FIRST Robotics teams build better autonomous routines, and community involvement is what keeps it improving.
 
 Whether you’re fixing a bug, adding a feature, improving performance, or just tightening up documentation, your help is appreciated.
 
@@ -51,7 +51,7 @@ When reporting a bug, include:
 - Screenshots or logs (if applicable)
 
 Open issues here:  
-https://github.com/Mallen220/PedroPathingPlusVisualizer/issues
+https://github.com/Mallen220/TurtleTracer/issues
 
 ---
 
@@ -81,8 +81,8 @@ Keep in mind:
 ### Local Setup
 
 ```bash
-git clone https://github.com/Mallen220/PedroPathingPlusVisualizer.git
-cd PedroPathingVisualizer
+git clone https://github.com/Mallen220/TurtleTracer.git
+cd TurtleTracer
 npm install
 npm run dev
 ```
@@ -186,4 +186,4 @@ By contributing, you agree that your contributions will be licensed under the **
 
 Every contribution helps make this tool better for teams at competitions, in the shop, and during those late-night build sessions.
 
-Thanks for helping improve Pedro Pathing Plus Visualizer.
+Thanks for helping improve Turtle Tracer.

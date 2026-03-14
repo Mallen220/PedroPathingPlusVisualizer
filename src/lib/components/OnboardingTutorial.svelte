@@ -28,7 +28,7 @@
       {
         element: "#field-container",
         popover: {
-          title: "Welcome to Pedro Pathing Plus Visualizer!",
+          title: "Welcome to Turtle Tracer!",
           description:
             "This is your main workspace. Here you can visualize your robot's path and field obstacles. Double-click to add points.",
           side: "left",

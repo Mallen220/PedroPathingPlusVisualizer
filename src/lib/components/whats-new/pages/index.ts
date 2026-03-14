@@ -61,7 +61,7 @@ export const pages: Page[] = [
   },
   {
     id: "pedro-pathing-plus",
-    title: "PedroPathingPlus",
+    title: "TurtleTracerLib",
     description:
       "Unlock direct path execution and advanced command-based features.",
     type: "page",

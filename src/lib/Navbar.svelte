@@ -252,7 +252,7 @@
     <div class="flex flex-col">
       <span
         class="font-bold text-lg leading-tight tracking-tight text-neutral-900 dark:text-neutral-100"
-        >Pedro Pathing Plus Visualizer</span
+        >Turtle Tracer</span
       >
       {#if $currentFilePath}
         <div
@@ -1343,7 +1343,7 @@
         rel="norefferer"
         title="GitHub Repo"
         aria-label="GitHub Repository"
-        href="https://github.com/Mallen220/PedroPathingPlusVisualizer"
+        href="https://github.com/Mallen220/TurtleTracer"
         class="p-2 rounded-md hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-600 dark:text-neutral-300 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500"
       >
         <svg

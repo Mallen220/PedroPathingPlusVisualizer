@@ -1,6 +1,6 @@
 # Security Policy
 
-The security of **Pedro Pathing Plus Visualizer** and the safety of its users are important to us. While this project is primarily a desktop visualization and planning tool, we take reported security issues seriously and will address them as quickly as possible.
+The security of **Turtle Tracer** and the safety of its users are important to us. While this project is primarily a desktop visualization and planning tool, we take reported security issues seriously and will address them as quickly as possible.
 
 ---
 
@@ -26,7 +26,7 @@ Instead, report it responsibly using one of the following methods:
 ### Preferred Method
 
 - Use GitHub’s **Private Security Advisory** feature:
-  https://github.com/Mallen220/PedroPathingPlusVisualizer/security/advisories
+  https://github.com/Mallen220/TurtleTracer/security/advisories
 
 ### Alternative
 
@@ -102,7 +102,7 @@ If unsure, ask before merging potentially risky changes.
 
 ## 📄 License & Responsibility
 
-Pedro Pathing Plus Visualizer is provided **as-is** under the Apache 2.0 License. While reasonable efforts are made to maintain security, no guarantees are made regarding absolute safety.
+Turtle Tracer is provided **as-is** under the Apache 2.0 License. While reasonable efforts are made to maintain security, no guarantees are made regarding absolute safety.
 
 ---
 
@@ -110,4 +110,4 @@ Pedro Pathing Plus Visualizer is provided **as-is** under the Apache 2.0 License
 
 We appreciate the effort of researchers, contributors, and users who help keep this project safe. Responsible disclosure helps protect teams relying on this tool during competition season.
 
-Thank you for helping improve Pedro Pathing Plus Visualizer.
+Thank you for helping improve Turtle Tracer.

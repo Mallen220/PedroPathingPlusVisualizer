@@ -1,4 +1,4 @@
-Pedro Pathing Plus Visualizer
+Turtle Tracer
 Copyright 2024 Matthew Allen
 
 This product includes software developed by Matthew Allen.
@@ -295,3 +295,5 @@ src/lib/components/telemetry/LiveRobotLayer.svelte
 src/tests/telemetryTabVisibility.test.ts
 src/tests/file.test.ts
 src/utils/dragDrop.ts
+public/favicon.ico
+public/icon.png

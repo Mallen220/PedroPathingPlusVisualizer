@@ -1,12 +1,12 @@
 {
-  "name": "pedro-pathing-plus-visualizer",
+  "name": "turtle-tracer",
   "private": true,
   "version": "1.8.0",
   "main": "electron/main.js",
   "author": "Matthew Allen <allenmc220@gmail.com>",
   "email": "allenmc220@gmail.com",
   "license": "Modified Apache 2.0",
-  "description": "A better alternative to the Pedro Pathing Plus Visualizer",
+  "description": "A better alternative to the Turtle Tracer",
   "type": "module",
   "scripts": {
     "fix:notice": "node scripts/generate-file-notice.js",
@@ -15,7 +15,7 @@
     "generate:types": "node scripts/generate-plugin-types.js",
     "generate:icons": "node scripts/generate-windows-icons.cjs",
     "check:tiles": "node scripts/check-tile-assets.cjs",
-    "copy:icon": "cp public/icon.png build/icon.png",
+    "copy:icon": "node scripts/prepare-mac-icon.js",
     "build": "npm run generate:types && npm run generate:icons && npm run copy:icon && vite build",
     "preview": "vite preview",
     "test": "vitest run",
@@ -94,8 +94,8 @@
     "ws": "^8.19.0"
   },
   "build": {
-    "appId": "com.pedropathing.visualizer",
-    "productName": "Pedro Pathing Plus Visualizer",
+    "appId": "com.turtletracer.visualizer",
+    "productName": "Turtle Tracer",
     "asar": true,
     "asarUnpack": [
       "node_modules/electron-updater"
@@ -104,7 +104,7 @@
       "output": "release",
       "buildResources": "build"
     },
-    "artifactName": "Pedro-Pathing-Plus-Visualizer-${version}-${arch}.${ext}",
+    "artifactName": "Turtle-Tracer-${version}-${arch}.${ext}",
     "files": [
       "dist/**/*",
       "public/**/*",
@@ -140,17 +140,17 @@
       "timeStampServer": ""
     },
     "appx": {
-      "identityName": "PedroPathingPlus.PedroPathingPlusVisualizer",
+      "identityName": "TurtleTracer.TurtleTracer",
       "publisher": "CN=D17DA008-76B7-4978-BFAA-9ED056EE08B9",
-      "publisherDisplayName": "Pedro Pathing Plus",
-      "applicationId": "PedroPathingPlus.PedroPathingPlusVisualizer"
+      "publisherDisplayName": "Turtle Tracer",
+      "applicationId": "TurtleTracer.TurtleTracer"
     },
     "nsis": {
       "oneClick": false,
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true,
       "perMachine": true,
-      "artifactName": "Pedro-Pathing-Plus-Visualizer-Setup-${version}.${ext}"
+      "artifactName": "Turtle-Tracer-Setup-${version}.${ext}"
     },
     "linux": {
       "target": [
@@ -160,11 +160,11 @@
       "icon": "build/icon.png",
       "category": "Development",
       "maintainer": "Matthew Allen <allenmc220@gmail.com>",
-      "executableName": "pedro-pathing-plus-visualizer",
-      "artifactName": "Pedro-Pathing-Plus-Visualizer-${version}-${arch}.${ext}"
+      "executableName": "turtle-tracer",
+      "artifactName": "Turtle-Tracer-${version}-${arch}.${ext}"
     },
     "appImage": {
-      "artifactName": "Pedro-Pathing-Plus-Visualizer-${version}-${arch}.${ext}"
+      "artifactName": "Turtle-Tracer-${version}-${arch}.${ext}"
     },
     "fileAssociations": [
       {
@@ -179,7 +179,7 @@
     "publish": {
       "provider": "github",
       "owner": "Mallen220",
-      "repo": "PedroPathingVisualizer"
+      "repo": "TurtleTracer"
     }
   },
   "overrides": {

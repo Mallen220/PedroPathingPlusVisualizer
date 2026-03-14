@@ -13,7 +13,7 @@ import { toUser, toUserHeading, type CoordinateSystem } from "./coordinates";
 
 const AUTO_GENERATED_FILE_WARNING_MESSAGE: string = `
 /* ============================================================= *
- *        Pedro Pathing Plus Visualizer — Auto-Generated         *
+ *        Turtle Tracer — Auto-Generated         *
  *                                                               *
  *  Version: ${pkg.version}.                                              *
  *  Copyright (c) ${new Date().getFullYear()} Matthew Allen                             *

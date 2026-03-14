@@ -1,6 +1,6 @@
 // Copyright 2026 Matthew Allen. Licensed under the Modified Apache License, Version 2.0.
 // -------------------------------------------------------------------
-// Sticky Notes Plugin for Pedro Pathing Visualizer
+// Sticky Notes Plugin for Turtle Tracer
 // -------------------------------------------------------------------
 
 interface StickyNote {

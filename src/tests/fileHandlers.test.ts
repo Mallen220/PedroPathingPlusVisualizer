@@ -293,11 +293,11 @@ describe("fileHandlers", () => {
       expect(content.version).toBe(pkg.version);
       expect(content.header).toBeDefined();
       expect(content.header.info).toBe(
-        "Created with Pedro Pathing Plus Visualizer",
+        "Created with Turtle Tracer",
       );
       expect(content.header.copyright).toContain("Copyright");
       expect(content.header.link).toBe(
-        "https://github.com/Mallen220/PedroPathingPlusVisualizer",
+        "https://github.com/Mallen220/TurtleTracer",
       );
     });
 
@@ -474,11 +474,11 @@ describe("fileHandlers", () => {
 
       expect(content.header).toBeDefined();
       expect(content.header.info).toBe(
-        "Created with Pedro Pathing Plus Visualizer",
+        "Created with Turtle Tracer",
       );
       expect(content.header.copyright).toContain("Copyright");
       expect(content.header.link).toBe(
-        "https://github.com/Mallen220/PedroPathingPlusVisualizer",
+        "https://github.com/Mallen220/TurtleTracer",
       );
     });
 

@@ -1,6 +1,6 @@
 # Plugins
 
-Pedro Pathing Plus Visualizer supports a powerful plugin system that allows you to extend its functionality. You can add custom code exporters, UI themes, and even new interface elements using simple JavaScript files.
+Turtle Tracer supports a powerful plugin system that allows you to extend its functionality. You can add custom code exporters, UI themes, and even new interface elements using simple JavaScript files.
 
 ## How to Add Plugins
 

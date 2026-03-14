@@ -43,14 +43,14 @@ jobs:
           cat > base_notes.md << 'EOF'
           ## 🚀 Quick Update
 
-          Refer to the README installation section for instructions on installing or updating Pedro Pathing Plus Visualizer. Below is a condensed version of the instructions for quick reference.
+          Refer to the README installation section for instructions on installing or updating Turtle Tracer. Below is a condensed version of the instructions for quick reference.
 
           This repo is regularly updated with new features and bug fixes but tested primarily on macOS. Should an issue arise, please report it via the GitHub Issues page and revert to the previous stable version if needed.
 
           #### **macOS / Linux**
           Run the following command in terminal and provide your password when prompted:
           ```bash
-          curl -fsSL https://raw.githubusercontent.com/Mallen220/PedroPathingPlusVisualizer/main/install.sh | bash
+          curl -fsSL https://raw.githubusercontent.com/Mallen220/TurtleTracer/main/install.sh | bash
           ```
 
           #### **Windows**
@@ -99,7 +99,7 @@ jobs:
           set -e
 
           VERSION="${TAG_NAME#v}"
-          TITLE="Pedro Pathing Plus Visualizer ${VERSION}"
+          TITLE="Turtle Tracer ${VERSION}"
 
           # Check for existing release
           RELEASE_JSON=$(gh release view "$TAG_NAME" --json isDraft,uploadUrl 2>/dev/null || true)

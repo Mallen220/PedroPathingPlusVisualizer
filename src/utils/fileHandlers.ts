@@ -255,10 +255,10 @@ async function performSave(
     const projectData = {
       version: pkg.version,
       header: {
-        info: "Created with Pedro Pathing Plus Visualizer",
+        info: "Created with Turtle Tracer",
         copyright:
           "Copyright 2026 Matthew Allen. Licensed under the Modified Apache License, Version 2.0.",
-        link: "https://github.com/Mallen220/PedroPathingPlusVisualizer",
+        link: "https://github.com/Mallen220/TurtleTracer",
       },
       startPoint: updatedStartPoint,
       lines: linesToSave,
@@ -468,10 +468,10 @@ export async function exportAsPP() {
         {
           version: pkg.version,
           header: {
-            info: "Created with Pedro Pathing Plus Visualizer",
+            info: "Created with Turtle Tracer",
             copyright:
               "Copyright 2026 Matthew Allen. Licensed under the Modified Apache License, Version 2.0.",
-            link: "https://github.com/Mallen220/PedroPathingPlusVisualizer",
+            link: "https://github.com/Mallen220/TurtleTracer",
           },
           startPoint: updatedStartPoint,
           lines: ln,
@@ -498,10 +498,10 @@ export async function exportAsPP() {
     {
       version: pkg.version,
       header: {
-        info: "Created with Pedro Pathing Plus Visualizer",
+        info: "Created with Turtle Tracer",
         copyright:
           "Copyright 2026 Matthew Allen. Licensed under the Modified Apache License, Version 2.0.",
-        link: "https://github.com/Mallen220/PedroPathingPlusVisualizer",
+        link: "https://github.com/Mallen220/TurtleTracer",
       },
       startPoint: updatedStartPoint,
       lines: ln,

@@ -26,7 +26,7 @@ async function generate() {
     const finalContent = `// Copyright 2026 Matthew Allen. Licensed under the Modified Apache License, Version 2.0.
 
 /**
- * Type definitions for Pedro Pathing Plus Visualizer Plugins.
+ * Type definitions for Turtle Tracer Plugins.
  * These types are automatically available in your .ts plugins.
  *
  * AUTO-GENERATED - DO NOT EDIT MANUALLY

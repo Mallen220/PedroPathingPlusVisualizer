@@ -23,7 +23,7 @@ Generates a `SequentialCommandGroup` for use with command-based frameworks.
 
 ### Gradle setup
 
-To use the command-based exports you need to add the JitPack repository and the PedroPathingPlus dependency to your `teamcode` Gradle configuration (for example, `build.gradle`):
+To use the command-based exports you need to add the JitPack repository and the TurtleTracerLib dependency to your `teamcode` Gradle configuration (for example, `build.gradle`):
 
 ```groovy
 repositories {
@@ -33,10 +33,10 @@ repositories {
 }
 ```
 
-And add the dependency (use the [newest release](https://github.com/Mallen220/PedroPathingPlus/releases) instead of the version shown):
+And add the dependency (use the [newest release](https://github.com/Mallen220/TurtleTracerLib/releases) instead of the version shown):
 
 ```groovy
-implementation 'com.github.Mallen220:PedroPathingPlus:1.0.6'
+implementation 'com.github.Mallen220:TurtleTracerLib:1.0.6'
 ```
 
 ## Other Formats
