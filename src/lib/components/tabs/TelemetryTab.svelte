@@ -9,6 +9,7 @@
     setStatus,
   } from "../../telemetryStore";
   import { notification } from "../../../stores";
+  import LoadingSpinner from "../common/LoadingSpinner.svelte";
 
   // Inputs
   let ip = "192.168.43.1";
@@ -120,30 +121,39 @@
     </div>
 
     <div class="flex gap-2 items-center">
-      <input
-        type="text"
-        bind:value={ip}
-        placeholder="IP Address"
-        class="flex-1 px-3 py-2 bg-neutral-100 dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-700 rounded focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm dark:text-white"
-        disabled={$isConnected}
-      />
-      <input
-        type="number"
-        bind:value={port}
-        placeholder="Port"
-        class="w-24 px-3 py-2 bg-neutral-100 dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-700 rounded focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm dark:text-white"
-        disabled={$isConnected}
-      />
+      <div class="flex-1">
+        <label for="ip-address" class="sr-only">IP Address</label>
+        <input
+          id="ip-address"
+          type="text"
+          bind:value={ip}
+          placeholder="IP Address"
+          class="w-full px-3 py-2 bg-neutral-100 dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-700 rounded focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm dark:text-white"
+          disabled={$isConnected}
+        />
+      </div>
+      <div class="w-24">
+        <label for="port" class="sr-only">Port</label>
+        <input
+          id="port"
+          type="number"
+          bind:value={port}
+          placeholder="Port"
+          class="w-full px-3 py-2 bg-neutral-100 dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-700 rounded focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm dark:text-white"
+          disabled={$isConnected}
+        />
+      </div>
     </div>
     <button
       on:click={toggleConnection}
-      class="w-full py-2 rounded-lg font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2
+      class="w-full py-2 rounded-lg font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 flex items-center justify-center gap-2
             {$isConnected
         ? 'bg-red-100 text-red-700 hover:bg-red-200 focus:ring-red-500'
         : 'bg-purple-600 text-white hover:bg-purple-700 focus:ring-purple-500'}"
       disabled={connecting}
     >
       {#if connecting}
+        <LoadingSpinner size="sm" color="text-white" showText={false} />
         Connecting...
       {:else if $isConnected}
         Disconnect
@@ -188,9 +198,28 @@
     <div class="flex-1 overflow-y-auto p-2">
       {#if sortedKeys.length === 0}
         <div
-          class="h-full flex items-center justify-center text-neutral-400 text-sm italic"
+          class="h-full flex flex-col items-center justify-center text-neutral-400 text-sm p-4 text-center"
         >
-          No data received
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke-width="1.5"
+            stroke="currentColor"
+            class="w-10 h-10 mb-3 text-neutral-300 dark:text-neutral-600"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M8.25 15L12 18.75 15.75 15m-7.5-6L12 5.25 15.75 9"
+            />
+          </svg>
+          <p class="font-medium text-neutral-600 dark:text-neutral-300">
+            No telemetry data
+          </p>
+          <p class="text-xs mt-1 text-neutral-500">
+            Connect to your robot to view real-time variable updates.
+          </p>
         </div>
       {:else}
         <table class="w-full text-sm">
