@@ -35,7 +35,7 @@ export const showHistory = writable(false);
 export const showTransformDialog = writable(false);
 export const exportDialogState = writable<{
   isOpen: boolean;
-  format: "java" | "points" | "sequential" | "json" | "custom";
+  format: "java" | "points" | "csv" | "sequential" | "json" | "custom";
   exporterName?: string;
 }>({ isOpen: false, format: "java" });
 

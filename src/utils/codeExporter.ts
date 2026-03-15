@@ -598,6 +598,65 @@ export async function generateJavaCode(
 /**
  * Generate an array of waypoints (not sampled points) along the path
  */
+export function generateCSV(
+  startPoint: Point,
+  lines: Line[],
+  codeUnits: "imperial" | "metric" = "imperial",
+): string {
+  const rows: string[] = [];
+  rows.push("X,Y,Heading");
+
+  const formatPoint = (x: number, y: number, heading?: number | string) => {
+    let xVal = x;
+    let yVal = y;
+    if (codeUnits === "metric") {
+      xVal *= 2.54;
+      yVal *= 2.54;
+    }
+    const xStr = Number.isInteger(xVal) ? xVal.toFixed(1) : xVal.toFixed(3);
+    const yStr = Number.isInteger(yVal) ? yVal.toFixed(1) : yVal.toFixed(3);
+
+    let hStr = "";
+    if (heading !== undefined && heading !== null) {
+      const hNum = Number(heading);
+      hStr = Number.isInteger(hNum) ? hNum.toFixed(1) : hNum.toFixed(3);
+    }
+
+    return `${xStr},${yStr},${hStr}`;
+  };
+
+  // Add start point
+  let startHeading: number | string = "";
+  if (startPoint.heading === "constant" && startPoint.degrees !== undefined) {
+    startHeading = startPoint.degrees;
+  } else if (startPoint.heading === "linear" && startPoint.startDeg !== undefined) {
+    startHeading = startPoint.startDeg;
+  }
+  rows.push(formatPoint(startPoint.x, startPoint.y, startHeading));
+
+  // Add all waypoints (end points and control points)
+  lines.forEach((line) => {
+    // Add control points for this line
+    line.controlPoints.forEach((controlPoint) => {
+      rows.push(formatPoint(controlPoint.x, controlPoint.y));
+    });
+
+    // Add end point of this line
+    let endHeading: number | string = "";
+    if (line.endPoint.heading === "constant" && line.endPoint.degrees !== undefined) {
+      endHeading = line.endPoint.degrees;
+    } else if (line.endPoint.heading === "linear" && line.endPoint.endDeg !== undefined) {
+      endHeading = line.endPoint.endDeg;
+    }
+    rows.push(formatPoint(line.endPoint.x, line.endPoint.y, endHeading));
+  });
+
+  return rows.join("\n");
+}
+
+/**
+ * Generate an array of waypoints (not sampled points) along the path
+ */
 export function generatePointsArray(
   startPoint: Point,
   lines: Line[],

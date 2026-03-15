@@ -229,7 +229,7 @@ interface Settings {
   autoExportCode?: boolean;
   autoExportPath?: string;
   autoExportPathMode?: "relative" | "absolute";
-  autoExportFormat?: "java" | "sequential" | "points" | "json";
+  autoExportFormat?: "java" | "sequential" | "points" | "csv" | "json";
   autoExportTargetLibrary?: "SolversLib" | "NextFTC";
   autoExportFullClass?: boolean;
   autoExportEmbedPoseData?: boolean; // Embed pose data in the generated code

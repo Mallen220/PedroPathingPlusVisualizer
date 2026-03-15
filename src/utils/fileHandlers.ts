@@ -24,6 +24,7 @@ import {
   generateJavaCode,
   generatePointsArray,
   generateSequentialCommandCode,
+  generateCSV,
 } from "./codeExporter";
 import type { Line, Point, SequenceItem, Settings, Shape } from "../types";
 import { makeId } from "./nameGenerator";
@@ -839,6 +840,10 @@ export async function handleAutoExport(
       case "points":
         content = generatePointsArray(startPoint, lines, settings.codeUnits);
         extension = "txt";
+        break;
+      case "csv":
+        content = generateCSV(startPoint, lines, settings.codeUnits);
+        extension = "csv";
         break;
       case "json":
         content = JSON.stringify(projectData, null, 2);

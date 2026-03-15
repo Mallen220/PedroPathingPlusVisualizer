@@ -2095,6 +2095,7 @@
                         <option value="java">Java Class</option>
                         <option value="sequential">Sequential Command</option>
                         <option value="points">Points Array</option>
+                        <option value="csv">CSV (Spreadsheet)</option>
                         <option value="json">JSON Project Data</option>
                       </select>
                     </SettingsItem>

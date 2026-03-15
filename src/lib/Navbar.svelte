@@ -128,7 +128,7 @@
   }
 
   function handleExport(
-    format: "java" | "points" | "sequential" | "json" | "custom",
+    format: "java" | "points" | "csv" | "sequential" | "json" | "custom",
     exporterName?: string,
   ) {
     exportMenuOpen = false;
@@ -1190,6 +1190,12 @@
               class="block w-full text-left px-4 py-2 text-sm text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700"
               title={`Export Points${getShortcutFromSettings(settings, "export-points")}`}
               >Points Array</button
+            >
+            <button
+              on:click={() => handleExport("csv")}
+              class="block w-full text-left px-4 py-2 text-sm text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700"
+              title="Export CSV"
+              >CSV (Spreadsheet)</button
             >
             <button
               on:click={() => handleExport("sequential")}

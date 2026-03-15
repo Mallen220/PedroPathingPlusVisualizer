@@ -19,6 +19,7 @@
     generateJavaCode,
     generatePointsArray,
     generateSequentialCommandCode,
+    generateCSV,
   } from "../../../utils";
   import { tick, onMount } from "svelte";
   import { get } from "svelte/store";
@@ -38,7 +39,7 @@
   export const settings: Settings | undefined = undefined;
 
   let exportFullCode = false;
-  let exportFormat: "java" | "points" | "sequential" | "json" | "custom" =
+  let exportFormat: "java" | "points" | "csv" | "sequential" | "json" | "custom" =
     "java";
   let customExporterName: string | null = null;
   let sequentialClassName = "AutoPath";
@@ -157,6 +158,9 @@
       } else if (exportFormat === "points") {
         exportedCode = generatePointsArray(startPoint, lines, codeUnits);
         currentLanguage = plaintext;
+      } else if (exportFormat === "csv") {
+        exportedCode = generateCSV(startPoint, lines, codeUnits);
+        currentLanguage = plaintext;
       } else if (exportFormat === "sequential") {
         exportedCode = await generateSequentialCommandCode(
           startPoint,
@@ -238,7 +242,7 @@
   }
 
   export async function openWithFormat(
-    format: "java" | "points" | "sequential" | "json" | "custom",
+    format: "java" | "points" | "csv" | "sequential" | "json" | "custom",
     exporterName?: string,
   ) {
     exportFormat = format;
@@ -300,6 +304,8 @@
         else filename = "AutoPath.java";
       } else if (exportFormat === "points") {
         filename = "points.txt";
+      } else if (exportFormat === "csv") {
+        filename = "points.csv";
       }
       a.download = filename;
       document.body.appendChild(a);
@@ -323,6 +329,10 @@
         defaultName = "points.txt";
         extensions = ["txt"];
         nameFilter = "Text File";
+      } else if (exportFormat === "csv") {
+        defaultName = "points.csv";
+        extensions = ["csv"];
+        nameFilter = "CSV File";
       }
 
       const filePath = await electronAPI.showSaveDialog({
@@ -451,6 +461,7 @@
           >
             {#if exportFormat === "java"}Export Java Code
             {:else if exportFormat === "points"}Export Points
+            {:else if exportFormat === "csv"}Export CSV
             {:else if exportFormat === "json"}Project Data
             {:else if exportFormat === "custom"}{customExporterName ||
                 "Plugin Output"}
@@ -461,6 +472,8 @@
               Standard Java code for your path.
             {:else if exportFormat === "points"}
               Raw array of points for processing.
+            {:else if exportFormat === "csv"}
+              CSV spreadsheet of path waypoints.
             {:else if exportFormat === "json"}
               Raw PP data for the project.
             {:else if exportFormat === "custom"}
@@ -803,7 +816,7 @@
             </label>
           {/if}
 
-          {#if exportFormat === "java" || exportFormat === "sequential" || exportFormat === "points"}
+          {#if exportFormat === "java" || exportFormat === "sequential" || exportFormat === "points" || exportFormat === "csv"}
             <div class="flex flex-col gap-1.5 mt-2">
               <span
                 class="text-[10px] font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400"
