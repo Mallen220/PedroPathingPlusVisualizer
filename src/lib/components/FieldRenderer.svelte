@@ -74,6 +74,11 @@
     DEFAULT_ROBOT_WIDTH,
   } from "../../config";
   import { calculateRobotState } from "../../utils/animation";
+
+  // ⚡ Bolt Optimization:
+  // Caching d3.scaleLinear() avoids repeated expensive instantiations during
+  // highly frequent operations (e.g. mecanumSpeeds calculation on every animation frame)
+  const IDENTITY_SCALE = d3.scaleLinear().domain([0, 1]).range([0, 1]);
   import {
     getCurvePoint,
     quadraticToCubic,
@@ -292,7 +297,7 @@
     const futureSeconds = currentSeconds + dt;
     const futurePercent = (futureSeconds / totalDuration) * 100;
 
-    const scale = d3.scaleLinear().domain([0, 1]).range([0, 1]);
+    const scale = IDENTITY_SCALE;
 
     const state1 = calculateRobotState(
       $percentStore,
