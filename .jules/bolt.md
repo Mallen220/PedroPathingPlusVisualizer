@@ -1,0 +1,3 @@
+## 2025-03-01 - [Avoid Recreating D3 Scales in Svelte Reactive Blocks]
+**Learning:** Creating new instances of functions like `d3.scaleLinear()` inside frequently executing Svelte reactive blocks (e.g., those recalculating velocities based on animation frames or `requestAnimationFrame`) causes unnecessary garbage collection pressure and can lead to performance bottlenecks (stutters) during path simulation. Using an identity scale `[0, 1] -> [0, 1]` passed directly inside the block multiplies this overhead unnecessarily if recreated each time.
+**Action:** Extract constant scales, like an `IDENTITY_SCALE` used for pass-through value generation, outside the reactive scope to reuse the instance, preventing memory bloat and improving UI responsiveness during rendering loops.

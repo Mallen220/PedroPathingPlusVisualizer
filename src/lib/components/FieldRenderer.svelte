@@ -100,6 +100,13 @@
   import type { Path } from "two.js/src/path";
   import type { Line as PathLine } from "two.js/src/shapes/line";
 
+  // ⚡ Bolt Optimization:
+  // Caching d3.scaleLinear() avoids repeated expensive instantiations during
+  // highly frequent operations (e.g. calculateRobotState called on every animation frame
+  // inside the mecanumSpeeds reactive block)
+  // This reduces garbage collection pressure and makes the simulation significantly faster
+  const IDENTITY_SCALE = d3.scaleLinear().domain([0, 1]).range([0, 1]);
+
   // State from props
   export let width = 0;
   export let height = 0;
@@ -292,23 +299,21 @@
     const futureSeconds = currentSeconds + dt;
     const futurePercent = (futureSeconds / totalDuration) * 100;
 
-    const scale = d3.scaleLinear().domain([0, 1]).range([0, 1]);
-
     const state1 = calculateRobotState(
       $percentStore,
       timePrediction.timeline,
       lines,
       startPoint,
-      scale,
-      scale,
+      IDENTITY_SCALE,
+      IDENTITY_SCALE,
     );
     const state2 = calculateRobotState(
       futurePercent,
       timePrediction.timeline,
       lines,
       startPoint,
-      scale,
-      scale,
+      IDENTITY_SCALE,
+      IDENTITY_SCALE,
     );
 
     // Calculate velocity in inches per second
