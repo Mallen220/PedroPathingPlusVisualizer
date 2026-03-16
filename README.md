@@ -3,7 +3,7 @@
   <h1 align="center">Turtle Tracer</h1>
   <h2 align="center">(Previously Pedro Pathing Plus Visualizer)</h2>
   <p align="center">
-    <strong>The modern, intuitive path planner for FIRST Robotics Competition.</strong>
+    <strong>The modern, intuitive path planner for FIRST Tech Challenge.</strong>
   </p>
   <p align="center">
     Visualize • Plan • Simulate • Export
@@ -33,7 +33,7 @@ Windows Users can download from the Microsoft Store to receive auto-updates for 
 
 ## 🚀 Overview
 
-**Turtle Tracer** is a powerful desktop application built with Electron and Svelte, designed to revolutionize how FIRST Robotics Competition teams plan their autonomous routines. Unlike web-based alternatives, this tool runs natively on your machine, offering superior performance, local file management, and deep integration with your development workflow.
+**Turtle Tracer** is a powerful desktop application built with Electron and Svelte, designed to revolutionize how FIRST Tech Challenge teams plan their autonomous routines. Unlike web-based alternatives, this tool runs natively on your machine, offering superior performance, local file management, and deep integration with your development workflow.
 
 ## 🌟 Unmatched Features
 
