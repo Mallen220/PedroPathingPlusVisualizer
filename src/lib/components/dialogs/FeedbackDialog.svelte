@@ -127,7 +127,7 @@
               },
             ],
             footer: {
-              text: "Pedro Pathing Plus Visualizer Feedback",
+              text: "Turtle Tracer Feedback",
             },
             timestamp: new Date().toISOString(),
           },

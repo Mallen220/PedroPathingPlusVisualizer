@@ -1,6 +1,6 @@
 # Getting Started
 
-Welcome to Matthew Allen's **Pedro Pathing Plus Visualizer**, the modern path planner for FTC. This guide will get you up and running in minutes.
+Welcome to Matthew Allen's **Turtle Tracer**, the modern path planner for FTC. This guide will get you up and running in minutes.
 
 ## 1. The Interface
 
