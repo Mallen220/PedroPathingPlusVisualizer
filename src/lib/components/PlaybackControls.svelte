@@ -53,6 +53,10 @@
   let unsub1: () => void;
   let unsub2: () => void;
 
+  // Zoom State
+  let timelineZoom = 1.0;
+  let scrollContainer: HTMLElement;
+
   onMount(() => {
     unsub1 = loopRangeActiveStore.subscribe((v) => (loopRangeActive = v));
     unsub2 = loopRangeStore.subscribe((v) => (loopRange = v));
@@ -62,6 +66,50 @@
     if (unsub1) unsub1();
     if (unsub2) unsub2();
   });
+
+  function handleTimelineWheel(e: WheelEvent) {
+    if (e.ctrlKey || e.metaKey) {
+      e.preventDefault();
+      const zoomStep = 0.1;
+      const delta = e.deltaY < 0 ? zoomStep : -zoomStep;
+
+      const oldZoom = timelineZoom;
+      timelineZoom = Math.max(1.0, Math.min(10.0, timelineZoom + delta));
+
+      // Attempt to center the scroll around the mouse cursor if we actually zoomed
+      if (oldZoom !== timelineZoom && scrollContainer) {
+        // Calculate where the mouse is relative to the scroll container's left edge
+        const scrollRect = scrollContainer.getBoundingClientRect();
+        const mouseXRelative = e.clientX - scrollRect.left;
+
+        // Find what percentage of the timeline the mouse is currently hovering over
+        const scrollRatio =
+          (scrollContainer.scrollLeft + mouseXRelative) /
+          scrollContainer.scrollWidth;
+
+        // Wait for next tick so DOM updates the scrollWidth based on new timelineZoom
+        setTimeout(() => {
+          if (scrollContainer) {
+            // Keep the same percentage under the mouse
+            scrollContainer.scrollLeft =
+              scrollRatio * scrollContainer.scrollWidth - mouseXRelative;
+          }
+        }, 0);
+      }
+    }
+  }
+
+  function zoomIn() {
+    timelineZoom = Math.min(10.0, timelineZoom + 0.5);
+  }
+
+  function zoomOut() {
+    timelineZoom = Math.max(1.0, timelineZoom - 0.5);
+  }
+
+  function resetZoom() {
+    timelineZoom = 1.0;
+  }
 
   function startDragLoopHandle(e: MouseEvent, type: "min" | "max") {
     e.preventDefault();
@@ -76,9 +124,11 @@
   }
 
   function handleLoopDragMove(e: MouseEvent) {
-    if (!draggingLoopHandle || !timelineRect) return;
+    if (!draggingLoopHandle || !timelineRect || !scrollContainer) return;
+
     let pct = ((e.clientX - timelineRect.left) / timelineRect.width) * 100;
     pct = Math.max(0, Math.min(100, pct));
+
     loopRangeStore.update((r) => {
       if (draggingLoopHandle === "min") {
         return [Math.min(pct, r[1] - 0.1), r[1]];
@@ -265,7 +315,8 @@
   }
 
   function handleWindowMouseMove(e: MouseEvent) {
-    if (draggingMarkerIndex === null || !timelineRect) return;
+    if (draggingMarkerIndex === null || !timelineRect || !scrollContainer)
+      return;
 
     let x = e.clientX - timelineRect.left;
     let pct = (x / timelineRect.width) * 100;
@@ -300,194 +351,265 @@
   class="w-full bg-neutral-50 dark:bg-neutral-900 rounded-lg p-3 flex flex-col justify-start items-center gap-2 shadow-lg"
 >
   <!-- Timeline (Top Row) -->
-  <div
-    bind:this={timelineContainer}
-    class="w-full relative h-10 flex items-center group/timeline"
-  >
-    <!-- Timeline Track & Highlights -->
+  <div class="w-full flex items-center gap-2">
+    <!-- Zoom Controls -->
     <div
-      class="absolute left-0 right-0 top-1/2 -translate-y-1/2 h-2.5 w-full pointer-events-none overflow-hidden rounded-full bg-neutral-200 dark:bg-neutral-700 shadow-inner"
+      class="flex flex-col gap-0.5 opacity-30 hover:opacity-100 transition-opacity"
     >
-      {#each timelineItems as item}
-        {#if item.type === "wait"}
-          <!-- Wait: Amber highlight -->
-          <div
-            class="absolute top-0 bottom-0 bg-amber-500/70"
-            style="left: {item.percent}%; width: {item.durationPercent}%;"
-            aria-hidden="true"
-          ></div>
-        {:else if item.type === "rotate"}
-          <!-- Rotate: Pink highlight -->
-          <div
-            class={item.explicit === true
-              ? "absolute top-0 bottom-0 bg-pink-500/70"
-              : "absolute top-0 bottom-0 bg-pink-200/40"}
-            style="left: {item.percent}%; width: {item.durationPercent}%;"
-            aria-hidden="true"
-          ></div>
-        {:else if item.type === "macro"}
-          <!-- Macro: Blue highlight -->
-          <div
-            class="absolute top-0 bottom-0 bg-blue-500/50"
-            style="left: {item.percent}%; width: {item.durationPercent}%;"
-            aria-hidden="true"
-          ></div>
-        {/if}
-      {/each}
+      <button
+        on:click={zoomIn}
+        class="p-0.5 rounded text-neutral-500 hover:bg-neutral-200 dark:hover:bg-neutral-700 focus:outline-none"
+        title="Zoom In Timeline"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 20 20"
+          fill="currentColor"
+          class="w-3 h-3"
+          ><path
+            d="M10.75 4.75a.75.75 0 00-1.5 0v4.5h-4.5a.75.75 0 000 1.5h4.5v4.5a.75.75 0 001.5 0v-4.5h4.5a.75.75 0 000-1.5h-4.5v-4.5z"
+          /></svg
+        >
+      </button>
+      <button
+        on:click={resetZoom}
+        class="p-0.5 rounded text-neutral-500 hover:bg-neutral-200 dark:hover:bg-neutral-700 focus:outline-none"
+        title="Reset Timeline Zoom"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          class="w-3 h-3"
+          ><polyline points="4 9 4 4 9 4" /><polyline
+            points="15 4 20 4 20 9"
+          /><polyline points="20 15 20 20 15 20" /><polyline
+            points="9 20 4 20 4 15"
+          /></svg
+        >
+      </button>
+      <button
+        on:click={zoomOut}
+        class="p-0.5 rounded text-neutral-500 hover:bg-neutral-200 dark:hover:bg-neutral-700 focus:outline-none"
+        title="Zoom Out Timeline"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 20 20"
+          fill="currentColor"
+          class="w-3 h-3"
+          ><path
+            fill-rule="evenodd"
+            d="M4 10a.75.75 0 01.75-.75h10.5a.75.75 0 010 1.5H4.75A.75.75 0 014 10z"
+            clip-rule="evenodd"
+          /></svg
+        >
+      </button>
     </div>
 
-    <!-- Rotate Icons Overlay -->
-    <div class="absolute inset-0 w-full h-full pointer-events-none">
-      {#each timelineItems as item}
-        {#if item.type === "rotate" && item.explicit === true}
-          <!-- Center the icon in the duration; only show icon for explicit rotates -->
+    <!-- Scrollable Container -->
+    <div
+      bind:this={scrollContainer}
+      class="flex-1 overflow-x-auto overflow-y-hidden custom-scrollbar pb-1"
+      on:wheel|nonpassive={handleTimelineWheel}
+    >
+      <div
+        bind:this={timelineContainer}
+        class="relative h-10 flex items-center group/timeline origin-left"
+        style="width: {timelineZoom * 100}%; transition: width 0.1s ease-out;"
+      >
+        <!-- Timeline Track & Highlights -->
+        <div
+          class="absolute left-0 right-0 top-1/2 -translate-y-1/2 h-2.5 w-full pointer-events-none overflow-hidden rounded-full bg-neutral-200 dark:bg-neutral-700 shadow-inner"
+        >
+          {#each timelineItems as item}
+            {#if item.type === "wait"}
+              <!-- Wait: Amber highlight -->
+              <div
+                class="absolute top-0 bottom-0 bg-amber-500/70"
+                style="left: {item.percent}%; width: {item.durationPercent}%;"
+                aria-hidden="true"
+              ></div>
+            {:else if item.type === "rotate"}
+              <!-- Rotate: Pink highlight -->
+              <div
+                class={item.explicit === true
+                  ? "absolute top-0 bottom-0 bg-pink-500/70"
+                  : "absolute top-0 bottom-0 bg-pink-200/40"}
+                style="left: {item.percent}%; width: {item.durationPercent}%;"
+                aria-hidden="true"
+              ></div>
+            {:else if item.type === "macro"}
+              <!-- Macro: Blue highlight -->
+              <div
+                class="absolute top-0 bottom-0 bg-blue-500/50"
+                style="left: {item.percent}%; width: {item.durationPercent}%;"
+                aria-hidden="true"
+              ></div>
+            {/if}
+          {/each}
+        </div>
+
+        <!-- Rotate Icons Overlay -->
+        <div class="absolute inset-0 w-full h-full pointer-events-none">
+          {#each timelineItems as item}
+            {#if item.type === "rotate" && item.explicit === true}
+              <!-- Center the icon in the duration; only show icon for explicit rotates -->
+              <div
+                class="absolute"
+                style="left: {item.percent +
+                  (item.durationPercent || 0) /
+                    2}%; top: 50%; transform: translate(-50%, -50%); pointer-events: none;"
+                aria-hidden="true"
+              >
+                <!-- Small rotate icon (explicit rotates are pink) -->
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  class="w-4 h-4 rounded-full bg-white dark:bg-neutral-900"
+                  style="color: rgb(236 72 153)"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                  />
+                </svg>
+              </div>
+            {/if}
+          {/each}
+        </div>
+
+        <!-- Section Loop Visuals -->
+        {#if loopRangeActive}
+          <!-- Excluded region left -->
           <div
-            class="absolute"
-            style="left: {item.percent +
-              (item.durationPercent || 0) /
-                2}%; top: 50%; transform: translate(-50%, -50%); pointer-events: none;"
-            aria-hidden="true"
-          >
-            <!-- Small rotate icon (explicit rotates are pink) -->
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              class="w-4 h-4 rounded-full bg-white dark:bg-neutral-900"
-              style="color: rgb(236 72 153)"
+            class="absolute top-0 bottom-0 bg-black/30 dark:bg-black/50 z-[15] pointer-events-none rounded-l-full"
+            style="left: 0%; width: {loopRange[0]}%;"
+          ></div>
+          <!-- Excluded region right -->
+          <div
+            class="absolute top-0 bottom-0 bg-black/30 dark:bg-black/50 z-[15] pointer-events-none rounded-r-full"
+            style="left: {loopRange[1]}%; width: {100 - loopRange[1]}%;"
+          ></div>
+
+          <!-- A Handle -->
+          <!-- svelte-ignore a11y-no-static-element-interactions -->
+          <div
+            class="absolute top-1/2 -translate-y-1/2 w-2 h-4 bg-purple-500 hover:bg-purple-400 cursor-ew-resize z-20 rounded-sm shadow-md"
+            style="left: {loopRange[0]}%; transform: translateX(-50%);"
+            on:mousedown={(e) => startDragLoopHandle(e, "min")}
+          ></div>
+          <!-- B Handle -->
+          <!-- svelte-ignore a11y-no-static-element-interactions -->
+          <div
+            class="absolute top-1/2 -translate-y-1/2 w-2 h-4 bg-purple-500 hover:bg-purple-400 cursor-ew-resize z-20 rounded-sm shadow-md"
+            style="left: {loopRange[1]}%; transform: translateX(-50%);"
+            on:mousedown={(e) => startDragLoopHandle(e, "max")}
+          ></div>
+        {/if}
+
+        <!-- The Slider -->
+        <input
+          id="timeline-slider"
+          bind:value={percent}
+          type="range"
+          min="0"
+          max="100"
+          step="0.000001"
+          aria-label="Animation progress"
+          class="w-full appearance-none slider focus:outline-none focus-visible:ring-2 focus-visible:ring-green-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-neutral-900 rounded-full bg-transparent dark:bg-transparent relative z-10 timeline-slider"
+          style={draggingMarkerIndex !== null ? "pointer-events: none;" : ""}
+          on:input={handleSeekInput}
+          on:keydown={handleSliderKeydown}
+        />
+
+        <!-- Event Markers Layer (Top, Map Pins) -->
+        <!-- These need pointer events to be clickable for seeking -->
+        {#each timelineItems as item, index}
+          {#if item.type === "marker"}
+            <!-- svelte-ignore a11y-no-static-element-interactions -->
+            <div
+              class="absolute z-20 group rounded-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:ring-offset-1 dark:focus-visible:ring-offset-neutral-900"
+              role="button"
+              tabindex="0"
+              on:mousedown={(e) => handleMarkerDragStart(e, index, item)}
+              on:click={(e) => {
+                if (ignoreClick) return;
+                if (draggingMarkerIndex === null) handleSeek(item.percent);
+              }}
+              on:keydown={(e) => {
+                if (e.key === "Enter" || e.key === " ")
+                  handleSeek(item.percent);
+              }}
+              style="left: {draggingMarkerIndex === index
+                ? draggingMarkerPercent
+                : item.percent}%; top: -4px; transform: translateX(-50%); cursor: {draggingMarkerIndex ===
+              index
+                ? 'grabbing'
+                : 'grab'}; pointer-events: auto;"
+              aria-label={item.name}
             >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-              />
-            </svg>
-          </div>
-        {/if}
-      {/each}
+              <!-- Tooltip (CSS Hover) -->
+              <div
+                class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded shadow-lg text-xs text-neutral-800 dark:text-neutral-100 z-[100] pointer-events-none whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+              >
+                {item.name}
+              </div>
+
+              <!-- Map Pin Icon -->
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+                stroke-width="1.5"
+                class={item.fromWait
+                  ? "w-6 h-6 drop-shadow-md transition-transform group-hover:scale-125 text-black dark:text-white stroke-white dark:stroke-neutral-900"
+                  : "w-6 h-6 text-purple-500 drop-shadow-md transition-transform group-hover:scale-125 stroke-white dark:stroke-neutral-900"}
+                style={item.fromWait ? "" : `color: ${item.color || "#a855f7"}`}
+              >
+                <path
+                  fill-rule="evenodd"
+                  d="M11.54 22.351l.07.04.028.016a.76.76 0 00.723 0l.028-.015.071-.041a16.975 16.975 0 001.144-.742 19.58 19.58 0 002.683-2.282c1.944-1.99 3.963-4.98 3.963-8.827a8.25 8.25 0 00-16.5 0c0 3.846 2.02 6.837 3.963 8.827a19.58 19.58 0 002.682 2.282 16.975 16.975 0 001.145.742zM12 13.5a3 3 0 100-6 3 3 0 000 6z"
+                  clip-rule="evenodd"
+                />
+              </svg>
+            </div>
+          {:else if item.type === "dot"}
+            <div
+              class="absolute z-20 group ring-2 ring-black/5 dark:ring-white/20 rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-1 dark:focus-visible:ring-offset-neutral-900"
+              role="button"
+              tabindex="0"
+              on:click={() => handleSeek(item.percent)}
+              on:keydown={(e) => {
+                if (e.key === "Enter" || e.key === " ")
+                  handleSeek(item.percent);
+              }}
+              style={`left: ${item.percent}%; top: 50%; transform: translate(-50%, -50%); width: 12px; height: 12px; background: ${item.color}; cursor: pointer;`}
+              aria-label={item.name}
+            >
+              <!-- Tooltip (CSS Hover) -->
+              <div
+                class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded shadow-lg text-xs text-neutral-800 dark:text-neutral-100 z-[100] pointer-events-none whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+              >
+                {item.name}
+              </div>
+            </div>
+          {/if}
+        {/each}
+      </div>
     </div>
-
-    <!-- Section Loop Visuals -->
-    {#if loopRangeActive}
-      <!-- Excluded region left -->
-      <div
-        class="absolute top-0 bottom-0 bg-black/30 dark:bg-black/50 z-[15] pointer-events-none rounded-l-full"
-        style="left: 0%; width: {loopRange[0]}%;"
-      ></div>
-      <!-- Excluded region right -->
-      <div
-        class="absolute top-0 bottom-0 bg-black/30 dark:bg-black/50 z-[15] pointer-events-none rounded-r-full"
-        style="left: {loopRange[1]}%; width: {100 - loopRange[1]}%;"
-      ></div>
-
-      <!-- A Handle -->
-      <!-- svelte-ignore a11y-no-static-element-interactions -->
-      <div
-        class="absolute top-1/2 -translate-y-1/2 w-2 h-4 bg-purple-500 hover:bg-purple-400 cursor-ew-resize z-20 rounded-sm shadow-md"
-        style="left: {loopRange[0]}%; transform: translateX(-50%);"
-        on:mousedown={(e) => startDragLoopHandle(e, "min")}
-      ></div>
-      <!-- B Handle -->
-      <!-- svelte-ignore a11y-no-static-element-interactions -->
-      <div
-        class="absolute top-1/2 -translate-y-1/2 w-2 h-4 bg-purple-500 hover:bg-purple-400 cursor-ew-resize z-20 rounded-sm shadow-md"
-        style="left: {loopRange[1]}%; transform: translateX(-50%);"
-        on:mousedown={(e) => startDragLoopHandle(e, "max")}
-      ></div>
-    {/if}
-
-    <!-- The Slider -->
-    <input
-      id="timeline-slider"
-      bind:value={percent}
-      type="range"
-      min="0"
-      max="100"
-      step="0.000001"
-      aria-label="Animation progress"
-      class="w-full appearance-none slider focus:outline-none focus-visible:ring-2 focus-visible:ring-green-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-neutral-900 rounded-full bg-transparent dark:bg-transparent relative z-10 timeline-slider"
-      style={draggingMarkerIndex !== null ? "pointer-events: none;" : ""}
-      on:input={handleSeekInput}
-      on:keydown={handleSliderKeydown}
-    />
-
-    <!-- Event Markers Layer (Top, Map Pins) -->
-    <!-- These need pointer events to be clickable for seeking -->
-    {#each timelineItems as item, index}
-      {#if item.type === "marker"}
-        <!-- svelte-ignore a11y-no-static-element-interactions -->
-        <div
-          class="absolute z-20 group rounded-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:ring-offset-1 dark:focus-visible:ring-offset-neutral-900"
-          role="button"
-          tabindex="0"
-          on:mousedown={(e) => handleMarkerDragStart(e, index, item)}
-          on:click={(e) => {
-            if (ignoreClick) return;
-            if (draggingMarkerIndex === null) handleSeek(item.percent);
-          }}
-          on:keydown={(e) => {
-            if (e.key === "Enter" || e.key === " ") handleSeek(item.percent);
-          }}
-          style="left: {draggingMarkerIndex === index
-            ? draggingMarkerPercent
-            : item.percent}%; top: -4px; transform: translateX(-50%); cursor: {draggingMarkerIndex ===
-          index
-            ? 'grabbing'
-            : 'grab'}; pointer-events: auto;"
-          aria-label={item.name}
-        >
-          <!-- Tooltip (CSS Hover) -->
-          <div
-            class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded shadow-lg text-xs text-neutral-800 dark:text-neutral-100 z-[100] pointer-events-none whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200"
-          >
-            {item.name}
-          </div>
-
-          <!-- Map Pin Icon -->
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            fill="currentColor"
-            stroke-width="1.5"
-            class={item.fromWait
-              ? "w-6 h-6 drop-shadow-md transition-transform group-hover:scale-125 text-black dark:text-white stroke-white dark:stroke-neutral-900"
-              : "w-6 h-6 text-purple-500 drop-shadow-md transition-transform group-hover:scale-125 stroke-white dark:stroke-neutral-900"}
-            style={item.fromWait ? "" : `color: ${item.color || "#a855f7"}`}
-          >
-            <path
-              fill-rule="evenodd"
-              d="M11.54 22.351l.07.04.028.016a.76.76 0 00.723 0l.028-.015.071-.041a16.975 16.975 0 001.144-.742 19.58 19.58 0 002.683-2.282c1.944-1.99 3.963-4.98 3.963-8.827a8.25 8.25 0 00-16.5 0c0 3.846 2.02 6.837 3.963 8.827a19.58 19.58 0 002.682 2.282 16.975 16.975 0 001.145.742zM12 13.5a3 3 0 100-6 3 3 0 000 6z"
-              clip-rule="evenodd"
-            />
-          </svg>
-        </div>
-      {:else if item.type === "dot"}
-        <div
-          class="absolute z-20 group ring-2 ring-black/5 dark:ring-white/20 rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-1 dark:focus-visible:ring-offset-neutral-900"
-          role="button"
-          tabindex="0"
-          on:click={() => handleSeek(item.percent)}
-          on:keydown={(e) => {
-            if (e.key === "Enter" || e.key === " ") handleSeek(item.percent);
-          }}
-          style={`left: ${item.percent}%; top: 50%; transform: translate(-50%, -50%); width: 12px; height: 12px; background: ${item.color}; cursor: pointer;`}
-          aria-label={item.name}
-        >
-          <!-- Tooltip (CSS Hover) -->
-          <div
-            class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded shadow-lg text-xs text-neutral-800 dark:text-neutral-100 z-[100] pointer-events-none whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200"
-          >
-            {item.name}
-          </div>
-        </div>
-      {/if}
-    {/each}
   </div>
 
   <!-- Controls (Bottom Row) -->
-  <div class="flex flex-row w-full justify-between items-center">
+  <div class="flex flex-row w-full justify-between items-center mt-1">
     <!-- Playback Speed Indicator (dropdown) -->
     <div class="relative">
       <button
@@ -830,5 +952,19 @@
   :global(.dark) .timeline-slider::-webkit-slider-runnable-track {
     background-color: transparent !important;
     box-shadow: none !important;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar {
+    height: 4px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background-color: rgba(156, 163, 175, 0.5);
+    border-radius: 4px;
+  }
+  :global(.dark) .custom-scrollbar::-webkit-scrollbar-thumb {
+    background-color: rgba(75, 85, 99, 0.5);
   }
 </style>
