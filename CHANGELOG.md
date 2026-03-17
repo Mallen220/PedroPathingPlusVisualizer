@@ -20,11 +20,11 @@
 
 ## 1.7.2 (2026-02-04)
 
-- Quick Fix: Rename to pedro-pathing-plus-visualizer across project. Add live code preview tab when auto export is enabled (recommended). Changed default port from 34567 to 17218. Several critical security fixes. Added keybind hints. Add Follow Robot toggle to settings and field renderer. Configurable Telemetry Export within exported code. Telemetry support for Panels, Standard FTC, FtcDashboard + Standard, future support for PPP visualizer. Add keybindings for copying code/table and downloading java when in certain tabs. Add smart object snapping for field waypoints, can be disabled in settings interface.
+- Quick Fix: Rename to turtle-tracer across project. Add live code preview tab when auto export is enabled (recommended). Changed default port from 34567 to 17218. Several critical security fixes. Added keybind hints. Add Follow Robot toggle to settings and field renderer. Configurable Telemetry Export within exported code. Telemetry support for Panels, Standard FTC, FtcDashboard + Standard, future support for PPP visualizer. Add keybindings for copying code/table and downloading java when in certain tabs. Add smart object snapping for field waypoints, can be disabled in settings interface.
 
 ## 1.7.1 (2026-01-29)
 
-- Improve download count fetch robustness. Refactor action types to use a dynamic registry system for increased plugin support. Add Auto Export Code feature, disabled by default in settings. Implement History Panel and enhance undo/redo visibility. Preparation for stable release. Added Strategy Sheet export option. Rename to Pedro Pathing Plus Visualizer to better distinguish between the original program.
+- Improve download count fetch robustness. Refactor action types to use a dynamic registry system for increased plugin support. Add Auto Export Code feature, disabled by default in settings. Implement History Panel and enhance undo/redo visibility. Preparation for stable release. Added Strategy Sheet export option. Rename to Turtle Tracer to better distinguish between the original program.
 
 ## 1.7.0 (2026-01-23)
 
@@ -32,7 +32,7 @@
 
 ## 1.6.2 (2026-01-15)
 
-- Fixed faulty Linux support. Add setting to show onion skins only on current path. Add drag-and-drop support for .pp files. Fix linked points rotation logic. Implement initial directory setup dialog. Added Autosave functionality. Remove ghost path feature entirely; it will not be implemented in future versions. Disable Chromium keyboard shortcuts for a safer experience. Always more keybinds. Improve new project reset logic. Replace event text input with searchable dropdown. Added PedroPathingPlus documentation. Improve Robot Profile Manager UX. Angular Velocity settings correctly affect path time. Add Angular Acceleration setting and Deg/s unit toggle. Better Close/Save Checking and UI dialog.
+- Fixed faulty Linux support. Add setting to show onion skins only on current path. Add drag-and-drop support for .pp files. Fix linked points rotation logic. Implement initial directory setup dialog. Added Autosave functionality. Remove ghost path feature entirely; it will not be implemented in future versions. Disable Chromium keyboard shortcuts for a safer experience. Always more keybinds. Improve new project reset logic. Replace event text input with searchable dropdown. Added TurtleTracerLib documentation. Improve Robot Profile Manager UX. Angular Velocity settings correctly affect path time. Add Angular Acceleration setting and Deg/s unit toggle. Better Close/Save Checking and UI dialog.
 
 ## 1.6.1 (2026-01-13)
 
@@ -40,7 +40,7 @@
 
 ## 1.6.0 (2026-01-12)
 
-- Add Path Statistics dialog and integration. Add support for 'Rotate' sequence items that use PedroPathings turnto() method, including keybind, event marker, and sequential command support. Add Velocity Heatmap visualization in settings. Refactored event markers into global event markers for a better user experience and updated the obstacles UI to match, both are now in the control tab’s field tab. Reverse quality slider direction in ExportGifDialog. Add support for opening external links in default browser instead of Electron. Fix animation export cancellation support. Remove frame cap for GIF/APNG export and improve timing. Always new keybinds. Add "What's New" dialog for first launch and docs (Shift + N to open). Updated with support for PedroPathingPlus v1.0.6. Unify UI colors for event types: Path (Green), Wait (Amber), Rotate (Pink). Dramatically improve timeline visualizer with event markers, wait highlights, and rotate markers.
+- Add Path Statistics dialog and integration. Add support for 'Rotate' sequence items that use PedroPathings turnto() method, including keybind, event marker, and sequential command support. Add Velocity Heatmap visualization in settings. Refactored event markers into global event markers for a better user experience and updated the obstacles UI to match, both are now in the control tab’s field tab. Reverse quality slider direction in ExportGifDialog. Add support for opening external links in default browser instead of Electron. Fix animation export cancellation support. Remove frame cap for GIF/APNG export and improve timing. Always new keybinds. Add "What's New" dialog for first launch and docs (Shift + N to open). Updated with support for TurtleTracerLib v1.0.6. Unify UI colors for event types: Path (Green), Wait (Amber), Rotate (Pink). Dramatically improve timeline visualizer with event markers, wait highlights, and rotate markers.
 
 ## 1.5.1 (2026-01-08)
 
@@ -84,7 +84,7 @@
 
 ## 1.3.0 (2025-12-26)
 
-- Added keyboard shortcuts menu and updater. Added support for NextFTC (still being tested). Better layout of control tab. Uses PedroPathingPlus gradle library.
+- Added keyboard shortcuts menu and updater. Added support for NextFTC (still being tested). Better layout of control tab. Uses TurtleTracerLib gradle library.
 
 ## 1.2.9 (2025-12-25)
 

@@ -70,9 +70,9 @@
     isLoadingNotes = true;
     try {
       // Try to fetch from the raw GitHub URL
-      // https://raw.githubusercontent.com/Mallen220/PedroPathingPlusVisualizer/main/src/lib/components/whats-new/features/v{version}.md
+      // https://raw.githubusercontent.com/Mallen220/TurtleTracer/main/src/lib/components/whats-new/features/v{version}.md
       const response = await fetch(
-        `https://raw.githubusercontent.com/Mallen220/PedroPathingPlusVisualizer/main/src/lib/components/whats-new/features/v${version}.md`,
+        `https://raw.githubusercontent.com/Mallen220/TurtleTracer/main/src/lib/components/whats-new/features/v${version}.md`,
       );
 
       if (response.ok) {

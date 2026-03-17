@@ -108,7 +108,6 @@
     saveFileAs,
     loadFile,
     loadRecentFile,
-    exportAsPP,
     handleExternalFileOpen,
     handleAutoExport,
   } from "./utils/fileHandlers";
@@ -118,6 +117,10 @@
   import { themesStore } from "./lib/pluginsStore";
   import { registerCoreUI } from "./lib/coreRegistrations";
   import { componentRegistry } from "./lib/registries";
+  import {
+    DEFAULT_PROJECT_EXTENSION,
+    isSupportedProjectFileName,
+  } from "./utils/fileExtensions";
   import { POTATO_THEME_CSS, firePotatoConfetti } from "./utils/potatoTheme";
 
   // Register Default Components/Tabs
@@ -169,7 +172,7 @@
           // This requires a release tagged 'tracker' with a file 'ms-store-tracker.zip'
           try {
             const response = await fetch(
-              "https://github.com/Mallen220/PedroPathingPlusVisualizer/releases/download/tracker/ms-store-tracker.zip",
+              "https://github.com/Mallen220/TurtleTracer/releases/download/tracker/ms-store-tracker.zip",
             );
             if (response.ok) {
               localStorage.setItem("msStoreTracked", "true");
@@ -345,7 +348,7 @@
           const cleanDir = savedDir.endsWith(sep)
             ? savedDir.slice(0, -1)
             : savedDir;
-          const fullPath = `${cleanDir}${sep}${name}.pp`;
+          const fullPath = `${cleanDir}${sep}${name}${DEFAULT_PROJECT_EXTENSION}`;
           success = await saveProject(
             undefined,
             undefined,
@@ -447,9 +450,9 @@
 
       if (!api) return;
 
-      // Case-insensitive check for .pp extension
-      if (!file.name.toLowerCase().endsWith(".pp")) {
-        alert("Please drop a .pp file.");
+      // Case-insensitive check for supported extension
+      if (!isSupportedProjectFileName(file.name)) {
+        alert("Please drop a .turt or .pp file.");
         return;
       }
 
@@ -489,7 +492,7 @@
                   const cleanDir = savedDir.endsWith(sep)
                     ? savedDir.slice(0, -1)
                     : savedDir;
-                  const fullPath = `${cleanDir}${sep}${name}.pp`;
+                  const fullPath = `${cleanDir}${sep}${name}${DEFAULT_PROJECT_EXTENSION}`;
                   success = await saveProject(
                     undefined,
                     undefined,
@@ -812,10 +815,10 @@
         const projectData = {
           version: pkg.version,
           header: {
-            info: "Created with Pedro Pathing Plus Visualizer",
+            info: "Created with Turtle Tracer",
             copyright:
               "Copyright 2026 Matthew Allen. Licensed under the Modified Apache License, Version 2.0.",
-            link: "https://github.com/Mallen220/PedroPathingPlusVisualizer",
+            link: "https://github.com/Mallen220/TurtleTracer",
           },
           startPoint: get(startPointStore),
           lines: get(linesStore),
@@ -1061,7 +1064,7 @@
               showExportImage.set(true);
               break;
             case "export-pp":
-              // Open the Export Code dialog pre-selected to JSON (.pp) format
+              // Open the Export Code dialog pre-selected to JSON (.turt) format
               exportDialogState.set({ isOpen: true, format: "json" });
               break;
             case "export-java":

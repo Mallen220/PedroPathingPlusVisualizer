@@ -58,8 +58,8 @@ test("app boots and displays main interface", async () => {
     // Try the updated display name first, then fall back to the legacy name if packaging hasn't been updated
     {
       const macCandidates = [
-        "Pedro Pathing Plus Visualizer",
-        "Pedro Pathing Visualizer",
+        "Turtle Tracer",
+        "Turtle Tracer",
       ];
       let foundBinary: string | null = null;
       for (const name of macCandidates) {
@@ -87,8 +87,8 @@ test("app boots and displays main interface", async () => {
       if (fs.existsSync(fullDir)) {
         // Prefer the new product name executable, but accept the legacy name as fallback
         const winCandidates = [
-          "Pedro Pathing Plus Visualizer.exe",
-          "Pedro Pathing Visualizer.exe",
+          "Turtle Tracer.exe",
+          "Turtle Tracer.exe",
         ];
         for (const cand of winCandidates) {
           const p = path.join(fullDir, cand);
@@ -119,17 +119,17 @@ test("app boots and displays main interface", async () => {
       const fullDir = path.join(releaseDir, dir);
       if (fs.existsSync(fullDir)) {
         // The binary name matches the productName but lowercased/dashed usually, or just productName?
-        // "productName": "Pedro Pathing Visualizer"
-        // "name": "pedro-pathing-visualizer"
-        // electron-builder usually uses "pedro-pathing-visualizer" (from name) or "Pedro Pathing Visualizer"?
+        // "productName": "Turtle Tracer"
+        // "name": "turtle-tracer"
+        // electron-builder usually uses "turtle-tracer" (from name) or "Turtle Tracer"?
         // It uses the `executableName` property if set, else `name`.
         // Check for likely candidates.
         const candidates = [
           // Prefer kebab-case new name, then fallback to legacy names if necessary
-          "pedro-pathing-plus-visualizer",
-          "pedro-pathing-visualizer",
-          "Pedro Pathing Plus Visualizer",
-          "Pedro Pathing Visualizer",
+          "turtle-tracer",
+          "turtle-tracer",
+          "Turtle Tracer",
+          "Turtle Tracer",
         ];
         for (const cand of candidates) {
           const p = path.join(fullDir, cand);
@@ -182,7 +182,7 @@ test("app boots and displays main interface", async () => {
   console.log(`Screenshot saved to ${screenshotPath}`);
 
   // Basic assertion
-  expect(title).toContain("Pedro Pathing Plus Visualizer");
+  expect(title).toContain("Turtle Tracer");
   console.log(`Screenshot saved to ${screenshotPath}`);
 
   await app.close();

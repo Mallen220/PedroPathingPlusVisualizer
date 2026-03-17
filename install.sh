@@ -19,11 +19,166 @@ print_logo() {
     echo -e "${PURPLE}"
     echo '╔══════════════════════════════════════════════════════════════╗'
     echo '║                                                              ║'
-    echo '║     Pedro Pathing Plus Visualizer                            ║'
+    echo '║     Turtle Tracer                            ║'
     echo '║                     Installation                             ║'
     echo '║                                                              ║'
     echo '╚══════════════════════════════════════════════════════════════╝'
     echo -e "${NC}"
+}
+
+# Rename notice flag
+RENAME_NOTICE_SHOWN=0
+
+show_rename_notice() {
+    if [ "$RENAME_NOTICE_SHOWN" -eq 0 ]; then
+        echo -e "${YELLOW}"
+        echo "===================================================================="
+        echo "IMPORTANT: PROJECT RENAMED"
+        echo "Pedro Pathing Plus Visualizer is now Turtle Tracer."
+        echo "Use \"Turtle Tracer\" to launch the app from now on."
+        echo "===================================================================="
+        echo -e "${NC}"
+        RENAME_NOTICE_SHOWN=1
+    fi
+}
+
+merge_settings_dir() {
+    local old_path=$1
+    local new_path=$2
+
+    if command -v rsync &> /dev/null; then
+        rsync -a "$old_path"/ "$new_path"/
+    else
+        cp -R "$old_path"/. "$new_path"/
+    fi
+}
+
+migrate_settings() {
+    local new_path=$1
+    shift
+    local old_paths=("$@")
+    local migrated=0
+
+    for old_path in "${old_paths[@]}"; do
+        if [ -d "$old_path" ]; then
+            show_rename_notice
+            if [ ! -d "$new_path" ]; then
+                print_info "Migrating settings from \"$old_path\" to \"$new_path\"..."
+                mkdir -p "$(dirname "$new_path")"
+                if mv "$old_path" "$new_path"; then
+                    migrated=1
+                    print_status "Settings moved."
+                else
+                    print_warning "Failed to move settings from $old_path"
+                fi
+            else
+                print_warning "Both old and new settings directories exist."
+                print_info "Merging settings from \"$old_path\" into \"$new_path\"..."
+                if merge_settings_dir "$old_path" "$new_path"; then
+                    backup_path="${old_path}.backup-$(date +%Y%m%d-%H%M%S)"
+                    mv "$old_path" "$backup_path"
+                    print_status "Merged settings. Backup saved at $backup_path"
+                    migrated=1
+                else
+                    print_warning "Failed to merge settings from $old_path"
+                fi
+            fi
+        fi
+    done
+
+    if [ "$migrated" -eq 1 ]; then
+        print_status "Settings migration complete."
+    fi
+}
+
+migrate_settings_mac() {
+    local new_path="$HOME/Library/Application Support/Turtle Tracer"
+    local old_paths=(
+        "$HOME/Library/Application Support/Pedro Pathing Plus Visualizer"
+        "$HOME/Library/Application Support/Pedro Pathing Visualizer"
+        "$HOME/Library/Application Support/PedroPathingPlusVisualizer"
+        "$HOME/Library/Application Support/PedroPathingVisualizer"
+    )
+    migrate_settings "$new_path" "${old_paths[@]}"
+}
+
+migrate_settings_linux() {
+    local new_path="$HOME/.config/Turtle Tracer"
+    local old_paths=(
+        "$HOME/.config/Pedro Pathing Plus Visualizer"
+        "$HOME/.config/Pedro Pathing Visualizer"
+        "$HOME/.config/pedro-pathing-plus-visualizer"
+        "$HOME/.config/pedro-pathing-visualizer"
+        "$HOME/.config/PedroPathingPlusVisualizer"
+        "$HOME/.config/PedroPathingVisualizer"
+    )
+    migrate_settings "$new_path" "${old_paths[@]}"
+}
+
+remove_legacy_mac_apps() {
+    local legacy_apps=(
+        "/Applications/Pedro Pathing Plus Visualizer.app"
+        "/Applications/Pedro Pathing Visualizer.app"
+    )
+    local found=0
+    for app_path in "${legacy_apps[@]}"; do
+        if [ -d "$app_path" ]; then
+            show_rename_notice
+            print_status "Removing legacy app: $app_path"
+            sudo rm -rf "$app_path"
+            found=1
+        fi
+    done
+    return $found
+}
+
+remove_legacy_appimages() {
+    local install_dir=$1
+    local old_appimages
+    old_appimages=$(find "$install_dir" -maxdepth 1 -type f \( \
+        -iname "Pedro-Pathing-Plus-Visualizer*.AppImage" -o \
+        -iname "Pedro-Pathing-Visualizer*.AppImage" -o \
+        -iname "pedro-pathing-plus-visualizer*.appimage" -o \
+        -iname "pedro-pathing-visualizer*.appimage" -o \
+        -iname "PedroPathingPlusVisualizer*.AppImage" -o \
+        -iname "PedroPathingVisualizer*.AppImage" \
+    \) 2>/dev/null)
+
+    if [ -n "$old_appimages" ]; then
+        show_rename_notice
+        print_info "Removing legacy AppImage(s)..."
+        while IFS= read -r old; do
+            [ -z "$old" ] && continue
+            rm -f "$old"
+        done <<< "$old_appimages"
+    fi
+}
+
+cleanup_legacy_desktop_entries() {
+    local entries=(
+        "$HOME/.local/share/applications/pedro-visualizer.desktop"
+        "$HOME/.local/share/applications/pedro-pathing-plus-visualizer.desktop"
+        "$HOME/.local/share/applications/pedro-pathing-visualizer.desktop"
+    )
+
+    for entry in "${entries[@]}"; do
+        if [ -f "$entry" ]; then
+            show_rename_notice
+            print_info "Removing legacy desktop entry: $entry"
+            rm -f "$entry"
+        fi
+    done
+
+    # System-wide legacy desktop entries (best-effort cleanup)
+    legacy_system_files=$(grep -l -E "Pedro Pathing Plus Visualizer|Pedro Pathing Visualizer|pedro-pathing-plus-visualizer|pedro-pathing-visualizer" /usr/share/applications/*.desktop 2>/dev/null || true)
+    if [ -n "$legacy_system_files" ]; then
+        show_rename_notice
+        print_info "Removing legacy system desktop entries..."
+        while IFS= read -r entry; do
+            [ -z "$entry" ] && continue
+            sudo rm -f "$entry" || true
+        done <<< "$legacy_system_files"
+    fi
 }
 
 # Global variable to store selected version (set by user choice)
@@ -37,9 +192,9 @@ get_download_urls() {
     local api_url
     
     if [ -n "$SELECTED_VERSION" ]; then
-        api_url="https://api.github.com/repos/Mallen220/PedroPathingPlusVisualizer/releases/tags/v${SELECTED_VERSION}"
+        api_url="https://api.github.com/repos/Mallen220/TurtleTracer/releases/tags/v${SELECTED_VERSION}"
     else
-        api_url="https://api.github.com/repos/Mallen220/PedroPathingPlusVisualizer/releases/latest"
+        api_url="https://api.github.com/repos/Mallen220/TurtleTracer/releases/latest"
     fi
     
     curl -s "$api_url" | \
@@ -50,14 +205,14 @@ get_download_urls() {
 
 # Return the latest release version (tag_name) without leading 'v'
 get_latest_version() {
-    curl -s "https://api.github.com/repos/Mallen220/PedroPathingPlusVisualizer/releases/latest" | \
+    curl -s "https://api.github.com/repos/Mallen220/TurtleTracer/releases/latest" | \
     grep -o '"tag_name": "[^"]*"' | \
     head -1 | cut -d'"' -f4 | sed 's/^v//' || true
 }
 
 # Return the latest pre-release version if one exists, empty string otherwise
 get_prerelease_version() {
-    curl -s "https://api.github.com/repos/Mallen220/PedroPathingPlusVisualizer/releases" | \
+    curl -s "https://api.github.com/repos/Mallen220/TurtleTracer/releases" | \
     grep -B 5 '"prerelease": true' | \
     grep '"tag_name"' | \
     head -1 | cut -d'"' -f4 | sed 's/^v//' || true
@@ -214,10 +369,10 @@ install_dependencies() {
 install_icon() {
     ICON_DIR="$HOME/.local/share/icons/hicolor/512x512/apps"
     mkdir -p "$ICON_DIR"
-    ICON_PATH="$ICON_DIR/pedro-pathing-plus-visualizer.png"
+    ICON_PATH="$ICON_DIR/turtle-tracer.png"
     
     # URL to the icon in the repo
-    ICON_URL="https://raw.githubusercontent.com/Mallen220/PedroPathingPlusVisualizer/main/build/icon.png"
+    ICON_URL="https://raw.githubusercontent.com/Mallen220/TurtleTracer/main/build/icon.png"
     
     print_info "Downloading icon..."
     if curl -L -s -o "$ICON_PATH" "$ICON_URL"; then
@@ -237,14 +392,14 @@ patch_deb_desktop_file() {
     print_info "Patching installed desktop file for compatibility..."
     
     # Look for the desktop file installed by the deb
-    # usually in /usr/share/applications/pedro-pathing-plus-visualizer.desktop or pedro-pathing-visualizer.desktop
-    DESKTOP_FILE=$(grep -l -E "Pedro Pathing Visualizer|Pedro Pathing Plus Visualizer" /usr/share/applications/*.desktop 2>/dev/null | head -n 1)
+    # usually in /usr/share/applications/turtle-tracer.desktop
+    DESKTOP_FILE=$(grep -l -E "Turtle Tracer|Pedro Pathing Plus Visualizer|Pedro Pathing Visualizer" /usr/share/applications/*.desktop 2>/dev/null | head -n 1)
     
     if [ -f "$DESKTOP_FILE" ]; then
         print_status "Found desktop file at $DESKTOP_FILE"
         
         # Read the current Exec line
-        # e.g., Exec=/opt/Pedro Pathing Plus Visualizer/pedro-pathing-visualizer %U
+        # e.g., Exec=/opt/Turtle Tracer/turtle-tracer %U
         current_exec=$(grep "^Exec=" "$DESKTOP_FILE" | cut -d= -f2-)
         
         # Check if already patched with --no-sandbox
@@ -257,12 +412,12 @@ patch_deb_desktop_file() {
             # A simple heuristic: everything before " %U" or just the whole line if no args.
             # But the issue is specifically spaces in the path not being quoted.
             
-            # Since we know the install path is likely "/opt/Pedro Pathing Plus Visualizer/pedro-pathing-plus-visualizer" or the legacy '/opt/Pedro Pathing Plus Visualizer/pedro-pathing-visualizer'
+            # Since we know the install path is likely "/opt/Turtle Tracer/turtle-tracer" or a legacy path
             # We can try to construct a safe Exec string.
             
-            # Rely on finding the 'pedro-pathing-plus-visualizer' or legacy 'pedro-pathing-visualizer' binary path.
-            # If the current line is: /opt/Pedro Pathing Plus Visualizer/pedro-pathing-visualizer %U
-            # We want: "/opt/Pedro Pathing Plus Visualizer/pedro-pathing-visualizer" --no-sandbox %U
+            # Rely on finding the 'turtle-tracer' or legacy 'turtle-tracer' binary path.
+            # If the current line is: /opt/Turtle Tracer/turtle-tracer %U
+            # We want: "/opt/Turtle Tracer/turtle-tracer" --no-sandbox %U
             
             # Strip existing arguments like %U
             clean_path=$(echo "$current_exec" | sed 's/ %U//g' | sed 's/ --no-sandbox//g')
@@ -297,6 +452,7 @@ patch_deb_desktop_file() {
 
 install_mac() {
     print_header "Starting macOS Installation..."
+    migrate_settings_mac
     
     # Homebrew Check
     if ! command -v brew &> /dev/null; then
@@ -317,13 +473,13 @@ install_mac() {
         if [ -n "$version" ]; then
             # Candidate filename patterns to try (covers common naming conventions and the requested variant)
             candidates=(
-                "Pedro-Pathing-Plus-Visualizer-${version}.dmg"
-                "Pedro-Pathing-Plus-Visualizer-${version}-amd64.dmg"
-                "Pedro-Pathing-Plus-Visualizer-${version}-arm64.dmg"
-                "Pedro-Pathing-Plus-Visualizer-${version}.dmg"
-                "Pedro-Pathing-Plus-Visualizer-${version}-amd64.dmg"
-                "pedro-pathing-plus-visualizer_${version}.dmg"
-                "pedro-pathing-plus-visualizer-${version}.dmg"
+                "Turtle-Tracer-${version}.dmg"
+                "Turtle-Tracer-${version}-amd64.dmg"
+                "Turtle-Tracer-${version}-arm64.dmg"
+                "Turtle-Tracer-${version}.dmg"
+                "Turtle-Tracer-${version}-amd64.dmg"
+                "turtle-tracer_${version}.dmg"
+                "turtle-tracer-${version}.dmg"
             )
 
             for c in "${candidates[@]}"; do
@@ -348,7 +504,7 @@ install_mac() {
         fi
     fi
 
-    DMG_PATH="/tmp/pedro-installer.dmg"
+    DMG_PATH="/tmp/turtle-tracer-installer.dmg"
     print_status "Downloading $(basename "$DOWNLOAD_URL")..."
     if ! curl -L -o "$DMG_PATH" "$DOWNLOAD_URL" --fail; then
         print_error "Download failed. Aborting."
@@ -356,7 +512,7 @@ install_mac() {
     fi
     
     print_status "Mounting and Installing..."
-    TEMP_MOUNT=$(mktemp -d /tmp/pedro-mount.XXXXXX)
+    TEMP_MOUNT=$(mktemp -d /tmp/turtle-tracer-mount.XXXXXX)
     if ! hdiutil attach "$DMG_PATH" -mountpoint "$TEMP_MOUNT" -nobrowse -quiet; then
         print_error "Failed to mount DMG"
         rm "$DMG_PATH"
@@ -374,14 +530,10 @@ install_mac() {
     fi
     
     # Cleanup old version only after successful download and mount
-    if [ -d "/Applications/Pedro Pathing Visualizer.app" ]; then
-        print_status "Removing old version..."
-        sudo rm -rf "/Applications/Pedro Pathing Visualizer.app"
-    fi
-    # Also remove prior installs that used the new product name (if present)
-    if [ -d "/Applications/Pedro Pathing Plus Visualizer.app" ]; then
-        print_status "Removing prior install..."
-        sudo rm -rf "/Applications/Pedro Pathing Plus Visualizer.app"
+    remove_legacy_mac_apps
+    if [ -d "/Applications/Turtle Tracer.app" ]; then
+        print_status "Removing existing Turtle Tracer app..."
+        sudo rm -rf "/Applications/Turtle Tracer.app"
     fi
 
     print_status "Copying new version..."
@@ -400,6 +552,9 @@ install_mac() {
 
 install_linux() {
     print_header "Starting Linux Installation..."
+
+    migrate_settings_linux
+    cleanup_legacy_desktop_entries
 
     install_dependencies
 
@@ -442,7 +597,7 @@ install_linux() {
         TMP_APP_PATH="/tmp/$fname"
 
         # Remove any previously installed AppImages to avoid stale versions
-        old_appimages=$(find "$INSTALL_DIR" -maxdepth 1 -type f \( -iname "Pedro-Pathing-Plus-Visualizer*.AppImage" -o -iname "Pedro-Pathing-Visualizer*.AppImage" -o -iname "pedro-pathing-plus-visualizer*.appimage" -o -iname "pedro-pathing-visualizer*.appimage" \) 2>/dev/null)
+        old_appimages=$(find "$INSTALL_DIR" -maxdepth 1 -type f \( -iname "Turtle-Tracer*.AppImage" -o -iname "turtle-tracer*.appimage" \) 2>/dev/null)
         if [ -n "$old_appimages" ]; then
             print_info "Removing old AppImage(s)..."
             while IFS= read -r old; do
@@ -450,6 +605,7 @@ install_linux() {
                 rm -f "$old"
             done <<< "$old_appimages"
         fi
+        remove_legacy_appimages "$INSTALL_DIR"
 
         print_info "Downloading AppImage to $TMP_APP_PATH..."
         if ! curl -L -o "$TMP_APP_PATH" "$candidate_url" --fail; then
@@ -467,16 +623,16 @@ install_linux() {
         # Optional: Create Desktop Entry
         if [ -d "$HOME/.local/share/applications" ]; then
             print_info "Creating desktop entry..."
-            cat > "$HOME/.local/share/applications/pedro-visualizer.desktop" << EOL
+            cat > "$HOME/.local/share/applications/turtle-tracer.desktop" << EOL
 [Desktop Entry]
-Name=Pedro Pathing Plus Visualizer
+Name=Turtle Tracer
 Exec="$APP_PATH" --no-sandbox
-Icon=pedro-pathing-plus-visualizer
+Icon=turtle-tracer
 Type=Application
 Categories=Development;
-Comment=Visualizer for Pedro Pathing
+Comment=Path planning with Turtle Tracer
 Terminal=false
-StartupWMClass=pedro-pathing-plus-visualizer
+StartupWMClass=turtle-tracer
 EOL
             print_status "Desktop shortcut created."
         fi
@@ -499,6 +655,9 @@ EOL
         # Ensure icon is installed for local user just in case
         install_icon
         
+        # Clean up any legacy desktop entries to avoid confusion
+        cleanup_legacy_desktop_entries
+
         # Patch the installed .desktop file
         patch_deb_desktop_file
 
@@ -507,7 +666,7 @@ EOL
         
     elif [[ "$lower" == *.tar.gz ]]; then
         TMP_TAR="/tmp/$fname"
-        DEST_DIR="$INSTALL_DIR/pedro-pathing-plus-visualizer"
+        DEST_DIR="$INSTALL_DIR/turtle-tracer"
 
         # Clean previous extracted version so the new one replaces it
         if [ -d "$DEST_DIR" ]; then
@@ -613,9 +772,9 @@ case "$CHOICE" in
     3)
         print_header "Windows Installation"
         echo "This script cannot install the Windows .exe directly."
-        echo "Please download the latest 'Pedro-Pathing-Plus-Visualizer-Setup.exe' from:"
+        echo "Please download the latest 'Turtle-Tracer-Setup.exe' from:"
         echo ""
-        echo "   https://github.com/Mallen220/PedroPathingPlusVisualizer/releases/latest"
+        echo "   https://github.com/Mallen220/TurtleTracer/releases/latest"
         echo ""
         ;;
     *)

@@ -188,7 +188,7 @@ describe("codeExporter", () => {
       expect(code).toContain(
         "package org.firstinspires.ftc.teamcode.Commands.AutoCommands;",
       );
-      expect(code).toContain("public class PedroAutonomous extends OpMode");
+      expect(code).toContain("public class TurtleTracerAutonomous extends OpMode");
       expect(code).toContain("paths = new Paths(follower);");
     });
 
@@ -322,7 +322,7 @@ describe("codeExporter", () => {
       const code = await generateSequentialCommandCode(
         startPoint,
         lines,
-        "TestPath.pp",
+        "TestPath.turt",
       );
 
       expect(code).toContain(
@@ -338,7 +338,7 @@ describe("codeExporter", () => {
       const code = await generateSequentialCommandCode(
         startPoint,
         lines,
-        "TestPath.pp",
+        "TestPath.turt",
         undefined,
         "NextFTC",
       );
@@ -380,7 +380,7 @@ describe("codeExporter", () => {
       // Verify no ProgressTracker or Telemetry
       expect(code).not.toContain("ProgressTracker progressTracker");
       expect(code).not.toContain(
-        "import com.pedropathingplus.pathing.ProgressTracker;",
+        "import com.turtletracerlib.pathing.ProgressTracker;",
       );
       expect(code).not.toContain(
         "public TestPath(final Drivetrain drive, HardwareMap hw, Telemetry telemetry)",
@@ -399,7 +399,7 @@ describe("codeExporter", () => {
       const code = await generateSequentialCommandCode(
         startPoint,
         lines,
-        "TestPath.pp",
+        "TestPath.turt",
         sequence,
       );
 
@@ -415,7 +415,7 @@ describe("codeExporter", () => {
       const code = await generateSequentialCommandCode(
         startPoint,
         lines,
-        "TestPath.pp",
+        "TestPath.turt",
         sequence,
         "NextFTC",
       );
@@ -430,7 +430,7 @@ describe("codeExporter", () => {
       const code = await generateSequentialCommandCode(
         startPoint,
         lines,
-        "TestPath.pp",
+        "TestPath.turt",
       );
 
       expect(code).toContain("private Pose point1;");
@@ -451,7 +451,7 @@ describe("codeExporter", () => {
       const code = await generateSequentialCommandCode(
         startPoint,
         [],
-        "TestPath.pp",
+        "TestPath.turt",
         sequence,
       );
 
@@ -489,7 +489,7 @@ describe("codeExporter", () => {
       const code = await generateSequentialCommandCode(
         startPoint,
         linkedLines,
-        "TestPath.pp",
+        "TestPath.turt",
       );
 
       // 1. Shared Pose Declarations
@@ -553,7 +553,7 @@ describe("codeExporter", () => {
       const loopCode = await generateSequentialCommandCode(
         startPoint,
         loopLines,
-        "TestPath.pp",
+        "TestPath.turt",
       );
       expect(loopCode).toMatch(/private PathChain ATOB;/);
       expect(loopCode).toMatch(/private PathChain ATOB_1;/);
@@ -566,7 +566,7 @@ describe("codeExporter", () => {
       const code = await generateSequentialCommandCode(
         startPoint,
         lines,
-        "TestPath.pp",
+        "TestPath.turt",
         undefined,
         "SolversLib",
         "org.firstinspires.ftc.teamcode.Commands.AutoCommands",
@@ -574,7 +574,7 @@ describe("codeExporter", () => {
       );
 
       expect(code).not.toContain(
-        "import com.pedropathingplus.PedroPathReader;",
+        "import com.turtletracerlib.PedroPathReader;",
       );
       expect(code).not.toContain("new PedroPathReader");
       expect(code).toContain("new Pose(10.000, 10.000, Math.toRadians(0))"); // startPoint

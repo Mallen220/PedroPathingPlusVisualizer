@@ -4,6 +4,7 @@
   import { get } from "svelte/store";
   import hotkeys from "hotkeys-js";
   import CommandPalette from "./CommandPalette.svelte";
+  import { isSupportedProjectFileName } from "../../utils/fileExtensions";
   import {
     gridSize,
     showGrid,
@@ -126,7 +127,7 @@
       if (dir) {
         const files = await window.electronAPI.listFiles(dir);
         fileCommands = files
-          .filter((f) => f.name.endsWith(".pp"))
+          .filter((f) => isSupportedProjectFileName(f.name))
           .map((f) => ({
             id: `file-${f.name}`,
             label: `Open File: ${f.name}`,
@@ -2237,7 +2238,7 @@
     },
     reportIssue: () => {
       const url =
-        "https://github.com/Mallen220/PedroPathingPlusVisualizer/issues";
+        "https://github.com/Mallen220/TurtleTracer/issues";
       // @ts-ignore
       if (window.electronAPI && window.electronAPI.openExternal) {
         // @ts-ignore
@@ -2254,7 +2255,7 @@
           .catch((err: any) => console.warn("Manual update check failed", err));
       } else {
         const url =
-          "https://github.com/Mallen220/PedroPathingPlusVisualizer/releases";
+          "https://github.com/Mallen220/TurtleTracer/releases";
         if (api && api.openExternal) api.openExternal(url);
         else window.open(url, "_blank");
       }
@@ -2550,7 +2551,7 @@
 <input
   bind:this={fileInput}
   type="file"
-  accept=".pp"
+  accept=".turt,.pp"
   class="hidden"
   style="display:none;"
   on:change={(e) => {

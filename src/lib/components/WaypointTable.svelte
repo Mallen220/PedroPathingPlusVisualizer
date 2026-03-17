@@ -416,10 +416,14 @@
     // Check for macro drop
     if (
       e.dataTransfer &&
-      e.dataTransfer.types.includes("application/x-pedro-macro")
+      ["application/x-turtle-tracer-macro", "application/x-pedro-macro"].some(
+        (t) => e.dataTransfer.types.includes(t),
+      )
     ) {
       e.preventDefault();
-      const filePath = e.dataTransfer.getData("application/x-pedro-macro");
+      const filePath =
+        e.dataTransfer.getData("application/x-turtle-tracer-macro") ||
+        e.dataTransfer.getData("application/x-pedro-macro");
       if (!filePath) return;
 
       const target = getClosestTarget(e, "tr[data-seq-index]", document.body);
@@ -1096,7 +1100,7 @@
     // Extract name from path
     const parts = filePath.split(/[/\\]/);
     const fileName = parts.pop() || filePath;
-    const baseName = fileName.replace(/\.pp$/, "");
+    const baseName = fileName.replace(/\.(pp|turt)$/i, "");
 
     const newMacro: SequenceMacroItem = {
       kind: "macro",

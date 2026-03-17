@@ -252,7 +252,7 @@
     <div class="flex flex-col">
       <span
         class="font-bold text-lg leading-tight tracking-tight text-neutral-900 dark:text-neutral-100"
-        >Pedro Pathing Plus Visualizer</span
+        >Turtle Tracer</span
       >
       {#if $currentFilePath}
         <div
@@ -1190,8 +1190,8 @@
             <button
               on:click={() => handleExport("json")}
               class="block w-full text-left px-4 py-2 text-sm text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700"
-              title={`Export .pp${getShortcutFromSettings(settings, "export-pp")}`}
-              >.pp File</button
+              title={`Export .turt${getShortcutFromSettings(settings, "export-pp")}`}
+              >.turt File</button
             >
 
             <div class="h-px bg-neutral-200 dark:bg-neutral-700 my-1"></div>
@@ -1343,7 +1343,7 @@
         rel="norefferer"
         title="GitHub Repo"
         aria-label="GitHub Repository"
-        href="https://github.com/Mallen220/PedroPathingPlusVisualizer"
+        href="https://github.com/Mallen220/TurtleTracer"
         class="p-2 rounded-md hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-600 dark:text-neutral-300 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500"
       >
         <svg

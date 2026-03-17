@@ -6,6 +6,11 @@ import { getCurvePoint, getLineStartHeading } from "./math";
 import pkg from "../../package.json";
 import { actionRegistry } from "../lib/actionRegistry";
 import { toUser, toUserHeading, type CoordinateSystem } from "./coordinates";
+import {
+  DEFAULT_PROJECT_EXTENSION,
+  getProjectExtensionFromPath,
+  stripProjectExtension,
+} from "./fileExtensions";
 
 /**
  * Generate Java code from path data
@@ -13,7 +18,7 @@ import { toUser, toUserHeading, type CoordinateSystem } from "./coordinates";
 
 const AUTO_GENERATED_FILE_WARNING_MESSAGE: string = `
 /* ============================================================= *
- *        Pedro Pathing Plus Visualizer — Auto-Generated         *
+ *        Turtle Tracer — Auto-Generated         *
  *                                                               *
  *  Version: ${pkg.version}.                                              *
  *  Copyright (c) ${new Date().getFullYear()} Matthew Allen                             *
@@ -509,11 +514,11 @@ export async function generateJavaCode(
     import com.pedropathing.paths.HeadingInterpolator;
     ${eventMarkerNames.size > 0 ? "import com.pedropathing.NamedCommands;" : ""}
     
-    @Autonomous(name = "Pedro Pathing Autonomous", group = "Autonomous")
+    @Autonomous(name = "Turtle Tracer Autonomous", group = "Autonomous")
     ${classAnnotations}
-    public class PedroAutonomous extends OpMode {
+    public class TurtleTracerAutonomous extends OpMode {
       ${telemetryField}
-      public Follower follower; // Pedro Pathing follower instance
+      public Follower follower; // Pathing follower instance
       private int pathState; // Current autonomous path state (state machine)
       private ElapsedTime pathTimer; // Timer for path state machine
       private Paths paths; // Paths defined in the Paths class
@@ -558,7 +563,7 @@ export async function generateJavaCode(
       
       @Override
       public void loop() {
-        follower.update(); // Update Pedro Pathing
+        follower.update(); // Update follower
         pathState = autonomousPathUpdate(); // Update autonomous state machine
 
         ${telemetryLoop}
@@ -655,7 +660,7 @@ export async function generateSequentialCommandCode(
   let className = "AutoPath";
   if (fileName) {
     const baseName = fileName.split(/[\\/]/).pop() || "";
-    className = baseName.replace(".pp", "").replace(/[^a-zA-Z0-9]/g, "_");
+    className = stripProjectExtension(baseName).replace(/[^a-zA-Z0-9]/g, "_");
     if (!className) className = "AutoPath";
   }
 
@@ -1040,10 +1045,15 @@ import com.seattlesolvers.solverslib.pedroCommand.FollowPathCommand;
 
   const ppReaderImport = hardcodeValues
     ? ""
-    : "import com.pedropathingplus.PedroPathReader;";
+    : "import com.turtletracerlib.PedroPathReader;";
   const ppReaderInit = hardcodeValues
     ? ""
-    : `PedroPathReader pp = new PedroPathReader("${fileName ? fileName.split(/[\\/]/).pop() + ".pp" || "AutoPath.pp" : "AutoPath.pp"}", hw.appContext);`;
+    : (() => {
+        const rawName = fileName ? fileName.split(/[\\/]/).pop() || "" : "";
+        const baseName = stripProjectExtension(rawName || "AutoPath") || "AutoPath";
+        const ext = getProjectExtensionFromPath(rawName) || DEFAULT_PROJECT_EXTENSION;
+        return `PedroPathReader pp = new PedroPathReader("${baseName}${ext}", hw.appContext);`;
+      })();
 
   let sequentialCommandCode = "";
 
@@ -1133,8 +1143,8 @@ import com.pedropathing.ftc.PoseConverter;
 ${imports}
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 ${ppReaderImport}
-import com.pedropathingplus.pathing.ProgressTracker;
-import com.pedropathingplus.pathing.NamedCommands;
+import com.turtletracerlib.pathing.ProgressTracker;
+import com.turtletracerlib.pathing.NamedCommands;
 import java.io.IOException;
 import ${packageName.split(".").slice(0, 4).join(".")}.Subsystems.Drivetrain;
 

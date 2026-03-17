@@ -1,16 +1,17 @@
 <div align="center">
-  <img src="public/icon.png" alt="Pedro Pathing Plus Visualizer Logo" width="120" height="120">
-  <h1 align="center">Pedro Pathing Plus Visualizer</h1>
+  <img src="public/icon.png" alt="Turtle Tracer Logo" width="120" height="120">
+  <h1 align="center">Turtle Tracer</h1>
+  <h2 align="center">(Previously Pedro Pathing Plus Visualizer)</h2>
   <p align="center">
-    <strong>The modern, intuitive path planner for FIRST Robotics Competition.</strong>
+    <strong>The modern, intuitive path planner for FIRST Tech Challenge.</strong>
   </p>
   <p align="center">
     Visualize • Plan • Simulate • Export
   </p>
 
   <p align="center">
-    <a href="https://github.com/Mallen220/PedroPathingPlusVisualizer/releases">
-      <img src="https://img.shields.io/github/v/release/Mallen220/PedroPathingPlusVisualizer?style=flat-square&color=blue" alt="Latest Release">
+    <a href="https://github.com/Mallen220/TurtleTracer/releases">
+      <img src="https://img.shields.io/github/v/release/Mallen220/TurtleTracer?style=flat-square&color=blue" alt="Latest Release">
     </a>
     <a href="LICENSE">
       <img src="https://img.shields.io/badge/license-Apache%202.0-green.svg?style=flat-square" alt="License">
@@ -24,7 +25,7 @@
   </p>
 </div>
 
-Windows Users can download from the Microsoft Store to receive auto-updates for stable releases. Manual installs and pre-releases can be found [here](https://github.com/Mallen220/PedroPathingPlusVisualizer/releases).
+Windows Users can download from the Microsoft Store to receive auto-updates for stable releases. Manual installs and pre-releases can be found [here](https://github.com/Mallen220/TurtleTracer/releases).
 
 > ## This project is currently undergoing rapid updates. Please check back regularly for bug fixes and new features. If you find an error, please report it and revert to a previous version.
 
@@ -32,16 +33,16 @@ Windows Users can download from the Microsoft Store to receive auto-updates for 
 
 ## 🚀 Overview
 
-**Pedro Pathing Plus Visualizer** is a powerful desktop application built with Electron and Svelte, designed to revolutionize how FIRST Robotics Competition teams plan their autonomous routines. Unlike web-based alternatives, this tool runs natively on your machine, offering superior performance, local file management, and deep integration with your development workflow.
+**Turtle Tracer** is a powerful desktop application built with Electron and Svelte, designed to revolutionize how FIRST Tech Challenge teams plan their autonomous routines. Unlike web-based alternatives, this tool runs natively on your machine, offering superior performance, local file management, and deep integration with your development workflow.
 
 ## 🌟 Unmatched Features
 
-Pedro Pathing Plus Visualizer isn't just a port of the web tool—it's a complete reimagining of what path planning should be. Here's why you should make the switch:
+Turtle Tracer isn't just a port of the web tool—it's a complete reimagining of what path planning should be. Here's why you should make the switch:
 
 ### 🚀 **Next-Level Performance & Workflow**
 
 - **Native Desktop Experience**: Built with Electron for blazing fast performance. Works offline, supports multiple windows, and integrates with your OS.
-- **Local File System**: Open and save `.pp` files directly on your computer. No more uploading/downloading or losing work to browser cache clears.
+- **Local File System**: Open and save `.turt` files directly on your computer (legacy `.pp` supported). No more uploading/downloading or losing work to browser cache clears.
 - **Git Integration**: See your file status (Modified, Staged, Untracked) instantly. Version control your paths alongside your robot code.
 - **Auto-Save & History**: Never lose progress with robust Auto-Save, full Undo/Redo support, and a dedicated History Panel to jump back to any point.
 
@@ -54,7 +55,7 @@ Pedro Pathing Plus Visualizer isn't just a port of the web tool—it's a complet
 
 ### 🛠️ **Powerful Planning Tools**
 
-- **File Macros**: Reuse successful path sequences! Drag and drop other `.pp` files to use them as sub-routines (macros) with support for transformations (mirror/reverse).
+- **File Macros**: Reuse successful path sequences! Drag and drop `.turt` or legacy `.pp` files to use them as sub-routines (macros) with support for transformations (mirror/reverse).
 - **Smart Validators**:
   - **Collision Detection**: Real-time feedback on Obstacles and Keep-In Zones.
   - **Continuous Validation**: Option to check your path's safety in real-time as you edit.
@@ -73,7 +74,7 @@ Pedro Pathing Plus Visualizer isn't just a port of the web tool—it's a complet
 - **Plugin System**: Extend functionality with community plugins or build your own to add custom tabs and tools.
 - **Presentation Mode**: One-click cleaner interface for demonstrating paths to judges or teammates.
 - **Export Power**:
-  - **Java Code**: Generates `PedroPathingPlus` compliant code.
+  - **Java Code**: Generates `TurtleTracerLib` compliant code.
   - **Live Code Preview**: See your generated code update in real-time as you edit.
   - **Strategy Sheet**: Export a printable summary of your routine for strategizing with alliance partners.
   - **Visuals**: Export high-quality **APNG**, **GIF**, and **Static Images** of your paths.
@@ -111,18 +112,18 @@ Oh, and so so many little improvements not even included yet! Check back often f
 Open Terminal and run:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/Mallen220/PedroPathingPlusVisualizer/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/Mallen220/TurtleTracer/main/install.sh | bash
 ```
 
 _Enter your password when prompted to complete installation._
 
 **Manual Installation:**
 
-1.  Download the latest `.dmg` from [Releases](https://github.com/Mallen220/PedroPathingPlusVisualizer/releases).
+1.  Download the latest `.dmg` from [Releases](https://github.com/Mallen220/TurtleTracer/releases).
 2.  Mount the DMG and drag the app to your Applications folder.
 3.  **Important**: Run the following command in Terminal to clear the quarantine attribute (prevents "App is damaged" errors):
     ```bash
-    sudo xattr -rd com.apple.quarantine "/Applications/Pedro Pathing Plus Visualizer.app"
+    sudo xattr -rd com.apple.quarantine "/Applications/Turtle Tracer.app"
     ```
 4.  Launch the application.
 
@@ -138,7 +139,7 @@ Download from the Microsoft Store to receive auto-updates for stable releases.
 
 **Manual Installation (.exe):**
 
-1.  Download the latest `.exe` from [Releases](https://github.com/Mallen220/PedroPathingPlusVisualizer/releases).
+1.  Download the latest `.exe` from [Releases](https://github.com/Mallen220/TurtleTracer/releases).
 2.  Run the installer.
 3.  _Note: If SmartScreen appears, click "More info" > "Run anyway"._
 
@@ -148,14 +149,14 @@ Download from the Microsoft Store to receive auto-updates for stable releases.
 Open Terminal and run:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/Mallen220/PedroPathingPlusVisualizer/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/Mallen220/TurtleTracer/main/install.sh | bash
 ```
 
 _Enter your password when prompted to complete installation._
 
 **Manual Installation:**
 
-1.  Download the `.deb` (Debian/Ubuntu) or `.AppImage` from [Releases](https://github.com/Mallen220/PedroPathingPlusVisualizer/releases).
+1.  Download the `.deb` (Debian/Ubuntu) or `.AppImage` from [Releases](https://github.com/Mallen220/TurtleTracer/releases).
 2.  Fix permissions for Sandboxing by installing and adding "--no-sandboxing" to the .desktop icons.
 3.  Install using your package manager of choice `libfuse2` and `zlib1g` as well as any sub-dependencies.
 4.  **Important**: Other various errors are likely to occur including depending on your Distro of choice. Testing is varied by Ubuntu is most closely watched. If you would like to become a tester please reach out.
@@ -164,15 +165,15 @@ _Enter your password when prompted to complete installation._
 **AppImage:**
 
 ```bash
-chmod +x Pedro*.AppImage
-./Pedro*.AppImage
+chmod +x TurtleTracer*.AppImage
+./TurtleTracer*.AppImage
 ```
 
 ## 🗂️ File Management
 
-One of the critical advantages of Pedro Pathing Plus Visualizer over web-based tools is its **Local File Management system**.
+One of the critical advantages of Turtle Tracer over web-based tools is its **Local File Management system**.
 
-- **Security & Persistence**: Your paths are saved as actual files (`.pp`) on your hard drive, not in a temporary browser cache that can be accidentally cleared.
+- **Security & Persistence**: Your paths are saved as actual files (`.turt`) on your hard drive, not in a temporary browser cache that can be accidentally cleared.
 - **Version Control**: You can easily commit your path files to Git alongside your robot code, ensuring your team always has the latest versions.
 - **Organization**: Use the built-in file browser to organize paths into folders, duplicate successful routines, and manage backups without leaving the app.
 
@@ -210,7 +211,7 @@ The visualizer provides flexible export capabilities to suit your team's workflo
 - **"App is damaged" / Can't Open**:
   Run the quarantine fix command:
   ```bash
-  sudo xattr -rd com.apple.quarantine "/Applications/Pedro Pathing Plus Visualizer.app"
+  sudo xattr -rd com.apple.quarantine "/Applications/Turtle Tracer.app"
   ```
 - **Gatekeeper**: If the app is blocked, go to _System Settings > Privacy & Security_ and click "Open Anyway".
 
@@ -236,8 +237,8 @@ Want to contribute or build from source?
 
 ```bash
 # Clone the repository
-git clone https://github.com/Mallen220/PedroPathingPlusVisualizer.git
-cd PedroPathingVisualizer
+git clone https://github.com/Mallen220/TurtleTracer.git
+cd TurtleTracer
 
 # Install dependencies
 npm install
@@ -265,7 +266,7 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## AI Assistance
 
-Artificial intelligence plays a supporting role in the development of Pedro Pathing Plus Visualizer. We use AI tools to help prototype features, write boilerplate, and speed up the rate at which improvements can be explored. However, **no code or documentation from AI is merged without
+Artificial intelligence plays a supporting role in the development of Turtle Tracer. We use AI tools to help prototype features, write boilerplate, and speed up the rate at which improvements can be explored. However, **no code or documentation from AI is merged without
 thorough human review and testing**. Every Pull Request is validated by real developers and undergoes the same security and
 validity checks as any other change. This policy reflects our stance that AI should augment human effort, never replace it. It also
 acknowledges the broader conversation about AI in the workplace—contributors are welcomed regardless of their tools, and no one is
@@ -279,7 +280,7 @@ See the [LICENSE](LICENSE) file for the full Apache 2.0 legal text.
 
 ## 🔒 Privacy
 
-Your privacy is important to us. The Pedro Pathing Plus Visualizer is designed to run locally on your machine and does not collect personal data.
+Your privacy is important to us. The Turtle Tracer is designed to run locally on your machine and does not collect personal data.
 
 For more details, please review our full [Privacy Policy](PRIVACY.md).
 
@@ -292,9 +293,9 @@ For more details, please review our full [Privacy Policy](PRIVACY.md).
 
 ## 🔗 Links
 
-- [GitHub Repository](https://github.com/Mallen220/PedroPathingPlusVisualizer)
-- [Releases](https://github.com/Mallen220/PedroPathingPlusVisualizer/releases)
-- [Issues & Bug Reports](https://github.com/Mallen220/PedroPathingPlusVisualizer/issues)
+- [GitHub Repository](https://github.com/Mallen220/TurtleTracer)
+- [Releases](https://github.com/Mallen220/TurtleTracer/releases)
+- [Issues & Bug Reports](https://github.com/Mallen220/TurtleTracer/issues)
 
 ---
 
