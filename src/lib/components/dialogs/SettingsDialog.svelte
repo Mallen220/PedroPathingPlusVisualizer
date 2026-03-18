@@ -3,7 +3,6 @@
   import { onMount } from "svelte";
   import { cubicInOut } from "svelte/easing";
   import { fade, fly } from "svelte/transition";
-  import FolderIcon from "../icons/FolderIcon.svelte";
   import {
     resetSettings,
     mergeSettings,
@@ -29,6 +28,10 @@
   import { followRobotStore } from "../../projectStore";
   import { SIDEBAR_ITEMS } from "../../../config/sidebarItems";
   import { availableCommands } from "../../../stores";
+  import {
+    ListIcon, ArrowRightIcon, SparklesIcon, CodeIcon, TerminalIcon,
+    StarIcon, BoltIcon, WrenchIcon, PlayIcon, PlusIcon, FolderIcon, SaveIcon, TrashIcon
+  } from "../icons";
 
   export let isOpen = false;
   export let settings: Settings = { ...DEFAULT_SETTINGS };
@@ -628,10 +631,16 @@
     const ids = settings.sidebarItems || SIDEBAR_ITEMS.map((i) => i.id);
     return ids.map((id) => {
       let item: any = SIDEBAR_ITEMS.find((i) => i.id === id);
-      if (!item && settings.customSidebarItems) {
+      const isCustom = !item && settings.customSidebarItems;
+      if (isCustom && settings.customSidebarItems) {
         item = settings.customSidebarItems.find((i) => i.id === id);
       }
-      return { id, label: item?.label ?? id, iconSvg: item?.iconSvg ?? "" };
+      return { 
+        id, 
+        label: item?.label ?? id, 
+        icon: item?.iconSvg ?? "",
+        isCustom: !!isCustom 
+      };
     });
   })();
 
@@ -651,6 +660,46 @@
     [arr[index], arr[index + 1]] = [arr[index + 1], arr[index]];
     settings.sidebarItems = arr;
     settings = { ...settings };
+  }
+
+  // Native drag-and-drop reordering
+  let dragSourceIndex: number | null = null;
+  let dragOverIndex: number | null = null;
+
+  function handleDragStart(e: DragEvent, index: number) {
+    dragSourceIndex = index;
+    if (e.dataTransfer) {
+      e.dataTransfer.effectAllowed = "move";
+      e.dataTransfer.setData("text/plain", String(index));
+    }
+  }
+
+  function handleDragOver(e: DragEvent, index: number) {
+    e.preventDefault();
+    if (e.dataTransfer) e.dataTransfer.dropEffect = "move";
+    dragOverIndex = index;
+  }
+
+  function handleDrop(e: DragEvent, dropIndex: number) {
+    e.preventDefault();
+    if (dragSourceIndex === null || dragSourceIndex === dropIndex) {
+      dragSourceIndex = null;
+      dragOverIndex = null;
+      return;
+    }
+    if (!settings.sidebarItems) settings.sidebarItems = SIDEBAR_ITEMS.map((i) => i.id);
+    const arr = [...settings.sidebarItems];
+    const [moved] = arr.splice(dragSourceIndex, 1);
+    arr.splice(dropIndex, 0, moved);
+    settings.sidebarItems = arr;
+    settings = { ...settings };
+    dragSourceIndex = null;
+    dragOverIndex = null;
+  }
+
+  function handleDragEnd() {
+    dragSourceIndex = null;
+    dragOverIndex = null;
   }
 
   function removeSidebarItem(index: number) {
@@ -687,15 +736,48 @@
   let showCustomSidebarForm = false;
   let customActionSelection = "";
   let customActionLabel = "";
-  const CUSTOM_ICONS = [
-    { name: "List", svg: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="size-5"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 6.75h12M8.25 12h12m-12 5.25h12M3.75 6.75h.007v.008H3.75V6.75Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0ZM3.75 12h.007v.008H3.75V12Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm-.375 5.25h.007v.008H3.75v-.008Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" /></svg>` },
-    { name: "Play", svg: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="size-5"><path stroke-linecap="round" stroke-linejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 0 1 0 1.972l-11.54 6.347a1.125 1.125 0 0 1-1.667-.986V5.653Z" /></svg>` },
-    { name: "Arrow", svg: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="size-5"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3" /></svg>` },
-    { name: "Sparkles", svg: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="size-5"><path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09ZM18.259 8.715 18 9.75l-.259-1.035a3.375 3.375 0 0 0-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 0 0 2.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 0 0 2.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 0 0-2.456 2.456ZM16.894 20.567 16.5 21.75l-.394-1.183a2.25 2.25 0 0 0-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 0 0 1.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 0 0 1.423 1.423l1.183.394-1.183.394a2.25 2.25 0 0 0-1.423 1.423Z" /></svg>` },
-    { name: "Code", svg: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="size-5"><path stroke-linecap="round" stroke-linejoin="round" d="M17.25 6.75 22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3-4.5 16.5" /></svg>` },
-    { name: "Terminal", svg: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="size-5"><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 7.5l3 2.25-3 2.25m4.5 0h3m-9 8.25h13.5A2.25 2.25 0 0021 18V6a2.25 2.25 0 00-2.25-2.25H5.25A2.25 2.25 0 003 6v12a2.25 2.25 0 002.25 2.25z" /></svg>` }
-  ];
-  let customActionIconSvg = CUSTOM_ICONS[0].svg;
+  let commandSearchQuery = "";
+  
+  // Map of icon name -> Svelte component, used both for the picker and for rendering persisted custom items
+  const ICON_COMPONENT_MAP: Record<string, any> = {
+    List: ListIcon,
+    Play: PlayIcon,
+    Arrow: ArrowRightIcon,
+    Sparkles: SparklesIcon,
+    Code: CodeIcon,
+    Terminal: TerminalIcon,
+    Star: StarIcon,
+    Bolt: BoltIcon,
+    Wrench: WrenchIcon,
+    Plus: PlusIcon,
+    Folder: FolderIcon,
+    Save: SaveIcon,
+    Trash: TrashIcon,
+    Eye: EyeIcon,
+    Zap: ZapIcon,
+    Box: BoxIcon,
+    Compass: CompassIcon,
+    Map: MapIcon,
+  };
+
+  const CUSTOM_ICONS = Object.entries(ICON_COMPONENT_MAP).map(([name, component]) => ({ name, component }));
+
+  $: filteredSidebarCommands = (() => {
+    if (!commandSearchQuery) return $availableCommands;
+    const low = commandSearchQuery.toLowerCase();
+    return $availableCommands.filter(c => c.label.toLowerCase().includes(low) || (c.id && c.id.toLowerCase().includes(low)));
+  })();
+
+  function selectSidebarCommand(cmd: any) {
+    customActionSelection = cmd.id;
+    // Auto-fill label if empty
+    if (!customActionLabel) {
+      customActionLabel = cmd.label;
+    }
+    commandSearchQuery = ""; // Clear search after selection
+  }
+
+  let customActionIconKey = CUSTOM_ICONS[0].name;
 
   function addNewCustomItem() {
     if (!customActionSelection || !customActionLabel) return;
@@ -704,7 +786,7 @@
       id: newId,
       label: customActionLabel,
       commandId: customActionSelection,
-      iconSvg: customActionIconSvg,
+      iconSvg: customActionIconKey, // stored as key string, resolved to component at render
     };
     if (!settings.customSidebarItems) settings.customSidebarItems = [];
     settings.customSidebarItems.push(newItem);
@@ -2063,15 +2145,34 @@
                     settings.sidebarItems = SIDEBAR_ITEMS.map((i) => i.id);
                     settings = { ...settings };
                   }}
-                  description="Use the arrows to reorder, or click × to remove an item from the sidebar."
+                  description="Drag rows to reorder, use arrows for precision, or click × to remove."
                   {searchQuery}
                 >
                   <div class="mt-2 flex flex-col gap-1.5">
                     {#each activeSidebarList as item, idx}
-                      <div class="flex items-center gap-2 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 p-2 rounded-lg transition-colors shadow-sm">
+                      <div
+                        role="listitem"
+                        aria-grabbed={dragSourceIndex === idx}
+                        draggable="true"
+                        on:dragstart={(e) => handleDragStart(e, idx)}
+                        on:dragover={(e) => handleDragOver(e, idx)}
+                        on:drop={(e) => handleDrop(e, idx)}
+                        on:dragend={handleDragEnd}
+                        on:dragleave={() => { if (dragOverIndex === idx) dragOverIndex = null; }}
+                        class="flex items-center gap-2 bg-white dark:bg-neutral-800 border p-2 rounded-lg shadow-sm transition-all {dragOverIndex === idx && dragSourceIndex !== idx ? 'border-blue-400 dark:border-blue-500 ring-1 ring-blue-300 dark:ring-blue-700 bg-blue-50 dark:bg-blue-900/20' : 'border-neutral-200 dark:border-neutral-700'} {dragSourceIndex === idx ? 'opacity-50' : 'opacity-100'}"
+                      >
+                        <!-- Drag handle -->
+                        <div class="flex-none text-neutral-300 dark:text-neutral-600 cursor-grab active:cursor-grabbing hover:text-neutral-500 dark:hover:text-neutral-400 transition-colors">
+                          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="size-4"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" /></svg>
+                        </div>
+                        <!-- Icon -->
                         <div class="flex-none w-5 h-5 flex items-center justify-center text-neutral-500">
-                          {#if item.iconSvg}
-                            {@html item.iconSvg}
+                          {#if item.icon}
+                            {#if ICON_COMPONENT_MAP[item.icon]}
+                              <svelte:component this={ICON_COMPONENT_MAP[item.icon]} className="size-5" />
+                            {:else}
+                              {@html item.icon}
+                            {/if}
                           {:else if item.id === "separator"}
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="size-4"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 12h-15" /></svg>
                           {:else if item.id === "spacer"}
@@ -2080,7 +2181,9 @@
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="size-4"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
                           {/if}
                         </div>
+                        <!-- Label -->
                         <div class="flex-grow text-sm font-medium text-neutral-700 dark:text-neutral-300">{item.label}</div>
+                        <!-- Controls -->
                         <div class="flex items-center gap-0.5">
                           <button
                             on:click={() => moveSidebarItemUp(idx)}
@@ -2112,21 +2215,31 @@
 
                   <div class="mt-6 pt-6 border-t border-neutral-200 dark:border-neutral-700">
                     <h5 class="text-sm font-semibold mb-3 text-neutral-800 dark:text-neutral-200">Available Built-in Tools</h5>
-                    <div class="flex flex-wrap gap-2">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
                        {#each unusedAvailableTools as available}
-                         <div class="flex items-center gap-0 border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 rounded-md shadow-sm group">
+                         <div class="flex items-center border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 rounded-md shadow-sm group overflow-hidden">
                            <button
                              on:click={() => addSidebarItem(available.id)}
-                             class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-neutral-700 dark:text-neutral-300 hover:bg-white dark:hover:bg-neutral-700 transition-colors rounded-l-md"
+                             class="flex-grow flex items-center gap-2.5 px-3 py-2 text-xs font-medium text-neutral-700 dark:text-neutral-300 hover:bg-white dark:hover:bg-neutral-700 transition-colors"
                            >
-                             <span class="w-3 h-3">{@html available.iconSvg || ""}</span>
-                             {available.label}
-                             <span class="text-neutral-400 ml-1">+</span>
+                             <span class="w-5 h-5 flex-none flex items-center justify-center text-neutral-500">
+                               {#if available.iconSvg}
+                                 {#if ICON_COMPONENT_MAP[available.iconSvg]}
+                                   <svelte:component this={ICON_COMPONENT_MAP[available.iconSvg]} className="size-4" />
+                                 {:else}
+                                   {@html available.iconSvg}
+                                 {/if}
+                               {:else}
+                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="size-4"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
+                               {/if}
+                             </span>
+                             <span class="truncate">{available.label}</span>
+                             <span class="text-blue-500 font-bold ml-auto opacity-0 group-hover:opacity-100 transition-opacity">+</span>
                            </button>
                            {#if available.id && available.id.startsWith('custom_')}
                              <button
                                on:click={() => deleteCustomItem(available.id)}
-                               class="px-2 py-1.5 text-neutral-400 hover:text-red-500 border-l border-neutral-200 dark:border-neutral-700 hover:bg-red-50 dark:hover:bg-red-900/40 transition-colors rounded-r-md"
+                               class="px-3 py-2 text-neutral-400 hover:text-red-500 border-l border-neutral-200 dark:border-neutral-700 hover:bg-red-50 dark:hover:bg-red-900/40 transition-colors"
                                title="Permanently Delete Custom Item"
                              >
                                ×
@@ -2170,19 +2283,17 @@
 
                             <fieldset>
                               <legend class="block text-xs font-medium text-neutral-500 mb-2">Display Icon</legend>
-                              <div class="flex gap-2">
-                                {#each CUSTOM_ICONS as iconDef}
-                                  <button
-                                    class="w-10 h-10 flex flex-col items-center justify-center rounded-md border {iconDef.svg === customActionIconSvg ? 'bg-blue-100 border-blue-500 text-blue-700' : 'bg-white border-neutral-200 hover:bg-neutral-50 dark:bg-neutral-800 dark:border-neutral-700'} transition-colors"
-                                    on:click={() => customActionIconSvg = iconDef.svg}
-                                    title={iconDef.name}
-                                  >
-                                    <div class="w-5 h-5 flex items-center justify-center">
-                                      {@html iconDef.svg}
-                                    </div>
-                                  </button>
-                                {/each}
-                              </div>
+                              <div class="flex flex-wrap gap-2">
+                                 {#each CUSTOM_ICONS as iconDef}
+                                   <button
+                                     class="w-10 h-10 flex flex-col items-center justify-center rounded-md border {iconDef.name === customActionIconKey ? 'bg-blue-100 border-blue-500 text-blue-700' : 'bg-white border-neutral-200 hover:bg-neutral-50 dark:bg-neutral-800 dark:border-neutral-700'} transition-colors"
+                                     on:click={() => customActionIconKey = iconDef.name}
+                                     title={iconDef.name}
+                                   >
+                                     <svelte:component this={iconDef.component} className="size-5" />
+                                   </button>
+                                 {/each}
+                               </div>
                             </fieldset>
 
                             <div class="flex gap-2 mt-2 pt-2 border-t border-neutral-200 dark:border-neutral-700">

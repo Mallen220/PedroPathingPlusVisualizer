@@ -19,8 +19,15 @@
   import type { Settings } from "../../types";
   import type { createHistory } from "../../utils/history";
   import { menuNavigation } from "../actions/menuNavigation";
-  import { MagnetIcon, FolderIcon } from "./icons";
+  import { MagnetIcon, FolderIcon, ListIcon, ArrowRightIcon, SparklesIcon, CodeIcon,
+    TerminalIcon, StarIcon, BoltIcon, WrenchIcon, PlayIcon, PlusIcon, SaveIcon, TrashIcon } from "./icons";
   import { SIDEBAR_ITEMS } from "../../config/sidebarItems";
+
+  const ICON_COMPONENT_MAP: Record<string, any> = {
+    List: ListIcon, Play: PlayIcon, Arrow: ArrowRightIcon, Sparkles: SparklesIcon,
+    Code: CodeIcon, Terminal: TerminalIcon, Star: StarIcon, Bolt: BoltIcon,
+    Wrench: WrenchIcon, Plus: PlusIcon, Folder: FolderIcon, Save: SaveIcon, Trash: TrashIcon
+  };
 
   export let undoAction: () => any;
   export let redoAction: () => any;
@@ -134,7 +141,11 @@
         on:click={() => executeCommandBus.set(item.commandId)}
         class="p-1.5 rounded-md transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 text-neutral-500 dark:text-neutral-400 hover:bg-neutral-200 dark:hover:bg-neutral-800"
       >
-        {@html item.iconSvg}
+        {#if item.iconSvg && ICON_COMPONENT_MAP[item.iconSvg]}
+          <svelte:component this={ICON_COMPONENT_MAP[item.iconSvg]} className="size-5" />
+        {:else}
+          <svelte:component this={StarIcon} className="size-5" />
+        {/if}
       </button>
     {:else if item.type === "system"}
       {#if item.id === "fileManager"}
