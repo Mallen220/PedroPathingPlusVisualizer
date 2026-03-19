@@ -1179,14 +1179,15 @@
 
   {#if sidebarExpanded}
     <!-- Dragger -->
-    <div
-      role="separator"
-      tabindex="0"
-      aria-label="Sidebar Resizer"
+    <button
+      type="button"
+      role="slider"
+      aria-label="Resize sidebar"
       aria-valuenow={sidebarWidth}
       aria-valuemin={160}
       aria-valuemax={450}
-      class="absolute right-0 top-0 w-1.5 h-full cursor-col-resize hover:bg-purple-500/20 transition-colors z-[60] group focus:outline-none focus:bg-purple-500/30"
+      aria-orientation="vertical"
+      class="absolute right-0 top-0 w-1.5 h-full cursor-col-resize hover:bg-purple-500/20 transition-colors z-[60] group focus:outline-none focus:bg-purple-500/30 appearance-none border-none bg-transparent"
       on:mousedown={startResizing}
       on:keydown={(e) => {
         if (e.key === "ArrowLeft") {
@@ -1201,6 +1202,6 @@
       <div
         class="absolute right-0 top-0 w-px h-full bg-neutral-200 dark:border-neutral-800 group-hover:bg-purple-500/50 group-focus:bg-purple-500/50"
       ></div>
-    </div>
+    </button>
   {/if}
 </div>
