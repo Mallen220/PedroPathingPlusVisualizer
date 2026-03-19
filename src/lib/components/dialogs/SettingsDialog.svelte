@@ -622,6 +622,39 @@
     settings = { ...settings };
   }
 
+  const DEFAULT_SIDEBAR_LAYOUT =
+    DEFAULT_SETTINGS.sidebarItems ?? SIDEBAR_ITEMS.map((i) => i.id);
+
+  function arraysEqual<T>(a: T[] | undefined, b: T[]) {
+    if (!a) return false;
+    if (a.length !== b.length) return false;
+    for (let i = 0; i < a.length; i += 1) {
+      if (a[i] !== b[i]) return false;
+    }
+    return true;
+  }
+
+  $: isSidebarLayoutModified = !arraysEqual(
+    settings.sidebarItems,
+    DEFAULT_SIDEBAR_LAYOUT,
+  );
+
+  $: hasCustomSidebarTools = (settings.customSidebarItems?.length ?? 0) > 0;
+
+  function resetSidebarSettings() {
+    if (
+      !confirm(
+        "Reset sidebar layout and remove all custom tools? This cannot be undone.",
+      )
+    ) {
+      return;
+    }
+
+    settings.sidebarItems = [...(DEFAULT_SETTINGS.sidebarItems || [])];
+    settings.customSidebarItems = [];
+    settings = { ...settings };
+  }
+
   // ==== Sidebar Settings State ====
 
   $: activeSidebarList = (() => {
@@ -787,6 +820,13 @@
   );
 
   let customActionIconKey = CUSTOM_ICONS.length ? CUSTOM_ICONS[0].name : "";
+  let customIconSearch = "";
+
+  $: filteredCustomIcons = customIconSearch
+    ? CUSTOM_ICONS.filter((icon) =>
+        icon.name.toLowerCase().includes(customIconSearch.toLowerCase()),
+      )
+    : CUSTOM_ICONS;
 
   function addNewCustomItem() {
     if (!customActionSelection || !customActionLabel) return;
@@ -2151,9 +2191,11 @@
 
                 <SettingsItem
                   label="Active Sidebar Layout"
-                  isModified={false}
+                  isModified={isSidebarLayoutModified}
                   onReset={() => {
-                    settings.sidebarItems = SIDEBAR_ITEMS.map((i) => i.id);
+                    settings.sidebarItems = [
+                      ...(DEFAULT_SETTINGS.sidebarItems || []),
+                    ];
                     settings = { ...settings };
                   }}
                   description="Drag rows to reorder, use arrows for precision, or click × to remove."
@@ -2401,7 +2443,45 @@
                       {/if}
                     </div>
 
-                    <div class="mt-6">
+                    <div
+                      class="mt-6 pt-6 border-t border-neutral-200 dark:border-neutral-700"
+                    >
+                      <div class="flex items-start justify-between gap-3">
+                        <h5
+                          class="text-sm font-semibold mb-3 text-neutral-800 dark:text-neutral-200"
+                        >
+                          Create Custom Tool
+                        </h5>
+                        <button
+                          on:click={resetSidebarSettings}
+                          class="inline-flex items-center gap-2 px-2.5 py-1 text-xs font-semibold text-red-600 bg-red-50 hover:text-red-700 hover:bg-red-100 dark:text-red-400 dark:hover:text-red-300 dark:bg-red-900/20 dark:hover:bg-red-900/30 rounded-md transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                          disabled={!isSidebarLayoutModified &&
+                            !hasCustomSidebarTools}
+                        >
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke-width="2"
+                            stroke="currentColor"
+                            class="size-4"
+                          >
+                            <path
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              d="M13 16h-1v-4h-1m1-4h.01M12 20a8 8 0 1 0 0-16 8 8 0 0 0 0 16z"
+                            />
+                          </svg>
+                          Reset Sidebar
+                        </button>
+                      </div>
+                      <p
+                        class="text-xs text-neutral-500 dark:text-neutral-400 mt-0"
+                      >
+                        Restores the default sidebar layout and deletes any
+                        custom sidebar tools.
+                      </p>
+
                       {#if !showCustomSidebarForm}
                         <button
                           on:click={() => (showCustomSidebarForm = true)}
@@ -2608,8 +2688,16 @@
                                     <div
                                       class="absolute z-10 top-full left-0 right-0 mt-2 p-3 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-xl shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all"
                                     >
+                                      <div class="mb-2">
+                                        <input
+                                          type="text"
+                                          bind:value={customIconSearch}
+                                          placeholder="Filter icons..."
+                                          class="w-full px-3 py-2 text-sm rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                        />
+                                      </div>
                                       <div class="grid grid-cols-5 gap-2">
-                                        {#each CUSTOM_ICONS as iconDef}
+                                        {#each filteredCustomIcons as iconDef}
                                           <button
                                             class="aspect-square flex items-center justify-center rounded-lg border transition-all {iconDef.name ===
                                             customActionIconKey
@@ -2627,6 +2715,13 @@
                                           </button>
                                         {/each}
                                       </div>
+                                      {#if filteredCustomIcons.length === 0}
+                                        <div
+                                          class="mt-2 text-xs text-neutral-500 dark:text-neutral-400 italic"
+                                        >
+                                          No icons match your search.
+                                        </div>
+                                      {/if}
                                     </div>
                                   </div>
                                 </div>

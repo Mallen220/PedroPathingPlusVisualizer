@@ -210,6 +210,8 @@ export const DEFAULT_SETTINGS: Settings = {
     "github",
   ],
   customSidebarItems: [],
+  sidebarExpanded: false,
+  sidebarWidth: 240,
 };
 
 /**
