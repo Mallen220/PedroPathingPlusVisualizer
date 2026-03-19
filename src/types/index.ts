@@ -240,6 +240,8 @@ export interface Settings {
   showTelemetryTab?: boolean;
   sidebarItems?: string[];
   customSidebarItems?: CustomSidebarItem[];
+  sidebarExpanded?: boolean;
+  sidebarWidth?: number;
 }
 
 export interface RobotProfile {
