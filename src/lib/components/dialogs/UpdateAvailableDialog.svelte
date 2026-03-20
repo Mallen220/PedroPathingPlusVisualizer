@@ -123,7 +123,7 @@
     if (api && api.openExternal) {
       // URL from README
       api.openExternal(
-        "https://apps.microsoft.com/detail/9nb7sqkhhct6?cid=DevShareMCLPCS&hl=en-US&gl=US",
+        "https://apps.microsoft.com/store/detail/9NK0B4FDJ3ZW?cid=DevShareMCLPCS",
       );
     }
     close();
