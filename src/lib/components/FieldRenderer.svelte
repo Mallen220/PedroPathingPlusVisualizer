@@ -736,6 +736,86 @@
     return _points;
   })();
 
+  // Camera FOV Visualization
+  $: cameraFOVElements = (() => {
+    if (!settings.showCameraFOV || !robotXY) return null;
+
+    const fov = settings.cameraFOV || 60;
+    const range = settings.cameraRange || 48;
+    const offsetX = settings.cameraOffsetX || 0;
+    const offsetY = settings.cameraOffsetY || 0;
+    // Camera heading is relative to robot forward
+    const camHeading = settings.cameraHeading || 0;
+
+    // Convert robot heading to radians
+    const robotHeadingRad = (robotHeading * Math.PI) / 180;
+
+    // Convert offset relative to robot rotation
+    const rotOffsetX =
+      offsetX * Math.cos(robotHeadingRad) - offsetY * Math.sin(robotHeadingRad);
+    const rotOffsetY =
+      offsetX * Math.sin(robotHeadingRad) + offsetY * Math.cos(robotHeadingRad);
+
+    // Calculate global position of the camera lens in field units
+    const lensX = robotXY.x + rotOffsetX;
+    const lensY = robotXY.y + rotOffsetY;
+
+    // The center line of the camera in global radians
+    const centerRad = robotHeadingRad + (camHeading * Math.PI) / 180;
+
+    // Half angle for left/right spread
+    // Note: To match visual math with standard FTC field (where Y goes up, but onscreen Y goes down),
+    // the rotation should just follow robotHeading. We use -robotHeading for correct mathematical rotation
+    // if robotHeading matches visual rotation (e.g., 0 is right, 90 is down or up depending on coordinate system).
+    // D3 scale will handle the Y inversion if needed.
+    const halfFovRad = ((fov / 2) * Math.PI) / 180;
+    const leftRad = centerRad - halfFovRad;
+    const rightRad = centerRad + halfFovRad;
+
+    // Calculate left and right boundary points in field units
+    const leftPtX = lensX + range * Math.cos(leftRad);
+    const leftPtY = lensY + range * Math.sin(leftRad);
+    const rightPtX = lensX + range * Math.cos(rightRad);
+    const rightPtY = lensY + range * Math.sin(rightRad);
+
+    // Map all points to pixel coordinates
+    const pxLensX = x(lensX);
+    const pxLensY = y(lensY);
+    const pxLeftX = x(leftPtX);
+    const pxLeftY = y(leftPtY);
+    const pxRightX = x(rightPtX);
+    const pxRightY = y(rightPtY);
+
+    // Calculate the SVG arc parameters
+    // In SVG, sweep-flag depends on the coordinate system and drawing direction.
+    // If y-axis points down (which is typical for SVG and mapped by y scale),
+    // sweep flag determines which of the two possible arcs is drawn.
+    const pxRange = Math.abs(x(range) - x(0)); // approximate pixel length for the arc radius
+    const largeArcFlag = fov > 180 ? 1 : 0;
+
+    // Sweep flag: we are drawing from left to right. Since angle increases counter-clockwise mathematically,
+    // but onscreen Y goes down (usually), the visual arc might need a sweep flag of 1 or 0.
+    // Given start point is leftRad, end point is rightRad.
+    // So angle is increasing. If Y points down, the visual angle goes clockwise.
+    // Thus the arc from left to right should sweep in positive angle direction.
+    // We will use sweep-flag=1 (positive angle direction).
+    const sweepFlag = 1;
+
+    // SVG Path data
+    const pathData = `
+      M ${pxLensX},${pxLensY}
+      L ${pxLeftX},${pxLeftY}
+      A ${pxRange},${pxRange} 0 ${largeArcFlag},${sweepFlag} ${pxRightX},${pxRightY}
+      Z
+    `;
+
+    return {
+      path: pathData,
+      color: "rgba(96, 165, 250, 0.2)", // light blue with opacity
+      strokeColor: "rgba(96, 165, 250, 0.6)",
+    };
+  })();
+
   // Animated facing-point line: drawn from current robot position to the facing target.
   // Only shown when the robot is actively driving on that facingPoint segment.
   // Rendered as SVG overlay to avoid clearing Two.js scene.
@@ -2869,6 +2949,17 @@
           opacity="0.7"
         />
       {/each}
+      {#if cameraFOVElements}
+        <path
+          d={cameraFOVElements.path}
+          fill={cameraFOVElements.color}
+          stroke={cameraFOVElements.strokeColor}
+          stroke-width={uiLength(1)}
+          stroke-dasharray={`${uiLength(4)} ${uiLength(4)}`}
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        />
+      {/if}
     </svg>
 
     {#if settings.customMaps?.some((m) => m.id === settings.fieldMap)}

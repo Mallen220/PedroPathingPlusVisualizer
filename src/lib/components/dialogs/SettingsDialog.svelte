@@ -1680,6 +1680,149 @@
                     {/if}
                   </div>
                 {/if}
+
+                <SettingsItem
+                  label="Robot Camera"
+                  description="Configure camera field of view visualization"
+                  {searchQuery}
+                  section
+                >
+                  <div
+                    class="space-y-2 pt-2 border-t border-neutral-200 dark:border-neutral-700 mt-2"
+                  >
+                    <SettingsItem
+                      label="Show Camera FOV Visualization"
+                      isModified={settings.showCameraFOV !==
+                        DEFAULT_SETTINGS.showCameraFOV}
+                      onReset={() => {
+                        settings.showCameraFOV = DEFAULT_SETTINGS.showCameraFOV;
+                        settings = { ...settings };
+                      }}
+                      description="Display what the robot's camera can see on the field"
+                      {searchQuery}
+                      layout="row"
+                    >
+                      <input
+                        type="checkbox"
+                        bind:checked={settings.showCameraFOV}
+                        class="w-5 h-5 rounded border-neutral-300 dark:border-neutral-600 text-blue-500 focus:ring-2 focus:ring-blue-500 cursor-pointer"
+                      />
+                    </SettingsItem>
+
+                    {#if settings.showCameraFOV}
+                      <div
+                        class="grid grid-cols-1 md:grid-cols-2 gap-4 pl-4 border-l-2 border-neutral-100 dark:border-neutral-800 ml-2 mt-2"
+                      >
+                        <SettingsItem
+                          label="Camera Offset X (in)"
+                          isModified={settings.cameraOffsetX !==
+                            DEFAULT_SETTINGS.cameraOffsetX}
+                          onReset={() => {
+                            settings.cameraOffsetX =
+                              DEFAULT_SETTINGS.cameraOffsetX;
+                            settings = { ...settings };
+                          }}
+                          description="X distance from center"
+                          {searchQuery}
+                          forId="camera-offset-x"
+                        >
+                          <input
+                            id="camera-offset-x"
+                            type="number"
+                            bind:value={settings.cameraOffsetX}
+                            step="0.5"
+                            class="w-full px-3 py-2 rounded-md border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          />
+                        </SettingsItem>
+                        <SettingsItem
+                          label="Camera Offset Y (in)"
+                          isModified={settings.cameraOffsetY !==
+                            DEFAULT_SETTINGS.cameraOffsetY}
+                          onReset={() => {
+                            settings.cameraOffsetY =
+                              DEFAULT_SETTINGS.cameraOffsetY;
+                            settings = { ...settings };
+                          }}
+                          description="Y distance from center (Forward is +)"
+                          {searchQuery}
+                          forId="camera-offset-y"
+                        >
+                          <input
+                            id="camera-offset-y"
+                            type="number"
+                            bind:value={settings.cameraOffsetY}
+                            step="0.5"
+                            class="w-full px-3 py-2 rounded-md border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          />
+                        </SettingsItem>
+                        <SettingsItem
+                          label="Camera Heading (°)"
+                          isModified={settings.cameraHeading !==
+                            DEFAULT_SETTINGS.cameraHeading}
+                          onReset={() => {
+                            settings.cameraHeading =
+                              DEFAULT_SETTINGS.cameraHeading;
+                            settings = { ...settings };
+                          }}
+                          description="Angle relative to robot forward (0 is forward, 90 is left)"
+                          {searchQuery}
+                          forId="camera-heading"
+                        >
+                          <input
+                            id="camera-heading"
+                            type="number"
+                            bind:value={settings.cameraHeading}
+                            step="1"
+                            class="w-full px-3 py-2 rounded-md border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          />
+                        </SettingsItem>
+                        <SettingsItem
+                          label="Field of View (°)"
+                          isModified={settings.cameraFOV !==
+                            DEFAULT_SETTINGS.cameraFOV}
+                          onReset={() => {
+                            settings.cameraFOV = DEFAULT_SETTINGS.cameraFOV;
+                            settings = { ...settings };
+                          }}
+                          description="Total angle of view (e.g. 60° for typical webcam)"
+                          {searchQuery}
+                          forId="camera-fov"
+                        >
+                          <input
+                            id="camera-fov"
+                            type="number"
+                            bind:value={settings.cameraFOV}
+                            min="1"
+                            max="360"
+                            step="1"
+                            class="w-full px-3 py-2 rounded-md border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          />
+                        </SettingsItem>
+                        <SettingsItem
+                          label="Visibility Range (in)"
+                          isModified={settings.cameraRange !==
+                            DEFAULT_SETTINGS.cameraRange}
+                          onReset={() => {
+                            settings.cameraRange = DEFAULT_SETTINGS.cameraRange;
+                            settings = { ...settings };
+                          }}
+                          description="Max distance the camera can reliably detect objects"
+                          {searchQuery}
+                          forId="camera-range"
+                        >
+                          <input
+                            id="camera-range"
+                            type="number"
+                            bind:value={settings.cameraRange}
+                            min="1"
+                            step="1"
+                            class="w-full px-3 py-2 rounded-md border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          />
+                        </SettingsItem>
+                      </div>
+                    {/if}
+                  </div>
+                </SettingsItem>
               </div>
             {/if}
 

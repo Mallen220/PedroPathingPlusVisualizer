@@ -50,6 +50,12 @@
       showRobotArrows: settings.showRobotArrows,
       showFakeHeadingArrow: settings.showFakeHeadingArrow,
       fakeHeadingArrowColor: settings.fakeHeadingArrowColor,
+      showCameraFOV: settings.showCameraFOV,
+      cameraOffsetX: settings.cameraOffsetX,
+      cameraOffsetY: settings.cameraOffsetY,
+      cameraHeading: settings.cameraHeading,
+      cameraFOV: settings.cameraFOV,
+      cameraRange: settings.cameraRange,
     } as RobotProfile;
 
     robotProfilesStore.update((p) => [...p, newProfile]);
@@ -97,6 +103,25 @@
     settings.showFakeHeadingArrow = profile.showFakeHeadingArrow ?? false;
     settings.fakeHeadingArrowColor = profile.fakeHeadingArrowColor || "#ef4444";
 
+    if (profile.showCameraFOV !== undefined) {
+      settings.showCameraFOV = profile.showCameraFOV;
+    }
+    if (profile.cameraOffsetX !== undefined) {
+      settings.cameraOffsetX = profile.cameraOffsetX;
+    }
+    if (profile.cameraOffsetY !== undefined) {
+      settings.cameraOffsetY = profile.cameraOffsetY;
+    }
+    if (profile.cameraHeading !== undefined) {
+      settings.cameraHeading = profile.cameraHeading;
+    }
+    if (profile.cameraFOV !== undefined) {
+      settings.cameraFOV = profile.cameraFOV;
+    }
+    if (profile.cameraRange !== undefined) {
+      settings.cameraRange = profile.cameraRange;
+    }
+
     onSettingsChange();
     notification.set({
       message: `Profile "${profile.name}" applied`,
@@ -125,6 +150,12 @@
       showRobotArrows: settings.showRobotArrows,
       showFakeHeadingArrow: settings.showFakeHeadingArrow,
       fakeHeadingArrowColor: settings.fakeHeadingArrowColor,
+      showCameraFOV: settings.showCameraFOV,
+      cameraOffsetX: settings.cameraOffsetX,
+      cameraOffsetY: settings.cameraOffsetY,
+      cameraHeading: settings.cameraHeading,
+      cameraFOV: settings.cameraFOV,
+      cameraRange: settings.cameraRange,
     } as RobotProfile;
 
     robotProfilesStore.update((p) => {

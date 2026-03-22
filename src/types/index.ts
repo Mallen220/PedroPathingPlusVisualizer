@@ -194,6 +194,12 @@ export interface Settings {
   showRobotArrows?: boolean; // Whether to display drive train direction arrows
   showFakeHeadingArrow?: boolean;
   fakeHeadingArrowColor?: string;
+  showCameraFOV?: boolean;
+  cameraOffsetX?: number;
+  cameraOffsetY?: number;
+  cameraHeading?: number;
+  cameraFOV?: number;
+  cameraRange?: number;
   javaPackageName?: string;
   theme: "light" | "dark" | "auto" | string;
   programFontSize?: number; // Scaling factor for the program font size (percentage)
@@ -263,6 +269,12 @@ export interface RobotProfile {
   showRobotArrows?: boolean;
   showFakeHeadingArrow?: boolean;
   fakeHeadingArrowColor?: string;
+  showCameraFOV?: boolean;
+  cameraOffsetX?: number;
+  cameraOffsetY?: number;
+  cameraHeading?: number;
+  cameraFOV?: number;
+  cameraRange?: number;
 }
 
 export interface Shape {
