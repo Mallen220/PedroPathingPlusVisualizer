@@ -817,9 +817,25 @@
           let newGuides: InstanceType<typeof Two.Line>[] = [];
 
           if (shouldSnap && id.startsWith("point-")) {
+            // Include start point, line endpoints, field boundaries, and obstacle vertices
             const targets: Point[] = [startPoint];
             lines.forEach((l) => {
               if (l.endPoint) targets.push(l.endPoint);
+            });
+
+            // Add field boundaries (corners)
+            targets.push({ x: 0, y: 0 } as Point);
+            targets.push({ x: FIELD_SIZE, y: 0 } as Point);
+            targets.push({ x: 0, y: FIELD_SIZE } as Point);
+            targets.push({ x: FIELD_SIZE, y: FIELD_SIZE } as Point);
+
+            // Add shape vertices
+            shapes.forEach(shape => {
+              if (shape.visible !== false) {
+                shape.vertices.forEach(v => {
+                   targets.push({ x: v.x, y: v.y } as Point);
+                });
+              }
             });
 
             const parts = id.split("-");
@@ -839,7 +855,8 @@
             let minDistY = SNAP_THRESHOLD;
 
             targets.forEach((target, idx) => {
-              if (idx === excludeIndex) return;
+              // Only exclude waypoints based on index, bounds/shapes are added after waypoints
+              if (idx === excludeIndex && idx <= lines.length) return;
 
               const dx = Math.abs(target.x - inchX);
               const dy = Math.abs(target.y - inchY);
