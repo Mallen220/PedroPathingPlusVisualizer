@@ -1441,7 +1441,7 @@
                 on:dragstart={(e) => handleDragStart(e, seqIndex)}
                 on:dragend={handleDragEnd}
                 on:contextmenu={(e) => handleContextMenu(e, seqIndex)}
-                class={`hover:bg-neutral-50 dark:hover:bg-neutral-800/50 font-medium ${$selectedLineId === line.id ? "bg-green-50 dark:bg-green-900/20" : ""} ${$selectedPointId === endPointId || $multiSelectedPointIds.includes(endPointId) ? "bg-green-100 dark:bg-green-800/40" : ""} transition-colors duration-150 ${line.hidden ? "opacity-50 grayscale-[50%]" : ""}`}
+                class={`hover:bg-neutral-50 dark:hover:bg-neutral-800/50 font-medium ${$selectedLineId === line.id ? "bg-green-50 dark:bg-green-900/20" : ""} ${$multiSelectedPointIds.length > 1 && $multiSelectedPointIds.includes(endPointId) ? "bg-green-100 dark:bg-green-800/40" : ""} transition-colors duration-150 ${line.hidden ? "opacity-50 grayscale-[50%]" : ""}`}
                 class:border-t-2={dragOverIndex === seqIndex &&
                   dragPosition === "top"}
                 class:border-b-2={dragOverIndex === seqIndex &&
@@ -1743,7 +1743,7 @@
                 ].findIndex((p) => p === cp)}
                 {@const pointId = `point-${lineIdx + 1}-${cpIndex}`}
                 <tr
-                  class={`hover:bg-neutral-50 dark:hover:bg-neutral-800/50 ${$selectedLineId === line.id ? "bg-green-50 dark:bg-green-900/20" : ""} ${$selectedPointId === pointId || $multiSelectedPointIds.includes(pointId) ? "bg-green-100 dark:bg-green-800/40" : ""}`}
+                  class={`hover:bg-neutral-50 dark:hover:bg-neutral-800/50 ${$selectedLineId === line.id ? "bg-green-50 dark:bg-green-900/20" : ""} ${$multiSelectedPointIds.length > 1 && $multiSelectedPointIds.includes(pointId) ? "bg-green-100 dark:bg-green-800/40" : ""}`}
                   on:click={(e) => handleRowClick(e, pointId, line.id || null)}
                 >
                   <td class="w-8 px-2 py-2">
