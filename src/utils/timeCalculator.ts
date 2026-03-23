@@ -523,6 +523,12 @@ function calculateMotionProfileDetailed(
       const frictionLimit = Math.sqrt(kFriction * 386.22 * step.radius);
       if (frictionLimit < limit) limit = frictionLimit;
     }
+
+    if (settings.centripetalScaling !== false && step.radius > 0) {
+      const centripetalLimit = Math.sqrt(maxAcc * step.radius);
+      if (centripetalLimit < limit) limit = centripetalLimit;
+    }
+
     const angVelLimit = aVelocity * step.radius;
     if (angVelLimit < limit) limit = angVelLimit;
 

@@ -314,6 +314,25 @@
   </div>
 
   <SettingsItem
+    label="Centripetal Scaling"
+    isModified={settings.centripetalScaling !==
+      DEFAULT_SETTINGS.centripetalScaling}
+    onReset={() => {
+      settings.centripetalScaling = DEFAULT_SETTINGS.centripetalScaling;
+      settings = { ...settings };
+    }}
+    description="Scale velocity on curves to limit centripetal acceleration"
+    {searchQuery}
+    layout="row"
+  >
+    <input
+      type="checkbox"
+      bind:checked={settings.centripetalScaling}
+      class="w-5 h-5 rounded border-neutral-300 dark:border-neutral-600 text-blue-500 focus:ring-2 focus:ring-blue-500 cursor-pointer"
+    />
+  </SettingsItem>
+
+  <SettingsItem
     label="Friction Coefficient"
     isModified={settings.kFriction !== DEFAULT_SETTINGS.kFriction}
     onReset={() => {

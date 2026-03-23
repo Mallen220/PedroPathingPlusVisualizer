@@ -49,6 +49,7 @@ export const DEFAULT_SETTINGS: Settings = {
   maxAcceleration: 30,
   maxDeceleration: 30,
   maxAngularAcceleration: 0, // 0 = Auto-calculate from linear acceleration
+  centripetalScaling: true,
   fieldMap: "decode.webp",
   fieldRotation: 0,
   // use no-image by default; users can opt in to the lightweight

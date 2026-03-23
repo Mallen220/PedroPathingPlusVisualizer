@@ -187,6 +187,7 @@ export interface Settings {
   maxAcceleration: number; // inches/sec²
   maxDeceleration?: number; // inches/sec²
   maxAngularAcceleration?: number; // rad/sec²
+  centripetalScaling?: boolean; // Scale velocity on curves to limit centripetal acceleration
   fieldMap: string;
   fieldRotation?: number; // 0, 90, 180, 270
   robotImage?: string;
@@ -254,6 +255,7 @@ export interface RobotProfile {
   maxAcceleration: number;
   maxDeceleration: number;
   maxAngularAcceleration?: number;
+  centripetalScaling?: boolean;
   kFriction: number;
   aVelocity: number; // angular velocity
   xVelocity: number;

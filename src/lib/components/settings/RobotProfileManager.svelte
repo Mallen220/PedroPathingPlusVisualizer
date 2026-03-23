@@ -41,6 +41,7 @@
       maxVelocity: settings.maxVelocity,
       maxAcceleration: settings.maxAcceleration,
       maxDeceleration: settings.maxDeceleration || 0,
+      centripetalScaling: settings.centripetalScaling,
       kFriction: settings.kFriction,
       aVelocity: settings.aVelocity,
       xVelocity: settings.xVelocity,
@@ -81,6 +82,9 @@
     settings.maxDeceleration = profile.maxDeceleration;
     settings.maxAngularAcceleration =
       profile.maxAngularAcceleration ?? settings.maxAngularAcceleration;
+    if (profile.centripetalScaling !== undefined) {
+      settings.centripetalScaling = profile.centripetalScaling;
+    }
     settings.kFriction = profile.kFriction;
     settings.aVelocity = profile.aVelocity;
     settings.xVelocity = profile.xVelocity;
@@ -116,6 +120,7 @@
       maxAcceleration: settings.maxAcceleration,
       maxDeceleration: settings.maxDeceleration || 0,
       maxAngularAcceleration: settings.maxAngularAcceleration,
+      centripetalScaling: settings.centripetalScaling,
       kFriction: settings.kFriction,
       aVelocity: settings.aVelocity,
       xVelocity: settings.xVelocity,
