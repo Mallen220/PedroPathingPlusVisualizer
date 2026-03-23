@@ -490,3 +490,9 @@
     </div>
   </div>
 {/if}
+
+<style>
+  .is-searching :global(.section-container:not(:has(.visible-setting))) {
+    display: none;
+  }
+</style>
