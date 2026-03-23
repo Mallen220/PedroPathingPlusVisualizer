@@ -1,6 +1,6 @@
 <!-- Copyright 2026 Matthew Allen. Licensed under the Modified Apache License, Version 2.0. -->
 <script lang="ts">
-  import { onMount } from "svelte";
+  import { onMount, tick } from "svelte";
   import { cubicInOut } from "svelte/easing";
   import { fade, fly } from "svelte/transition";
   import {
@@ -68,6 +68,7 @@
   let appVersion = packageJson.version;
 
   let downloadCount: number | null = null;
+  let visibleTabIds: string[] = [];
 
   function handleKeydown(e: KeyboardEvent) {
     if (e.key === "Escape" && isOpen) {
@@ -244,6 +245,34 @@
     return [...builtIn, ...custom];
   })();
 
+  $: {
+    const query = searchQuery;
+    tick().then(() => {
+      // Use setTimeout to ensure all child components have finished their own ticks and DOM updates
+      setTimeout(() => {
+        if (!query) {
+          visibleTabIds = tabs.map(t => t.id);
+          return;
+        }
+        const visible = new Set<string>();
+        const containers = document.querySelectorAll('.section-container');
+        containers.forEach(el => {
+          if (el.querySelector('.visible-setting')) {
+            const h4 = el.querySelector('h4');
+            if (h4) {
+              const name = h4.textContent?.trim().toLowerCase();
+              const matchingTab = tabs.find(t => t.label.toLowerCase() === name);
+              if (matchingTab) {
+                visible.add(matchingTab.id);
+              }
+            }
+          }
+        });
+        visibleTabIds = Array.from(visible);
+      }, 0);
+    });
+  }
+
   // Custom Item Form State
 
   // Map of icon name -> Svelte component, used both for the picker and for rendering persisted custom items
@@ -314,32 +343,34 @@
           <!-- Navigation -->
           <nav class="flex-1 overflow-y-auto p-2 space-y-1">
             {#each tabs as tab}
-              <button
-                on:click={() => {
-                  activeTab = tab.id;
-                  searchQuery = "";
-                }}
-                class="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors {activeTab ===
-                  tab.id && !searchQuery
-                  ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300'
-                  : 'text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800'}"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke-width={1.5}
-                  stroke="currentColor"
-                  class="size-5"
+              {#if !searchQuery || visibleTabIds.includes(tab.id)}
+                <button
+                  on:click={() => {
+                    activeTab = tab.id;
+                    searchQuery = "";
+                  }}
+                  class="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors {activeTab ===
+                    tab.id && !searchQuery
+                    ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300'
+                    : 'text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800'}"
                 >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    d={tab.icon}
-                  />
-                </svg>
-                {tab.label}
-              </button>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke-width={1.5}
+                    stroke="currentColor"
+                    class="size-5"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      d={tab.icon}
+                    />
+                  </svg>
+                  {tab.label}
+                </button>
+              {/if}
             {/each}
           </nav>
 
@@ -490,3 +521,9 @@
     </div>
   </div>
 {/if}
+
+<style>
+  .is-searching :global(.section-container:not(:has(.visible-setting))) {
+    display: none;
+  }
+</style>
