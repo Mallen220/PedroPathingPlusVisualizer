@@ -7,10 +7,13 @@
     protractorLockToRobot,
     gridSize,
     isPresentationMode,
+    snapToGrid,
   } from "../stores";
-  import { settingsStore } from "./projectStore";
+  import { settingsStore, linesStore, startPointStore, shapesStore } from "./projectStore";
   import { toUser } from "../utils/coordinates";
+  import { FIELD_SIZE } from "../config/defaults";
   import type * as d3 from "d3";
+  import type { Point } from "../types";
 
   export let x: d3.ScaleLinear<number, number, number>;
   export let y: d3.ScaleLinear<number, number, number>;
@@ -73,13 +76,66 @@
     const rect = twoElement.getBoundingClientRect();
     const mouseX = event.clientX - rect.left;
     const mouseY = event.clientY - rect.top;
-    const inchX = x.invert(mouseX);
-    const inchY = y.invert(mouseY);
+    let inchX = x.invert(mouseX);
+    let inchY = y.invert(mouseY);
 
-    if (rulerDragging === "start") {
-      rulerStart = { x: inchX, y: inchY };
-    } else if (rulerDragging === "end") {
-      rulerEnd = { x: inchX, y: inchY };
+    if (rulerDragging === "start" || rulerDragging === "end") {
+      if ($snapToGrid && $showGrid && $gridSize > 0) {
+        inchX = Math.round(inchX / $gridSize) * $gridSize;
+        inchY = Math.round(inchY / $gridSize) * $gridSize;
+      }
+
+      const SNAP_THRESHOLD = 1.0;
+      const isSnappingEnabled = $settingsStore.smartSnapping !== false;
+      const shouldSnap = event.altKey ? !isSnappingEnabled : isSnappingEnabled;
+
+      if (shouldSnap) {
+        const targets: Point[] = [$startPointStore];
+        $linesStore.forEach((l) => {
+          if (l.endPoint) targets.push(l.endPoint);
+        });
+
+        targets.push({ x: 0, y: 0 } as Point);
+        targets.push({ x: FIELD_SIZE, y: 0 } as Point);
+        targets.push({ x: 0, y: FIELD_SIZE } as Point);
+        targets.push({ x: FIELD_SIZE, y: FIELD_SIZE } as Point);
+
+        $shapesStore.forEach(shape => {
+          if (shape.visible !== false) {
+            shape.vertices.forEach(v => {
+               targets.push({ x: v.x, y: v.y } as Point);
+            });
+          }
+        });
+
+        let bestX = null;
+        let bestY = null;
+        let minDistX = SNAP_THRESHOLD;
+        let minDistY = SNAP_THRESHOLD;
+
+        targets.forEach((target) => {
+          const dx = Math.abs(target.x - inchX);
+          const dy = Math.abs(target.y - inchY);
+
+          if (dx < minDistX) {
+            minDistX = dx;
+            bestX = target.x;
+          }
+          if (dy < minDistY) {
+            minDistY = dy;
+            bestY = target.y;
+          }
+        });
+
+        if (bestX !== null) inchX = bestX;
+        if (bestY !== null) inchY = bestY;
+      }
+
+      if (rulerDragging === "start") {
+        rulerStart = { x: inchX, y: inchY };
+      } else {
+        rulerEnd = { x: inchX, y: inchY };
+      }
     } else if (protractorDragging === "move") {
       protractorPos = { x: inchX, y: inchY };
     } else if (protractorDragging === "rotate") {
@@ -157,7 +213,6 @@
     ? robotXY // robotXY is now in inches
     : protractorPos;
 
-  const FIELD_SIZE = 144;
   let spacing = 12;
   let gridPositions: number[] = [];
 
