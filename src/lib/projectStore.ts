@@ -40,6 +40,10 @@ export function normalizeLines(input: Line[]): Line[] {
     ),
     waitBeforeName: line.waitBeforeName ?? line.waitBefore?.name ?? "",
     waitAfterName: line.waitAfterName ?? line.waitAfter?.name ?? "",
+    maxVelocity:
+      line.maxVelocity !== undefined ? Number(line.maxVelocity) : null,
+    maxAcceleration:
+      line.maxAcceleration !== undefined ? Number(line.maxAcceleration) : null,
   }));
 }
 

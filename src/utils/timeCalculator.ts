@@ -765,9 +765,21 @@ export function calculatePathTime(
       let headingProfile: number[] | undefined = undefined;
 
       if (useMotionProfile) {
+        const segmentSettings = {
+          ...safeSettings,
+          maxVelocity:
+            line.maxVelocity !== undefined && line.maxVelocity !== null
+              ? line.maxVelocity
+              : safeSettings.maxVelocity,
+          maxAcceleration:
+            line.maxAcceleration !== undefined && line.maxAcceleration !== null
+              ? line.maxAcceleration
+              : safeSettings.maxAcceleration,
+        };
+
         const result = calculateMotionProfileDetailed(
           analysis.steps,
-          safeSettings,
+          segmentSettings,
         );
         translationTime = result.totalTime;
         motionProfile = result.profile;

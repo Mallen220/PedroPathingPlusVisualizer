@@ -264,7 +264,25 @@ export async function generateJavaCode(
               .join("");
           }
 
-          return `${variableName} = follower.pathBuilder().addPath(
+          let constraintsComment = "";
+          if (
+            (line.maxVelocity !== undefined && line.maxVelocity !== null) ||
+            (line.maxAcceleration !== undefined &&
+              line.maxAcceleration !== null)
+          ) {
+            const v =
+              line.maxVelocity !== undefined && line.maxVelocity !== null
+                ? line.maxVelocity
+                : "default";
+            const a =
+              line.maxAcceleration !== undefined &&
+              line.maxAcceleration !== null
+                ? line.maxAcceleration
+                : "default";
+            constraintsComment = `\n        // Custom Constraints: Max Velocity = ${v}, Max Acceleration = ${a}`;
+          }
+
+          return `${constraintsComment}\n        ${variableName} = follower.pathBuilder().addPath(
           ${curveType}(
             ${startCode},
             ${controlPointsCode}
@@ -1013,7 +1031,23 @@ export async function generateSequentialCommandCode(
         ? "\n                .setReversed()"
         : "";
 
-      return `        ${pathName} = follower.pathBuilder()
+      let constraintsComment = "";
+      if (
+        (line.maxVelocity !== undefined && line.maxVelocity !== null) ||
+        (line.maxAcceleration !== undefined && line.maxAcceleration !== null)
+      ) {
+        const v =
+          line.maxVelocity !== undefined && line.maxVelocity !== null
+            ? line.maxVelocity
+            : "default";
+        const a =
+          line.maxAcceleration !== undefined && line.maxAcceleration !== null
+            ? line.maxAcceleration
+            : "default";
+        constraintsComment = `// Custom Constraints: Max Velocity = ${v}, Max Acceleration = ${a}\n        `;
+      }
+
+      return `        ${constraintsComment}${pathName} = follower.pathBuilder()
             .addPath(new ${curveType}(${actualStartPose}, ${controlPointsStr}${endPoseVar}))
             .${headingConfig}${reverseConfig}
             .build();`;

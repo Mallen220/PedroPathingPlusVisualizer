@@ -490,6 +490,58 @@
         </div>
       </div>
 
+      <!-- Constraints Section -->
+      <div
+        class="grid gap-4"
+        class:grid-cols-1={isNarrow}
+        class:grid-cols-2={!isNarrow}
+      >
+        <div class="space-y-2">
+          <span
+            class="text-xs font-semibold text-neutral-500 uppercase tracking-wide block"
+          >
+            Max Velocity (in/s)
+          </span>
+          <div class="relative flex-1 min-w-0">
+            <input
+              type="number"
+              class="w-full px-2 py-1.5 text-sm bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-lg focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 outline-none transition-all"
+              placeholder="Global Default"
+              bind:value={line.maxVelocity}
+              on:change={(e) => {
+                let val = parseFloat(e.currentTarget.value);
+                line.maxVelocity = isNaN(val) ? null : val;
+                lines = [...lines];
+                recordChange && recordChange("Update Max Velocity");
+              }}
+              disabled={line.locked}
+            />
+          </div>
+        </div>
+        <div class="space-y-2">
+          <span
+            class="text-xs font-semibold text-neutral-500 uppercase tracking-wide block"
+          >
+            Max Acceleration (in/s²)
+          </span>
+          <div class="relative flex-1 min-w-0">
+            <input
+              type="number"
+              class="w-full px-2 py-1.5 text-sm bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-lg focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 outline-none transition-all"
+              placeholder="Global Default"
+              bind:value={line.maxAcceleration}
+              on:change={(e) => {
+                let val = parseFloat(e.currentTarget.value);
+                line.maxAcceleration = isNaN(val) ? null : val;
+                lines = [...lines];
+                recordChange && recordChange("Update Max Acceleration");
+              }}
+              disabled={line.locked}
+            />
+          </div>
+        </div>
+      </div>
+
       <ControlPointsSection
         bind:line
         lineIdx={idx}

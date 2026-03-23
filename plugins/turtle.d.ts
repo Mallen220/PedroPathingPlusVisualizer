@@ -95,6 +95,8 @@ interface Line {
   waitBeforeName?: string;
   waitAfterName?: string;
   _linkedName?: string; // Metadata for linked names
+  maxVelocity?: number | null;
+  maxAcceleration?: number | null;
   isMacroElement?: boolean;
   macroId?: string;
   originalId?: string;
