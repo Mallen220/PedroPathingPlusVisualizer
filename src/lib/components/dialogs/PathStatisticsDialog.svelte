@@ -535,6 +535,58 @@
     }
   }
 
+  function handleExportCsv() {
+    const stats = pathStats;
+    if (!stats) return;
+
+    // Header
+    let csv =
+      "Time (s),Velocity (in/s),Linear Accel (in/s²),Centripetal Accel (in/s²),Angular Vel (rad/s)\n";
+
+    const times = new Set<number>();
+
+    // Collect all time steps
+    [
+      stats.velocityData,
+      stats.accelerationData,
+      stats.centripetalData,
+      stats.angularVelocityData,
+    ].forEach((dataset) => {
+      dataset.forEach((d) => times.add(d.time));
+    });
+
+    const sortedTimes = Array.from(times).sort((a, b) => a - b);
+
+    sortedTimes.forEach((t) => {
+      const getVal = (dataset: { time: number; value: number }[]) => {
+        // Find exact match or interpolate/closest (here we just find exact or closest for simplicity)
+        const point = dataset.find((d) => Math.abs(d.time - t) < 0.001);
+        return point ? point.value.toFixed(3) : "0.000";
+      };
+
+      const v = getVal(stats.velocityData);
+      const a = getVal(stats.accelerationData);
+      const c = getVal(stats.centripetalData);
+      const w = getVal(stats.angularVelocityData);
+
+      csv += `${t.toFixed(3)},${v},${a},${c},${w}\n`;
+    });
+
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", "path_statistics.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    notification.set({
+      message: "Exported CSV!",
+      type: "success",
+    });
+  }
+
   function copyToMarkdown() {
     if (!pathStats) return;
 
@@ -637,6 +689,27 @@
       </div>
 
       <div class="flex items-center gap-2">
+        <button
+          on:click={handleExportCsv}
+          class="p-2 text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300 rounded-lg hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
+          title="Export as CSV"
+          aria-label="Export as CSV"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            class="size-5"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"
+            />
+          </svg>
+        </button>
         <button
           on:click={handleCopy}
           class="p-2 text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300 rounded-lg hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
