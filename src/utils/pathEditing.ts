@@ -273,33 +273,6 @@ function douglasPeucker(
   }
 }
 
-function subdivideLongSegments(
-  points: { x: number; y: number }[],
-  maxLength: number
-): { x: number; y: number }[] {
-  if (points.length < 2) return points;
-  const result: { x: number; y: number }[] = [points[0]];
-
-  for (let i = 1; i < points.length; i++) {
-    const prev = result[result.length - 1];
-    const curr = points[i];
-    const dist = getDistance(prev, curr);
-
-    if (dist > maxLength) {
-      const numSubdivisions = Math.ceil(dist / maxLength);
-      for (let j = 1; j <= numSubdivisions; j++) {
-        result.push({
-          x: prev.x + (curr.x - prev.x) * (j / numSubdivisions),
-          y: prev.y + (curr.y - prev.y) * (j / numSubdivisions),
-        });
-      }
-    } else {
-      result.push(curr);
-    }
-  }
-  return result;
-}
-
 /**
  * Generates path lines from an array of raw drawn points.
  */
@@ -311,11 +284,16 @@ export function generateLinesFromDrawing(
 ): { startPoint: Point; lines: Line[]; sequence: SequenceItem[] } | null {
   if (drawnPoints.length < 2) return null;
 
-  // 1. Simplify points using Douglas-Peucker
-  let simplified = douglasPeucker(drawnPoints, 2.5); // 2.5 inch tolerance for deviation
+  // 1. Simplify points using Douglas-Peucker with a very high tolerance
+  // This heavily prioritizes fewer paths.
+  let epsilon = 10;
+  let simplified = douglasPeucker(drawnPoints, epsilon);
 
-  // 2. Prevent excessively long straight segments by subdividing
-  simplified = subdivideLongSegments(simplified, 30); // Max 30 inch straight line
+  // Force simplification to be at most 4 points (Start + 3 paths)
+  while (simplified.length > 4 && epsilon < 100) {
+     epsilon += 5;
+     simplified = douglasPeucker(drawnPoints, epsilon);
+  }
 
   // We need at least one point to draw to.
   // If simplified has only 1 point, it means the user just clicked without dragging far.
@@ -395,8 +373,9 @@ export function generateLinesFromDrawing(
     const prevPt = currentConnectionPt;
     const dist = getDistance(prevPt, pt);
 
-    // Default tension factor for control points
-    const tension = 0.33;
+    // Default tension factor for control points.
+    // Increased to 0.45 to support longer, more swooping curves for rough drawings.
+    const tension = 0.45;
 
     // Calculate tangent at the starting point of this segment
     let startTangent = { dx: pt.x - prevPt.x, dy: pt.y - prevPt.y };
