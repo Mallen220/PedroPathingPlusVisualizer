@@ -374,6 +374,48 @@ export function generateLinesFromDrawing(
     const prevPt = currentConnectionPt;
     const dist = getDistance(prevPt, pt);
 
+    // Find the original drawn points that correspond to this segment
+    // We can do this approximately by finding the indices in drawnPoints
+    // that are closest to prevPt and pt.
+    let startIndexRaw = 0;
+    let endIndexRaw = drawnPoints.length - 1;
+    let minDistStart = Infinity;
+    let minDistEnd = Infinity;
+
+    for (let j = 0; j < drawnPoints.length; j++) {
+      const dStart = getDistance(drawnPoints[j], prevPt);
+      if (dStart < minDistStart) {
+        minDistStart = dStart;
+        startIndexRaw = j;
+      }
+      const dEnd = getDistance(drawnPoints[j], pt);
+      if (dEnd < minDistEnd) {
+        minDistEnd = dEnd;
+        endIndexRaw = j;
+      }
+    }
+
+    // If the indices are inverted (which shouldn't happen, but just in case), swap them
+    if (startIndexRaw > endIndexRaw) {
+      const temp = startIndexRaw;
+      startIndexRaw = endIndexRaw;
+      endIndexRaw = temp;
+    }
+
+    const segmentDrawnPoints = drawnPoints.slice(
+      startIndexRaw,
+      endIndexRaw + 1,
+    );
+
+    // Check if the segment is straight
+    let maxDev = 0;
+    for (let j = 0; j < segmentDrawnPoints.length; j++) {
+      const dev = perpendicularDistance(segmentDrawnPoints[j], prevPt, pt);
+      if (dev > maxDev) maxDev = dev;
+    }
+
+    const isStraight = maxDev < 1.0; // Less than 1 inch deviation is considered straight
+
     // Default tension factor for control points.
     // Set to 0.38 for a balanced curve that accurately tracks points without overshooting.
     const tension = 0.38;
@@ -417,15 +459,19 @@ export function generateLinesFromDrawing(
     endTangent.dy /= etMag;
 
     // Place control points
-    const cp1 = {
-      x: prevPt.x + startTangent.dx * dist * tension,
-      y: prevPt.y + startTangent.dy * dist * tension,
-    };
+    const controlPoints = [];
+    if (!isStraight) {
+      const cp1 = {
+        x: prevPt.x + startTangent.dx * dist * tension,
+        y: prevPt.y + startTangent.dy * dist * tension,
+      };
 
-    const cp2 = {
-      x: pt.x - endTangent.dx * dist * tension,
-      y: pt.y - endTangent.dy * dist * tension,
-    };
+      const cp2 = {
+        x: pt.x - endTangent.dx * dist * tension,
+        y: pt.y - endTangent.dy * dist * tension,
+      };
+      controlPoints.push(cp1, cp2);
+    }
 
     const newLine: Line = {
       id: makeId(),
@@ -436,7 +482,7 @@ export function generateLinesFromDrawing(
         heading: "tangential",
         reverse: false,
       },
-      controlPoints: [cp1, cp2],
+      controlPoints,
       color: "#60a5fa", // Default blue
       locked: false,
       eventMarkers: [],
