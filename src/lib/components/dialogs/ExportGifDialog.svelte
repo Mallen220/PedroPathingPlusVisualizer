@@ -32,6 +32,33 @@
   // One-way reactive sync: when sliderQuality changes, update internal `quality`.
   $: quality = 31 - sliderQuality;
 
+  $: {
+    if (show) {
+      // Create a dependency on these variables
+      const _f = format;
+      const _fps = fps;
+      const _rs = resolutionScale;
+      const _sq = sliderQuality;
+      invalidatePreview();
+    }
+  }
+
+  function invalidatePreview() {
+    if (status === "generating") {
+      try {
+        abortController?.abort();
+      } catch (e) {
+        console.warn("Abort threw", e);
+      }
+    }
+    if (previewUrl) URL.revokeObjectURL(previewUrl);
+    previewUrl = null;
+    previewBlob = null;
+    status = "idle";
+    progress = 0;
+    statusMessage = "";
+  }
+
   let status = "idle"; // idle, generating, done, error
   let progress = 0;
   let statusMessage = "";
@@ -475,9 +502,9 @@
         <button
           class="px-4 py-2 text-sm font-medium text-white bg-green-600 hover:bg-green-700 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           on:click={downloadAnimation}
-          disabled={status === "generating" || !previewUrl}
+          disabled={status === "generating"}
         >
-          Download / Save
+          {previewUrl ? "Download / Save" : "Generate & Save"}
         </button>
       </div>
     </div>
