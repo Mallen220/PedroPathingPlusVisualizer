@@ -1,3 +1,7 @@
+## 2.0.1 (2026-03-24)
+
+- Prevent onboarding while setup dialog open. Adjust onboarding popover positions. Add ability to unlink macros. ARIA labeling to the left sidebar. Add preview support for Points, Turt, and future Custom formats. Support shift-click multi-select and batch actions. Easier deselect all points on empty field click. Remove former name for future releases. Lots of backend cleanup work. Snap to object for ruler. Added Draw Path function allowing users to draw a path with a pencil and automatically create a rough path. Changed keybinds to delete control point and added 'd' to toggle draw tool. Security updates.
+
 ## 2.0.0 (2026-03-17)
 
 - Changed the name to Turtle Tracer to better distinguish this program as non-affiliated with the Pedro Pathing Developers. Updates will continue here! Be sure to update code to now use the new TurtleTracerLib instead of PedroPathingPlus. Added Left Sidebar which is scalable, and fully customizable. Minimized Navbar. Edits to save icon. Better scalability on smaller devices. Rating dialog will not open for at least five minutes after application starts. Removed built in docs in favor of web docs. Updated What's new menu. New Icons! Refresh setup dialog.
