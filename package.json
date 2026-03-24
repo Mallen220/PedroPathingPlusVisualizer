@@ -170,7 +170,6 @@
         "ext": "turt",
         "name": "Turtle Tracer Project",
         "description": "Turtle Tracer Project File",
-        "icon": "build/icon.png",
         "role": "Editor",
         "rank": "Owner"
       },
@@ -178,7 +177,6 @@
         "ext": "pp",
         "name": "Turtle Tracer Project (Legacy .pp)",
         "description": "Legacy Turtle Tracer Project File",
-        "icon": "build/icon.png",
         "role": "Editor",
         "rank": "Owner"
       }
