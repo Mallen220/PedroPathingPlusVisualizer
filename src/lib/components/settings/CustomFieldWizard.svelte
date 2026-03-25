@@ -218,7 +218,6 @@
     dragType = "";
 
     if (e.target.hasPointerCapture(e.pointerId)) {
-
       e.target.releasePointerCapture(e.pointerId);
     }
   }
@@ -349,7 +348,6 @@
                 bind:this={imageContainer}
                 style="max-width: 100%; max-height: 60vh;"
               >
-
                 <img
                   bind:this={imageElement}
                   src={imageData}

@@ -696,6 +696,20 @@ export const DEFAULT_KEY_BINDINGS: KeyBinding[] = [
     category: "Editing",
   },
   {
+    id: "lock-all-obstacles",
+    key: "",
+    description: "Lock All Obstacles",
+    action: "lockAllObstacles",
+    category: "Editing",
+  },
+  {
+    id: "unlock-all-obstacles",
+    key: "",
+    description: "Unlock All Obstacles",
+    action: "unlockAllObstacles",
+    category: "Editing",
+  },
+  {
     id: "toggle-transform-dialog",
     key: "shift+m",
     description: "Transform Path",

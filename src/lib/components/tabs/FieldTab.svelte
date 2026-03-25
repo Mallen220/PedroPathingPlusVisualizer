@@ -192,5 +192,6 @@
     bind:collapsedObstacles={collapsedSections.obstacles}
     bind:collapsed={collapsedSections.obstaclesSection}
     {isActive}
+    {recordChange}
   />
 </div>

@@ -547,6 +547,18 @@
       shapesStore.set([]);
       recordChange("Clear Obstacles");
     },
+    // Feature: Lock / Unlock All Obstacles
+    // Purpose: Allows users to secure their field objects in a single stroke via Command Palette / Shortcuts.
+    lockAllObstacles: () => {
+      shapesStore.update((s) => s.map((shape) => ({ ...shape, locked: true })));
+      recordChange("Lock All Obstacles");
+    },
+    unlockAllObstacles: () => {
+      shapesStore.update((s) =>
+        s.map((shape) => ({ ...shape, locked: false })),
+      );
+      recordChange("Unlock All Obstacles");
+    },
     snapSelection: () => snapSelection(recordChange),
     resetStartPoint: () => resetStartPoint(recordChange),
     panToStart: () => panToStart(fieldRenderer),
@@ -593,7 +605,6 @@
         "https://www.turtletracer.com/turtle-tracer-lib/installation/";
 
       if (window.electronAPI && window.electronAPI.openExternal) {
-
         window.electronAPI.openExternal(url);
       } else {
         window.open(url, "_blank");
@@ -603,7 +614,6 @@
       const url = "https://github.com/Mallen220/TurtleTracer/issues";
 
       if (window.electronAPI && window.electronAPI.openExternal) {
-
         window.electronAPI.openExternal(url);
       } else {
         window.open(url, "_blank");
@@ -933,7 +943,6 @@
   style="display:none;"
   tabindex="-1"
   on:change={(e) => {
-
     if (e.target.files && e.target.files.length > 0) {
       loadFile(e);
 

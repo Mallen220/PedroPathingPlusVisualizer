@@ -119,6 +119,14 @@
     if (collapsed) collapsed = false;
   }
 
+  function lockAllObstacles() {
+    shapes = shapes.map((shape) => ({ ...shape, locked: true }));
+  }
+
+  function unlockAllObstacles() {
+    shapes = shapes.map((shape) => ({ ...shape, locked: false }));
+  }
+
   // React to external additions to shapes (e.g. from keybindings)
   $: if (shapes.length > collapsedObstacles.length) {
     const diff = shapes.length - collapsedObstacles.length;
@@ -163,6 +171,49 @@
 
       <!-- Action Buttons -->
       <div class="flex items-center gap-1 shrink-0">
+        <button
+          on:click={lockAllObstacles}
+          disabled={shapes.length === 0}
+          title="Lock All Obstacles"
+          aria-label="Lock All Obstacles"
+          class="p-1 h-7 w-7 flex items-center justify-center rounded-md text-neutral-500 dark:text-neutral-400 border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="currentColor"
+            class="size-4 text-amber-500"
+          >
+            <path
+              fill-rule="evenodd"
+              d="M12 1.5a5.25 5.25 0 0 0-5.25 5.25v3a3 3 0 0 0-3 3v6.75a3 3 0 0 0 3 3h10.5a3 3 0 0 0 3-3v-6.75a3 3 0 0 0-3-3v-3c0-2.9-2.35-5.25-5.25-5.25Zm3.75 8.25v-3a3.75 3.75 0 1 0-7.5 0v3h7.5Z"
+              clip-rule="evenodd"
+            />
+          </svg>
+        </button>
+
+        <button
+          on:click={unlockAllObstacles}
+          disabled={shapes.length === 0}
+          title="Unlock All Obstacles"
+          aria-label="Unlock All Obstacles"
+          class="p-1 h-7 w-7 flex items-center justify-center rounded-md text-neutral-500 dark:text-neutral-400 border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="currentColor"
+            class="size-4"
+          >
+            <path
+              d="M13.5 10.5V6.75a4.5 4.5 0 1 1 9 0v3.75M3.75 21.75h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H3.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z"
+            />
+          </svg>
+        </button>
+
+        <!-- Spacer -->
+        <div class="w-px h-5 bg-neutral-300 dark:bg-neutral-700 mx-1"></div>
+
         <button
           on:click={loadPreset}
           disabled={!selectedPresetId}

@@ -1504,9 +1504,7 @@
                   <div class="flex flex-row items-center gap-2">
                     <ColorPicker
                       bind:color={line.color}
-                      on:input={(e) =>
-
-                        updateLineColor(line.id, e.target.value)}
+                      on:input={(e) => updateLineColor(line.id, e.target.value)}
                       disabled={line.locked}
                       title="Path Color"
                     />
@@ -1516,7 +1514,6 @@
                         class:text-blue-500={hoveredLinkId === line.id}
                         value={line.name}
                         on:input={(e) =>
-
                           updateLineName(item.lineId, e.target.value)}
                         use:focusOnRequest={{
                           id: line.id || "",
@@ -1527,7 +1524,6 @@
                         aria-label="Path Name"
                       />
                       {#if line.id && pathStatsMap.has(line.id)}
-
                         <div
                           class="absolute right-[22px] top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 cursor-help flex items-center justify-center"
                           on:mouseenter={(e) =>
@@ -1575,7 +1571,6 @@
                         </div>
                       {/if}
                       {#if line.id && isLineLinked(lines, line.id)}
-
                         <div
                           class="absolute right-1 top-1/2 -translate-y-1/2 text-blue-500 cursor-help flex items-center justify-center"
                           on:mouseenter={(e) =>

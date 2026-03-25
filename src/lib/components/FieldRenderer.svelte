@@ -2129,7 +2129,6 @@
             class="w-full h-full object-contain"
             draggable="false"
             on:error={(e) => {
-
               e.target.src = "/robot.png";
             }}
           />
@@ -2188,7 +2187,6 @@
             class="w-full h-full object-contain grayscale opacity-50"
             draggable="false"
             on:error={(e) => {
-
               e.target.src = "/robot.png";
             }}
           />
