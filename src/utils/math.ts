@@ -232,7 +232,11 @@ export function getLineStartHeading(
 ): number {
   if (!line || !line.endPoint) return 0;
 
-  if (line.endPoint.heading === "constant") return line.endPoint.degrees;
+  if (line.endPoint.heading === "constant") {
+    return line.endPoint.reverse
+      ? transformAngle(line.endPoint.degrees + 180)
+      : transformAngle(line.endPoint.degrees);
+  }
   if (line.endPoint.heading === "linear") return line.endPoint.startDeg;
   if (line.endPoint.heading === "facingPoint") {
     const targetX = (line.endPoint as any).targetX || 0;
@@ -270,7 +274,11 @@ export function getLineEndHeading(
 ): number {
   if (!line || !line.endPoint) return 0;
 
-  if (line.endPoint.heading === "constant") return line.endPoint.degrees;
+  if (line.endPoint.heading === "constant") {
+    return line.endPoint.reverse
+      ? transformAngle(line.endPoint.degrees + 180)
+      : transformAngle(line.endPoint.degrees);
+  }
   if (line.endPoint.heading === "linear") return line.endPoint.endDeg;
   if (line.endPoint.heading === "facingPoint") {
     const targetX = (line.endPoint as any).targetX || 0;

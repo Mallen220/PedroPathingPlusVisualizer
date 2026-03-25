@@ -889,6 +889,11 @@ export function calculatePathTime(
 
       const segmentTime = Math.max(translationTime, rotationTime);
 
+      if (useMotionProfile && motionProfile && segmentTime > translationTime && translationTime > 0) {
+        const scale = segmentTime / translationTime;
+        motionProfile = motionProfile.map((t) => t * scale);
+      }
+
       segmentTimes.push(segmentTime);
       const lineIndex = contextLines.findIndex((l) => l.id === line.id);
       timeline.push({
