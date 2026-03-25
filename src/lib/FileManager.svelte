@@ -1087,40 +1087,6 @@
       on:dragstart={handleModalDragStart}
       on:dragend={handleModalDragEnd}
     >
-      <!-- Header -->
-      <div
-        class="flex items-center justify-between p-4 border-b border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 z-20 shrink-0"
-      >
-        <div class="flex items-center gap-4">
-          <h2
-            class="text-lg font-bold text-neutral-900 dark:text-white flex items-center gap-2"
-          >
-            <FolderIcon className="size-5" />
-            Files
-          </h2>
-        </div>
-        <button
-          on:click={() => (isOpen = false)}
-          class="p-1 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
-          aria-label="Close"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke-width="2"
-            stroke="currentColor"
-            class="size-5"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              d="M6 18 18 6M6 6l12 12"
-            />
-          </svg>
-        </button>
-      </div>
-
       <!-- Toolbar -->
       <FileManagerToolbar
         {searchQuery}
@@ -1316,7 +1282,7 @@
 
       <!-- Footer Status -->
       <div
-        class="p-2 text-xs text-neutral-400 border-t border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 flex justify-between items-center shrink-0"
+        class="p-3 px-4 text-xs text-neutral-500 dark:text-neutral-400 border-t border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900 flex justify-between items-center shrink-0"
       >
         <div class="flex items-center gap-2">
           <button
@@ -1346,9 +1312,20 @@
               : ""}</span
           >
         </div>
-        {#if selectedFile}
-          <span class="truncate max-w-[300px]">{selectedFile.name}</span>
-        {/if}
+        <div class="flex items-center gap-4">
+          {#if selectedFile}
+            <span
+              class="truncate max-w-[300px] hidden sm:inline-block"
+              title={selectedFile.name}>{selectedFile.name}</span
+            >
+          {/if}
+          <button
+            on:click={() => (isOpen = false)}
+            class="px-4 py-1.5 text-sm font-medium text-neutral-700 dark:text-neutral-200 bg-white dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-600 rounded-md hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            Close
+          </button>
+        </div>
       </div>
     </div>
   {/if}

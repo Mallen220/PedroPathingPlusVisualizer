@@ -70,8 +70,18 @@
 </script>
 
 <div
-  class="flex items-center gap-2 p-2 px-4 border-b border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 shrink-0 z-10"
+  class="flex items-center gap-3 p-3 px-4 border-b border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-900 shrink-0 z-10"
 >
+  <!-- Header -->
+  <div class="flex items-center gap-2 mr-2">
+    <h2
+      class="text-lg font-bold text-neutral-900 dark:text-white flex items-center gap-2"
+    >
+      <FolderIcon className="size-5" />
+      Files
+    </h2>
+  </div>
+
   <!-- Search -->
   <div class="relative flex-1">
     <div
