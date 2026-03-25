@@ -8,6 +8,7 @@
 
   const dispatch = createEventDispatcher<{
     "change-dir": string;
+    "change-dir-dialog": void;
     "go-up": void;
   }>();
 
@@ -103,7 +104,7 @@
       </button>
     {/if}
     <div
-      class="truncate cursor-text hover:text-neutral-700 dark:hover:text-neutral-200 w-full px-2 py-0.5 rounded hover:bg-neutral-100 dark:hover:bg-neutral-800"
+      class="flex-1 truncate cursor-text hover:text-neutral-700 dark:hover:text-neutral-200 px-2 py-0.5 rounded hover:bg-neutral-100 dark:hover:bg-neutral-800"
       title="Click to edit path"
       on:click={startEditing}
       role="button"
@@ -112,5 +113,27 @@
     >
       {formatPath(currentPath)}
     </div>
+
+    <button
+      class="p-1 ml-2 rounded hover:bg-neutral-200 dark:hover:bg-neutral-700 shrink-0 text-neutral-500 dark:text-neutral-400"
+      on:click={() => dispatch("change-dir-dialog")}
+      title="Change Directory"
+      aria-label="Change Directory"
+    >
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke-width="1.5"
+        stroke="currentColor"
+        class="size-4"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          d="M2.25 12.75V12A2.25 2.25 0 0 1 4.5 9.75h15A2.25 2.25 0 0 1 21.75 12v.75m-8.69-6.44-2.12-2.12a1.5 1.5 0 0 0-1.061-.44H4.5A2.25 2.25 0 0 0 2.25 6v12a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9a2.25 2.25 0 0 0-2.25-2.25h-5.379a1.5 1.5 0 0 1-1.06-.44Z"
+        />
+      </svg>
+    </button>
   </div>
 {/if}
