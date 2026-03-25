@@ -1070,7 +1070,7 @@
 <svelte:window on:keydown={handleKeydown} />
 
 <div
-  class="fixed inset-0 z-[1410] flex items-center justify-center p-4 pointer-events-none"
+  class="fixed inset-0 z-[1410] flex items-center justify-center p-40 pointer-events-none"
 >
   <!-- Backdrop -->
   {#if isOpen}
