@@ -377,6 +377,20 @@
     e.dataTransfer.setData("text/plain", file.path);
     e.dataTransfer.setData("application/json", JSON.stringify(file));
     e.dataTransfer.effectAllowed = "copyMove";
+
+    // Set a custom drag image to only show the icon/preview box instead of the whole file block
+    const target = e.target as HTMLElement;
+    const iconPreviewElement = target.querySelector(
+      ".mb-2.relative",
+    ) as HTMLElement;
+
+    if (iconPreviewElement && e.dataTransfer.setDragImage) {
+      // Calculate center to make the mouse grab it neatly in the middle
+      const rect = iconPreviewElement.getBoundingClientRect();
+      const offsetX = rect.width / 2;
+      const offsetY = rect.height / 2;
+      e.dataTransfer.setDragImage(iconPreviewElement, offsetX, offsetY);
+    }
   }
 
   let dragOverTarget: string | null = null;
