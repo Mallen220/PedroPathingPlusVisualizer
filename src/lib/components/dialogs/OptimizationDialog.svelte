@@ -252,8 +252,7 @@
   <SectionHeader
     title="Path Optimizer"
     bind:collapsed
-    count={optimizedLines ? 1 : 0}
-  ></SectionHeader>
+  />
 
   {#if !collapsed}
     <div class="flex flex-col gap-4 p-4">
@@ -273,27 +272,37 @@
       </details>
 
       {#if !isRunning && optimizedLines === null}
-        <div class="space-y-2">
-          <div class="flex justify-between items-center">
+        <details class="space-y-2 text-sm text-neutral-600 dark:text-neutral-400 group">
+          <summary class="flex justify-between items-center cursor-pointer list-none appearance-none [&::-webkit-details-marker]:hidden">
             <span
-              class="text-xs font-semibold uppercase text-neutral-500 dark:text-neutral-400"
+              class="text-xs font-semibold uppercase text-neutral-500 dark:text-neutral-400 hover:text-neutral-800 dark:hover:text-neutral-200 transition-colors"
               >Paths to Optimize</span
             >
-            <div class="flex gap-2">
+            <div class="flex gap-2 items-center">
               <button
-                on:click={selectAll}
+                on:click|preventDefault={selectAll}
                 class="text-xs text-blue-600 dark:text-blue-400 hover:underline"
                 >All</button
               >
               <button
-                on:click={deselectAll}
+                on:click|preventDefault={deselectAll}
                 class="text-xs text-blue-600 dark:text-blue-400 hover:underline"
                 >None</button
               >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke-width="2"
+                stroke="currentColor"
+                class="size-4 ml-1 transition-transform group-open:rotate-180"
+              >
+                <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+              </svg>
             </div>
-          </div>
+          </summary>
           <div
-            class="max-h-32 overflow-y-auto border border-neutral-200 dark:border-neutral-700 rounded-md bg-white dark:bg-neutral-900 p-2 space-y-1"
+            class="max-h-32 overflow-y-auto border border-neutral-200 dark:border-neutral-700 rounded-md bg-white dark:bg-neutral-900 p-2 space-y-1 mt-2"
           >
             {#each lines as line, i (line.id || i)}
               {@const id = line.id || `idx-${i}`}
@@ -332,7 +341,7 @@
               </div>
             {/if}
           </div>
-        </div>
+        </details>
       {/if}
 
       {#if isRunning || optimizedLines !== null}
