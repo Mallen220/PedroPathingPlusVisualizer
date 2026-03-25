@@ -133,6 +133,19 @@
     isDraggingFromModal = false;
   }
 
+  function handleModalDrop(e: DragEvent) {
+    // If the user drops an internal macro directly back onto the modal, cancel it.
+    // E.g. they changed their mind and dropped it before leaving the modal bounds.
+    const isInternalDrag =
+      e.dataTransfer?.types.includes("application/x-turtle-tracer-macro") ||
+      e.dataTransfer?.types.includes("application/x-pedro-macro");
+
+    if (isInternalDrag) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+  }
+
   // New file input reference for programmatic focus
   import { tick } from "svelte";
   let newFileInput: HTMLInputElement | null = null;
@@ -1081,11 +1094,13 @@
     <div
       transition:fade={{ duration: 200 }}
       class="relative flex flex-col bg-white dark:bg-neutral-900 shadow-2xl rounded-xl border border-neutral-200 dark:border-neutral-800 w-full max-w-4xl h-full max-h-[85vh] overflow-hidden pointer-events-auto transition-opacity duration-300 {isDraggingFromModal
-        ? 'opacity-20 pointer-events-none'
+        ? 'opacity-60'
         : 'opacity-100'}"
       role="presentation"
       on:dragstart={handleModalDragStart}
       on:dragend={handleModalDragEnd}
+      on:drop={handleModalDrop}
+      on:dragover={(e) => e.preventDefault()}
     >
       <!-- Toolbar -->
       <FileManagerToolbar
