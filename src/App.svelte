@@ -1845,8 +1845,14 @@
 
 <!-- Drag Overlay for adding internal macros -->
 {#if isDraggingInternalMacro && $showFileManager}
+  <!-- Blue background should be behind FileManager -->
   <div
-    class="fixed inset-0 z-[1005] bg-blue-500/20 border-4 border-dashed border-blue-500 flex flex-col items-center justify-start pt-6 pointer-events-none transition-all duration-300"
+    class="fixed inset-0 z-[1380] bg-blue-500/20 border-4 border-dashed border-blue-500 pointer-events-none transition-all duration-300"
+  />
+
+  <!-- Drop-to-add text should be in front of FileManager -->
+  <div
+    class="fixed inset-0 z-[2050] flex flex-col items-center justify-start pt-6 pointer-events-none transition-all duration-300"
   >
     <div
       class="bg-white/95 dark:bg-neutral-900/95 backdrop-blur px-6 py-4 rounded-full shadow-2xl flex flex-row items-center gap-3 animate-bounce-slight"
