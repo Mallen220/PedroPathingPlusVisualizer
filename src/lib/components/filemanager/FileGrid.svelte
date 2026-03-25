@@ -436,7 +436,9 @@
       </div>
     {/if}
 
-    <div class="grid grid-cols-3 gap-2 px-2">
+    <div
+      class="grid grid-cols-[repeat(auto-fill,minmax(120px,1fr))] gap-2 px-2"
+    >
       {#each group.files as file (file.path)}
         <div
           class="group flex flex-col items-center p-2 rounded-md cursor-pointer transition-all border relative
