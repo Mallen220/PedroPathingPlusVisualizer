@@ -865,24 +865,12 @@
 
     // Insert options
     items.push({
-      label: "Insert Wait Before",
-      onClick: () => insertWait(seqIndex),
-    });
-    items.push({
       label: "Insert Wait After",
       onClick: () => insertWait(seqIndex + 1),
     });
     items.push({
-      label: "Insert Rotate Before",
-      onClick: () => insertRotate(seqIndex),
-    });
-    items.push({
       label: "Insert Rotate After",
       onClick: () => insertRotate(seqIndex + 1),
-    });
-    items.push({
-      label: "Insert Path Before",
-      onClick: () => insertPath(seqIndex),
     });
     items.push({
       label: "Insert Path After",
@@ -894,6 +882,7 @@
     // Delete
     items.push({
       label: "Delete",
+      icon: TrashIcon,
       onClick: () => deleteSequenceItem(seqIndex),
       danger: true,
       disabled:

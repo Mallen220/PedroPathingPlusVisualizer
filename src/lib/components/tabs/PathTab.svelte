@@ -25,6 +25,7 @@
   } from "../../../utils/nameGenerator";
   import ContextMenu from "../tools/ContextMenu.svelte";
   import StartingPointSection from "../sections/StartingPointSection.svelte";
+  import TrashIcon from "../icons/TrashIcon.svelte";
   import EmptyState from "../common/EmptyState.svelte";
   import PathLineSection from "../sections/PathLineSection.svelte";
   import WaitSection from "../sections/WaitSection.svelte";
@@ -223,24 +224,12 @@
     items.push({ separator: true });
 
     items.push({
-      label: "Insert Wait Before",
-      onClick: () => insertWaitBefore(seqIndex),
-    });
-    items.push({
       label: "Insert Wait After",
       onClick: () => insertWaitAfter(seqIndex),
     });
     items.push({
-      label: "Insert Rotate Before",
-      onClick: () => insertRotateBefore(seqIndex),
-    });
-    items.push({
       label: "Insert Rotate After",
       onClick: () => insertRotateAfter(seqIndex),
-    });
-    items.push({
-      label: "Insert Path Before",
-      onClick: () => insertPathBefore(seqIndex),
     });
     items.push({
       label: "Insert Path After",
@@ -251,6 +240,7 @@
 
     items.push({
       label: "Delete",
+      icon: TrashIcon,
       onClick: () => deleteSequenceItem(seqIndex),
       danger: true,
       disabled:
@@ -873,22 +863,10 @@
       collapsedSections.controlPoints.splice(lineIdx + 1, 0, true);
       collapsedEventMarkers.splice(lineIdx + 1, 0, true);
       collapsedSections = { ...collapsedSections };
+      collapsedEventMarkers = [...collapsedEventMarkers];
 
       recordChange();
     }
-  }
-
-  function insertWaitBefore(seqIndex: number) {
-    const newSeq = [...sequence];
-    newSeq.splice(seqIndex, 0, {
-      kind: "wait",
-      id: makeId(),
-      name: "",
-      durationMs: 1000,
-      locked: false,
-    });
-    sequence = newSeq;
-    recordChange("Insert Wait");
   }
 
   function insertWaitAfter(seqIndex: number) {
@@ -904,19 +882,6 @@
     recordChange("Insert Wait");
   }
 
-  function insertRotateBefore(seqIndex: number) {
-    const newSeq = [...sequence];
-    newSeq.splice(seqIndex, 0, {
-      kind: "rotate",
-      id: makeId(),
-      name: "",
-      degrees: 0,
-      locked: false,
-    });
-    sequence = newSeq;
-    recordChange("Insert Rotate");
-  }
-
   function insertRotateAfter(seqIndex: number) {
     const newSeq = [...sequence];
     newSeq.splice(seqIndex + 1, 0, {
@@ -928,58 +893,6 @@
     });
     sequence = newSeq;
     recordChange("Insert Rotate");
-  }
-
-  function insertPathBefore(seqIndex: number) {
-    let prevEndPoint: Point | null = null;
-    for (let i = seqIndex - 1; i >= 0; i--) {
-      const si = sequence[i];
-      if (si.kind === "path") {
-        const ln = lines.find((l) => l.id === si.lineId);
-        if (ln) {
-          prevEndPoint = ln.endPoint;
-          break;
-        }
-      }
-    }
-
-    const endPoint = prevEndPoint
-      ? makeNewEndPointFrom(prevEndPoint)
-      : makeNewEndPointFrom(startPoint);
-
-    const newLine = {
-      id: makeId(),
-      endPoint: endPoint as Point,
-      controlPoints: [],
-      color: getRandomColor(),
-      name: "",
-    } as Line;
-
-    const seqItem = sequence[seqIndex];
-    let insertLineIdx = 0;
-    if (seqItem && seqItem.kind === "path") {
-      const lineIdx = lines.findIndex((l) => l.id === seqItem.lineId);
-      if (lineIdx !== -1) insertLineIdx = lineIdx;
-    } else {
-      insertLineIdx = lines.length;
-    }
-
-    const newLines = [...lines];
-    newLines.splice(insertLineIdx, 0, newLine);
-    lines = newLines;
-
-    const newSeq = [...sequence];
-    newSeq.splice(seqIndex, 0, { kind: "path", lineId: newLine.id! });
-    sequence = newSeq;
-
-    lines = renumberDefaultPathNames(lines);
-
-    collapsedSections.lines.splice(insertLineIdx, 0, false);
-    collapsedSections.controlPoints.splice(insertLineIdx, 0, true);
-    collapsedEventMarkers.splice(insertLineIdx, 0, true);
-    collapsedSections = { ...collapsedSections };
-
-    recordChange("Insert Path");
   }
 
   function insertPathAfter(seqIndex: number) {
