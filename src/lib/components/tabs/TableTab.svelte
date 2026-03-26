@@ -14,7 +14,6 @@
   export let lines: Line[];
   export let sequence: SequenceItem[];
   export let recordChange: () => void;
-  export let onPreviewChange: ((lines: Line[] | null) => void) | null = null;
   export let shapes: Shape[];
   export let settings: Settings;
   export let isActive: boolean = false;
@@ -89,8 +88,6 @@
     bind:lines
     bind:sequence
     {recordChange}
-    {handleOptimizationApply}
-    onPreviewChange={onPreviewChange || (() => {})}
     bind:shapes
     bind:collapsedObstacles
     {settings}
