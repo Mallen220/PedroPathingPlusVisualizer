@@ -59,6 +59,27 @@ describe("fileExtensions utilities", () => {
       expect(stripProjectExtension("project")).toBe("project");
       expect(stripProjectExtension("")).toBe("");
     });
+
+    it("should handle filenames with multiple dots", () => {
+      expect(stripProjectExtension("project.v1.turt")).toBe("project.v1");
+      expect(stripProjectExtension("project.backup.pp")).toBe("project.backup");
+      expect(stripProjectExtension("project.turt.turt")).toBe("project.turt");
+    });
+
+    it("should not modify strings where the extension is not at the end", () => {
+      expect(stripProjectExtension("project.turt.txt")).toBe("project.turt.txt");
+      expect(stripProjectExtension("legacy.pp.bak")).toBe("legacy.pp.bak");
+    });
+
+    it("should not modify strings ending in extension characters without a dot", () => {
+      expect(stripProjectExtension("projectturt")).toBe("projectturt");
+      expect(stripProjectExtension("legacypp")).toBe("legacypp");
+    });
+
+    it("should handle just the extension", () => {
+      expect(stripProjectExtension(".turt")).toBe("");
+      expect(stripProjectExtension(".pp")).toBe("");
+    });
   });
 
   describe("ensureDefaultProjectExtension", () => {
@@ -71,9 +92,25 @@ describe("fileExtensions utilities", () => {
       );
     });
 
+    it("should preserve path when ending in case-insensitive .turt extension", () => {
+      expect(ensureDefaultProjectExtension("project.TURT")).toBe(
+        "project.TURT",
+      );
+      expect(ensureDefaultProjectExtension("project.Turt")).toBe(
+        "project.Turt",
+      );
+    });
+
     it("should replace .pp with .turt", () => {
       expect(ensureDefaultProjectExtension("legacy.pp")).toBe("legacy.turt");
       expect(ensureDefaultProjectExtension("path/to/legacy.pp")).toBe(
+        "path/to/legacy.turt",
+      );
+    });
+
+    it("should replace case-insensitive .pp with .turt", () => {
+      expect(ensureDefaultProjectExtension("legacy.PP")).toBe("legacy.turt");
+      expect(ensureDefaultProjectExtension("path/to/legacy.Pp")).toBe(
         "path/to/legacy.turt",
       );
     });
@@ -85,6 +122,19 @@ describe("fileExtensions utilities", () => {
       );
       expect(ensureDefaultProjectExtension("path/to/project")).toBe(
         "path/to/project.turt",
+      );
+    });
+
+    it("should handle empty string", () => {
+      expect(ensureDefaultProjectExtension("")).toBe(".turt");
+    });
+
+    it("should handle paths with multiple dots", () => {
+      expect(ensureDefaultProjectExtension("my.project.name")).toBe(
+        "my.project.name.turt",
+      );
+      expect(ensureDefaultProjectExtension("my.project.name.pp")).toBe(
+        "my.project.name.turt",
       );
     });
   });
@@ -109,6 +159,26 @@ describe("fileExtensions utilities", () => {
     it("should return .turt for paths with other or no extensions", () => {
       expect(getProjectExtensionFromPath("project.txt")).toBe(".turt");
       expect(getProjectExtensionFromPath("project")).toBe(".turt");
+      expect(getProjectExtensionFromPath("project.csv")).toBe(".turt");
+      expect(getProjectExtensionFromPath("project.data.json")).toBe(".turt");
+    });
+
+    it("should handle paths with leading and trailing spaces", () => {
+      expect(getProjectExtensionFromPath("  project.turt  ")).toBe(".turt");
+      expect(getProjectExtensionFromPath("  legacy.pp  ")).toBe(".pp");
+      expect(getProjectExtensionFromPath("  project.txt  ")).toBe(".turt");
+      expect(getProjectExtensionFromPath("  project  ")).toBe(".turt");
+    });
+
+    it("should handle paths that look like extensions but are not at the end", () => {
+      expect(getProjectExtensionFromPath("project.turt.txt")).toBe(".turt");
+      expect(getProjectExtensionFromPath("legacy.pp.bak")).toBe(".turt");
+      expect(getProjectExtensionFromPath("project.turt_data")).toBe(".turt");
+    });
+
+    it("should handle unusual casing", () => {
+      expect(getProjectExtensionFromPath("project.TuRt")).toBe(".turt");
+      expect(getProjectExtensionFromPath("legacy.pP")).toBe(".pp");
     });
   });
 });
