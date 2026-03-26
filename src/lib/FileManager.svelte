@@ -159,7 +159,7 @@
   });
 
   // Resizing state
-  let sidebarWidth = 384; // default max-w-sm is roughly 384px (24rem)
+  let sidebarWidth = 600; // default max-w-sm is roughly 655px (24rem)
   let isResizing = false;
 
   // New file input reference for programmatic focus
