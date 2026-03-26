@@ -7,8 +7,6 @@
   export let robotXY: BasePoint;
   export let robotHeading: number;
   export let settings: Settings;
-  export let onToggleOptimization: (() => void) | null = null;
-  export let onValidate: (() => void) | null = null;
 </script>
 
 <div class="flex flex-col w-full justify-start items-start gap-0.5 text-sm">

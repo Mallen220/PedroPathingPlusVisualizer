@@ -70,12 +70,6 @@
   export let recordChange: () => void;
 
   // Props for inline optimization panel
-  export let handleOptimizationApply: (
-    newLines: import("../../types/index").Line[],
-  ) => void;
-  export let onPreviewChange: (
-    lines: import("../../types/index").Line[] | null,
-  ) => void;
   export let settings: import("../../types/index").Settings | undefined =
     undefined;
 
