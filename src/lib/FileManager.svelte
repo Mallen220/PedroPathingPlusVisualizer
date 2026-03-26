@@ -624,16 +624,24 @@
           currentFilePath.set(newPath);
         }
 
-        // Check if top-level sequence contains the old path before updating, to avoid race conditions
-        const isSequenceAffected = sequence.some(
-          (s) => s.kind === "macro" && s.filePath === sourceFile.path
-        );
+        // Check if the currently open file is inside the moved folder (or is the moved file)
+        const openPath = get(currentFilePath);
+        if (openPath) {
+          if (openPath === sourceFile.path) {
+            currentFilePath.set(newPath);
+            selectedFile = { ...selectedFile!, path: newPath };
+          } else if (openPath.startsWith(sourceFile.path + "/") || openPath.startsWith(sourceFile.path + "\\")) {
+            const newOpenPath = newPath + openPath.slice(sourceFile.path.length);
+            currentFilePath.set(newOpenPath);
+            if (selectedFile) selectedFile = { ...selectedFile, path: newOpenPath };
+          }
+        }
 
         // Use the new centralized macro reference updater to deeply fix all references
-        await updateAllMacroReferences(sourceFile.path, newPath);
+        const { mainSequenceChanged } = await updateAllMacroReferences(sourceFile.path, newPath);
 
         // Set unsaved if the top level sequence was modified
-        if (isSequenceAffected) {
+        if (mainSequenceChanged) {
           isUnsaved.set(true);
         }
 
@@ -680,15 +688,23 @@
           currentFilePath.set(newFilePath);
         }
 
-        // Check if top-level sequence contains the old path before updating, to avoid race conditions
-        const isSequenceAffected = sequence.some(
-          (s) => s.kind === "macro" && s.filePath === file.path
-        );
+        // Check if the currently open file is inside the renamed folder (or is the renamed file)
+        const openPath = get(currentFilePath);
+        if (openPath) {
+          if (openPath === file.path) {
+            currentFilePath.set(newFilePath);
+            selectedFile = { ...selectedFile!, path: newFilePath };
+          } else if (openPath.startsWith(file.path + "/") || openPath.startsWith(file.path + "\\")) {
+            const newOpenPath = newFilePath + openPath.slice(file.path.length);
+            currentFilePath.set(newOpenPath);
+            if (selectedFile) selectedFile = { ...selectedFile, path: newOpenPath };
+          }
+        }
 
         // Deeply update any macro references
-        await updateAllMacroReferences(file.path, newFilePath);
+        const { mainSequenceChanged } = await updateAllMacroReferences(file.path, newFilePath);
 
-        if (isSequenceAffected) {
+        if (mainSequenceChanged) {
           isUnsaved.set(true);
         }
 

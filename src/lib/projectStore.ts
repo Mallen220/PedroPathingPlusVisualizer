@@ -410,29 +410,46 @@ export async function loadProjectData(data: any, projectFilePath?: string) {
   // except if it's a full project save.
 }
 
+// Helper to update paths when a file or folder is moved
+function getUpdatedPath(currentPath: string, oldPrefix: string, newPrefix: string): string | null {
+  if (currentPath === oldPrefix) {
+    return newPrefix;
+  }
+  // If it's a folder move, check if the currentPath is inside the old folder (support / and \ separators)
+  if (currentPath.startsWith(oldPrefix + "/") || currentPath.startsWith(oldPrefix + "\\")) {
+    return newPrefix + currentPath.slice(oldPrefix.length);
+  }
+  return null;
+}
+
 // Public repair function: ensure sequence and line names are consistent at runtime
 export async function updateAllMacroReferences(
   oldPath: string,
   newPath: string,
-) {
+): Promise<{ totalUpdated: number; mainSequenceChanged: boolean }> {
   const api = (window as any).electronAPI;
-  if (!api || !api.writeFile || !api.listFiles || !api.readFile) return;
+  if (!api || !api.writeFile || !api.listFiles || !api.readFile) return { totalUpdated: 0, mainSequenceChanged: false };
 
   let totalUpdated = 0;
   const errors: string[] = [];
   const processedFiles = new Set<string>();
+  let mainSequenceChanged = false;
 
   // Update top-level sequence if it uses the macro
   sequenceStore.update((seq) => {
     let changed = false;
     const newSeq = seq.map((item) => {
-      if (item.kind === "macro" && item.filePath === oldPath) {
-        changed = true;
-        totalUpdated++;
-        return { ...item, filePath: newPath };
+      if (item.kind === "macro") {
+        const updatedMacroPath = getUpdatedPath(item.filePath, oldPath, newPath);
+        if (updatedMacroPath) {
+          changed = true;
+          totalUpdated++;
+          return { ...item, filePath: updatedMacroPath };
+        }
       }
       return item;
     });
+    if (changed) mainSequenceChanged = true;
     return changed ? newSeq : seq;
   });
 
@@ -440,17 +457,21 @@ export async function updateAllMacroReferences(
   let macrosStoreChanged = false;
 
   // Function to process a single file's data
-  async function processFileData(filePath: string, data: TurtleData) {
-    if (processedFiles.has(filePath)) return;
-    processedFiles.add(filePath);
+  // actualFilePath is where it currently lives on disk, originalFilePath is what macrosStore uses as a key.
+  async function processFileData(actualFilePath: string, originalFilePath: string, data: TurtleData) {
+    if (processedFiles.has(actualFilePath)) return;
+    processedFiles.add(actualFilePath);
 
     if (data.sequence && data.sequence.length > 0) {
       let fileChanged = false;
       const newSeq = data.sequence.map((item) => {
-        if (item.kind === "macro" && item.filePath === oldPath) {
-          fileChanged = true;
-          totalUpdated++;
-          return { ...item, filePath: newPath };
+        if (item.kind === "macro") {
+          const updatedMacroPath = getUpdatedPath(item.filePath, oldPath, newPath);
+          if (updatedMacroPath) {
+            fileChanged = true;
+            totalUpdated++;
+            return { ...item, filePath: updatedMacroPath };
+          }
         }
         return item;
       });
@@ -460,30 +481,32 @@ export async function updateAllMacroReferences(
 
         // If this is currently loaded in memory, stage it for macrosStore update
         const currentMacros = get(macrosStore);
-        if (currentMacros.has(filePath)) {
+        if (currentMacros.has(originalFilePath)) {
           macrosStoreChanged = true;
-          updatedMacros.set(filePath, updatedData);
+          updatedMacros.set(originalFilePath, updatedData);
         }
 
         // Save updated macro to disk
         try {
           const content = JSON.stringify(updatedData, null, 2);
-          await api.writeFile(filePath, content);
+          await api.writeFile(actualFilePath, content);
         } catch (e) {
           console.error(
-            `Failed to save updated macro reference to ${filePath}`,
+            `Failed to save updated macro reference to ${actualFilePath}`,
             e,
           );
-          errors.push(filePath);
+          errors.push(actualFilePath);
         }
       }
     }
   }
 
   // 1. Check all currently loaded macros in memory
+  // A loaded macro might be the one that was moved. Its path on disk is newPath, but its key is oldPath.
   const currentMacros = get(macrosStore);
   for (const [macroFilePath, macroData] of currentMacros.entries()) {
-    await processFileData(macroFilePath, macroData);
+    const actualDiskPath = getUpdatedPath(macroFilePath, oldPath, newPath) || macroFilePath;
+    await processFileData(actualDiskPath, macroFilePath, macroData);
   }
 
   // 2. Scan unopened files in the current active directory
@@ -505,11 +528,11 @@ export async function updateAllMacroReferences(
             try {
               const content = await api.readFile(f.path);
               // Quick check before parsing JSON to save performance.
-              // Handle JSON-escaped backslashes for Windows paths.
+              // We need to account for folder prefix matches now, so just check if content includes the oldPath base name.
               const searchString = oldPath.replace(/\\/g, '\\\\');
               if (content.includes(searchString) || content.includes(oldPath)) {
                 const data = JSON.parse(content);
-                await processFileData(f.path, data);
+                await processFileData(f.path, f.path, data);
               }
             } catch (err) {
               console.error(
@@ -530,24 +553,25 @@ export async function updateAllMacroReferences(
   }
 
   // Handle macrosStore updates: update modified ones, and also rename the moved macro's key if it is loaded
-  if (macrosStoreChanged || currentMacros.has(oldPath)) {
+  // (We iterate keys and use getUpdatedPath to handle folders)
+  const anyKeyNeedsRename = Array.from(currentMacros.keys()).some(k => getUpdatedPath(k, oldPath, newPath));
+  if (macrosStoreChanged || anyKeyNeedsRename) {
     macrosStore.update((map) => {
-      const newMap = new Map(map);
+      const newMap = new Map();
+
+      // Remap keys first
+      for (const [k, v] of map.entries()) {
+        const mappedKey = getUpdatedPath(k, oldPath, newPath) || k;
+        newMap.set(mappedKey, v);
+      }
+
       // Apply updated references
       for (const [k, v] of updatedMacros.entries()) {
-        newMap.set(k, v);
-      }
-      // If the moved macro was loaded, change its key
-      if (newMap.has(oldPath)) {
-        const movedData = newMap.get(oldPath);
-        newMap.delete(oldPath);
-        if (movedData) {
-          newMap.set(newPath, movedData);
-        }
+        const mappedKey = getUpdatedPath(k, oldPath, newPath) || k;
+        newMap.set(mappedKey, v);
       }
       return newMap;
     });
-    refreshMacros();
   }
 
   if (totalUpdated > 0) {
@@ -565,6 +589,8 @@ export async function updateAllMacroReferences(
       });
     }
   }
+
+  return { totalUpdated, mainSequenceChanged };
 }
 
 // Public repair function: ensure sequence and line names are consistent at runtime
