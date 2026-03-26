@@ -21,6 +21,7 @@ import { regenerateProjectMacros } from "./macroUtils";
 import { notification } from "../stores";
 import { hookRegistry } from "./registries";
 import { actionRegistry } from "./actionRegistry";
+import { currentDirectoryStore } from "../stores";
 
 export function normalizeLines(input: Line[]): Line[] {
   return (input || []).map((line) => ({
@@ -415,10 +416,11 @@ export async function updateAllMacroReferences(
   newPath: string,
 ) {
   const api = (window as any).electronAPI;
-  if (!api || !api.writeFile) return;
+  if (!api || !api.writeFile || !api.listFiles || !api.readFile) return;
 
   let totalUpdated = 0;
   const errors: string[] = [];
+  const processedFiles = new Set<string>();
 
   // Update top-level sequence if it uses the macro
   sequenceStore.update((seq) => {
@@ -434,38 +436,97 @@ export async function updateAllMacroReferences(
     return changed ? newSeq : seq;
   });
 
-  // Iterate over loaded macros and update nested sequences
-  const currentMacros = get(macrosStore);
   const updatedMacros = new Map<string, TurtleData>();
   let macrosStoreChanged = false;
 
-  for (const [macroFilePath, macroData] of currentMacros.entries()) {
-    if (macroData.sequence && macroData.sequence.length > 0) {
-      let macroChanged = false;
-      const newSeq = macroData.sequence.map((item) => {
+  // Function to process a single file's data
+  async function processFileData(filePath: string, data: TurtleData) {
+    if (processedFiles.has(filePath)) return;
+    processedFiles.add(filePath);
+
+    if (data.sequence && data.sequence.length > 0) {
+      let fileChanged = false;
+      const newSeq = data.sequence.map((item) => {
         if (item.kind === "macro" && item.filePath === oldPath) {
-          macroChanged = true;
+          fileChanged = true;
           totalUpdated++;
           return { ...item, filePath: newPath };
         }
         return item;
       });
 
-      if (macroChanged) {
-        macrosStoreChanged = true;
-        const updatedData = { ...macroData, sequence: newSeq };
-        updatedMacros.set(macroFilePath, updatedData);
+      if (fileChanged) {
+        const updatedData = { ...data, sequence: newSeq };
+
+        // If this is currently loaded in memory, stage it for macrosStore update
+        const currentMacros = get(macrosStore);
+        if (currentMacros.has(filePath)) {
+          macrosStoreChanged = true;
+          updatedMacros.set(filePath, updatedData);
+        }
 
         // Save updated macro to disk
         try {
           const content = JSON.stringify(updatedData, null, 2);
-          await api.writeFile(macroFilePath, content);
+          await api.writeFile(filePath, content);
         } catch (e) {
-          console.error(`Failed to save updated macro reference to ${macroFilePath}`, e);
-          errors.push(macroFilePath);
+          console.error(
+            `Failed to save updated macro reference to ${filePath}`,
+            e,
+          );
+          errors.push(filePath);
         }
       }
     }
+  }
+
+  // 1. Check all currently loaded macros in memory
+  const currentMacros = get(macrosStore);
+  for (const [macroFilePath, macroData] of currentMacros.entries()) {
+    await processFileData(macroFilePath, macroData);
+  }
+
+  // 2. Scan unopened files in the current active directory
+  const currentDirectory = get(currentDirectoryStore);
+  if (currentDirectory) {
+    // Note: To fully recursively scan, we'd need a recursive file list function.
+    // We'll use the existing listFiles which typically scans 1 level, but we will recursively traverse it.
+    async function scanDirectory(dir: string) {
+      try {
+        const files = await api.listFiles(dir);
+        for (const f of files) {
+          if (f.isDirectory && f.name !== "..") {
+            await scanDirectory(f.path);
+          } else if (
+            !f.isDirectory &&
+            !processedFiles.has(f.path) &&
+            (f.name.endsWith(".turt") || f.name.endsWith(".pp"))
+          ) {
+            try {
+              const content = await api.readFile(f.path);
+              // Quick check before parsing JSON to save performance.
+              // Handle JSON-escaped backslashes for Windows paths.
+              const searchString = oldPath.replace(/\\/g, '\\\\');
+              if (content.includes(searchString) || content.includes(oldPath)) {
+                const data = JSON.parse(content);
+                await processFileData(f.path, data);
+              }
+            } catch (err) {
+              console.error(
+                `Failed to read/parse file during macro scan: ${f.path}`,
+                err,
+              );
+            }
+          }
+        }
+      } catch (err) {
+        console.error(
+          `Failed to scan directory for macro updates: ${dir}`,
+          err,
+        );
+      }
+    }
+    await scanDirectory(currentDirectory);
   }
 
   // Handle macrosStore updates: update modified ones, and also rename the moved macro's key if it is loaded

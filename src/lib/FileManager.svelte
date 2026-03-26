@@ -624,11 +624,16 @@
           currentFilePath.set(newPath);
         }
 
+        // Check if top-level sequence contains the old path before updating, to avoid race conditions
+        const isSequenceAffected = sequence.some(
+          (s) => s.kind === "macro" && s.filePath === sourceFile.path
+        );
+
         // Use the new centralized macro reference updater to deeply fix all references
         await updateAllMacroReferences(sourceFile.path, newPath);
 
         // Set unsaved if the top level sequence was modified
-        if (sequence.some(s => s.kind === "macro" && s.filePath === newPath)) {
+        if (isSequenceAffected) {
           isUnsaved.set(true);
         }
 
@@ -675,10 +680,15 @@
           currentFilePath.set(newFilePath);
         }
 
+        // Check if top-level sequence contains the old path before updating, to avoid race conditions
+        const isSequenceAffected = sequence.some(
+          (s) => s.kind === "macro" && s.filePath === file.path
+        );
+
         // Deeply update any macro references
         await updateAllMacroReferences(file.path, newFilePath);
 
-        if (sequence.some(s => s.kind === "macro" && s.filePath === newFilePath)) {
+        if (isSequenceAffected) {
           isUnsaved.set(true);
         }
 
