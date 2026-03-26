@@ -135,11 +135,7 @@
 
 <div class="p-4 w-full flex flex-col gap-6">
   <div class="flex items-center justify-between w-full gap-4">
-    <RobotPositionDisplay
-      {robotXY}
-      {robotHeading}
-      {settings}
-    />
+    <RobotPositionDisplay {robotXY} {robotHeading} {settings} />
 
     <div class="flex items-center justify-end">
       <CollapseAllButton {allCollapsed} onToggle={toggleCollapseAll} />
