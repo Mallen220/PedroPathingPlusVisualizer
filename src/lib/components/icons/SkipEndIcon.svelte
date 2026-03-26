@@ -1,6 +1,7 @@
 <!-- Copyright 2026 Matthew Allen. Licensed under the Modified Apache License, Version 2.0. -->
 <script lang="ts">
   export let className: string = "size-5";
+  export let style: string = "";
 </script>
 
 <svg
@@ -10,10 +11,11 @@
   stroke-width="2"
   stroke="currentColor"
   class={className}
+  {style}
 >
   <path
     stroke-linecap="round"
     stroke-linejoin="round"
-    d="M11.42 15.17L17.25 21A2.652 2.652 0 0021 17.25l-5.877-5.877M11.42 15.17l-3.35 3.35a2.121 2.121 0 01-3 0 2.121 2.121 0 010-3l3.35-3.35M11.42 15.17l-1.42-1.42M14.75 8.75A5.25 5.25 0 109.5 14l1.42-1.42m3.83-3.83L14.75 8.75M14.75 8.75l2.25-2.25"
+    d="M8.25 4.5l7.5 7.5-7.5 7.5M18.75 4.5v15"
   />
 </svg>

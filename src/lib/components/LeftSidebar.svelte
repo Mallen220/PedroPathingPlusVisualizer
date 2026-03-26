@@ -44,6 +44,15 @@
     ZapIcon,
     BoxIcon,
     CompassIcon,
+    RobotIcon,
+    CollapseIcon,
+    PinRightIcon,
+    LayerGroupIcon,
+    SunIcon,
+    MapPinSmallIcon,
+    EditBoxIcon,
+    SplitVerticalIcon,
+    MaximizeIcon,
   } from "./icons";
   import { SIDEBAR_ITEMS } from "../../config/sidebarItems";
 
@@ -761,20 +770,7 @@
               <div
                 class="sidebar-icon flex-none flex items-center justify-center"
               >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  class="sidebar-icon-small flex-none"
-                >
-                  <path d="M12 21a9 9 0 1 1 0-18c2.52 0 4.93 1 6.74 2.74L21 8"
-                  ></path>
-                  <path d="M12 3v6l3.7 2.7"></path>
-                </svg>
+                <MaximizeIcon className="sidebar-icon-small flex-none" />
               </div>
               {#if sidebarExpanded}
                 <span class="ml-3 text-sm font-medium truncate"
@@ -1280,20 +1276,9 @@
               <div
                 class="sidebar-icon flex-none flex items-center justify-center"
               >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke-width="2"
-                  stroke="currentColor"
-                  class="sidebar-icon-small flex-none text-purple-600 dark:text-purple-400"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    d="M12 20.25c4.97 0 9-3.694 9-8.25s-4.03-8.25-9-8.25S3 7.444 3 12c0 2.104.859 4.023 2.273 5.48.432.447.74 1.04.586 1.641a4.483 4.483 0 0 1-.923 1.785A5.969 5.969 0 0 0 6 21c1.282 0 2.47-.402 3.445-1.087.81.22 1.668.337 2.555.337Z"
-                  />
-                </svg>
+                <RobotIcon
+                  className="sidebar-icon-small flex-none text-purple-600 dark:text-purple-400"
+                />
               </div>
               {#if sidebarExpanded}
                 <span class="ml-3 text-sm font-medium truncate"
@@ -1381,19 +1366,7 @@
                     className="sidebar-icon-small flex-none"
                   />
                 {:else}
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    class="sidebar-icon-small flex-none"
-                    ><path d="M2 3h20" /><path
-                      d="M21 3v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V3"
-                    /><path d="m7 21 5-5 5 5" /></svg
-                  >
+                  <PinRightIcon className="sidebar-icon-small flex-none" />
                 {/if}
               </div>
               {#if sidebarExpanded}
@@ -1435,19 +1408,7 @@
                     className="sidebar-icon-small flex-none"
                   />
                 {:else}
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    class="sidebar-icon-small flex-none"
-                    ><path d="M12 2L2 7l10 5 10-5-10-5Z" /><path
-                      d="m2 17 10 5 10-5"
-                    /><path d="m2 12 10 5 10-5" /></svg
-                  >
+                  <LayerGroupIcon className="sidebar-icon-small flex-none" />
                 {/if}
               </div>
               {#if sidebarExpanded}
@@ -1489,19 +1450,7 @@
                     className="sidebar-icon-small flex-none"
                   />
                 {:else}
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    class="sidebar-icon-small flex-none"
-                    ><path
-                      d="M12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"
-                    /></svg
-                  >
+                  <SunIcon className="sidebar-icon-small flex-none" />
                 {/if}
               </div>
               {#if sidebarExpanded}
@@ -1537,19 +1486,7 @@
               <div
                 class="sidebar-icon flex-none flex items-center justify-center"
               >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  class="sidebar-icon-small flex-none"
-                  ><circle cx="12" cy="12" r="10" /><path
-                    d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"
-                  /><line x1="12" y1="17" x2="12.01" y2="17" /></svg
-                >
+                <MapPinSmallIcon className="sidebar-icon-small flex-none" />
               </div>
               {#if sidebarExpanded}
                 <span class="ml-3 text-sm font-medium truncate"
@@ -1584,26 +1521,7 @@
               <div
                 class="sidebar-icon flex-none flex items-center justify-center"
               >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  class="sidebar-icon-small flex-none"
-                  ><rect
-                    width="18"
-                    height="18"
-                    x="3"
-                    y="3"
-                    rx="2"
-                    ry="2"
-                  /><circle cx="9" cy="9" r="2" /><path
-                    d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"
-                  /></svg
-                >
+                <EditBoxIcon className="sidebar-icon-small flex-none" />
               </div>
               {#if sidebarExpanded}
                 <span class="ml-3 text-sm font-medium truncate"
@@ -1638,20 +1556,7 @@
               <div
                 class="sidebar-icon flex-none flex items-center justify-center"
               >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  class="sidebar-icon-small flex-none"
-                >
-                  <circle cx="12" cy="12" r="10" />
-                  <path d="M12 6.5v11" />
-                  <path d="M6.5 12h11" />
-                </svg>
+                <SplitVerticalIcon className="sidebar-icon-small flex-none" />
               </div>
               {#if sidebarExpanded}
                 <span class="ml-3 text-sm font-medium truncate"
@@ -1686,20 +1591,7 @@
               ? 'rotate-180'
               : ''}"
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke-width="2"
-              stroke="currentColor"
-              class="sidebar-icon"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                d="M11.25 4.5l7.5 7.5-7.5 7.5m-6-15l7.5 7.5-7.5 7.5"
-              />
-            </svg>
+            <CollapseIcon className="sidebar-icon" />
           </div>
         </div>
         {#if sidebarExpanded}

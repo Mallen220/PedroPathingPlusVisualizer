@@ -1,6 +1,6 @@
 <!-- Copyright 2026 Matthew Allen. Licensed under the Modified Apache License, Version 2.0. -->
 <script lang="ts">
-  export let className: string = "size-5";
+  export let className: string = "size-3 flex-shrink-0";
 </script>
 
 <svg
@@ -14,6 +14,6 @@
   <path
     stroke-linecap="round"
     stroke-linejoin="round"
-    d="M11.42 15.17L17.25 21A2.652 2.652 0 0021 17.25l-5.877-5.877M11.42 15.17l-3.35 3.35a2.121 2.121 0 01-3 0 2.121 2.121 0 010-3l3.35-3.35M11.42 15.17l-1.42-1.42M14.75 8.75A5.25 5.25 0 109.5 14l1.42-1.42m3.83-3.83L14.75 8.75M14.75 8.75l2.25-2.25"
+    d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 5.25h.008v.008H12v-.008Z"
   />
 </svg>

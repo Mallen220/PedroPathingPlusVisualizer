@@ -1,19 +1,19 @@
 <!-- Copyright 2026 Matthew Allen. Licensed under the Modified Apache License, Version 2.0. -->
 <script lang="ts">
-  export let className: string = "size-5";
+  export let className: string = "size-6 text-neutral-400";
 </script>
 
 <svg
   xmlns="http://www.w3.org/2000/svg"
   fill="none"
   viewBox="0 0 24 24"
-  stroke-width="2"
+  stroke-width="1.5"
   stroke="currentColor"
   class={className}
 >
   <path
     stroke-linecap="round"
     stroke-linejoin="round"
-    d="M11.42 15.17L17.25 21A2.652 2.652 0 0021 17.25l-5.877-5.877M11.42 15.17l-3.35 3.35a2.121 2.121 0 01-3 0 2.121 2.121 0 010-3l3.35-3.35M11.42 15.17l-1.42-1.42M14.75 8.75A5.25 5.25 0 109.5 14l1.42-1.42m3.83-3.83L14.75 8.75M14.75 8.75l2.25-2.25"
+    d="m3.75 13.5 10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75Z"
   />
 </svg>

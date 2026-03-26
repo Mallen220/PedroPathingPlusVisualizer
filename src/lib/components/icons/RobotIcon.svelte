@@ -1,6 +1,6 @@
 <!-- Copyright 2026 Matthew Allen. Licensed under the Modified Apache License, Version 2.0. -->
 <script lang="ts">
-  export let className: string = "size-5";
+  export let className: string = "size-4 text-purple-600 dark:text-purple-400";
 </script>
 
 <svg
@@ -14,6 +14,6 @@
   <path
     stroke-linecap="round"
     stroke-linejoin="round"
-    d="M11.42 15.17L17.25 21A2.652 2.652 0 0021 17.25l-5.877-5.877M11.42 15.17l-3.35 3.35a2.121 2.121 0 01-3 0 2.121 2.121 0 010-3l3.35-3.35M11.42 15.17l-1.42-1.42M14.75 8.75A5.25 5.25 0 109.5 14l1.42-1.42m3.83-3.83L14.75 8.75M14.75 8.75l2.25-2.25"
+    d="M12 20.25c4.97 0 9-3.694 9-8.25s-4.03-8.25-9-8.25S3 7.444 3 12c0 2.104.859 4.023 2.273 5.48.432.447.74 1.04.586 1.641a4.483 4.483 0 0 1-.923 1.785A5.969 5.969 0 0 0 6 21c1.282 0 2.47-.402 3.445-1.087.81.22 1.668.337 2.555.337Z"
   />
 </svg>
