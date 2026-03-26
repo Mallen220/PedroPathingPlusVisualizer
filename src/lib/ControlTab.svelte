@@ -7,6 +7,15 @@
   import DiffTab from "./components/tabs/DiffTab.svelte";
   import TelemetryTab from "./components/tabs/TelemetryTab.svelte";
   import CodeTab from "./components/tabs/CodeTab.svelte";
+  import {
+    PathTabIcon,
+    FieldTabIcon,
+    TableTabIcon,
+    TelemetryTabIcon,
+    CodeTabIcon,
+    DiffIcon,
+    StatsIcon,
+  } from "./components/icons";
 
   // Register default tabs; callable so plugin reloads can restore baseline tabs
   export const registerDefaultControlTabs = () => {
@@ -15,35 +24,35 @@
       label: "Paths",
       component: PathTab,
       order: 0,
-      icon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" class="size-4" aria-hidden="true"><path d="M4 15c3-6 9-6 14-3" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="4" cy="15" r="1.8" fill="currentColor" stroke="none"/><circle cx="12" cy="9" r="1.8" fill="currentColor" stroke="none"/><circle cx="20" cy="12" r="1.8" fill="currentColor" stroke="none"/></svg>`,
+      iconComponent: PathTabIcon,
     });
     tabRegistryModule.register({
       id: "field",
       label: "Field",
       component: FieldTab,
       order: 1,
-      icon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" class="size-4" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="1.5" stroke-width="2"/><path d="M3 4 L21 4 L12 12 Z" fill="currentColor" opacity="0.08" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M3 4 L12 12 M21 4 L12 12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
+      iconComponent: FieldTabIcon,
     });
     tabRegistryModule.register({
       id: "table",
       label: "Table",
       component: TableTab,
       order: 2,
-      icon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" class="size-4" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="1.5" stroke-width="2"/><rect x="3" y="4" width="18" height="5" rx="1.5" fill="currentColor" opacity="0.06" stroke="none"/><line x1="3" y1="10" x2="21" y2="10" stroke-width="2" stroke-linecap="round"/><line x1="9" y1="10" x2="9" y2="20" stroke-width="1.5" stroke-linecap="round"/><line x1="15" y1="10" x2="15" y2="20" stroke-width="1.5" stroke-linecap="round"/></svg>`,
+      iconComponent: TableTabIcon,
     });
     tabRegistryModule.register({
       id: "telemetry",
       label: "Telemetry",
       component: TelemetryTab,
       order: 3,
-      icon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" class="size-4" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>`,
+      iconComponent: TelemetryTabIcon,
     });
     tabRegistryModule.register({
       id: "code",
       label: "Code",
       component: CodeTab,
       order: 3,
-      icon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" class="size-4" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.25 6.75L22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3l-4.5 16.5" /></svg>`,
+      iconComponent: CodeTabIcon,
     });
   };
 
@@ -536,20 +545,7 @@
         class="bg-purple-100 dark:bg-purple-900/20 text-purple-800 dark:text-purple-200 px-4 py-3 rounded-xl border border-purple-200 dark:border-purple-800 flex items-center justify-between"
       >
         <span class="font-semibold flex items-center gap-2">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            class="size-5"
-            stroke-width="2"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-            />
-          </svg>
+          <DiffIcon className="size-5" />
           Diff View
         </span>
       </div>
@@ -581,6 +577,8 @@
             >
               {#if tab.icon}
                 {@html tab.icon}
+              {:else if tab.iconComponent}
+                <svelte:component this={tab.iconComponent} className="size-4" />
               {/if}
               {tab.label}
             </button>
@@ -594,20 +592,7 @@
         title={`Path Statistics${getShortcutFromSettings(settings, "toggle-stats")}`}
         aria-label="View path statistics"
       >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          class="size-4"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
-          />
-        </svg>
+        <StatsIcon className="size-4" />
         Stats
       </button>
     </div>
