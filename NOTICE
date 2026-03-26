@@ -271,3 +271,4 @@ src/lib/components/icons/ChevronRightIcon.svelte
 src/lib/components/icons/InfoIcon.svelte
 src/lib/components/icons/SuccessIcon.svelte
 src/lib/components/icons/index.ts
+src/tests/buttonStyles.test.ts
