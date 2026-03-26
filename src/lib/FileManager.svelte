@@ -50,6 +50,7 @@
     loadProjectData,
     macrosStore,
     updateMacroContent,
+    updateAllMacroReferences,
   } from "./projectStore";
   import { saveProject } from "../utils/fileHandlers";
   import { saveAutoPathsDirectory } from "../utils/directorySettings";
@@ -622,32 +623,30 @@
           selectedFile = { ...selectedFile, path: newPath };
           currentFilePath.set(newPath);
         }
-        // Update sequence references if this file was used as a macro
-        let macrosChanged = false;
-        sequence = sequence.map((item) => {
-          if (item.kind === "macro" && item.filePath === sourceFile.path) {
-            macrosChanged = true;
-            return { ...item, filePath: newPath };
-          }
-          return item;
-        });
 
-        // Update macrosStore
-        const macros = get(macrosStore);
-        if (macros.has(sourceFile.path)) {
-          const macroData = macros.get(sourceFile.path);
-          if (macroData) {
-            updateMacroContent(newPath, macroData);
-            macrosStore.update((m) => {
-              m.delete(sourceFile.path);
-              return m;
-            });
+        // Check if the currently open file is inside the moved folder (or is the moved file)
+        const openPath = get(currentFilePath);
+        if (openPath) {
+          if (openPath === sourceFile.path) {
+            currentFilePath.set(newPath);
+            selectedFile = { ...selectedFile!, path: newPath };
+          } else if (openPath.startsWith(sourceFile.path + "/") || openPath.startsWith(sourceFile.path + "\\")) {
+            const newOpenPath = newPath + openPath.slice(sourceFile.path.length);
+            currentFilePath.set(newOpenPath);
+            if (selectedFile) selectedFile = { ...selectedFile, path: newOpenPath };
           }
-          macrosChanged = true;
         }
 
-        if (macrosChanged) {
-          isUnsaved.set(true); // Since modified sequence, the file needs saving
+        // Use the new centralized macro reference updater to deeply fix all references
+        const { mainSequenceChanged } = await updateAllMacroReferences(sourceFile.path, newPath);
+
+        // Persist the updated sequence to disk so the open file doesn't have stale references
+        if (mainSequenceChanged) {
+          isUnsaved.set(true);
+          const openPath = get(currentFilePath);
+          if (openPath) {
+            await saveProject(undefined, undefined, undefined, undefined, undefined, false, openPath, { quiet: true });
+          }
         }
 
         showToast(
@@ -692,6 +691,32 @@
           selectedFile = { ...selectedFile, name: fileName, path: newFilePath };
           currentFilePath.set(newFilePath);
         }
+
+        // Check if the currently open file is inside the renamed folder (or is the renamed file)
+        const openPath = get(currentFilePath);
+        if (openPath) {
+          if (openPath === file.path) {
+            currentFilePath.set(newFilePath);
+            selectedFile = { ...selectedFile!, path: newFilePath };
+          } else if (openPath.startsWith(file.path + "/") || openPath.startsWith(file.path + "\\")) {
+            const newOpenPath = newFilePath + openPath.slice(file.path.length);
+            currentFilePath.set(newOpenPath);
+            if (selectedFile) selectedFile = { ...selectedFile, path: newOpenPath };
+          }
+        }
+
+        // Deeply update any macro references
+        const { mainSequenceChanged } = await updateAllMacroReferences(file.path, newFilePath);
+
+        // Persist the updated sequence to disk so the open file doesn't have stale references
+        if (mainSequenceChanged) {
+          isUnsaved.set(true);
+          const openPath = get(currentFilePath);
+          if (openPath) {
+            await saveProject(undefined, undefined, undefined, undefined, undefined, false, openPath, { quiet: true });
+          }
+        }
+
         showToast(`Renamed to: ${fileName}`, "success");
         await refreshDirectory();
       }
