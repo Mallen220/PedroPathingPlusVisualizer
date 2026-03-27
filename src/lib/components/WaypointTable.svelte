@@ -37,7 +37,7 @@
   import TrashIcon from "./icons/TrashIcon.svelte";
   import ColorPicker from "./tools/ColorPicker.svelte";
   import ContextMenu from "./tools/ContextMenu.svelte";
-  import { WaitIcon, RotateIcon, PlusIcon } from "./icons";
+  import { WaitIcon, RotateIcon, PlusIcon, LockIcon, EyeIcon } from "./icons";
   import {
     makeId,
     generateName,
@@ -1363,19 +1363,7 @@
               title="Locked"
               class="inline-flex items-center justify-center h-6 w-6 text-neutral-400"
             >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                fill="currentColor"
-                class="h-4 w-4"
-                aria-hidden="true"
-              >
-                <path
-                  fill-rule="evenodd"
-                  d="M12 1.5a5.25 5.25 0 0 0-5.25 5.25v3a3 3 0 0 0-3 3v6.75a3 3 0 0 0 3 3h10.5a3 3 0 0 0 3-3v-6.75a3 3 0 0 0-3-3v-3c0-2.9-2.35-5.25-5.25-5.25Zm3.75 8.25v-3a3.75 3.75 0 1 0-7.5 0v3h7.5Z"
-                  clip-rule="evenodd"
-                />
-              </svg>
+              <LockIcon className="size-4" />
             </span>
           {:else}
             <span class="h-6 w-6" aria-hidden="true"></span>
@@ -1611,25 +1599,7 @@
                       />
                     </svg>
                   {:else}
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke-width="2"
-                      stroke="currentColor"
-                      class="size-5 text-gray-400"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z"
-                      />
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
-                      />
-                    </svg>
+                    <EyeIcon className="size-5 text-gray-400" strokeWidth={2} />
                   {/if}
                 </button>
 
@@ -1646,20 +1616,7 @@
                   aria-pressed={line.locked}
                 >
                   {#if line.locked}
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke-width="2"
-                      stroke="currentColor"
-                      class="size-5 stroke-yellow-500"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z"
-                      />
-                    </svg>
+                    <LockIcon className="size-5 text-yellow-500 fill-none" />
                   {:else}
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
@@ -1754,19 +1711,7 @@
                       title="Locked"
                       class="inline-flex items-center justify-center h-6 w-6 text-neutral-400"
                     >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 24 24"
-                        fill="currentColor"
-                        class="h-4 w-4"
-                        aria-hidden="true"
-                      >
-                        <path
-                          fill-rule="evenodd"
-                          d="M12 1.5a5.25 5.25 0 0 0-5.25 5.25v3a3 3 0 0 0-3 3v6.75a3 3 0 0 0 3 3h10.5a3 3 0 0 0 3-3v-6.75a3 3 0 0 0-3-3v-3c0-2.9-2.35-5.25-5.25-5.25Zm3.75 8.25v-3a3.75 3.75 0 1 0-7.5 0v3h7.5Z"
-                          clip-rule="evenodd"
-                        />
-                      </svg>
+                      <LockIcon className="size-4" />
                     </span>
                     <span class="h-6 w-6" aria-hidden="true"></span>
                   {:else}
@@ -1819,20 +1764,10 @@
           >
             <div class="flex flex-col items-center gap-4">
               <div class="p-3 bg-neutral-100 dark:bg-neutral-800 rounded-full">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke-width="1.5"
-                  stroke="currentColor"
-                  class="size-6 text-neutral-400"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    d="M12 4.5v15m7.5-7.5h-15"
-                  />
-                </svg>
+                <PlusIcon
+                  className="size-6 text-neutral-400"
+                  strokeWidth={1.5}
+                />
               </div>
               <div class="text-sm">
                 <p class="font-medium text-neutral-800 dark:text-neutral-200">
@@ -1868,20 +1803,7 @@
       aria-label="Add new path segment"
       title={`Add new path segment${getShortcutFromSettings(settings, "add-path")}`}
     >
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        fill="none"
-        viewBox="0 0 24 24"
-        stroke-width="2"
-        stroke="currentColor"
-        class="size-3"
-      >
-        <path
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          d="M12 4.5v15m7.5-7.5h-15"
-        />
-      </svg>
+      <PlusIcon className="size-3" strokeWidth={2} />
       Add Path
     </button>
 

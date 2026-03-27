@@ -31,6 +31,7 @@
   import { formatTime, getShortcutFromSettings } from "../../utils";
   import { createEventDispatcher, onMount, onDestroy } from "svelte";
   import { loopRangeActiveStore, loopRangeStore } from "../../lib/projectStore";
+  import { PlaySolidIcon, PauseIcon, PlayIcon, ChevronUpIcon } from "./icons";
 
   const dispatch = createEventDispatcher();
 
@@ -505,21 +506,12 @@
         tabindex="0"
       >
         <span class="font-medium">{(playbackSpeed ?? 1).toFixed(2)}x</span>
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke-width="1.5"
-          stroke="currentColor"
-          class="size-4 text-neutral-500 dark:text-neutral-400"
-          class:rotate-180={showSpeedMenu}
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            d="M19 9l-7 7-7-7"
-          />
-        </svg>
+        <ChevronUpIcon
+          className="size-4 text-neutral-500 dark:text-neutral-400 {showSpeedMenu
+            ? 'rotate-180'
+            : ''}"
+          strokeWidth={1.5}
+        />
       </button>
 
       {#if showSpeedMenu}
@@ -666,35 +658,9 @@
         class="p-1 rounded-full bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-green-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-neutral-900"
       >
         {#if !playing}
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke-width="2"
-            stroke="currentColor"
-            class="size-8 stroke-green-600 pl-0.5"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 0 1 0 1.972l-11.54 6.347a1.125 1.125 0 0 1-1.667-.986V5.653Z"
-            />
-          </svg>
+          <PlaySolidIcon className="size-8 stroke-green-600 fill-none pl-0.5" />
         {:else}
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke-width="2"
-            stroke="currentColor"
-            class="size-8 stroke-green-600"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              d="M15.75 5.25v13.5m-7.5-13.5v13.5"
-            />
-          </svg>
+          <PauseIcon className="size-8 stroke-green-600" />
         {/if}
       </button>
 
