@@ -24,6 +24,7 @@ export interface OptimizationResult {
   generation: number;
   bestTime: number;
   bestLines: Line[];
+  error?: string;
 }
 
 export class PathOptimizer {
@@ -572,7 +573,38 @@ export class PathOptimizer {
 
   public async optimize(
     onUpdate: (result: OptimizationResult) => void,
-  ): Promise<{ lines: Line[]; bestTime: number; stopped?: boolean }> {
+  ): Promise<{ lines: Line[]; bestTime: number; stopped?: boolean; error?: string }> {
+    // 0. Pre-check: if any point is strictly invalid, fail early
+    const pointsToCheck = [this.startPoint, ...this.originalLines.map(l => l.endPoint)];
+    for (const pt of pointsToCheck) {
+      // Out of bounds
+      if (
+        this.settings.validateFieldBoundaries !== false &&
+        (pt.x < 0 || pt.x > FIELD_SIZE || pt.y < 0 || pt.y > FIELD_SIZE)
+      ) {
+        return { lines: this.originalLines, bestTime: 20000, error: "Invalid path error: A point is out of bounds." };
+      }
+
+      // Inside obstacle
+      if (this.activeObstacles.some((shape) => pointInPolygon([pt.x, pt.y], shape.vertices))) {
+        return { lines: this.originalLines, bestTime: 20000, error: "Invalid path error: A point is inside an obstacle." };
+      }
+
+      // Outside keep-in zone
+      if (this.activeKeepInZones.length > 0) {
+        let insideAnyZone = false;
+        for (const zone of this.activeKeepInZones) {
+          if (pointInPolygon([pt.x, pt.y], zone.vertices)) {
+            insideAnyZone = true;
+            break;
+          }
+        }
+        if (!insideAnyZone) {
+          return { lines: this.originalLines, bestTime: 20000, error: "Invalid path error: A point is outside a keep-in zone." };
+        }
+      }
+    }
+
     // Reset cancellation request
     this.stopRequested = false;
 

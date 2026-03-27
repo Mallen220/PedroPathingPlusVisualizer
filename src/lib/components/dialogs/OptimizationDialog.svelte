@@ -41,6 +41,7 @@
   let showPreview = true;
   export let optimizationFailed = false;
   export let collapsed = false;
+  let optimizationError: string | null = null;
 
   let selectionState: Record<string, boolean> = {};
 
@@ -97,6 +98,7 @@
     isRunning = true;
     progress = 0;
     optimizationFailed = false;
+    optimizationError = null;
     isStopping = false;
 
     if (settings) {
@@ -148,6 +150,7 @@
 
     const finalBestTime = optimizationResult.bestTime;
     optimizationFailed = finalBestTime >= 10000;
+    optimizationError = optimizationResult.error || null;
 
     isRunning = false;
     isStopping = false;
@@ -169,6 +172,7 @@
       optimizedLines = null;
       showPreview = false;
       optimizationFailed = false;
+      optimizationError = null;
       if (onPreviewChange) onPreviewChange(null);
 
       isOpen = false;
@@ -196,12 +200,12 @@
     showPreview = !showPreview;
     if (onPreviewChange) {
       onPreviewChange(
-        showPreview && !optimizationFailed ? optimizedLines : null,
+        showPreview && !optimizationFailed && !optimizationError ? optimizedLines : null,
       );
     }
   }
 
-  $: if (optimizationFailed && showPreview) {
+  $: if ((optimizationFailed || optimizationError) && showPreview) {
     showPreview = false;
     if (onPreviewChange) onPreviewChange(null);
   }
@@ -303,7 +307,9 @@
             >Gen {progress}</span
           >
           <span class="font-medium text-blue-600 dark:text-blue-400">
-            {#if optimizationFailed}
+            {#if optimizationError}
+              Invalid Path
+            {:else if optimizationFailed}
               No valid path
             {:else}
               {currentBestTime > 1000
@@ -316,7 +322,7 @@
         </div>
       {/if}
 
-      {#if !isRunning && !optimizationFailed}
+      {#if !isRunning && !optimizationFailed && !optimizationError}
         <div class="flex gap-2 my-2">
           <button
             on:click={togglePreview}
@@ -327,7 +333,13 @@
         </div>
       {/if}
 
-      {#if optimizationFailed}
+      {#if optimizationError}
+        <div
+          class="mt-2 rounded-md bg-red-50 border-l-4 border-red-400 p-3 text-sm text-red-800"
+        >
+          🚨 <strong>{optimizationError}</strong> Please adjust your path or points manually.
+        </div>
+      {:else if optimizationFailed}
         <div
           class="mt-2 rounded-md bg-yellow-50 border-l-4 border-yellow-400 p-3 text-sm text-yellow-800"
         >
@@ -357,7 +369,7 @@
           </button>
         </div>
       {:else if optimizedLines !== null}
-        {#if optimizationFailed}
+        {#if optimizationFailed || optimizationError}
           <div class="flex gap-2">
             <button
               on:click={handleClose}
