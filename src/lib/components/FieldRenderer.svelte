@@ -92,6 +92,7 @@
     getAngularDifference,
     getLineStartHeading,
   } from "../../utils";
+  import { getAlignmentMenuItems } from "../../utils/alignmentMenu";
   import { toUser } from "../../utils/coordinates";
   import {
     type WheelSpeeds,
@@ -1650,8 +1651,19 @@
 
     let menuItems: any[] = [];
 
-    // Parse clicked element
-    if (currentElem) {
+    // Handle multi-selection alignment and distribution
+    const multiSel = $multiSelectedPointIds;
+    const isClickOnMultiSel = currentElem ? multiSel.includes(currentElem) : true;
+
+    if (multiSel.length > 1 && multiSel.every(id => id.startsWith("point-")) && isClickOnMultiSel) {
+      menuItems.push(...getAlignmentMenuItems(multiSel, startPoint, lines, (newLines, newStartPoint) => {
+        linesStore.set(newLines);
+        startPointStore.set(newStartPoint);
+      }, onRecordChange));
+    }
+
+    if (currentElem && (!isClickOnMultiSel || multiSel.length <= 1)) {
+      // Parse clicked element if not showing multi-select menu
       const parsed = parseElementId(currentElem);
       if (parsed) {
         if (parsed.type === "point") {
