@@ -112,6 +112,7 @@
     syncSelectionToUI,
     cycleSelection,
     cycleSequenceSelection,
+    nudgeSelection,
   } from "./shortcuts/selection";
   import {
     modifyValue,
@@ -236,6 +237,18 @@
     paste: () => paste(recordChange),
     splitPath: () => splitPath && splitPath(),
     removeSelected: () => removeSelected(recordChange),
+    nudgeUp: (e: KeyboardEvent) => {
+      nudgeSelection(0, -1, e.shiftKey, recordChange);
+    },
+    nudgeDown: (e: KeyboardEvent) => {
+      nudgeSelection(0, 1, e.shiftKey, recordChange);
+    },
+    nudgeLeft: (e: KeyboardEvent) => {
+      nudgeSelection(-1, 0, e.shiftKey, recordChange);
+    },
+    nudgeRight: (e: KeyboardEvent) => {
+      nudgeSelection(1, 0, e.shiftKey, recordChange);
+    },
     undo: () => undoAction(),
     redo: () => redoAction(),
     resetAnimation: () => resetAnimation(),

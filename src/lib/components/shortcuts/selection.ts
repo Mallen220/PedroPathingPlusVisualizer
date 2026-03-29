@@ -206,6 +206,118 @@ export function removeSelected(recordChange: (action?: string) => void) {
   recordChange("Delete Selection");
 }
 
+export function nudgeSelection(
+  dx: number,
+  dy: number,
+  useGridStep: boolean,
+  recordChange: (action?: string) => void,
+) {
+  if (isUIElementFocused()) return;
+
+  const mSelPoints = get(multiSelectedPointIds);
+  const selPointId = get(selectedPointId);
+  const gridStep = useGridStep ? (get(gridSize) as number) || 1 : 0.5; // Nudge by 0.5 inches normally, or grid size with shift
+  const startPoint = get(startPointStore);
+  const lines = get(linesStore);
+  const shapes = get(shapesStore);
+  const sequence = get(sequenceStore);
+
+  // Convert to array of selections
+  const sels =
+    mSelPoints.length > 0 ? mSelPoints : selPointId ? [selPointId] : [];
+  if (sels.length === 0) return;
+
+  const moveX = dx * gridStep;
+  const moveY = dy * gridStep;
+
+  let linesChanged = false;
+  let shapesChanged = false;
+  let sequenceChanged = false;
+  let startPointChanged = false;
+
+  sels.forEach((currentSel) => {
+    if (currentSel.startsWith("point-")) {
+      const parts = currentSel.split("-");
+      const lineNum = Number(parts[1]);
+      const ptIdx = Number(parts[2]);
+      if (lineNum === 0 && ptIdx === 0) {
+        if (!startPoint.locked) {
+          startPoint.x = Math.max(
+            0,
+            Math.min(FIELD_SIZE, startPoint.x + moveX),
+          );
+          startPoint.y = Math.max(
+            0,
+            Math.min(FIELD_SIZE, startPoint.y + moveY),
+          );
+          startPoint.x = Number(startPoint.x.toFixed(3));
+          startPoint.y = Number(startPoint.y.toFixed(3));
+          startPointChanged = true;
+        }
+        return;
+      }
+      const lineIndex = lineNum - 1;
+      const line = lines[lineIndex];
+      if (line && !line.locked) {
+        if (ptIdx === 0) {
+          if (line.endPoint) {
+            line.endPoint.x = Math.max(
+              0,
+              Math.min(FIELD_SIZE, line.endPoint.x + moveX),
+            );
+            line.endPoint.y = Math.max(
+              0,
+              Math.min(FIELD_SIZE, line.endPoint.y + moveY),
+            );
+            line.endPoint.x = Number(line.endPoint.x.toFixed(3));
+            line.endPoint.y = Number(line.endPoint.y.toFixed(3));
+            linesChanged = true;
+          }
+        } else {
+          const cpIndex = ptIdx - 1;
+          if (line.controlPoints[cpIndex]) {
+            line.controlPoints[cpIndex].x = Math.max(
+              0,
+              Math.min(FIELD_SIZE, line.controlPoints[cpIndex].x + moveX),
+            );
+            line.controlPoints[cpIndex].y = Math.max(
+              0,
+              Math.min(FIELD_SIZE, line.controlPoints[cpIndex].y + moveY),
+            );
+            line.controlPoints[cpIndex].x = Number(
+              line.controlPoints[cpIndex].x.toFixed(3),
+            );
+            line.controlPoints[cpIndex].y = Number(
+              line.controlPoints[cpIndex].y.toFixed(3),
+            );
+            linesChanged = true;
+          }
+        }
+      }
+    } else if (currentSel.startsWith("obstacle-")) {
+      const parts = currentSel.split("-");
+      const shapeIdx = Number(parts[1]);
+      const vertexIdx = Number(parts[2]);
+      if (shapes[shapeIdx]?.vertices[vertexIdx]) {
+        const v = shapes[shapeIdx].vertices[vertexIdx];
+        v.x = Math.max(0, Math.min(FIELD_SIZE, v.x + moveX));
+        v.y = Math.max(0, Math.min(FIELD_SIZE, v.y + moveY));
+        v.x = Number(v.x.toFixed(3));
+        v.y = Number(v.y.toFixed(3));
+        shapesChanged = true;
+      }
+    }
+  });
+
+  if (startPointChanged) startPointStore.set(startPoint);
+  if (linesChanged) linesStore.set(lines);
+  if (shapesChanged) shapesStore.set(shapes);
+
+  if (startPointChanged || linesChanged || shapesChanged) {
+    recordChange("Nudge Point");
+  }
+}
+
 export function movePoint(
   dx: number,
   dy: number,
