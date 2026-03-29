@@ -2,7 +2,14 @@
 <script lang="ts">
   import { slide } from "svelte/transition";
   import type { SequenceMacroItem, Transformation } from "../../../types";
-  import { ArrowsPointingOutIcon, ArrowPathIcon, ArrowsRightLeftIcon, ChevronUpIcon, ChevronDownIcon, TrashIcon } from "../icons";
+  import {
+    ArrowsPointingOutIcon,
+    ArrowPathIcon,
+    ArrowsRightLeftIcon,
+    ChevronUpIcon,
+    ChevronDownIcon,
+    TrashIcon,
+  } from "../icons";
 
   export let macro: SequenceMacroItem;
   export let onUpdate: () => void;

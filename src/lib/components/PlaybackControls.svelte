@@ -32,13 +32,8 @@
   import { createEventDispatcher, onMount, onDestroy } from "svelte";
   import { loopRangeActiveStore, loopRangeStore } from "../../lib/projectStore";
   import ContextMenu from "./tools/ContextMenu.svelte";
-  import { ChevronDownIcon, ChevronUpIcon, ScissorsIcon, BackwardStepIcon, BackwardIcon, ForwardIcon, ForwardStepIcon, PlayIcon, PauseIcon, CheckIcon, ArrowPathIcon } from "./icons";
   import {
     SplitPathIcon,
-    ChevronDownIcon,
-    CheckIcon,
-    PlayIcon,
-    PauseIcon,
     RotateIcon,
     MapPinSolidIcon,
     SkipToStartIcon,
@@ -46,6 +41,17 @@
     StepForwardIcon,
     SkipToEndIcon,
     LoopToggleIcon,
+    ChevronDownIcon,
+    ChevronUpIcon,
+    ScissorsIcon,
+    BackwardStepIcon,
+    BackwardIcon,
+    ForwardIcon,
+    ForwardStepIcon,
+    PlayIcon,
+    PauseIcon,
+    CheckIcon,
+    ArrowPathIcon,
   } from "./icons";
 
   const dispatch = createEventDispatcher();
@@ -542,7 +548,9 @@
       >
         <span class="font-medium">{(playbackSpeed ?? 1).toFixed(2)}x</span>
         <ChevronDownIcon
-          className="size-4 text-neutral-500 dark:text-neutral-400 {showSpeedMenu ? 'rotate-180' : ''}"
+          className="size-4 text-neutral-500 dark:text-neutral-400 {showSpeedMenu
+            ? 'rotate-180'
+            : ''}"
         />
       </button>
 
@@ -573,7 +581,10 @@
               >
                 <span>{s.toFixed(2)}x</span>
                 {#if Math.abs(s - (playbackSpeed || 1)) < 1e-6}
-                  <CheckIcon className="size-4 text-green-600" strokeWidth={1.5} />
+                  <CheckIcon
+                    className="size-4 text-green-600"
+                    strokeWidth={1.5}
+                  />
                 {/if}
               </button>
             </li>
@@ -631,7 +642,10 @@
         class="p-1 rounded-full bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-green-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-neutral-900"
       >
         {#if !playing}
-          <PlayIcon className="size-8 stroke-green-600 pl-0.5" strokeWidth={2} />
+          <PlayIcon
+            className="size-8 stroke-green-600 pl-0.5"
+            strokeWidth={2}
+          />
         {:else}
           <PauseIcon className="size-8 stroke-green-600" strokeWidth={2} />
         {/if}

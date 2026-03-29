@@ -295,3 +295,14 @@ src/lib/components/icons/UnlockIcon.svelte
 src/lib/components/tools/ContextMenu.svelte
 src/utils/alignmentMenu.ts
 src/utils/shortcuts.ts
+src/lib/components/icons/ArrowsPointingOutIcon.svelte
+src/lib/components/icons/ArrowsRightLeftIcon.svelte
+src/lib/components/icons/BackwardIcon.svelte
+src/lib/components/icons/BackwardStepIcon.svelte
+src/lib/components/icons/Bars3Icon.svelte
+src/lib/components/icons/ClipboardDocumentIcon.svelte
+src/lib/components/icons/ForwardIcon.svelte
+src/lib/components/icons/ForwardStepIcon.svelte
+src/lib/components/icons/PauseIcon.svelte
+src/lib/components/icons/PlaySolidIcon.svelte
+src/lib/components/icons/SplitPathIcon.svelte
