@@ -17,6 +17,8 @@
     SparklesIcon,
     ListIcon,
     ArrowDownTrayIcon,
+    MicrosoftStoreIcon,
+    ArrowRightSmallIcon,
   } from "../icons";
   import LoadingSpinner from "../common/LoadingSpinner.svelte";
 
@@ -213,18 +215,7 @@
                 class="bg-blue-100 dark:bg-blue-900/50 p-2 rounded-lg text-blue-600 dark:text-blue-400 shrink-0"
               >
                 <!-- Microsoft 4‑square logo (colored) — increased size -->
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 32 32"
-                  class="w-6 h-6"
-                  aria-hidden="true"
-                  focusable="false"
-                >
-                  <rect x="5" y="5" width="10" height="10" fill="#F25325" />
-                  <rect x="17" y="5" width="10" height="10" fill="#80BC06" />
-                  <rect x="5" y="17" width="10" height="10" fill="#05A6F0" />
-                  <rect x="17" y="17" width="10" height="10" fill="#FEBA08" />
-                </svg>
+                <MicrosoftStoreIcon className="w-6 h-6" />
               </div>
               <div class="flex-1">
                 <h3
@@ -243,18 +234,9 @@
                   class="mt-2 text-xs font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 inline-flex items-center gap-1 transition-colors group"
                 >
                   Get it for free
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    class="h-3 w-3 transition-transform group-hover:translate-x-0.5"
-                    viewBox="0 0 20 20"
-                    fill="currentColor"
-                  >
-                    <path
-                      fill-rule="evenodd"
-                      d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z"
-                      clip-rule="evenodd"
-                    />
-                  </svg>
+                  <ArrowRightSmallIcon
+                    className="h-3 w-3 transition-transform group-hover:translate-x-0.5"
+                  />
                 </button>
               </div>
             </div>
