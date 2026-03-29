@@ -3,7 +3,13 @@
   import { showRatingDialog, ratingDialogAutoOpened } from "../../../stores";
   import { fade, fly } from "svelte/transition";
   import { onMount, onDestroy } from "svelte";
-  import { StarIcon, CloseIcon, ErrorIcon, SuccessIcon, SpinnerIcon } from "../icons";
+  import {
+    StarIcon,
+    CloseIcon,
+    ErrorIcon,
+    SuccessIcon,
+    SpinnerIcon,
+  } from "../icons";
   import { settingsStore } from "../../projectStore";
   import { saveSettings } from "../../../utils/settingsPersistence";
   import pkg from "../../../../package.json";
@@ -300,7 +306,9 @@
           class="px-5 py-2 text-sm font-medium text-white bg-purple-600 hover:bg-purple-700 shadow-sm shadow-purple-900/20 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500/50 disabled:opacity-50 flex items-center gap-2"
         >
           {#if isSubmitting}
-            <SpinnerIcon className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" />
+            <SpinnerIcon
+              className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+            />
             Submitting...
           {:else}
             Submit Feedback

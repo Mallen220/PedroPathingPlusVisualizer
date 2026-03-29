@@ -259,7 +259,9 @@
       class="flex items-center justify-center gap-2 flex-[2] bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-lg px-3 min-w-0"
     >
       <ArrowRightLeftIcon
-        className="size-4 text-neutral-400 dark:text-neutral-500 shrink-0 {endPoint.reverse ? 'scale-x-[-1]' : ''}"
+        className="size-4 text-neutral-400 dark:text-neutral-500 shrink-0 {endPoint.reverse
+          ? 'scale-x-[-1]'
+          : ''}"
       />
       <span
         class="text-sm text-neutral-500 dark:text-neutral-400 select-none truncate"

@@ -12,5 +12,9 @@
   stroke="currentColor"
   class={className}
 >
-  <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5M18.75 4.5v15" />
+  <path
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    d="M8.25 4.5l7.5 7.5-7.5 7.5M18.75 4.5v15"
+  />
 </svg>

@@ -37,7 +37,20 @@
   import TrashIcon from "./icons/TrashIcon.svelte";
   import ColorPicker from "./tools/ColorPicker.svelte";
   import ContextMenu from "./tools/ContextMenu.svelte";
-  import { WaitIcon, RotateIcon, PlusIcon, LockIcon, UnlockIcon, CheckIcon, EyeIcon, EyeSlashIcon, ClipboardDocumentIcon, Bars3Icon, InfoIcon, LinkIcon } from "./icons";
+  import {
+    WaitIcon,
+    RotateIcon,
+    PlusIcon,
+    LockIcon,
+    UnlockIcon,
+    CheckIcon,
+    EyeIcon,
+    EyeSlashIcon,
+    ClipboardDocumentIcon,
+    Bars3Icon,
+    InfoIcon,
+    LinkIcon,
+  } from "./icons";
   import {
     makeId,
     generateName,
