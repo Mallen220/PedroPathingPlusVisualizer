@@ -412,8 +412,7 @@
           >
             <!-- Small rotate icon (explicit rotates are pink) -->
             <RotateIcon
-              className="w-4 h-4 rounded-full bg-white dark:bg-neutral-900"
-              style="color: rgb(236 72 153)"
+              className="w-4 h-4 rounded-full bg-white dark:bg-neutral-900 text-pink-500"
             />
           </div>
         {/if}
