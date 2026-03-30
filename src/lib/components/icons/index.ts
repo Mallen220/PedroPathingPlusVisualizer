@@ -6,6 +6,7 @@ export { default as CloseIcon } from "./CloseIcon.svelte";
 export { default as TrashIcon } from "./TrashIcon.svelte";
 export { default as PlayIcon } from "./PlayIcon.svelte";
 export { default as PauseIcon } from "./PauseIcon.svelte";
+export { default as ProtractorIcon } from "./ProtractorIcon.svelte";
 export { default as SaveIcon } from "./SaveIcon.svelte";
 export { default as DownloadIcon } from "./DownloadIcon.svelte";
 export { default as MagnetIcon } from "./MagnetIcon.svelte";

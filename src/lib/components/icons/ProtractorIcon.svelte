@@ -12,6 +12,20 @@
   stroke="currentColor"
   class={className}
 >
-  <path d="M12 21a9 9 0 1 1 0-18c2.52 0 4.93 1 6.74 2.74L21 8" />
-  <path d="M12 3v6l3.7 2.7" />
+  <style>
+    .cls-2 {
+      stroke-dasharray: 2.08 3.119;
+    }
+  </style>
+  <g id="Layer_1-2" data-name="Layer 1">
+    <circle class="cls-1" cx="10" cy="10" r="9" />
+    <ellipse
+      class="cls-2"
+      cx="10"
+      cy="10"
+      rx="7.364"
+      ry="7.548"
+      transform="translate(-1.282 1.473) rotate(-7.917)"
+    />
+  </g>
 </svg>
