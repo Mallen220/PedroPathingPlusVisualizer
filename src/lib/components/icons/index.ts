@@ -21,7 +21,7 @@ export { default as EyeIcon } from "./EyeIcon.svelte";
 export { default as BoxIcon } from "./BoxIcon.svelte";
 export { default as CompassIcon } from "./CompassIcon.svelte";
 export { default as ArrowsPointingOutIcon } from "./ArrowsPointingOutIcon.svelte";
-export { default as ArrowsRightLeftIcon } from "./ArrowsRightLeftIcon.svelte";
+export { default as SwitchIcon } from "./SwitchIcon.svelte";
 export { default as ScissorsIcon } from "./ScissorsIcon.svelte";
 export { default as Bars3Icon } from "./Bars3Icon.svelte";
 export { default as ShowRobotIcon } from "./ShowRobotIcon.svelte";

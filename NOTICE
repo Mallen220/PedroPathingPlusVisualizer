@@ -296,7 +296,7 @@ src/lib/components/tools/ContextMenu.svelte
 src/utils/alignmentMenu.ts
 src/utils/shortcuts.ts
 src/lib/components/icons/ArrowsPointingOutIcon.svelte
-src/lib/components/icons/ArrowsRightLeftIcon.svelte
+src/lib/components/icons/SwitchIcon.svelte
 src/lib/components/icons/BackwardIcon.svelte
 src/lib/components/icons/BackwardStepIcon.svelte
 src/lib/components/icons/Bars3Icon.svelte
