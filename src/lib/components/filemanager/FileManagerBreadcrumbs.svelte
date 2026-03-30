@@ -21,6 +21,13 @@
   function formatPath(pathStr: string): string {
     if (!pathStr) return "";
 
+    if (pathStr.startsWith("/browser_fs")) {
+      pathStr = pathStr.substring("/browser_fs".length);
+      if (pathStr === "") {
+        pathStr = "/";
+      }
+    }
+
     // Handle home directory alias
     const home = process.env.HOME || "~";
     if (pathStr.startsWith(home)) {
