@@ -25,7 +25,10 @@ export async function saveDirectorySettings(
 
     // Use localStorage for browser environment
     if (!electronAPI || electronAPI.isVirtual) {
-      localStorage.setItem("turtle-tracer-directory-settings", JSON.stringify(settings));
+      localStorage.setItem(
+        "turtle-tracer-directory-settings",
+        JSON.stringify(settings),
+      );
       return;
     }
 

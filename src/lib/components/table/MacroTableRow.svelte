@@ -132,7 +132,7 @@
           aria-label="Unlink macro"
           class="inline-flex items-center justify-center h-6 w-6 p-0.5 rounded transition-colors text-neutral-400 hover:text-teal-600 hover:bg-neutral-50 dark:hover:bg-neutral-800"
         >
-           <LinkIcon className="size-4" />
+          <LinkIcon className="size-4" />
         </button>
       {/if}
       <button
