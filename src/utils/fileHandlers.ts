@@ -783,23 +783,18 @@ export async function handleAutoExport(
   projectData: any, // passed for JSON export
   targetPath: string,
 ) {
-  if (!settings.autoExportCode) return;
   const electronAPI = getElectronAPI();
-  const isVirtual = electronAPI ? (electronAPI as any).isVirtual : true;
-
-  if (!isVirtual && (!electronAPI || !electronAPI.resolvePath)) return;
+  if (!settings.autoExportCode || !electronAPI || !electronAPI.resolvePath)
+    return;
 
   try {
     const exportDirName = settings.autoExportPath || "GeneratedCode";
-    let exportDir = "";
-    if (!isVirtual && electronAPI && electronAPI.resolvePath) {
-      // Resolve export directory relative to the target project file
-      exportDir = await electronAPI.resolvePath(targetPath, exportDirName);
+    // Resolve export directory relative to the target project file
+    const exportDir = await electronAPI.resolvePath(targetPath, exportDirName);
 
-      // Create directory
-      if (electronAPI.createDirectory) {
-        await electronAPI.createDirectory(exportDir);
-      }
+    // Create directory
+    if (electronAPI.createDirectory) {
+      await electronAPI.createDirectory(exportDir);
     }
 
     // Determine content and extension
@@ -851,23 +846,12 @@ export async function handleAutoExport(
 
     const filename = `${baseName}.${extension}`;
 
-    if (isVirtual) {
-      const blob = new Blob([content], { type: "text/plain" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = filename;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-    } else if (electronAPI && electronAPI.resolvePath && electronAPI.writeFile) {
-      // Resolve final file path. resolvePath resolves base (file) + relative (path).
-      const relativePath = `${exportDirName}/${filename}`;
-      const finalPath = await electronAPI.resolvePath(targetPath, relativePath);
+    // Resolve final file path. resolvePath resolves base (file) + relative (path).
 
-      await electronAPI.writeFile(finalPath, content);
-    }
+    const relativePath = `${exportDirName}/${filename}`;
+    const finalPath = await electronAPI.resolvePath(targetPath, relativePath);
+
+    await electronAPI.writeFile(finalPath, content);
 
     notification.set({
       message: `Code auto-exported to ${filename}`,
