@@ -83,7 +83,6 @@ export { default as ArrowDownTrayIcon } from "./ArrowDownTrayIcon.svelte";
 export { default as CodeBracketSquareIcon } from "./CodeBracketSquareIcon.svelte";
 export { default as ServerStackIcon } from "./ServerStackIcon.svelte";
 export { default as DocumentMagnifyingGlassIcon } from "./DocumentMagnifyingGlassIcon.svelte";
-export { default as ZoomInIcon } from "./ZoomInIcon.svelte";
 export { default as ZoomOutIcon } from "./ZoomOutIcon.svelte";
 export { default as ResetZoomIcon } from "./ResetZoomIcon.svelte";
 export { default as ExitPresentationModeIcon } from "./ExitPresentationModeIcon.svelte";

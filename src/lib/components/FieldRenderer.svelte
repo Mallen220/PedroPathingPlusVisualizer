@@ -105,7 +105,7 @@
     ChevronRightIcon,
     SpinnerIcon,
     DiffIcon,
-    ZoomInIcon,
+    PlusIcon,
     ZoomOutIcon,
     ResetZoomIcon,
     ExitPresentationModeIcon,
@@ -2290,7 +2290,7 @@
         aria-label="Zoom in"
         title="Zoom In (Cmd/Ctrl + +)"
       >
-        <ZoomInIcon className="w-4 h-4" />
+        <PlusIcon className="w-4 h-4" />
       </button>
       <button
         class="w-7 h-7 flex items-center justify-center rounded hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-200 transition-colors"
@@ -2345,7 +2345,7 @@
           aria-label="Zoom in"
           title="Zoom In"
         >
-          <ZoomInIcon className="w-5 h-5" />
+          <PlusIcon className="w-5 h-5" />
         </button>
         <button
           class="w-8 h-8 flex items-center justify-center rounded hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-200 transition-colors"
