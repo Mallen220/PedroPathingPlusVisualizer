@@ -1,6 +1,11 @@
 // Copyright 2026 Matthew Allen. Licensed under the Modified Apache License, Version 2.0.
 import "./app.scss";
 import App from "./App.svelte";
+import { browserFileSystem } from "./utils/browserFileSystem";
+
+if (typeof window !== "undefined" && !window.electronAPI) {
+  (window as any).electronAPI = browserFileSystem;
+}
 
 const app = new App({
   target: document.body!,
