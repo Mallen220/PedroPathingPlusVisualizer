@@ -2,7 +2,7 @@
 <script lang="ts">
   import type { SequenceMacroItem, SequenceItem } from "../../../types";
   import TrashIcon from "../icons/TrashIcon.svelte";
-  import EllipsisHorizontalIcon from "../icons/EllipsisHorizontalIcon.svelte";
+  import Bars3Icon from "../icons/Bars3Icon.svelte";
   import LinkIcon from "../icons/LinkIcon.svelte";
   import LockIcon from "../icons/LockIcon.svelte";
   import UnlockIcon from "../icons/UnlockIcon.svelte";
@@ -76,12 +76,12 @@
   <td
     class="w-8 px-2 py-2 text-center cursor-grab active:cursor-grabbing text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300"
   >
-    <EllipsisHorizontalIcon className="w-4 h-4 mx-auto" />
+    <Bars3Icon className="w-4 h-4 mx-auto" />
   </td>
   <td class="px-3 py-2">
     <div class="relative w-full max-w-[160px]">
       <input
-        class="w-full px-2 py-1 rounded border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 focus:ring-2 focus:ring-teal-500 focus:outline-none text-xs pr-6"
+        class="w-full px-2 py-1 rounded border border-transparent hover:border-neutral-300 dark:hover:border-neutral-600 bg-transparent focus:bg-white dark:focus:bg-neutral-800 focus:border-teal-500 dark:focus:border-teal-500 focus:ring-2 focus:ring-teal-500 focus:outline-none text-xs transition-colors pr-6"
         value={item.name}
         on:input={handleNameInput}
         use:focusOnRequest={{

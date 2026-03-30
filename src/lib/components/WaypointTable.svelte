@@ -1258,32 +1258,27 @@
 <div
   class="w-full overflow-auto border rounded-md border-neutral-200 dark:border-neutral-700 max-h-[70vh]"
 >
-  <table class="w-full text-left bg-white dark:bg-neutral-900 border-collapse">
+  <table class="w-full text-left border-separate border-spacing-y-1">
     <thead
-      class="bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 font-semibold sticky top-0 z-10 shadow-sm"
+      class="text-neutral-500 dark:text-neutral-400 font-medium text-xs uppercase tracking-wider sticky top-0 z-10"
     >
       <tr>
-        <th
-          class="w-8 px-2 py-2 border-b dark:border-neutral-700 bg-neutral-100 dark:bg-neutral-800"
+        <th class="w-8 px-2 pb-2 font-medium bg-neutral-50 dark:bg-neutral-900"
         ></th>
-        <th
-          class="px-3 py-2 border-b dark:border-neutral-700 bg-neutral-100 dark:bg-neutral-800"
+        <th class="px-3 pb-2 font-medium bg-neutral-50 dark:bg-neutral-900"
           >Name</th
         >
-        <th
-          class="px-3 py-2 border-b dark:border-neutral-700 bg-neutral-100 dark:bg-neutral-800"
+        <th class="px-3 pb-2 font-medium bg-neutral-50 dark:bg-neutral-900"
           >X (in) / Dur (ms)</th
         >
-        <th
-          class="px-3 py-2 border-b dark:border-neutral-700 bg-neutral-100 dark:bg-neutral-800"
+        <th class="px-3 pb-2 font-medium bg-neutral-50 dark:bg-neutral-900"
           >Y (in) / Deg (°)</th
         >
-        <th
-          class="px-3 py-2 border-b dark:border-neutral-700 w-10 bg-neutral-100 dark:bg-neutral-800"
+        <th class="px-3 pb-2 font-medium w-10 bg-neutral-50 dark:bg-neutral-900"
         ></th>
       </tr>
     </thead>
-    <tbody class="divide-y divide-neutral-100 dark:divide-neutral-800">
+    <tbody>
       <!-- Start Point -->
       <tr
         data-seq-index="-1"
@@ -1310,7 +1305,7 @@
         <td class="px-3 py-2">
           <input
             type="number"
-            class="w-20 px-2 py-1 rounded border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+            class="w-20 px-2 py-1 rounded border border-transparent hover:border-neutral-300 dark:hover:border-neutral-600 bg-transparent focus:bg-white dark:focus:bg-neutral-800 focus:border-blue-500 dark:focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:outline-none transition-colors"
             step={stepSize}
             value={formatDisplayCoordinate(
               toUser(startPoint, settings?.coordinateSystem || "Pedro").x,
@@ -1325,7 +1320,7 @@
         <td class="px-3 py-2">
           <input
             type="number"
-            class="w-20 px-2 py-1 rounded border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+            class="w-20 px-2 py-1 rounded border border-transparent hover:border-neutral-300 dark:hover:border-neutral-600 bg-transparent focus:bg-white dark:focus:bg-neutral-800 focus:border-blue-500 dark:focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:outline-none transition-colors"
             step={stepSize}
             value={formatDisplayCoordinate(
               toUser(startPoint, settings?.coordinateSystem || "Pedro").y,
@@ -1398,7 +1393,7 @@
                   />
                   <div class="relative flex-1 max-w-[140px]">
                     <input
-                      class="w-full px-2 py-1 rounded border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 focus:ring-2 focus:ring-blue-500 focus:outline-none text-xs pr-6"
+                      class="w-full px-2 py-1 rounded border border-transparent hover:border-neutral-300 dark:hover:border-neutral-600 bg-transparent focus:bg-white dark:focus:bg-neutral-800 focus:border-blue-500 dark:focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:outline-none text-xs transition-colors pr-6"
                       class:text-blue-500={hoveredLinkId === line.id}
                       value={line.name}
                       on:input={function (e) {
@@ -1480,7 +1475,7 @@
                 <div class="flex items-center gap-2">
                   <input
                     type="number"
-                    class="w-20 px-2 py-1 rounded border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                    class="w-20 px-2 py-1 rounded border border-transparent hover:border-neutral-300 dark:hover:border-neutral-600 bg-transparent focus:bg-white dark:focus:bg-neutral-800 focus:border-blue-500 dark:focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:outline-none transition-colors"
                     step={stepSize}
                     value={formatDisplayCoordinate(
                       toUser(
@@ -1503,7 +1498,7 @@
               <td class="px-3 py-2">
                 <input
                   type="number"
-                  class="w-20 px-2 py-1 rounded border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                  class="w-20 px-2 py-1 rounded border border-transparent hover:border-neutral-300 dark:hover:border-neutral-600 bg-transparent focus:bg-white dark:focus:bg-neutral-800 focus:border-blue-500 dark:focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:outline-none transition-colors"
                   step={stepSize}
                   value={formatDisplayCoordinate(
                     toUser(line.endPoint, settings?.coordinateSystem || "Pedro")
@@ -1595,7 +1590,7 @@
                 <td class="px-3 py-2">
                   <input
                     type="number"
-                    class="w-20 px-2 py-1 rounded border border-neutral-300 dark:border-neutral-600 bg-neutral-50 dark:bg-neutral-900/50 focus:ring-2 focus:ring-blue-500 focus:outline-none text-xs"
+                    class="w-20 px-2 py-1 rounded border border-transparent hover:border-neutral-300 dark:hover:border-neutral-600 bg-transparent focus:bg-white dark:focus:bg-neutral-800 focus:border-blue-500 dark:focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:outline-none transition-colors text-xs"
                     step={stepSize}
                     value={formatDisplayCoordinate(
                       toUser(cp, settings?.coordinateSystem || "Pedro").x,
@@ -1611,7 +1606,7 @@
                 <td class="px-3 py-2">
                   <input
                     type="number"
-                    class="w-20 px-2 py-1 rounded border border-neutral-300 dark:border-neutral-600 bg-neutral-50 dark:bg-neutral-900/50 focus:ring-2 focus:ring-blue-500 focus:outline-none text-xs"
+                    class="w-20 px-2 py-1 rounded border border-transparent hover:border-neutral-300 dark:hover:border-neutral-600 bg-transparent focus:bg-white dark:focus:bg-neutral-800 focus:border-blue-500 dark:focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:outline-none transition-colors text-xs"
                     step={stepSize}
                     value={formatDisplayCoordinate(
                       toUser(cp, settings?.coordinateSystem || "Pedro").y,
