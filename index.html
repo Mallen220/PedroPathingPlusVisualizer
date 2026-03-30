@@ -134,20 +134,17 @@
         }
       }
 
+      // Unregister any existing service workers to ensure users get the latest version
       if ("serviceWorker" in navigator) {
-        navigator.serviceWorker.register("sw.js").then(
-          (registration) => {
-            console.log(
-              "Service worker registration successful:",
-              registration,
-            );
-          },
-          (error) => {
-            console.error(`Service worker registration failed: ${error}`);
-          },
-        );
-      } else {
-        console.error("Service workers are not supported.");
+        navigator.serviceWorker.getRegistrations().then(function (registrations) {
+          for (let registration of registrations) {
+            registration.unregister().then(function (boolean) {
+              if (boolean) {
+                console.log("Service worker unregistered successfully");
+              }
+            });
+          }
+        });
       }
     </script>
   </body>
