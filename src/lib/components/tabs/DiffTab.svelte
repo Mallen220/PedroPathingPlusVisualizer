@@ -3,11 +3,7 @@
   import { diffResult } from "../../diffStore";
   import { formatDisplayDistance } from "../../../utils/coordinates";
   import type { Settings } from "../../../types";
-  import {
-    PlusCircleIcon,
-    MinusCircleIcon,
-    PenIcon,
-  } from "../icons";
+  import { PlusCircleIcon, MinusCircleIcon, PenIcon } from "../icons";
 
   export let settings: Settings;
   $: result = $diffResult;
