@@ -13,7 +13,6 @@
   import { SaveIcon } from "./components/icons";
   import {
     calculatePathTime,
-    formatTime,
     getShortcutFromSettings,
     isBrowser,
   } from "../utils";
@@ -56,6 +55,21 @@
   let exportButtonRef: HTMLElement;
 
   $: timePrediction = calculatePathTime(startPoint, lines, settings, sequence);
+
+  function formatEstimatedTime(totalSeconds: number): string {
+    if (!Number.isFinite(totalSeconds)) return "Infinite";
+    if (totalSeconds <= 0) return "0.0s";
+
+    const roundedSeconds = Math.round(totalSeconds * 100) / 100;
+    const minutes = Math.floor(roundedSeconds / 60);
+    const seconds = roundedSeconds % 60;
+
+    if (minutes > 0) {
+      return `${minutes}:${seconds.toFixed(2).padStart(4, "0")}s`;
+    }
+
+    return `${seconds.toFixed(2)}s`;
+  }
 
   function handleExport(
     format: "java" | "points" | "sequential" | "json" | "custom",
@@ -300,7 +314,7 @@
           >Est. Time</span
         >
         <span class="font-semibold text-neutral-800 dark:text-neutral-200"
-          >{formatTime(timePrediction.totalTime)}</span
+          >{formatEstimatedTime(timePrediction.totalTime)}</span
         >
       </div>
       <div
@@ -326,7 +340,7 @@
     <div
       class="flex flex-col md:hidden text-xs text-neutral-600 dark:text-neutral-300"
     >
-      <span>{formatTime(timePrediction?.totalTime ?? 0)}</span>
+      <span>{formatEstimatedTime(timePrediction?.totalTime ?? 0)}</span>
       <span
         >{formatDisplayDistance(
           timePrediction?.totalDistance ?? 0,
