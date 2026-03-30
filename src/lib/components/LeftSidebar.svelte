@@ -4,6 +4,7 @@
   import {
     UndoIcon,
     ClockIcon,
+    ProtractorIcon,
     RedoIcon,
     RulerIcon,
     GridIcon,
@@ -746,7 +747,7 @@
               <div
                 class="sidebar-icon flex-none flex items-center justify-center"
               >
-                <ClockIcon className="sidebar-icon-small flex-none" />
+                <ProtractorIcon className="sidebar-icon-small flex-none" />
               </div>
               {#if sidebarExpanded}
                 <span class="ml-3 text-sm font-medium truncate"

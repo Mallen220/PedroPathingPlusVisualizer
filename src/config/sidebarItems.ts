@@ -12,6 +12,7 @@ import {
   UndoIcon,
   RedoIcon,
   ClockIcon,
+  ProtractorIcon,
   RulerIcon,
   GridIcon,
   OnionSkinIcon,
@@ -95,7 +96,7 @@ export const SIDEBAR_ITEMS: SidebarItemConfig[] = [
     label: "Protractor",
     type: "system",
     shortcutKey: "toggle-protractor",
-    iconComponent: ClockIcon,
+    iconComponent: ProtractorIcon,
   },
   {
     id: "grid",
