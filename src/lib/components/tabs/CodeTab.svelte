@@ -333,7 +333,12 @@
 
     try {
       const isVirtual = electronAPI ? (electronAPI as any).isVirtual : true;
-      if (!isVirtual && electronAPI && electronAPI.showSaveDialog && electronAPI.writeFile) {
+      if (
+        !isVirtual &&
+        electronAPI &&
+        electronAPI.showSaveDialog &&
+        electronAPI.writeFile
+      ) {
         const filePath = await electronAPI.showSaveDialog({
           title: dialogTitle,
           defaultPath: defaultName,
