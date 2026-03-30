@@ -12,6 +12,7 @@
   stroke-width={strokeWidth}
   stroke="currentColor"
   class={className}
+  style={style}
 >
   <path
     d="M8.5,5l7,7-7,7"

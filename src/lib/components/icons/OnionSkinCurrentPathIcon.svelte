@@ -12,6 +12,7 @@
   stroke-width={strokeWidth}
   stroke="currentColor"
   class={className}
+  data-active={isActive}
 >
   <path
     d="M12,2.27c.74,5.432,9.304,3.032,9.837,10.963s-9.53,8.497-9.53,8.497"
