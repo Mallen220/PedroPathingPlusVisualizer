@@ -49,6 +49,10 @@
     InfoIcon,
     LinkIcon,
   } from "./icons";
+  import TriangleWarningIcon from "./icons/TriangleWarningIcon.svelte";
+  import SpinnerIcon from "./icons/SpinnerIcon.svelte";
+  import { collisionMarkers } from "../../stores";
+  import { PathOptimizer } from "../../utils/pathOptimizer";
   import {
     makeId,
     generateName,
@@ -391,6 +395,49 @@
   $: debugInvalidRefs = debugSequenceIds.filter(
     (id) => id && !debugLinesIds.includes(id),
   ) as string[];
+
+  // Collision detection mapped by lineIdx
+  $: collisionMap = new Map($collisionMarkers.map((m) => [m.segmentIndex, m]));
+
+  let isFixingLine: number | null = null;
+
+  async function fixCollision(lineIdx: number) {
+    const line = lines[lineIdx];
+    if (line.locked || isFixingLine !== null) return;
+    isFixingLine = lineIdx;
+
+    const clonedLines = structuredClone(lines).map((l, i) => {
+      if (i !== lineIdx) {
+        l.locked = true;
+      }
+      return l;
+    });
+
+    const optimizer = new PathOptimizer(
+      startPoint,
+      clonedLines,
+      settings as import("../../types/index").Settings,
+      sequence,
+      shapes
+    );
+
+    try {
+      const result = await optimizer.optimize(() => {});
+      if (!result.error && result.bestTime < 10000 && result.lines) {
+        lines[lineIdx] = result.lines[lineIdx];
+        lines = [...lines];
+        if (recordChange) recordChange();
+        notification.set({ type: "success", message: "Path collision fixed successfully!" });
+      } else {
+        notification.set({ type: "warning", message: "Could not find a collision-free path. Please adjust points manually." });
+      }
+    } catch (e) {
+      console.error("Quick fix failed:", e);
+      notification.set({ type: "error", message: "Error running quick fix." });
+    } finally {
+      isFixingLine = null;
+    }
+  }
 
   // Drag and drop state
   let draggingIndex: number | null = null;
@@ -1397,6 +1444,21 @@
                     title="Path Color"
                   />
                   <div class="relative flex-1 max-w-[140px]">
+                    {#if collisionMap.has(lineIdx)}
+                      <button
+                        on:click|stopPropagation={() => fixCollision(lineIdx)}
+                        disabled={line.locked || isFixingLine === lineIdx}
+                        class="absolute -left-6 top-1/2 -translate-y-1/2 text-amber-500 hover:text-amber-600 focus:outline-none"
+                        title="Collision detected. Click to auto-fix."
+                        aria-label="Fix Collision"
+                      >
+                        {#if isFixingLine === lineIdx}
+                          <SpinnerIcon className="size-4 animate-spin" />
+                        {:else}
+                          <TriangleWarningIcon className="size-4" strokeWidth={2} />
+                        {/if}
+                      </button>
+                    {/if}
                     <input
                       class="w-full px-2 py-1 rounded border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 focus:ring-2 focus:ring-blue-500 focus:outline-none text-xs pr-6"
                       class:text-blue-500={hoveredLinkId === line.id}

@@ -37,6 +37,11 @@
     PlusIcon,
     LinkIcon,
   } from "../icons";
+  import TriangleWarningIcon from "../icons/TriangleWarningIcon.svelte";
+  import SpinnerIcon from "../icons/SpinnerIcon.svelte";
+  import { collisionMarkers, notification } from "../../../stores";
+  import { sequenceStore, startPointStore, shapesStore } from "../../projectStore";
+  import { PathOptimizer } from "../../../utils/pathOptimizer";
 
   export let line: Line;
   export let idx: number;
@@ -57,6 +62,51 @@
 
   $: isSelected = $selectedLineId === line.id;
   $: isHidden = line.hidden ?? false;
+
+  $: currentCollisions = $collisionMarkers.filter(m => m.segmentIndex === idx);
+  $: hasCollision = currentCollisions.length > 0;
+  $: collisionTooltip = hasCollision ? "Collision detected: " + Array.from(new Set(currentCollisions.map(m => m.type))).join(", ") + ". Click to auto-fix." : "";
+
+  let isFixing = false;
+
+  async function fixCollision() {
+    if (line.locked || isFixing) return;
+    isFixing = true;
+
+    // Lock all other lines
+    const clonedLines = structuredClone(lines).map((l, i) => {
+      if (i !== idx) {
+        l.locked = true;
+      }
+      return l;
+    });
+
+    const optimizer = new PathOptimizer(
+      $startPointStore,
+      clonedLines,
+      $settingsStore,
+      $sequenceStore,
+      $shapesStore
+    );
+
+    try {
+      const result = await optimizer.optimize(() => {});
+      if (!result.error && result.bestTime < 10000 && result.lines) {
+        // Only update the target line to avoid unintended modifications to locked lines
+        lines[idx] = result.lines[idx];
+        lines = [...lines];
+        if (recordChange) recordChange("Quick Fix Path");
+        notification.set({ type: "success", message: "Path collision fixed successfully!" });
+      } else {
+        notification.set({ type: "warning", message: "Could not find a collision-free path. Please adjust points manually." });
+      }
+    } catch (e) {
+      console.error("Quick fix failed:", e);
+      notification.set({ type: "error", message: "Error running quick fix." });
+    } finally {
+      isFixing = false;
+    }
+  }
 
   $: snapToGridTitle =
     $snapToGrid && $showGrid ? `Snapping to ${$gridSize} grid` : "No snapping";
@@ -224,6 +274,22 @@
         title="Change Path Color"
         disabled={line.locked}
       />
+
+      {#if hasCollision}
+        <button
+          on:click|stopPropagation={fixCollision}
+          disabled={line.locked || isFixing}
+          class="p-1.5 rounded-md hover:bg-amber-100 dark:hover:bg-amber-900/30 text-amber-500 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 disabled:opacity-50"
+          title={collisionTooltip}
+          aria-label="Fix Collision"
+        >
+          {#if isFixing}
+            <SpinnerIcon className="size-4 animate-spin" />
+          {:else}
+            <TriangleWarningIcon className="size-4" strokeWidth={2} />
+          {/if}
+        </button>
+      {/if}
 
       <button
         on:click|stopPropagation={() => {
