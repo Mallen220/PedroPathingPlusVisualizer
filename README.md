@@ -34,6 +34,8 @@
 
 ---
 
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/78e49cfbfacd4fc19dfe7036dd250526)](https://app.codacy.com/gh/Mallen220/TurtleTracer?utm_source=github.com&utm_medium=referral&utm_content=Mallen220/TurtleTracer&utm_campaign=Badge_Grade)
+
 <div align="center">
   <img src="README_Content/Hero.gif" alt="Hero GIF: Demo of Turtle Tracer in Action" />
 </div>
