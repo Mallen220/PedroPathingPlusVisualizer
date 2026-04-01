@@ -78,7 +78,16 @@ export function registerDirectoryHandlers() {
 
   ipcMain.handle("file:create-directory", async (event, dirPath) => {
     try {
-      await fs.mkdir(dirPath, { recursive: true });
+      if (!dirPath || typeof dirPath !== "string" || dirPath.includes("\0") || dirPath.includes("..")) {
+        throw new Error("Invalid directory path provided.");
+      }
+
+      const normalizedPath = path.normalize(dirPath);
+      if (!path.isAbsolute(normalizedPath)) {
+        throw new Error("Path must be absolute.");
+      }
+
+      await fs.mkdir(normalizedPath, { recursive: true });
       return true;
     } catch (error) {
       console.error("Error creating directory:", error);
@@ -87,7 +96,7 @@ export function registerDirectoryHandlers() {
   });
 
   ipcMain.handle("file:get-directory-stats", async (event, dirPath) => {
-    if (!dirPath || typeof dirPath !== "string" || dirPath.trim() === "") {
+    if (!dirPath || typeof dirPath !== "string" || dirPath.trim() === "" || dirPath.includes("\0") || dirPath.includes("..")) {
       console.warn(
         "file:get-directory-stats called with empty or invalid dirPath:",
         JSON.stringify(dirPath),
@@ -98,12 +107,23 @@ export function registerDirectoryHandlers() {
         lastModified: new Date(0),
       };
     }
+
+    const normalizedPath = path.normalize(dirPath);
+    if (!path.isAbsolute(normalizedPath)) {
+      console.warn("file:get-directory-stats called with non-absolute path:", normalizedPath);
+      return {
+        totalFiles: 0,
+        totalSize: 0,
+        lastModified: new Date(0),
+      };
+    }
+
     try {
-      await fs.access(dirPath);
+      await fs.access(normalizedPath);
     } catch (err) {
       console.warn(
         "Directory not accessible in file:get-directory-stats:",
-        dirPath,
+        normalizedPath,
         err && err.code,
       );
       return {
@@ -113,14 +133,16 @@ export function registerDirectoryHandlers() {
       };
     }
     try {
-      const files = await fs.readdir(dirPath);
+      const files = await fs.readdir(normalizedPath);
       const projectFiles = files.filter((file) => isProjectFilePath(file));
 
       let totalSize = 0;
       let latestModified = new Date(0);
 
       for (const file of projectFiles) {
-        const filePath = path.join(dirPath, file);
+        // Since normalizedPath is validated and file comes from fs.readdir (no path traversal elements),
+        // path.join is safe here.
+        const filePath = path.join(normalizedPath, file);
         const stats = await fs.stat(filePath);
         totalSize += stats.size;
         if (stats.mtime > latestModified) {
@@ -134,7 +156,7 @@ export function registerDirectoryHandlers() {
         lastModified: latestModified,
       };
     } catch (error) {
-      console.error("Error getting directory stats for path", dirPath, error);
+      console.error("Error getting directory stats for path", normalizedPath, error);
       return {
         totalFiles: 0,
         totalSize: 0,
