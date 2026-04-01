@@ -20,6 +20,7 @@
       <img src="https://img.shields.io/badge/License-Apache_2.0-00C853.svg?style=for-the-badge" alt="License">
     </a>
     <img src="https://img.shields.io/badge/Platform-macOS%20|%20Windows%20|%20Linux-424242.svg?style=for-the-badge" alt="Platform">
+    <a href="https://app.codacy.com/gh/Mallen220/TurtleTracer/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade"><img src="https://app.codacy.com/project/badge/Grade/d5fa1b70a73c4a44909a222418714360"/></a>
   </p>
 
   <a href="https://apps.microsoft.com/detail/9nk0b4fdj3zw?referrer=appbadge&mode=full" target="_blank" rel="noopener noreferrer">
