@@ -13,7 +13,9 @@ export function validateSafePath(inputPath, basePath) {
   const normalized = path.normalize(inputPath);
   const resolvedBase = basePath ? path.resolve(basePath) : null;
   if (resolvedBase) {
-    const baseWithSep = resolvedBase.endsWith(path.sep) ? resolvedBase : `${resolvedBase}${path.sep}`;
+    const baseWithSep = resolvedBase.endsWith(path.sep)
+      ? resolvedBase
+      : `${resolvedBase}${path.sep}`;
     if (!normalized.startsWith(baseWithSep) && normalized !== resolvedBase) {
       throw new Error("Invalid path: traversal detected");
     }

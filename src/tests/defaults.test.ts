@@ -1,6 +1,10 @@
 // Copyright 2026 Matthew Allen. Licensed under the Modified Apache License, Version 2.0.
 import { describe, it, expect } from "vitest";
-import { getDefaultLines, getDefaultShapes, DEFAULT_SETTINGS } from "../config/defaults";
+import {
+  getDefaultLines,
+  getDefaultShapes,
+  DEFAULT_SETTINGS,
+} from "../config/defaults";
 
 describe("Defaults Utilities", () => {
   describe("getDefaultShapes", () => {
@@ -15,15 +19,18 @@ describe("Defaults Utilities", () => {
         (p) => p.id === "preset-decode-2025",
       )!;
       expect(shapes[0]).not.toBe(decodePreset.shapes[0]); // Object identity check
-      expect(shapes[0].vertices[0]).not.toBe(decodePreset.shapes[0].vertices[0]); // Vertex identity check
+      expect(shapes[0].vertices[0]).not.toBe(
+        decodePreset.shapes[0].vertices[0],
+      ); // Vertex identity check
     });
 
     it("returns an empty array when preset-decode-2025 is missing", () => {
       // We need to temporarily remove the preset to test this behavior
       const originalPresets = DEFAULT_SETTINGS.obstaclePresets;
-      DEFAULT_SETTINGS.obstaclePresets = DEFAULT_SETTINGS.obstaclePresets?.filter(
-        (p) => p.id !== "preset-decode-2025",
-      );
+      DEFAULT_SETTINGS.obstaclePresets =
+        DEFAULT_SETTINGS.obstaclePresets?.filter(
+          (p) => p.id !== "preset-decode-2025",
+        );
 
       const shapes = getDefaultShapes();
       expect(shapes).toEqual([]);

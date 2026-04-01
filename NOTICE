@@ -394,3 +394,13 @@ src/lib/components/icons/ShowRobotArrowsIcon.svelte
 src/lib/components/icons/SortDateIcon.svelte
 src/lib/components/icons/StepBackIcon.svelte
 src/lib/components/icons/StepForwardIcon.svelte
+.codacy/cli.sh
+.github/workflows/codacy.yml
+electron/utils.js
+scripts/analyze-clones.js
+scripts/analyze-clusters.js
+scripts/duplication-report.js
+src/tests/defaults.test.ts
+src/tests/duplication.test.ts
+src/tests/pluginHandlers.test.ts
+src/tests/testUtils.ts

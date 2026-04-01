@@ -38,7 +38,11 @@ export function registerFileHandlers() {
   });
 
   ipcMain.handle("file:list", async (event, directory) => {
-    if (!directory || typeof directory !== "string" || directory.trim() === "") {
+    if (
+      !directory ||
+      typeof directory !== "string" ||
+      directory.trim() === ""
+    ) {
       return [];
     }
     let resolvedDir;

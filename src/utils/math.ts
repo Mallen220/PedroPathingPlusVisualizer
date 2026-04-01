@@ -215,8 +215,13 @@ export function getLineStartHeading(
   return getHeadingBase(line.endPoint, previousPoint, nextP);
 }
 
-export function getInitialTangentialHeading(startPoint: Point, nextPoint: Point2D): number {
-  const angle = Math.atan2(nextPoint.y - startPoint.y, nextPoint.x - startPoint.x) * (180 / Math.PI);
+export function getInitialTangentialHeading(
+  startPoint: Point,
+  nextPoint: Point2D,
+): number {
+  const angle =
+    Math.atan2(nextPoint.y - startPoint.y, nextPoint.x - startPoint.x) *
+    (180 / Math.PI);
   return startPoint.reverse ? angle + 180 : angle;
 }
 

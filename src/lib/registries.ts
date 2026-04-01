@@ -198,7 +198,8 @@ export interface TimelineTransformerEntry {
   fn: TimelineTransformer;
 }
 
-export const timelineTransformerRegistry = createListRegistry<TimelineTransformerEntry>();
+export const timelineTransformerRegistry =
+  createListRegistry<TimelineTransformerEntry>();
 
 // --- Field Render Registry ---
 export type FieldRenderCallback = (two: any) => void;
