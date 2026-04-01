@@ -394,3 +394,11 @@ src/lib/components/icons/ShowRobotArrowsIcon.svelte
 src/lib/components/icons/SortDateIcon.svelte
 src/lib/components/icons/StepBackIcon.svelte
 src/lib/components/icons/StepForwardIcon.svelte
+.codacy/cli.sh
+.codacy/codacy.yaml
+.github/workflows/codacy.yml
+plan.md
+test-scroll.html
+test.svelte
+test3.html
+test_scroll2.html

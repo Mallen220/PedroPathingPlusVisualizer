@@ -1,3 +1,4 @@
+<!-- Copyright 2026 Matthew Allen. Licensed under the Modified Apache License, Version 2.0. -->
 <script>
   let exportedCode = "hello\nworld\nfoo\nbar";
   let searchMatches = [1, 3];

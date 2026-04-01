@@ -2,7 +2,7 @@
 <script lang="ts">
   import type { SequenceMacroItem, SequenceItem } from "../../../types";
   import TrashIcon from "../icons/TrashIcon.svelte";
-  import EllipsisHorizontalIcon from "../icons/EllipsisHorizontalIcon.svelte";
+  import Bars3Icon from "../icons/Bars3Icon.svelte";
   import LinkIcon from "../icons/LinkIcon.svelte";
   import LockIcon from "../icons/LockIcon.svelte";
   import UnlockIcon from "../icons/UnlockIcon.svelte";
@@ -75,7 +75,7 @@
   <td
     class="w-8 px-2 py-2 text-center cursor-grab active:cursor-grabbing text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300"
   >
-    <EllipsisHorizontalIcon className="w-4 h-4 mx-auto" />
+    <Bars3Icon className="w-4 h-4 mx-auto" />
   </td>
   <td class="px-3 py-2">
     <div class="relative w-full max-w-[160px]">
