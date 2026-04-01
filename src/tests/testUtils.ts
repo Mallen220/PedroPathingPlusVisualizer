@@ -1,5 +1,9 @@
 // Copyright 2026 Matthew Allen. Licensed under the Modified Apache License, Version 2.0.
-import type { SequenceMacroItem, SequencePathItem, SequenceItem } from "../types";
+import type {
+  SequenceMacroItem,
+  SequencePathItem,
+  SequenceItem,
+} from "../types";
 import { actionRegistry } from "../lib/actionRegistry";
 
 export const pathKind = (): SequencePathItem["kind"] =>

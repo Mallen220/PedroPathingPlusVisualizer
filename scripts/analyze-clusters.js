@@ -1,6 +1,9 @@
-import fs from 'fs';
+// Copyright 2026 Matthew Allen. Licensed under the Modified Apache License, Version 2.0.
+import fs from "fs";
 
-const report = JSON.parse(fs.readFileSync('tmp/jscpd/jscpd-report.json', 'utf-8'));
+const report = JSON.parse(
+  fs.readFileSync("tmp/jscpd/jscpd-report.json", "utf-8"),
+);
 const duplicates = report.duplicates || [];
 
 // Group duplicates into clusters where all members are clones of each other.
@@ -11,13 +14,13 @@ duplicates.forEach(({ firstFile, secondFile }) => {
   const loc1 = `${firstFile.name}:${firstFile.startLoc.line}-${firstFile.endLoc.line}`;
   const loc2 = `${secondFile.name}:${secondFile.startLoc.line}-${secondFile.endLoc.line}`;
 
-  let cluster1 = clusters.find(c => c.has(loc1));
-  let cluster2 = clusters.find(c => c.has(loc2));
+  let cluster1 = clusters.find((c) => c.has(loc1));
+  let cluster2 = clusters.find((c) => c.has(loc2));
 
   if (cluster1 && cluster2) {
     if (cluster1 !== cluster2) {
       // Merge clusters
-      cluster2.forEach(loc => cluster1.add(loc));
+      cluster2.forEach((loc) => cluster1.add(loc));
       clusters.splice(clusters.indexOf(cluster2), 1);
     }
   } else if (cluster1) {
@@ -30,7 +33,7 @@ duplicates.forEach(({ firstFile, secondFile }) => {
 });
 
 let totalClones = 0;
-clusters.forEach(c => totalClones += c.size);
+clusters.forEach((c) => (totalClones += c.size));
 
 console.log(`Total clones (clustered): ${totalClones}`);
 console.log(`Number of clusters: ${clusters.length}`);

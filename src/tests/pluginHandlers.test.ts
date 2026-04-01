@@ -21,7 +21,11 @@ vi.mock("electron", () => ({
 vi.mock("fs/promises", () => {
   const fsPromisesMock = {
     mkdir: vi.fn(() => Promise.resolve()),
-    readdir: vi.fn(() => Promise.resolve([{ name: "safe.js", isFile: () => true, isDirectory: () => false }])),
+    readdir: vi.fn(() =>
+      Promise.resolve([
+        { name: "safe.js", isFile: () => true, isDirectory: () => false },
+      ]),
+    ),
     readFile: vi.fn(() => Promise.resolve("file contents")),
     unlink: vi.fn(() => Promise.resolve()),
   };
@@ -69,9 +73,13 @@ describe("Plugin IPC security handlers", () => {
     // `getSafePluginsDirectory` doesn't use `validateSafePath`. However, `open-folder` will catch errors and return false.
     // Let's test that it returns false when fs.mkdir fails due to an invalid path.
     const utils = await import("../../electron/utils.js");
-    const getPluginsDirSpy = vi.spyOn(utils, "getPluginsDirectory").mockReturnValue("/escaped/outside");
+    const getPluginsDirSpy = vi
+      .spyOn(utils, "getPluginsDirectory")
+      .mockReturnValue("/escaped/outside");
     const fsPromises = await import("fs/promises");
-    const mkdirSpy = vi.spyOn(fsPromises.default, "mkdir").mockRejectedValue(new Error("Invalid path"));
+    const mkdirSpy = vi
+      .spyOn(fsPromises.default, "mkdir")
+      .mockRejectedValue(new Error("Invalid path"));
 
     const res = await handlerRegistry["plugins:open-folder"]();
     expect(res).toBe(false);

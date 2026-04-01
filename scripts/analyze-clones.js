@@ -1,7 +1,10 @@
-import fs from 'fs';
-import path from 'path';
+// Copyright 2026 Matthew Allen. Licensed under the Modified Apache License, Version 2.0.
+import fs from "fs";
+import path from "path";
 
-const report = JSON.parse(fs.readFileSync('tmp/jscpd/jscpd-report.json', 'utf-8'));
+const report = JSON.parse(
+  fs.readFileSync("tmp/jscpd/jscpd-report.json", "utf-8"),
+);
 const duplicates = report.duplicates || [];
 
 // Group duplicates that refer to the same logical block
@@ -10,9 +13,13 @@ const duplicates = report.duplicates || [];
 
 // For now, let's just count how many unique locations (file:start:end) are involved in all duplication events.
 const uniqueClones = new Set();
-duplicates.forEach(d => {
-  uniqueClones.add(`${d.firstFile.name}:${d.firstFile.startLoc.line}-${d.firstFile.endLoc.line}`);
-  uniqueClones.add(`${d.secondFile.name}:${d.secondFile.startLoc.line}-${d.secondFile.endLoc.line}`);
+duplicates.forEach((d) => {
+  uniqueClones.add(
+    `${d.firstFile.name}:${d.firstFile.startLoc.line}-${d.firstFile.endLoc.line}`,
+  );
+  uniqueClones.add(
+    `${d.secondFile.name}:${d.secondFile.startLoc.line}-${d.secondFile.endLoc.line}`,
+  );
 });
 
 console.log(`Unique clone locations found: ${uniqueClones.size}`);

@@ -203,7 +203,11 @@ export function normalizePath(p: string): string {
   return p.replace(/\\/g, "/").toLowerCase();
 }
 
-export function updateCurrentHeading(line: Line, currentPoint: Point, currentHeading: number): number {
+export function updateCurrentHeading(
+  line: Line,
+  currentPoint: Point,
+  currentHeading: number,
+): number {
   const endHeadingRaw = getLineEndHeading(line, currentPoint);
   if (line.endPoint.heading === "tangential") {
     const tangent = endHeadingRaw;
@@ -398,7 +402,11 @@ export function expandMacro(
           });
 
           // Update state
-          currentHeading = updateCurrentHeading(line, currentPoint, currentHeading);
+          currentHeading = updateCurrentHeading(
+            line,
+            currentPoint,
+            currentHeading,
+          );
 
           currentPoint = line.endPoint;
         }
@@ -578,7 +586,11 @@ export function regenerateProjectMacros(
         );
         currentHeading = requiredStartHeading;
 
-        currentHeading = updateCurrentHeading(line, currentPoint, currentHeading);
+        currentHeading = updateCurrentHeading(
+          line,
+          currentPoint,
+          currentHeading,
+        );
         currentPoint = line.endPoint;
       }
     } else if (item.kind === "wait") {

@@ -256,10 +256,15 @@ export function getDefaultLines(): Line[] {
  * Get default shapes (field obstacles)
  */
 export function getDefaultShapes(): Shape[] {
-  const decodePreset = DEFAULT_SETTINGS.obstaclePresets?.find((p) => p.id === "preset-decode-2025");
+  const decodePreset = DEFAULT_SETTINGS.obstaclePresets?.find(
+    (p) => p.id === "preset-decode-2025",
+  );
   if (decodePreset) {
     // Return copies so mutations don't affect the preset
-    return decodePreset.shapes.map((s) => ({ ...s, vertices: s.vertices.map((v) => ({ ...v })) }));
+    return decodePreset.shapes.map((s) => ({
+      ...s,
+      vertices: s.vertices.map((v) => ({ ...v })),
+    }));
   }
   return [];
 }
