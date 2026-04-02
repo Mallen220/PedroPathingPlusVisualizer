@@ -2,6 +2,7 @@
 <script lang="ts">
   import { createEventDispatcher, onMount } from "svelte";
   import { fade } from "svelte/transition";
+  import { menuNavigation } from "../../actions/menuNavigation";
 
   export let x: number;
   export let y: number;
@@ -81,6 +82,7 @@
   transition:fade={{ duration: 100 }}
   role="menu"
   tabindex="-1"
+  use:menuNavigation
 >
   {#each items as item}
     {#if item.separator}

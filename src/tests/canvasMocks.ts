@@ -34,10 +34,12 @@ export function setupCanvasMocks() {
   };
 
   const originalCreateElement = document.createElement.bind(document);
-  const createElementSpy = vi.spyOn(document, "createElement").mockImplementation((tag: any) => {
-    if (tag === "canvas") return mockCanvas as any;
-    return originalCreateElement(tag);
-  });
+  const createElementSpy = vi
+    .spyOn(document, "createElement")
+    .mockImplementation((tag: any) => {
+      if (tag === "canvas") return mockCanvas as any;
+      return originalCreateElement(tag);
+    });
 
   const mockTwo = {
     update: vi.fn(),

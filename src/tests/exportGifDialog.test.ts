@@ -23,7 +23,7 @@ vi.mock("../utils/exportAnimation", async () => {
         opts.signal?.addEventListener("abort", onAbort);
       });
     });
-  }
+  };
 
   return {
     ...actual,
