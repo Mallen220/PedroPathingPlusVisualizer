@@ -9,9 +9,17 @@
     ArrowRightIcon,
   } from "./icons";
 
-  export let endPoint: any;
-  export let locked: boolean = false;
-  export let tabindex: number | undefined = undefined;
+  interface Props {
+    endPoint: any;
+    locked?: boolean;
+    tabindex?: number | undefined;
+  }
+
+  let {
+    endPoint = $bindable(),
+    locked = false,
+    tabindex = undefined,
+  }: Props = $props();
   const dispatch = createEventDispatcher();
 
   // Helper to handle constant heading input safely
@@ -33,10 +41,10 @@
     dispatch("commit");
   }
 
-  let constantInput: HTMLInputElement;
-  let startInput: HTMLInputElement;
-  let endInput: HTMLInputElement;
-  let reverseInput: HTMLInputElement;
+  let constantInput: HTMLInputElement = $state();
+  let startInput: HTMLInputElement = $state();
+  let endInput: HTMLInputElement = $state();
+  let reverseInput: HTMLInputElement = $state();
 
   export function focus() {
     if (endPoint.heading === "constant" && constantInput) constantInput.focus();
@@ -45,15 +53,18 @@
       reverseInput.focus();
   }
 
-  $: isStartOutOfBounds =
+  let isStartOutOfBounds = $derived(
     endPoint.heading === "linear" &&
-    (endPoint.startDeg > 180 || endPoint.startDeg <= -180);
-  $: isEndOutOfBounds =
+      (endPoint.startDeg > 180 || endPoint.startDeg <= -180),
+  );
+  let isEndOutOfBounds = $derived(
     endPoint.heading === "linear" &&
-    (endPoint.endDeg > 180 || endPoint.endDeg <= -180);
-  $: isConstantOutOfBounds =
+      (endPoint.endDeg > 180 || endPoint.endDeg <= -180),
+  );
+  let isConstantOutOfBounds = $derived(
     endPoint.heading === "constant" &&
-    (endPoint.degrees > 180 || endPoint.degrees <= -180);
+      (endPoint.degrees > 180 || endPoint.degrees <= -180),
+  );
 
   function normalizeStart() {
     endPoint.startDeg = transformAngle(endPoint.startDeg);
@@ -78,7 +89,7 @@
   <select
     aria-label="Heading style"
     bind:value={endPoint.heading}
-    on:change={() => {
+    onchange={() => {
       // Notify parent that a change occurred and commit it so timeline and
       // playback recalculate immediately.
       // Also ensure required numeric fields exist when switching types so
@@ -125,7 +136,7 @@
       bind:this={reverseInput}
       type="checkbox"
       bind:checked={endPoint.reverse}
-      on:change={() => {
+      onchange={() => {
         dispatch("change");
         dispatch("commit");
       }}
@@ -160,8 +171,8 @@
           step="1"
           type="number"
           bind:value={endPoint.startDeg}
-          on:input={() => dispatch("change")}
-          on:blur={() => dispatch("commit")}
+          oninput={() => dispatch("change")}
+          onblur={() => dispatch("commit")}
           title="The heading the robot starts this line at (in degrees)"
           aria-label="Start Heading"
           disabled={locked}
@@ -169,7 +180,7 @@
         />
         {#if isStartOutOfBounds && !locked}
           <button
-            on:click={normalizeStart}
+            onclick={normalizeStart}
             title="Angle is out of bounds. Click to normalize to [-180, 180]."
             aria-label="Normalize angle to between -180 and 180 degrees"
             class="absolute right-1 top-1/2 -translate-y-1/2 p-0.5 rounded hover:bg-yellow-100 dark:hover:bg-yellow-900/30 text-yellow-600 dark:text-yellow-400 transition-colors"
@@ -198,8 +209,8 @@
           step="1"
           type="number"
           bind:value={endPoint.endDeg}
-          on:input={() => dispatch("change")}
-          on:blur={() => dispatch("commit")}
+          oninput={() => dispatch("change")}
+          onblur={() => dispatch("commit")}
           title="The heading the robot ends this line at (in degrees)"
           aria-label="End Heading"
           disabled={locked}
@@ -207,7 +218,7 @@
         />
         {#if isEndOutOfBounds && !locked}
           <button
-            on:click={normalizeEnd}
+            onclick={normalizeEnd}
             title="Angle is out of bounds. Click to normalize to [-180, 180]."
             aria-label="Normalize angle to between -180 and 180 degrees"
             class="absolute right-1 top-1/2 -translate-y-1/2 p-0.5 rounded hover:bg-yellow-100 dark:hover:bg-yellow-900/30 text-yellow-600 dark:text-yellow-400 transition-colors"
@@ -239,8 +250,8 @@
           step="1"
           type="number"
           value={endPoint.degrees || 0}
-          on:input={handleConstantInput}
-          on:blur={handleConstantBlur}
+          oninput={handleConstantInput}
+          onblur={handleConstantBlur}
           title="The constant heading the robot maintains throughout this line (in degrees)"
           aria-label="Constant Heading"
           disabled={locked}
@@ -248,7 +259,7 @@
         />
         {#if isConstantOutOfBounds && !locked}
           <button
-            on:click={normalizeConstant}
+            onclick={normalizeConstant}
             title="Angle is out of bounds. Click to normalize to [-180, 180]."
             aria-label="Normalize angle to between -180 and 180 degrees"
             class="absolute right-1 top-1/2 -translate-y-1/2 p-0.5 rounded hover:bg-yellow-100 dark:hover:bg-yellow-900/30 text-yellow-600 dark:text-yellow-400 transition-colors"
@@ -284,8 +295,8 @@
           step="0.1"
           type="number"
           bind:value={endPoint.targetX}
-          on:input={() => dispatch("change")}
-          on:blur={() => dispatch("commit")}
+          oninput={() => dispatch("change")}
+          onblur={() => dispatch("commit")}
           title="The X coordinate of the point to face"
           aria-label="Target X"
           disabled={locked}
@@ -302,8 +313,8 @@
           step="0.1"
           type="number"
           bind:value={endPoint.targetY}
-          on:input={() => dispatch("change")}
-          on:blur={() => dispatch("commit")}
+          oninput={() => dispatch("change")}
+          onblur={() => dispatch("commit")}
           title="The Y coordinate of the point to face"
           aria-label="Target Y"
           disabled={locked}
