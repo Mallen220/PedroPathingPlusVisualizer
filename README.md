@@ -14,12 +14,12 @@
 
   <p>
     <a href="https://github.com/Mallen220/TurtleTracer/releases">
-      <img src="https://img.shields.io/github/v/release/Mallen220/TurtleTracer?style=for-the-badge&color=007AFF" alt="Latest Release">
+      <img src="https://img.shields.io/github/v/release/Mallen220/TurtleTracer?style=for-the-badge&color=007AFF" alt="Latest Release" height="28">
     </a>
     <a href="LICENSE">
-      <img src="https://img.shields.io/badge/License-Apache_2.0-00C853.svg?style=for-the-badge" alt="License">
+      <img src="README_Content/Modified-License-Apache_2.0.svg" alt="License" height="28">
     </a>
-    <img src="https://img.shields.io/badge/Platform-macOS%20|%20Windows%20|%20Linux-424242.svg?style=for-the-badge" alt="Platform">
+    <img src="https://img.shields.io/badge/Platform-macOS%20|%20Windows%20|%20Linux-424242.svg?style=for-the-badge" alt="Platform" height="28">
   </p>
 
 <p>
