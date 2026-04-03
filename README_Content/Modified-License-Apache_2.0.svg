@@ -4,43 +4,42 @@
   <defs>
     <style>
       .st0 {
+        font-family: Verdana, Verdana;
+        font-size: 10.1px;
+        letter-spacing: 0em;
+      }
+
+      .st0, .st1 {
+        fill: #fff;
+      }
+
+      .st2 {
         letter-spacing: .2em;
       }
 
       .st1 {
-        letter-spacing: .1em;
-      }
-
-      .st2 {
         font-family: Verdana-Bold, Verdana;
-        font-weight: 700;
-      }
-
-      .st2, .st3 {
-        fill: #fff;
         font-size: 10px;
+        font-weight: 700;
         isolation: isolate;
       }
 
-      .st4 {
+      .st3 {
         fill: #00c853;
       }
 
-      .st5 {
+      .st4 {
         fill: #555;
-      }
-
-      .st3 {
-        font-family: Verdana, Verdana;
       }
     </style>
   </defs>
   <g shape-rendering="crispEdges">
-    <rect class="st5" width="75.8" height="28"/>
-    <rect class="st4" x="75.8" width="163.1" height="28"/>
+    <rect class="st4" width="75.8" height="28"/>
+    <rect class="st3" x="75.8" width="163.1" height="28"/>
   </g>
   <g text-rendering="geometricPrecision">
-    <text class="st3" transform="translate(16 17.5)"><tspan class="st1" x="0" y="0">LICENS</tspan><tspan x="45.4" y="0">E</tspan></text>
-    <text class="st2" transform="translate(93.7 17.5)"><tspan x="0" y="0">MODIFIED</tspan><tspan class="st0" x="58.8" y="0"> </tspan><tspan x="64.4" y="0">APACHE</tspan><tspan class="st0" x="109.7" y="0"> </tspan><tspan x="115.2" y="0">2.0</tspan></text>
+    <text/>
+    <text class="st1" transform="translate(93.7 17.5)"><tspan x="0" y="0">MODIFIED</tspan><tspan class="st2" x="58.8" y="0"> </tspan><tspan x="64.4" y="0">APACHE</tspan><tspan class="st2" x="109.7" y="0"> </tspan><tspan x="115.2" y="0">2.0</tspan></text>
   </g>
+  <text class="st0" transform="translate(14.5 16.8)"><tspan x="0" y="0">LICENSE</tspan></text>
 </svg>
