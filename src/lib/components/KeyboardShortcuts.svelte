@@ -158,7 +158,7 @@
     stepBackward,
     splitPath = () => {},
     recordChange,
-    controlTabRef = null,
+    controlTabRef = $bindable(null),
     activeControlTab = $bindable("path"),
     toggleStats = () => {},
     toggleSidebar = () => {},

@@ -44,10 +44,10 @@
 
   let {
     isOpen = $bindable(false),
-    startPoint,
-    lines,
-    sequence,
-    shapes = [],
+    startPoint = $bindable(),
+    lines = $bindable(),
+    sequence = $bindable(),
+    shapes = $bindable([]),
   }: Props = $props();
 
   let exportFormat: "java" | "points" | "sequential" | "json" | "custom" =
@@ -71,7 +71,7 @@
   let currentMatchIndex = $state(-1);
   let searchInputRef: HTMLInputElement | undefined = $state();
 
-  const electronAPI = (window  ).electronAPI;
+  const electronAPI = (window as any).electronAPI;
 
   async function relativizeSequenceForPreview(seq: SequenceItem[]) {
     const cloned = structuredClone(seq);
@@ -819,7 +819,7 @@
           <button
             class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 active:bg-blue-800 rounded-lg shadow-sm transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-neutral-900"
             use:copy={exportedCode}
-            onsvelte-copy={handleCopy}
+            {...{ "onsvelte-copy": handleCopy }}
             disabled={copied}
           >
             {#if copied}

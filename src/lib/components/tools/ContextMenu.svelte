@@ -1,6 +1,7 @@
 <!-- Copyright 2026 Matthew Allen. Licensed under the Modified Apache License, Version 2.0. -->
 <script lang="ts">
   import { createEventDispatcher, onMount } from "svelte";
+  import { run } from "svelte/legacy";
   import { fade } from "svelte/transition";
 
   interface Props {
@@ -45,8 +46,13 @@
   }
 
   // Adjust position if it goes off screen
-  let adjustedX = $state(x);
-  let adjustedY = $state(y);
+  let adjustedX = $state(0);
+  let adjustedY = $state(0);
+
+  run(() => {
+    adjustedX = x;
+    adjustedY = y;
+  });
 
   onMount(() => {
     if (menuElement) {

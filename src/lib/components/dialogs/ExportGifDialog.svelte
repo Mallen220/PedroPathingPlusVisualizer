@@ -18,7 +18,7 @@
   let quality = $state(10); // 1-30, default 10 (good balance)
   // UI slider is reversed (left=Draft, right=Best). Keep internal semantics (1=best),
   // and bind the visible slider to `sliderQuality` which maps to `quality = 31 - sliderQuality`.
-  let sliderQuality = $state(31 - quality);
+  let sliderQuality = $state(21); // Default 31 - 10
 
   function invalidatePreview() {
     if (status === "generating") {

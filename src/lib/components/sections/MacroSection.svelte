@@ -97,7 +97,7 @@
       selectedPointId.set(`macro-${macro.id}`);
       selectedLineId.set(null);
     }
-  }}
+  })}
   onkeydown={(e: KeyboardEvent) => {
     e.stopPropagation();
     if (e.key === "Enter" || e.key === " ") {
@@ -155,7 +155,7 @@
           macro.hidden = !isHidden;
           sequence = [...sequence];
           if (recordChange) recordChange();
-        }}
+        })}
         class="p-1.5 rounded-md hover:bg-neutral-100 dark:hover:bg-neutral-700 text-neutral-400 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
         title={isHidden ? "Show Macro" : "Hide Macro"}
         aria-label={isHidden ? "Show Macro" : "Hide Macro"}
@@ -173,7 +173,7 @@
         onclick={stopPropagation(() => {
           macro.locked = !macro.locked;
           if (recordChange) recordChange();
-        }}
+        })}
         class="p-1.5 rounded-md hover:bg-neutral-100 dark:hover:bg-neutral-700 text-neutral-400 transition-colors"
       >
         {#if macro.locked}
@@ -195,7 +195,7 @@
         <button
           onclick={stopPropagation(() => {
             if (!macro.locked && canMoveUp && onMoveUp) onMoveUp();
-          }}
+          })}
           disabled={!canMoveUp || macro.locked}
           class="p-1 rounded-md hover:bg-white dark:hover:bg-neutral-800 text-neutral-500 dark:text-neutral-400 disabled:opacity-30 disabled:hover:bg-transparent transition-all shadow-sm hover:shadow"
           title="Move Up"
@@ -206,7 +206,7 @@
         <button
           onclick={stopPropagation(() => {
             if (!macro.locked && canMoveDown && onMoveDown) onMoveDown();
-          }}
+          })}
           disabled={!canMoveDown || macro.locked}
           class="p-1 rounded-md hover:bg-white dark:hover:bg-neutral-800 text-neutral-500 dark:text-neutral-400 disabled:opacity-30 disabled:hover:bg-transparent transition-all shadow-sm hover:shadow"
           title="Move Down"
@@ -220,7 +220,7 @@
         <button
           onclick={stopPropagation(() => {
             if (!macro.locked && onUnlink) onUnlink();
-          }}
+          })}
           disabled={macro.locked}
           title="Unlink Macro"
           aria-label="Unlink Macro"
@@ -310,7 +310,7 @@
                 else if (def.isPath) onAddPathAfter();
                 else if (def.isWait) onAddWaitAfter();
                 else if (def.isRotate) onAddRotateAfter();
-              }}
+              })}
               class={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium ${getSmallButtonClass(color)}`}
               title={`Add ${def.label} After`}
             >

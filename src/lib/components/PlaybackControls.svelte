@@ -52,7 +52,7 @@
   }
 
   let {
-    playing,
+    playing = $bindable(),
     play,
     pause,
     percent = $bindable(),
