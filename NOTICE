@@ -404,3 +404,7 @@ src/tests/defaults.test.ts
 src/tests/duplication.test.ts
 src/tests/pluginHandlers.test.ts
 src/tests/testUtils.ts
+.codacy/codacy.yaml
+src/tests/canvasMocks.ts
+src/tests/exportMocks.ts
+src/tests/localStorageMock.ts

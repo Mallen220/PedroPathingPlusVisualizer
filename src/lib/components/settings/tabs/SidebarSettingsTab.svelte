@@ -11,6 +11,7 @@
   import { SIDEBAR_ITEMS } from "../../../../config/sidebarItems";
   import { availableCommands } from "../../../../stores";
   import * as ICONS from "../../icons";
+  import { menuNavigation } from "../../../actions/menuNavigation";
 
   export let settings: Settings;
   export let searchQuery: string;
@@ -667,6 +668,8 @@
                       </button>
                       {#if isIconMenuOpen}
                         <div
+                          use:menuNavigation
+                          on:close={() => (isIconMenuOpen = false)}
                           class="absolute z-20 top-full left-0 right-0 mt-2 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-xl shadow-xl overflow-hidden"
                         >
                           <div

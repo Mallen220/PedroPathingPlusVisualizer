@@ -69,6 +69,7 @@
   import FileList from "./components/filemanager/FileList.svelte";
   import FileGrid from "./components/filemanager/FileGrid.svelte";
   import LoadingSpinner from "./components/common/LoadingSpinner.svelte";
+  import { menuNavigation } from "./actions/menuNavigation";
   import {
     FolderIcon,
     CloudArrowDownIcon,
@@ -1360,6 +1361,8 @@
 
         {#if showAddMenu}
           <div
+            use:menuNavigation
+            on:close={() => (showAddMenu = false)}
             class="absolute right-0 top-full mt-2 w-48 bg-white dark:bg-neutral-800 rounded-md shadow-xl border border-neutral-200 dark:border-neutral-700 py-1 flex flex-col overflow-hidden"
           >
             <button
