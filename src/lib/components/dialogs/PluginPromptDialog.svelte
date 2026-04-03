@@ -22,7 +22,7 @@
     onCancel,
   }: Props = $props();
 
-  let value = $state(defaultText);
+  let value = $state("");
   let inputElement: HTMLInputElement | undefined = $state();
 
   function handleConfirm() {

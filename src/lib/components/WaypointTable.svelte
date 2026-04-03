@@ -1387,9 +1387,9 @@
                 <div class="flex flex-row items-center gap-2">
                   <ColorPicker
                     bind:color={line.color}
-                    oninput={function (e: Event & { currentTarget: EventTarget & HTMLInputElement }) {
-                      const target = (e.currentTarget || e.target) as HTMLInputElement;
-                      if (target instanceof HTMLInputElement && line.id) {
+                    oninput={function (e: Event) {
+                      const target = (e.target || e.currentTarget) as HTMLInputElement;
+                      if (target && line.id) {
                         updateLineColor(line.id, target.value);
                       }
                     }}

@@ -10,6 +10,8 @@
     disabled?: boolean;
     // Explicitly export tabindex to allow parent to control focusability
     tabindex?: number | undefined;
+    oninput?: (e: Event) => void;
+    onchange?: (e: Event) => void;
   }
 
   let {
@@ -17,6 +19,8 @@
     title = "Change Color",
     disabled = false,
     tabindex = undefined,
+    oninput,
+    onchange,
   }: Props = $props();
 </script>
 
@@ -32,7 +36,7 @@
     aria-label={title}
     {disabled}
     {tabindex}
-    oninput={bubble("input")}
-    onchange={bubble("change")}
+    oninput={(e) => oninput?.(e)}
+    onchange={(e) => onchange?.(e)}
   />
 </div>
