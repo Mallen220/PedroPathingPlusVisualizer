@@ -12,6 +12,7 @@
     "fix:notice": "node scripts/generate-file-notice.js",
     "fix:headers": "node scripts/add-copyright.js",
     "version:bump": "node scripts/bump-version.js",
+    "lighthouse": "node scripts/update-lighthouse-readme-badges.js",
     "generate:types": "node scripts/generate-plugin-types.js",
     "generate:icons": "node scripts/generate-windows-icons.cjs",
     "check:tiles": "node scripts/check-tile-assets.cjs",
