@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="Layer_1" xmlns="http://www.w3.org/2000/svg" version="1.1" viewBox="0 0 239.1 28">
+  <!-- Generator: Adobe Illustrator 30.3.0, SVG Export Plug-In . SVG Version: 2.1.3 Build 182)  -->
+  <defs>
+    <style>
+      .st0 {
+        letter-spacing: .2em;
+      }
+
+      .st1 {
+        letter-spacing: .1em;
+      }
+
+      .st2 {
+        font-family: Verdana-Bold, Verdana;
+        font-weight: 700;
+      }
+
+      .st2, .st3 {
+        fill: #fff;
+        font-size: 10px;
+        isolation: isolate;
+      }
+
+      .st4 {
+        fill: #00c853;
+      }
+
+      .st5 {
+        fill: #555;
+      }
+
+      .st3 {
+        font-family: Verdana, Verdana;
+      }
+    </style>
+  </defs>
+  <g shape-rendering="crispEdges">
+    <rect class="st5" width="75.8" height="28"/>
+    <rect class="st4" x="75.8" width="163.1" height="28"/>
+  </g>
+  <g text-rendering="geometricPrecision">
+    <text class="st3" transform="translate(16 17.5)"><tspan class="st1" x="0" y="0">LICENS</tspan><tspan x="45.4" y="0">E</tspan></text>
+    <text class="st2" transform="translate(93.7 17.5)"><tspan x="0" y="0">MODIFIED</tspan><tspan class="st0" x="58.8" y="0"> </tspan><tspan x="64.4" y="0">APACHE</tspan><tspan class="st0" x="109.7" y="0"> </tspan><tspan x="115.2" y="0">2.0</tspan></text>
+  </g>
+</svg>
