@@ -1,5 +1,7 @@
 <!-- Copyright 2026 Matthew Allen. Licensed under the Modified Apache License, Version 2.0. -->
 <script lang="ts">
+  import { run } from 'svelte/legacy';
+
   import { createEventDispatcher } from "svelte";
   import { scale } from "svelte/transition";
   import {
@@ -8,41 +10,17 @@
   } from "../../../utils/exportAnimation";
   import { CloseIcon, PhotoIcon } from "../icons";
 
-  export let show = false;
-  export let twoInstance: any;
-  export let animationController: any;
-  export let settings: any;
-  export let robotLengthPx: number;
-  export let robotWidthPx: number;
-  export let robotStateFunction: (percent: number) => {
-    x: number;
-    y: number;
-    heading: number;
-  };
-  export let electronAPI: any;
 
   const dispatch = createEventDispatcher();
 
-  let format: "gif" | "apng" = "gif";
-  let fps = 15;
-  let resolutionScale = 0.5; // Default 50%
-  let quality = 10; // 1-30, default 10 (good balance)
+  let format: "gif" | "apng" = $state("gif");
+  let fps = $state(15);
+  let resolutionScale = $state(0.5); // Default 50%
+  let quality = $state(10); // 1-30, default 10 (good balance)
   // UI slider is reversed (left=Draft, right=Best). Keep internal semantics (1=best),
   // and bind the visible slider to `sliderQuality` which maps to `quality = 31 - sliderQuality`.
-  let sliderQuality = 31 - quality;
-  // One-way reactive sync: when sliderQuality changes, update internal `quality`.
-  $: quality = 31 - sliderQuality;
+  let sliderQuality = $state(31 - quality);
 
-  $: {
-    if (show) {
-      // Create a dependency on these variables
-      const _f = format;
-      const _fps = fps;
-      const _rs = resolutionScale;
-      const _sq = sliderQuality;
-      invalidatePreview();
-    }
-  }
 
   function invalidatePreview() {
     if (status === "generating") {
@@ -60,23 +38,19 @@
     statusMessage = "";
   }
 
-  let status = "idle"; // idle, generating, done, error
-  let progress = 0;
-  let statusMessage = "";
+  let status = $state("idle"); // idle, generating, done, error
+  let progress = $state(0);
+  let statusMessage = $state("");
   let previewBlob: Blob | null = null;
-  let previewUrl: string | null = null;
+  let previewUrl: string | null = $state(null);
 
   let abortController: AbortController | null = null;
 
   // Preview sizing helpers — measure the preview container and constrain
   // the preview image to a square sized by min(width, height)
-  let previewContainer: HTMLDivElement | null = null;
-  let containerW = 0;
-  let containerH = 0;
-  $: iconSize = Math.max(
-    0,
-    Math.floor(Math.min(containerW || 0, containerH || 0)),
-  );
+  let previewContainer: HTMLDivElement | null = $state(null);
+  let containerW = $state(0);
+  let containerH = $state(0);
 
   function close() {
     if (status === "generating") {
@@ -240,6 +214,31 @@
   // ResizeObserver to track preview container size
   let _ro: ResizeObserver | null = null;
   import { onMount, onDestroy } from "svelte";
+  interface Props {
+    show?: boolean;
+    twoInstance: any;
+    animationController: any;
+    settings: any;
+    robotLengthPx: number;
+    robotWidthPx: number;
+    robotStateFunction: (percent: number) => {
+    x: number;
+    y: number;
+    heading: number;
+  };
+    electronAPI: any;
+  }
+
+  let {
+    show = $bindable(false),
+    twoInstance,
+    animationController,
+    settings,
+    robotLengthPx,
+    robotWidthPx,
+    robotStateFunction,
+    electronAPI
+  }: Props = $props();
   onMount(() => {
     if (typeof ResizeObserver !== "undefined" && previewContainer) {
       _ro = new ResizeObserver((entries) => {
@@ -255,9 +254,27 @@
   onDestroy(() => {
     if (_ro) _ro.disconnect();
   });
+  // One-way reactive sync: when sliderQuality changes, update internal `quality`.
+  run(() => {
+    quality = 31 - sliderQuality;
+  });
+  run(() => {
+    if (show) {
+      // Create a dependency on these variables
+      const _f = format;
+      const _fps = fps;
+      const _rs = resolutionScale;
+      const _sq = sliderQuality;
+      invalidatePreview();
+    }
+  });
+  let iconSize = $derived(Math.max(
+    0,
+    Math.floor(Math.min(containerW || 0, containerH || 0)),
+  ));
 </script>
 
-<svelte:window on:keydown={handleKeydown} />
+<svelte:window onkeydown={handleKeydown} />
 
 {#if show}
   <div
@@ -278,7 +295,7 @@
         </h2>
         <button
           class="text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300"
-          on:click={close}
+          onclick={close}
           aria-label="Close"
         >
           <CloseIcon className="w-6 h-6" />
@@ -461,14 +478,14 @@
       >
         <button
           class="px-4 py-2 text-sm font-medium text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded-lg transition-colors"
-          on:click={handleCancel}
+          onclick={handleCancel}
         >
           Cancel
         </button>
 
         <button
           class="px-4 py-2 text-sm font-medium text-white bg-purple-600 hover:bg-purple-700 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          on:click={generatePreview}
+          onclick={generatePreview}
           disabled={status === "generating"}
         >
           {previewUrl ? "Regenerate Preview" : "Generate Preview"}
@@ -476,7 +493,7 @@
 
         <button
           class="px-4 py-2 text-sm font-medium text-white bg-green-600 hover:bg-green-700 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          on:click={downloadAnimation}
+          onclick={downloadAnimation}
           disabled={status === "generating"}
         >
           {previewUrl ? "Download / Save" : "Generate & Save"}

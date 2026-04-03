@@ -1,5 +1,7 @@
 <!-- Copyright 2026 Matthew Allen. Licensed under the Modified Apache License, Version 2.0. -->
 <script lang="ts">
+  import { run } from 'svelte/legacy';
+
   import type {
     Point,
     Line,
@@ -40,12 +42,23 @@
   hljs.registerLanguage("json", json);
   hljs.registerLanguage("plaintext", plaintext);
 
-  export let startPoint: Point;
-  export let lines: Line[];
-  export let sequence: SequenceItem[];
-  export let shapes: Shape[] = [];
-  export let settings: Settings;
-  export let isActive: boolean = false;
+  interface Props {
+    startPoint: Point;
+    lines: Line[];
+    sequence: SequenceItem[];
+    shapes?: Shape[];
+    settings: Settings;
+    isActive?: boolean;
+  }
+
+  let {
+    startPoint,
+    lines,
+    sequence,
+    shapes = [],
+    settings,
+    isActive = false
+  }: Props = $props();
 
   const electronAPI = (window as any).electronAPI;
 
@@ -71,24 +84,26 @@
     return cloned;
   }
 
-  let code = "";
+  let code = $state("");
   let previousCode = "";
-  let isGenerating = false;
-  let format: "java" | "sequential" | "points" | "json" | "custom" = "java";
-  let targetLibrary: "SolversLib" | "NextFTC" = "SolversLib";
+  let isGenerating = $state(false);
+  let format: "java" | "sequential" | "points" | "json" | "custom" = $state("java");
+  let targetLibrary: "SolversLib" | "NextFTC" = $state("SolversLib");
 
   // Sync state with settings
-  $: if (settings) {
-    if (settings.autoExportFormat) {
-      format = settings.autoExportFormat;
-    } else {
-      format = "java";
-    }
+  run(() => {
+    if (settings) {
+      if (settings.autoExportFormat) {
+        format = settings.autoExportFormat;
+      } else {
+        format = "java";
+      }
 
-    if (settings.autoExportTargetLibrary) {
-      targetLibrary = settings.autoExportTargetLibrary;
+      if (settings.autoExportTargetLibrary) {
+        targetLibrary = settings.autoExportTargetLibrary;
+      }
     }
-  }
+  });
 
   interface DiffLine {
     content: string; // HTML content
@@ -96,7 +111,7 @@
     id: string; // Unique ID for keying
   }
 
-  let displayLines: DiffLine[] = [];
+  let displayLines: DiffLine[] = $state([]);
 
   // Debounced generator to avoid UI freezing
   const updateCode = debounce(async () => {
@@ -247,18 +262,20 @@
   }, 1000);
 
   // Trigger update when dependencies change
-  $: if (
-    isActive &&
-    (startPoint ||
-      lines ||
-      sequence ||
-      settings ||
-      (settings as Settings)?.codeUnits ||
-      format ||
-      targetLibrary)
-  ) {
-    updateCode();
-  }
+  run(() => {
+    if (
+      isActive &&
+      (startPoint ||
+        lines ||
+        sequence ||
+        settings ||
+        (settings as Settings)?.codeUnits ||
+        format ||
+        targetLibrary)
+    ) {
+      updateCode();
+    }
+  });
 
   // Force update on mount
   onMount(() => {
@@ -273,7 +290,7 @@
     handleDownloadJava();
   }
 
-  let copyButtonText = "Copy Code";
+  let copyButtonText = $state("Copy Code");
 
   function handleCopy() {
     navigator.clipboard.writeText(code).then(() => {
@@ -391,7 +408,7 @@
     <div class="flex-1"></div>
 
     <button
-      on:click={() => {
+      onclick={() => {
         settingsActiveTab.set("code-export");
         showSettings.set(true);
       }}
@@ -404,7 +421,7 @@
     </button>
 
     <button
-      on:click={handleDownloadJava}
+      onclick={handleDownloadJava}
       class={`flex items-center gap-2 px-4 py-2 text-sm font-medium text-white rounded-md shadow-sm transition-colors focus:outline-none focus:ring-2 ${getButtonFilledClass("purple")}`}
       title={`Download as ${format === "points" || format === "custom" ? ".txt" : format === "json" ? ".turt" : ".java"}`}
       aria-label="Download generated file"
@@ -420,7 +437,7 @@
     </button>
 
     <button
-      on:click={handleCopy}
+      onclick={handleCopy}
       class={`flex items-center gap-2 px-4 py-2 text-sm font-medium text-white rounded-md shadow-sm transition-colors focus:outline-none focus:ring-2 ${getButtonFilledClass("blue")} ${isGenerating || !code ? "opacity-50 cursor-not-allowed" : ""}`}
       title={copyButtonText === "Copied!" ? "Copied!" : "Copy Code"}
       disabled={isGenerating || !code}

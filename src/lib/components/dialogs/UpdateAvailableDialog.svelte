@@ -1,5 +1,7 @@
 <!-- Copyright 2026 Matthew Allen. Licensed under the Modified Apache License, Version 2.0. -->
 <script lang="ts">
+  import { run } from 'svelte/legacy';
+
   import { onMount } from "svelte";
   import { fade, scale } from "svelte/transition";
   import { cubicOut } from "svelte/easing";
@@ -22,7 +24,11 @@
   } from "../icons";
   import LoadingSpinner from "../common/LoadingSpinner.svelte";
 
-  export let show = false;
+  interface Props {
+    show?: boolean;
+  }
+
+  let { show = false }: Props = $props();
 
   const md = new MarkdownIt({
     html: true,
@@ -34,15 +40,14 @@
     version: string;
     releaseNotes: string;
     url: string;
-  } | null = null;
-  $: updateData = $updateDataStore;
+  } | null = $state(null);
 
-  let isWindows = false;
-  let isStore = false;
-  let releaseNotesHtml = "";
-  let isLoadingNotes = false;
+  let isWindows = $state(false);
+  let isStore = $state(false);
+  let releaseNotesHtml = $state("");
+  let isLoadingNotes = $state(false);
   // Current installed app version (populated from preload in Electron)
-  let currentVersion: string | null = null;
+  let currentVersion: string | null = $state(null);
 
   onMount(async () => {
     const api = (window as any).electronAPI;
@@ -67,10 +72,6 @@
     }
   });
 
-  // Fetch release notes when updateData changes or show becomes true
-  $: if (show && updateData) {
-    fetchReleaseNotes(updateData.version, updateData.releaseNotes);
-  }
 
   async function fetchReleaseNotes(version: string, fallbackNotes: string) {
     if (releaseNotesHtml && releaseNotesHtml.length > 0) return;
@@ -146,6 +147,15 @@
       window.open(updateData.url, "_blank", "noopener");
     }
   }
+  run(() => {
+    updateData = $updateDataStore;
+  });
+  // Fetch release notes when updateData changes or show becomes true
+  run(() => {
+    if (show && updateData) {
+      fetchReleaseNotes(updateData.version, updateData.releaseNotes);
+    }
+  });
 </script>
 
 {#if show && updateData}
@@ -174,7 +184,7 @@
 
       <!-- Close Button -->
       <button
-        on:click={close}
+        onclick={close}
         class="absolute top-4 right-4 p-2 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-all z-10"
         aria-label="Close"
       >
@@ -230,7 +240,7 @@
                   updating manually again.
                 </p>
                 <button
-                  on:click={handleSwitchToStore}
+                  onclick={handleSwitchToStore}
                   class="mt-2 text-xs font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 inline-flex items-center gap-1 transition-colors group"
                 >
                   Get it for free
@@ -269,7 +279,7 @@
         <!-- Actions -->
         <div class="flex flex-col gap-3 pt-2">
           <button
-            on:click={handleDownload}
+            onclick={handleDownload}
             class="w-full py-3 px-4 bg-neutral-900 hover:bg-neutral-800 dark:bg-white dark:hover:bg-neutral-200 text-white dark:text-black font-semibold rounded-xl transition-all transform active:scale-[0.98] shadow-lg shadow-neutral-500/20 dark:shadow-none flex justify-center items-center gap-2"
           >
             <ArrowDownTrayIcon className="w-5 h-5" />
@@ -279,7 +289,7 @@
           <div class="flex justify-between items-center gap-3 px-1">
             <div class="flex items-center gap-2">
               <button
-                on:click={handleSkip}
+                onclick={handleSkip}
                 aria-label="Skip this version"
                 class="px-3 py-1.5 text-sm font-medium rounded-md bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 hover:bg-amber-100 dark:hover:bg-amber-900/30 border border-amber-200 dark:border-amber-800/30 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500/20"
               >
@@ -287,7 +297,7 @@
               </button>
 
               <button
-                on:click={handleOpenReleases}
+                onclick={handleOpenReleases}
                 aria-label="Open releases page"
                 class="px-3 py-1.5 text-sm font-medium rounded-md bg-gray-50 dark:bg-gray-900/20 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-900/30 border border-gray-200 dark:border-gray-800/30 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-500/20"
               >
@@ -296,7 +306,7 @@
             </div>
 
             <button
-              on:click={close}
+              onclick={close}
               aria-label="Remind me later"
               class="px-3 py-1.5 text-sm font-medium rounded-md bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400 hover:bg-purple-100 dark:hover:bg-purple-900/30 border border-purple-200 dark:border-purple-800/30 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500/20"
             >

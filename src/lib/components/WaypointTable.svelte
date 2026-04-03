@@ -1,3 +1,5 @@
+<!-- @migration-task Error while migrating Svelte code: can't migrate `$: _shapesCount = Array.isArray(shapes) ? shapes.length : 0;` to `$derived` because there's a variable named derived.
+     Rename the variable and try again or migrate by hand. -->
 <!-- Copyright 2026 Matthew Allen. Licensed under the Modified Apache License, Version 2.0. -->
 <script lang="ts">
   import type {

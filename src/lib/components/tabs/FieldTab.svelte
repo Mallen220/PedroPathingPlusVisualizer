@@ -1,5 +1,7 @@
 <!-- Copyright 2026 Matthew Allen. Licensed under the Modified Apache License, Version 2.0. -->
 <script lang="ts">
+  import { run } from 'svelte/legacy';
+
   import type {
     Point,
     Line,
@@ -14,38 +16,55 @@
   import GlobalEventMarkers from "../GlobalEventMarkers.svelte";
   import ObstaclesSection from "../sections/ObstaclesSection.svelte";
 
-  export let robotXY: BasePoint;
-  export let robotHeading: number;
-  export let startPoint: Point;
-  export let lines: Line[];
-  export let sequence: SequenceItem[];
-  export let shapes: Shape[];
-  export let settings: Settings;
-  export let recordChange: () => void;
-  export let onPreviewChange: ((lines: Line[] | null) => void) | null = null;
-  export let isActive: boolean = false;
+  interface Props {
+    robotXY: BasePoint;
+    robotHeading: number;
+    startPoint: Point;
+    lines: Line[];
+    sequence: SequenceItem[];
+    shapes: Shape[];
+    settings: Settings;
+    recordChange: () => void;
+    onPreviewChange?: ((lines: Line[] | null) => void) | null;
+    isActive?: boolean;
+  }
+
+  let {
+    robotXY,
+    robotHeading,
+    startPoint,
+    lines = $bindable(),
+    sequence = $bindable(),
+    shapes = $bindable(),
+    settings,
+    recordChange,
+    onPreviewChange = null,
+    isActive = false
+  }: Props = $props();
 
   // Local state for optimization
-  let optDialogRef: any = null;
-  let globalMarkersRef: GlobalEventMarkers;
-  let optIsRunning: boolean = false;
-  let optOptimizedLines: Line[] | null = null;
-  let optFailed: boolean = false;
+  let optDialogRef: any = $state(null);
+  let globalMarkersRef: GlobalEventMarkers = $state();
+  let optIsRunning: boolean = $state(false);
+  let optOptimizedLines: Line[] | null = $state(null);
+  let optFailed: boolean = $state(false);
 
   // Collapsed state
-  let collapsedSections = {
+  let collapsedSections = $state({
     obstacles: shapes.map(() => true),
     obstaclesSection: false,
     globalMarkers: false,
-  };
+  });
 
-  $: if (shapes.length !== collapsedSections.obstacles.length) {
-    collapsedSections.obstacles = shapes.map(() => true);
-  }
+  run(() => {
+    if (shapes.length !== collapsedSections.obstacles.length) {
+      collapsedSections.obstacles = shapes.map(() => true);
+    }
+  });
 
-  $: allCollapsed =
-    collapsedSections.obstacles.every((v) => v) &&
-    collapsedSections.globalMarkers;
+  let allCollapsed =
+    $derived(collapsedSections.obstacles.every((v) => v) &&
+    collapsedSections.globalMarkers);
 
   function toggleCollapseAll() {
     if (allCollapsed) {

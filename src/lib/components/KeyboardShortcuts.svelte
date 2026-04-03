@@ -1,5 +1,7 @@
 <!-- Copyright 2026 Matthew Allen. Licensed under the Modified Apache License, Version 2.0. -->
 <script lang="ts">
+  import { run } from 'svelte/legacy';
+
   import { get } from "svelte/store";
   import hotkeys from "hotkeys-js";
 
@@ -115,49 +117,77 @@
     toggleOnionCurrentPath,
   } from "./shortcuts/misc";
 
-  // Actions
-  export let saveProject: () => void;
-  export let resetProject: () => void;
-  export let saveFileAs: () => void;
-  export let exportGif: () => void;
-  export let exportImage: () => void = () => {};
-  export let undoAction: () => void;
-  export let redoAction: () => void;
-  export let play: () => void;
-  export let pause: () => void;
-  export let resetAnimation: () => void;
-  export let stepForward: () => void;
-  export let stepBackward: () => void;
-  export let splitPath: () => void = () => {};
-  export let recordChange: (action?: string) => void;
-  export let controlTabRef: any = null;
-  export let activeControlTab: "path" | "field" | "table" | "code" = "path";
-  export let toggleStats: () => void = () => {};
-  export let toggleSidebar: () => void = () => {};
-  export let toggleControlTab: () => void = () => {};
-  export let fieldRenderer: any = null;
 
-  // Optional callback provided by App.svelte to open the What's New dialog
-  export let openWhatsNew: () => void;
+
+
+  interface Props {
+    // Actions
+    saveProject: () => void;
+    resetProject: () => void;
+    saveFileAs: () => void;
+    exportGif: () => void;
+    exportImage?: () => void;
+    undoAction: () => void;
+    redoAction: () => void;
+    play: () => void;
+    pause: () => void;
+    resetAnimation: () => void;
+    stepForward: () => void;
+    stepBackward: () => void;
+    splitPath?: () => void;
+    recordChange: (action?: string) => void;
+    controlTabRef?: any;
+    activeControlTab?: "path" | "field" | "table" | "code";
+    toggleStats?: () => void;
+    toggleSidebar?: () => void;
+    toggleControlTab?: () => void;
+    fieldRenderer?: any;
+    // Optional callback provided by App.svelte to open the What's New dialog
+    openWhatsNew: () => void;
+  }
+
+  let {
+    saveProject,
+    resetProject,
+    saveFileAs,
+    exportGif,
+    exportImage = () => {},
+    undoAction,
+    redoAction,
+    play,
+    pause,
+    resetAnimation,
+    stepForward,
+    stepBackward,
+    splitPath = () => {},
+    recordChange,
+    controlTabRef = null,
+    activeControlTab = $bindable("path"),
+    toggleStats = () => {},
+    toggleSidebar = () => {},
+    toggleControlTab = () => {},
+    fieldRenderer = null,
+    openWhatsNew
+  }: Props = $props();
 
   // Reactive Values
-  $: settings = $settingsStore;
-  $: lines = $linesStore;
-  $: startPoint = $startPointStore;
-  $: shapes = $shapesStore;
-  $: sequence = $sequenceStore;
-  $: playing = $playingStore;
-  $: playbackSpeed = $playbackSpeedStore;
+  let settings = $derived($settingsStore);
+  let lines = $derived($linesStore);
+  let startPoint = $derived($startPointStore);
+  let shapes = $derived($shapesStore);
+  let sequence = $derived($sequenceStore);
+  let playing = $derived($playingStore);
+  let playbackSpeed = $derived($playbackSpeedStore);
 
   // Internal State
-  let showCommandPalette = false;
-  let fileInput: HTMLInputElement;
+  let showCommandPalette = $state(false);
+  let fileInput: HTMLInputElement = $state();
   let fileCommands: {
     id: string;
     label: string;
     action: () => void;
     category: string;
-  }[] = [];
+  }[] = $state([]);
 
   async function fetchFiles() {
     if (!window.electronAPI) return;
@@ -180,14 +210,16 @@
     }
   }
 
-  $: if (showCommandPalette) {
-    fetchFiles();
-  }
+  run(() => {
+    if (showCommandPalette) {
+      fetchFiles();
+    }
+  });
 
   // --- Registration ---
 
   // Create map of actionId -> handler
-  $: actions = {
+  let actions = $derived({
     saveProject: () => saveProject(),
     saveFileAs: () => saveFileAs(),
     exportGif: () => exportGif(),
@@ -744,10 +776,10 @@
     cancelDialog: () => {
       (actions as any).deselectAll();
     },
-  };
+  });
 
   // --- Derived Commands for Search ---
-  $: lineCommands = lines.map((l, i) => ({
+  let lineCommands = $derived(lines.map((l, i) => ({
     id: `cmd-line-${l.id}`,
     label: l.name ? `Path: ${l.name}` : `Path ${i + 1}`,
     category: "Path Segment",
@@ -762,9 +794,9 @@
         controlTabRef.scrollToItem("path", l.id || "");
       }
     },
-  }));
+  })));
 
-  $: waitCommands = sequence
+  let waitCommands = $derived(sequence
     .filter((s) => actionRegistry.get(s.kind)?.isWait)
     .map((s: any) => ({
       id: `cmd-wait-${s.id}`,
@@ -777,9 +809,9 @@
           controlTabRef.scrollToItem("wait", s.id);
         }
       },
-    }));
+    })));
 
-  $: rotateCommands = sequence
+  let rotateCommands = $derived(sequence
     .filter((s) => actionRegistry.get(s.kind)?.isRotate)
     .map((s: any) => ({
       id: `cmd-rotate-${s.id}`,
@@ -792,9 +824,9 @@
           controlTabRef.scrollToItem("rotate", s.id);
         }
       },
-    }));
+    })));
 
-  $: eventCommands = (() => {
+  let eventCommands = $derived((() => {
     const cmds: any[] = [];
 
     lines.forEach((l, lIdx) => {
@@ -835,10 +867,10 @@
       }
     });
     return cmds;
-  })();
+  })());
 
   // Derive commands list for Command Palette
-  $: paletteCommands = [
+  let paletteCommands = $derived([
     ...(settings?.keyBindings || DEFAULT_KEY_BINDINGS)
       .filter((b) => (actions as any)[b.action])
       .map((b) => ({
@@ -853,38 +885,44 @@
     ...waitCommands,
     ...rotateCommands,
     ...eventCommands,
-  ];
+  ]);
 
-  $: availableCommands.set(paletteCommands);
+  run(() => {
+    availableCommands.set(paletteCommands);
+  });
 
-  $: if ($executeCommandBus) {
-    const cmdId = $executeCommandBus;
-    executeCommandBus.set(null);
-    const cmd = paletteCommands.find((c) => c.id === cmdId);
-    if (cmd && cmd.action) {
-      cmd.action();
-    }
-  }
-
-  $: if (settings && settings.keyBindings) {
-    hotkeys.unbind();
-
-    // Bind all actions defined in settings
-    settings.keyBindings.forEach((binding) => {
-      const handler = (actions as any)[binding.action];
-      if (handler && binding.key) {
-        hotkeys(binding.key, (e) => {
-          if (shouldBlockShortcut(e, binding.id)) return;
-          e.preventDefault();
-          handler(e);
-        });
+  run(() => {
+    if ($executeCommandBus) {
+      const cmdId = $executeCommandBus;
+      executeCommandBus.set(null);
+      const cmd = paletteCommands.find((c) => c.id === cmdId);
+      if (cmd && cmd.action) {
+        cmd.action();
       }
-    });
+    }
+  });
 
-    // Special case for Play/Pause toggle which is mapped to 'togglePlay' action
-    // but the ID in defaults is 'play-pause' and action is 'togglePlay'.
-    // The loop above covers it if keyBinding is correct.
-  }
+  run(() => {
+    if (settings && settings.keyBindings) {
+      hotkeys.unbind();
+
+      // Bind all actions defined in settings
+      settings.keyBindings.forEach((binding) => {
+        const handler = (actions as any)[binding.action];
+        if (handler && binding.key) {
+          hotkeys(binding.key, (e) => {
+            if (shouldBlockShortcut(e, binding.id)) return;
+            e.preventDefault();
+            handler(e);
+          });
+        }
+      });
+
+      // Special case for Play/Pause toggle which is mapped to 'togglePlay' action
+      // but the ID in defaults is 'play-pause' and action is 'togglePlay'.
+      // The loop above covers it if keyBinding is correct.
+    }
+  });
 </script>
 
 <CommandPalette
@@ -901,7 +939,7 @@
   class="hidden"
   style="display:none;"
   tabindex="-1"
-  on:change={function (e) {
+  onchange={function (e) {
     const target = e.currentTarget || e.target;
     if (
       target instanceof HTMLInputElement &&
