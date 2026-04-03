@@ -1,5 +1,7 @@
 <!-- Copyright 2026 Matthew Allen. Licensed under the Modified Apache License, Version 2.0. -->
 <script lang="ts">
+  import { run } from "svelte/legacy";
+
   import { onMount, onDestroy } from "svelte";
   import { get } from "svelte/store";
   import Two from "two.js";
@@ -112,40 +114,55 @@
     ExitPresentationModeIcon,
   } from "./icons";
 
-  // State from props
-  export let width = 0;
-  export let height = 0;
-  export let timePrediction: any = null;
-  export let committedRobotState: {
-    x: number;
-    y: number;
-    heading: number;
-  } | null = null;
-  export let previewOptimizedLines: Line[] | null = null;
-  export let isMouseOverField = false;
-  export let currentMouseX = 0;
-  export let currentMouseY = 0;
-  export let isObstructingHUD = false;
+  interface Props {
+    // State from props
+    width?: number;
+    height?: number;
+    timePrediction?: any;
+    committedRobotState?: {
+      x: number;
+      y: number;
+      heading: number;
+    } | null;
+    previewOptimizedLines?: Line[] | null;
+    isMouseOverField?: boolean;
+    currentMouseX?: number;
+    currentMouseY?: number;
+    isObstructingHUD?: boolean;
+    // Callback props for interactions
+    onRecordChange: (action?: string) => void;
+  }
 
-  // Callback props for interactions
-  export let onRecordChange: (action?: string) => void;
+  let {
+    width = 0,
+    height = 0,
+    timePrediction = null,
+    committedRobotState = null,
+    previewOptimizedLines = null,
+    isMouseOverField = $bindable(false),
+    currentMouseX = $bindable(0),
+    currentMouseY = $bindable(0),
+    isObstructingHUD = $bindable(false),
+    onRecordChange,
+  }: Props = $props();
 
   // Local state
-  let two: Two;
-  let ghostRobotState: { x: number; y: number; heading: number } | null = null;
+  let two: Two = $state();
+  let ghostRobotState: { x: number; y: number; heading: number } | null =
+    $state(null);
 
-  let twoElement: HTMLDivElement;
-  let wrapperDiv: HTMLDivElement;
-  let overlayContainer: HTMLDivElement;
+  let twoElement: HTMLDivElement = $state();
+  let wrapperDiv: HTMLDivElement = $state();
+  let overlayContainer: HTMLDivElement = $state();
 
   // Smart Snapping State
-  let snapGuides: InstanceType<typeof Two.Line>[] = [];
+  let snapGuides: InstanceType<typeof Two.Line>[] = $state([]);
 
   // Context Menu State
-  let showContextMenu = false;
-  let contextMenuX = 0;
-  let contextMenuY = 0;
-  let contextMenuItems: any[] = [];
+  let showContextMenu = $state(false);
+  let contextMenuX = $state(0);
+  let contextMenuY = $state(0);
+  let contextMenuItems: any[] = $state([]);
 
   // Optimization: Cache bounding rects to avoid reflows during drag
   let cachedRect: DOMRect | null = null;
@@ -160,30 +177,6 @@
   let multiDragOffsets = new Map<string, { x: number; y: number }>();
   let startPan = { x: 0, y: 0 };
 
-  // D3 Scales
-  $: zoom = $fieldZoom;
-  $: pan = $fieldPan;
-  $: scaleFactor = zoom;
-  $: baseSize = Math.min(width, height);
-  $: x = d3
-    .scaleLinear()
-    .domain([0, FIELD_SIZE])
-    .range([
-      width / 2 - (baseSize * scaleFactor) / 2 + pan.x,
-      width / 2 + (baseSize * scaleFactor) / 2 + pan.x,
-    ]);
-  $: y = d3
-    .scaleLinear()
-    .domain([0, FIELD_SIZE])
-    .range([
-      height / 2 + (baseSize * scaleFactor) / 2 + pan.y,
-      height / 2 - (baseSize * scaleFactor) / 2 + pan.y,
-    ]);
-
-  $: {
-    fieldViewStore.set({ xScale: x, yScale: y, width, height });
-  }
-
   // helper to safely index WheelSpeeds from a string value. We
   // occasionally iterate over a hardcoded list of wheel names in
   // markup; this keeps the TypeScript happy and avoids `any` casts
@@ -193,20 +186,6 @@
     return speeds[wheel as keyof WheelSpeeds];
   }
 
-  $: mecanumSpeeds = calculateDrivetrainSpeeds(
-    $percentStore,
-    timePrediction,
-    lines,
-    startPoint,
-    settings,
-    $showRobot,
-  );
-
-  // Follow Robot Logic (Reactive for scrubbing/stepping)
-  $: if ($followRobotStore && robotXY && !$playingStore) {
-    panToField(robotXY.x, robotXY.y);
-  }
-
   // Follow Robot Logic (Loop for playback)
   let followLoopId: number;
   function followLoop() {
@@ -214,11 +193,6 @@
       panToField(robotXY.x, robotXY.y);
     }
     followLoopId = requestAnimationFrame(followLoop);
-  }
-
-  // Resume Follow on Play Logic
-  $: if ($playingStore && settings.followRobot) {
-    followRobotStore.set(true);
   }
 
   function zoomTo(newZoom: number, focus?: { x: number; y: number }) {
@@ -275,88 +249,6 @@
       zoomTo(newZoom, { x: lx, y: ly });
     }
   }
-
-  // Visual Scale (Pixels per Inch at 1x Zoom)
-  // Used for UI elements (points, markers) so they don't grow when zooming in
-  $: ppI = baseSize / FIELD_SIZE;
-  $: uiLength = (inches: number) => inches * ppI;
-
-  // Derived Values from Stores
-  $: startPoint = $startPointStore;
-  $: lines = $linesStore;
-  $: shapes = $shapesStore;
-  $: settings = $settingsStore;
-  $: robotXY = $robotXYStore;
-  $: robotHeading = $robotHeadingStore;
-  $: sequence = $sequenceStore; // Needed for wait markers
-  $: markers =
-    $settingsStore?.continuousValidation || $forceShowValidation
-      ? $collisionMarkers
-      : [];
-
-  // Keep `startPoint.startDeg` in sync with geometry when using linear start-heading.
-  // This ensures generated code (and any UI showing `startDeg`) updates as the
-  // start position or first path changes — fixing cases where heading looked
-  // "locked" to an old value after moving the start point.
-  $: if (
-    startPoint &&
-    startPoint.heading === "linear" &&
-    lines &&
-    lines.length > 0
-  ) {
-    const derived = getLineStartHeading(lines[0], startPoint);
-    if (
-      typeof startPoint.startDeg !== "number" ||
-      Math.abs(startPoint.startDeg - derived) > 1e-6
-    ) {
-      // Update store only when it differs to avoid extra churn
-      startPointStore.update((p) => ({ ...p, startDeg: derived }) as any);
-    }
-  }
-
-  // Telemetry State
-  $: isTelemetryVisible = $showTelemetry;
-  $: isTelemetryGhostVisible = $showTelemetryGhost;
-
-  // compute ghost robot based on imported telemetry data and offset
-  $: if (
-    $telemetryData &&
-    $telemetryData.length > 0 &&
-    isTelemetryGhostVisible
-  ) {
-    const pts = $telemetryData;
-    const baseTime = pts[0].time;
-    const offset = $telemetryOffset || 0;
-    const targetTime = baseTime + offset;
-    // find first point at or after targetTime
-    let target = pts[0];
-    for (const pt of pts) {
-      if (pt.time >= targetTime) {
-        target = pt;
-        break;
-      }
-    }
-    ghostRobotState = { x: target.x, y: target.y, heading: target.heading };
-  } else {
-    ghostRobotState = null;
-  }
-
-  // Diff Mode State
-  $: isDiffMode = $diffMode;
-  $: diffData = $diffResult;
-  $: oldData = $committedData;
-  $: currentFile = $currentFilePath;
-  $: gitStatus = $gitStatusStore;
-  // Show diff toggle if file is modified/staged in git OR has unsaved in-memory changes
-  // Exclude untracked files since they have no committed version to compare against
-  $: isDirty =
-    (currentFile &&
-      gitStatus[currentFile] &&
-      gitStatus[currentFile] !== "clean" &&
-      gitStatus[currentFile] !== "untracked") ||
-    (currentFile && $isUnsaved);
-
-  $: dimmedIds = $dimmedLinesStore;
 
   function updateRects() {
     if (two?.renderer?.domElement) {
@@ -459,257 +351,6 @@
     }
 
     return { type: "unknown", originalId: id };
-  }
-
-  // --- Two.js Object Creation Logic (moved from App.svelte) ---
-
-  // Points (Start, Control, End, Obstacle Vertices)
-  $: points = generatePointElements(startPoint, lines, shapes, {
-    x,
-    y,
-    uiLength,
-    multiSelectedPointIds: $multiSelectedPointIds,
-  });
-
-  // Animated facing-point line: drawn from current robot position to the facing target.
-  // Only shown when the robot is actively driving on that facingPoint segment.
-  // Rendered as SVG overlay to avoid clearing Two.js scene.
-  $: facingLineElements = generateFacingLineElements(lines, {
-    x,
-    y,
-    robotXY,
-    timePrediction,
-    percentStore: $percentStore,
-  });
-
-  // Paths (Lines) - Standard
-  $: path = (() => {
-    x;
-    y; // Trigger reactivity on pan/zoom
-    dimmedIds; // Trigger reactivity on selection/dimmed changes
-    if (isDiffMode) return []; // Don't render standard path in diff mode
-    const currentSelectedId = $selectedLineId;
-
-    // Use timeline events to find all lines (including bridge & macros)
-    // Extract unique lines from timeline events of type 'travel'
-    let renderLines: Line[] = [];
-    let lineStartPoints = new Map<string, Point>(); // lineId -> startPoint
-
-    // Start with standard lines for the basic "lines" array.
-    // To include macro/bridge lines, iterate timeline travel events directly when available.
-    if (timePrediction && timePrediction.timeline) {
-      const paths: any[] = [];
-
-      // Filter travel events
-      const travelEvents = timePrediction.timeline.filter(
-        (e: any) => e.type === "travel" && e.line,
-      );
-
-      travelEvents.forEach((ev: any, idx: number) => {
-        const line = ev.line!;
-        const start = ev.prevPoint!;
-
-        // Check if this is a main line or macro/bridge line
-        const isMainLine = lines.some((l) => l.id === line.id);
-        const isSelected = line.id === currentSelectedId;
-        const width = isSelected
-          ? uiLength(LINE_WIDTH * 2.5)
-          : uiLength(LINE_WIDTH);
-
-        // Generate single path element
-        const elems = generatePathElements(
-          [line],
-          start,
-          (l) => l.color || "#60a5fa",
-          (l) => width,
-          `timeline-path-${idx}`,
-          { x, y, uiLength, settings, timePrediction, dimmedIds },
-          isMainLine,
-        );
-        paths.push(...elems);
-      });
-
-      return paths;
-    }
-
-    // Fallback if no simulation (e.g. initial load or error)
-    return generatePathElements(
-      lines,
-      startPoint,
-      (l) => l.color,
-      (l) =>
-        l.id === currentSelectedId
-          ? uiLength(LINE_WIDTH * 2.5)
-          : uiLength(LINE_WIDTH),
-      "",
-      { x, y, uiLength, settings, timePrediction, dimmedIds },
-      true,
-    );
-  })();
-
-  // Diff Paths
-  $: diffPathElements = (() => {
-    x;
-    y; // Trigger reactivity on pan/zoom
-    if (!isDiffMode) return [];
-
-    // 1. Committed Path (Old) - Red
-    const committedPaths = oldData
-      ? generatePathElements(
-          oldData.lines,
-          oldData.startPoint,
-          () => "#ef4444", // Red
-          () => uiLength(LINE_WIDTH),
-          "diff-old",
-          { x, y, uiLength, settings, timePrediction, dimmedIds },
-          false,
-        )
-      : [];
-
-    // 2. Current Path (New/Same)
-    const currentPaths = generatePathElements(
-      lines,
-      startPoint,
-      (l) => {
-        // Check if same
-        const isSame = diffData?.sameLines.some((sl) => sl.id === l.id);
-        if (isSame) return "#3b82f6"; // Blue
-        return "#22c55e"; // Green
-      },
-      (l) => uiLength(LINE_WIDTH), // No selection highlight in diff mode? Or maybe yes.
-      "diff-new",
-      { x, y, uiLength, settings, timePrediction, dimmedIds },
-      false,
-    );
-
-    return [...committedPaths, ...currentPaths];
-  })();
-
-  // Diff Event Markers
-  $: diffEventMarkerElements = generateDiffEventMarkerElements(
-    isDiffMode,
-    diffData,
-    oldData,
-    lines,
-    startPoint,
-    sequence,
-    {
-      x,
-      y,
-      uiLength,
-      hoveredMarkerId: $hoveredMarkerId,
-      ppI,
-    },
-  );
-
-  // Shapes (Obstacles)
-  $: shapeElements = generateShapeElements(shapes, { x, y, uiLength });
-
-  // Onion Layers
-  // Rendered as SVG overlay to avoid clearing Two.js scene.
-  $: onionLayerElements = generateOnionLayerElements(lines, startPoint, {
-    settings,
-    timePrediction,
-    percentStore: $percentStore,
-  });
-
-  // Preview Paths
-  $: previewPathElements = generatePreviewPathElements(
-    previewOptimizedLines,
-    startPoint,
-    { x, y, uiLength },
-  );
-
-  // Event Markers
-  $: eventMarkerElements = generateEventMarkerElements(
-    lines,
-    startPoint,
-    sequence,
-    {
-      x,
-      y,
-      uiLength,
-      hoveredMarkerId: $hoveredMarkerId,
-      multiSelectedPointIds: $multiSelectedPointIds,
-      settings,
-      timePrediction,
-      selectedLineId: $selectedLineId,
-      selectedPointId: $selectedPointId,
-      actionRegistry,
-    },
-  );
-
-  // Collision Markers
-  $: collisionElements = generateCollisionElements(
-    markers,
-    lines,
-    startPoint,
-    timePrediction,
-    { x, y, uiLength },
-  );
-
-  // Render Loop
-  $: if (two) {
-    $pluginRedrawTrigger; // Subscribe to plugin redraw requests
-
-    // Update dimensions if changed
-    if (width && height && (two.width !== width || two.height !== height)) {
-      if (two.renderer) two.renderer.setSize(width, height);
-      two.width = width;
-      two.height = height;
-    }
-
-    const shapeGroup = new Two.Group();
-    shapeGroup.id = "shape-group";
-    const lineGroup = new Two.Group();
-    lineGroup.id = "line-group";
-    const pointGroup = new Two.Group();
-    pointGroup.id = "point-group";
-    const eventGroup = new Two.Group();
-    eventGroup.id = "event-group";
-    const collisionGroup = new Two.Group();
-    collisionGroup.id = "collision-group";
-    const snapGroup = new Two.Group();
-    snapGroup.id = "snap-group";
-
-    two.clear();
-
-    if (Array.isArray(shapeElements))
-      shapeElements.forEach((el) => shapeGroup.add(el));
-
-    path.forEach((el) => lineGroup.add(el));
-    diffPathElements.forEach((el) => lineGroup.add(el));
-    previewPathElements.forEach((el) => lineGroup.add(el));
-
-    if (!$isPresentationMode && !isDiffMode) {
-      points.forEach((el) => pointGroup.add(el));
-      eventMarkerElements.forEach((el) => eventGroup.add(el));
-      // Ensure collisionElements is used in the reactive block to trigger updates
-      collisionElements.forEach((el) => collisionGroup.add(el));
-      snapGuides.forEach((el) => snapGroup.add(el));
-    }
-
-    if (isDiffMode) {
-      diffEventMarkerElements.forEach((el) => eventGroup.add(el));
-    }
-
-    two.add(shapeGroup);
-    two.add(lineGroup);
-    two.add(eventGroup);
-    two.add(pointGroup);
-    two.add(collisionGroup);
-    two.add(snapGroup);
-
-    // Apply custom renderers
-    $fieldRenderRegistry.forEach((entry) => {
-      try {
-        entry.fn(two);
-      } catch (e) {
-        console.error(`Error in field renderer ${entry.id}:`, e);
-      }
-    });
-
-    two.update();
   }
 
   // --- Interaction Logic ---
@@ -2007,13 +1648,397 @@
     }
     if (followLoopId) cancelAnimationFrame(followLoopId);
   });
+  // D3 Scales
+  let zoom = $derived($fieldZoom);
+  let pan = $derived($fieldPan);
+  let scaleFactor = $derived(zoom);
+  let baseSize = $derived(Math.min(width, height));
+  let x = $derived(
+    d3
+      .scaleLinear()
+      .domain([0, FIELD_SIZE])
+      .range([
+        width / 2 - (baseSize * scaleFactor) / 2 + pan.x,
+        width / 2 + (baseSize * scaleFactor) / 2 + pan.x,
+      ]),
+  );
+  let y = $derived(
+    d3
+      .scaleLinear()
+      .domain([0, FIELD_SIZE])
+      .range([
+        height / 2 + (baseSize * scaleFactor) / 2 + pan.y,
+        height / 2 - (baseSize * scaleFactor) / 2 + pan.y,
+      ]),
+  );
+  run(() => {
+    fieldViewStore.set({ xScale: x, yScale: y, width, height });
+  });
+  let lines = $derived($linesStore);
+  // Derived Values from Stores
+  let startPoint = $derived($startPointStore);
+  let settings = $derived($settingsStore);
+  let mecanumSpeeds = $derived(
+    calculateDrivetrainSpeeds(
+      $percentStore,
+      timePrediction,
+      lines,
+      startPoint,
+      settings,
+      $showRobot,
+    ),
+  );
+  let robotXY = $derived($robotXYStore);
+  // Follow Robot Logic (Reactive for scrubbing/stepping)
+  run(() => {
+    if ($followRobotStore && robotXY && !$playingStore) {
+      panToField(robotXY.x, robotXY.y);
+    }
+  });
+  // Resume Follow on Play Logic
+  run(() => {
+    if ($playingStore && settings.followRobot) {
+      followRobotStore.set(true);
+    }
+  });
+  // Visual Scale (Pixels per Inch at 1x Zoom)
+  // Used for UI elements (points, markers) so they don't grow when zooming in
+  let ppI = $derived(baseSize / FIELD_SIZE);
+  let uiLength = $derived((inches: number) => inches * ppI);
+  let shapes = $derived($shapesStore);
+  let robotHeading = $derived($robotHeadingStore);
+  let sequence = $derived($sequenceStore); // Needed for wait markers
+  let markers = $derived(
+    $settingsStore?.continuousValidation || $forceShowValidation
+      ? $collisionMarkers
+      : [],
+  );
+  // Keep `startPoint.startDeg` in sync with geometry when using linear start-heading.
+  // This ensures generated code (and any UI showing `startDeg`) updates as the
+  // start position or first path changes — fixing cases where heading looked
+  // "locked" to an old value after moving the start point.
+  run(() => {
+    if (
+      startPoint &&
+      startPoint.heading === "linear" &&
+      lines &&
+      lines.length > 0
+    ) {
+      const derived = getLineStartHeading(lines[0], startPoint);
+      if (
+        typeof startPoint.startDeg !== "number" ||
+        Math.abs(startPoint.startDeg - derived) > 1e-6
+      ) {
+        // Update store only when it differs to avoid extra churn
+        startPointStore.update((p) => ({ ...p, startDeg: derived }) as any);
+      }
+    }
+  });
+  // Telemetry State
+  let isTelemetryVisible = $derived($showTelemetry);
+  let isTelemetryGhostVisible = $derived($showTelemetryGhost);
+  // compute ghost robot based on imported telemetry data and offset
+  run(() => {
+    if (
+      $telemetryData &&
+      $telemetryData.length > 0 &&
+      isTelemetryGhostVisible
+    ) {
+      const pts = $telemetryData;
+      const baseTime = pts[0].time;
+      const offset = $telemetryOffset || 0;
+      const targetTime = baseTime + offset;
+      // find first point at or after targetTime
+      let target = pts[0];
+      for (const pt of pts) {
+        if (pt.time >= targetTime) {
+          target = pt;
+          break;
+        }
+      }
+      ghostRobotState = { x: target.x, y: target.y, heading: target.heading };
+    } else {
+      ghostRobotState = null;
+    }
+  });
+  // Diff Mode State
+  let isDiffMode = $derived($diffMode);
+  let diffData = $derived($diffResult);
+  let oldData = $derived($committedData);
+  let currentFile = $derived($currentFilePath);
+  let gitStatus = $derived($gitStatusStore);
+  // Show diff toggle if file is modified/staged in git OR has unsaved in-memory changes
+  // Exclude untracked files since they have no committed version to compare against
+  let isDirty = $derived(
+    (currentFile &&
+      gitStatus[currentFile] &&
+      gitStatus[currentFile] !== "clean" &&
+      gitStatus[currentFile] !== "untracked") ||
+      (currentFile && $isUnsaved),
+  );
+  let dimmedIds = $derived($dimmedLinesStore);
+  // --- Two.js Object Creation Logic (moved from App.svelte) ---
+
+  // Points (Start, Control, End, Obstacle Vertices)
+  let points = $derived(
+    generatePointElements(startPoint, lines, shapes, {
+      x,
+      y,
+      uiLength,
+      multiSelectedPointIds: $multiSelectedPointIds,
+    }),
+  );
+  // Animated facing-point line: drawn from current robot position to the facing target.
+  // Only shown when the robot is actively driving on that facingPoint segment.
+  // Rendered as SVG overlay to avoid clearing Two.js scene.
+  let facingLineElements = $derived(
+    generateFacingLineElements(lines, {
+      x,
+      y,
+      robotXY,
+      timePrediction,
+      percentStore: $percentStore,
+    }),
+  );
+  // Paths (Lines) - Standard
+  let path = $derived(
+    (() => {
+      x;
+      y; // Trigger reactivity on pan/zoom
+      dimmedIds; // Trigger reactivity on selection/dimmed changes
+      if (isDiffMode) return []; // Don't render standard path in diff mode
+      const currentSelectedId = $selectedLineId;
+
+      // Use timeline events to find all lines (including bridge & macros)
+      // Extract unique lines from timeline events of type 'travel'
+      let renderLines: Line[] = [];
+      let lineStartPoints = new Map<string, Point>(); // lineId -> startPoint
+
+      // Start with standard lines for the basic "lines" array.
+      // To include macro/bridge lines, iterate timeline travel events directly when available.
+      if (timePrediction && timePrediction.timeline) {
+        const paths: any[] = [];
+
+        // Filter travel events
+        const travelEvents = timePrediction.timeline.filter(
+          (e: any) => e.type === "travel" && e.line,
+        );
+
+        travelEvents.forEach((ev: any, idx: number) => {
+          const line = ev.line!;
+          const start = ev.prevPoint!;
+
+          // Check if this is a main line or macro/bridge line
+          const isMainLine = lines.some((l) => l.id === line.id);
+          const isSelected = line.id === currentSelectedId;
+          const width = isSelected
+            ? uiLength(LINE_WIDTH * 2.5)
+            : uiLength(LINE_WIDTH);
+
+          // Generate single path element
+          const elems = generatePathElements(
+            [line],
+            start,
+            (l) => l.color || "#60a5fa",
+            (l) => width,
+            `timeline-path-${idx}`,
+            { x, y, uiLength, settings, timePrediction, dimmedIds },
+            isMainLine,
+          );
+          paths.push(...elems);
+        });
+
+        return paths;
+      }
+
+      // Fallback if no simulation (e.g. initial load or error)
+      return generatePathElements(
+        lines,
+        startPoint,
+        (l) => l.color,
+        (l) =>
+          l.id === currentSelectedId
+            ? uiLength(LINE_WIDTH * 2.5)
+            : uiLength(LINE_WIDTH),
+        "",
+        { x, y, uiLength, settings, timePrediction, dimmedIds },
+        true,
+      );
+    })(),
+  );
+  // Diff Paths
+  let diffPathElements = $derived(
+    (() => {
+      x;
+      y; // Trigger reactivity on pan/zoom
+      if (!isDiffMode) return [];
+
+      // 1. Committed Path (Old) - Red
+      const committedPaths = oldData
+        ? generatePathElements(
+            oldData.lines,
+            oldData.startPoint,
+            () => "#ef4444", // Red
+            () => uiLength(LINE_WIDTH),
+            "diff-old",
+            { x, y, uiLength, settings, timePrediction, dimmedIds },
+            false,
+          )
+        : [];
+
+      // 2. Current Path (New/Same)
+      const currentPaths = generatePathElements(
+        lines,
+        startPoint,
+        (l) => {
+          // Check if same
+          const isSame = diffData?.sameLines.some((sl) => sl.id === l.id);
+          if (isSame) return "#3b82f6"; // Blue
+          return "#22c55e"; // Green
+        },
+        (l) => uiLength(LINE_WIDTH), // No selection highlight in diff mode? Or maybe yes.
+        "diff-new",
+        { x, y, uiLength, settings, timePrediction, dimmedIds },
+        false,
+      );
+
+      return [...committedPaths, ...currentPaths];
+    })(),
+  );
+  // Diff Event Markers
+  let diffEventMarkerElements = $derived(
+    generateDiffEventMarkerElements(
+      isDiffMode,
+      diffData,
+      oldData,
+      lines,
+      startPoint,
+      sequence,
+      {
+        x,
+        y,
+        uiLength,
+        hoveredMarkerId: $hoveredMarkerId,
+        ppI,
+      },
+    ),
+  );
+  // Shapes (Obstacles)
+  let shapeElements = $derived(
+    generateShapeElements(shapes, { x, y, uiLength }),
+  );
+  // Onion Layers
+  // Rendered as SVG overlay to avoid clearing Two.js scene.
+  let onionLayerElements = $derived(
+    generateOnionLayerElements(lines, startPoint, {
+      settings,
+      timePrediction,
+      percentStore: $percentStore,
+    }),
+  );
+  // Preview Paths
+  let previewPathElements = $derived(
+    generatePreviewPathElements(previewOptimizedLines, startPoint, {
+      x,
+      y,
+      uiLength,
+    }),
+  );
+  // Event Markers
+  let eventMarkerElements = $derived(
+    generateEventMarkerElements(lines, startPoint, sequence, {
+      x,
+      y,
+      uiLength,
+      hoveredMarkerId: $hoveredMarkerId,
+      multiSelectedPointIds: $multiSelectedPointIds,
+      settings,
+      timePrediction,
+      selectedLineId: $selectedLineId,
+      selectedPointId: $selectedPointId,
+      actionRegistry,
+    }),
+  );
+  // Collision Markers
+  let collisionElements = $derived(
+    generateCollisionElements(markers, lines, startPoint, timePrediction, {
+      x,
+      y,
+      uiLength,
+    }),
+  );
+  // Render Loop
+  run(() => {
+    if (two) {
+      $pluginRedrawTrigger; // Subscribe to plugin redraw requests
+
+      // Update dimensions if changed
+      if (width && height && (two.width !== width || two.height !== height)) {
+        if (two.renderer) two.renderer.setSize(width, height);
+        two.width = width;
+        two.height = height;
+      }
+
+      const shapeGroup = new Two.Group();
+      shapeGroup.id = "shape-group";
+      const lineGroup = new Two.Group();
+      lineGroup.id = "line-group";
+      const pointGroup = new Two.Group();
+      pointGroup.id = "point-group";
+      const eventGroup = new Two.Group();
+      eventGroup.id = "event-group";
+      const collisionGroup = new Two.Group();
+      collisionGroup.id = "collision-group";
+      const snapGroup = new Two.Group();
+      snapGroup.id = "snap-group";
+
+      two.clear();
+
+      if (Array.isArray(shapeElements))
+        shapeElements.forEach((el) => shapeGroup.add(el));
+
+      path.forEach((el) => lineGroup.add(el));
+      diffPathElements.forEach((el) => lineGroup.add(el));
+      previewPathElements.forEach((el) => lineGroup.add(el));
+
+      if (!$isPresentationMode && !isDiffMode) {
+        points.forEach((el) => pointGroup.add(el));
+        eventMarkerElements.forEach((el) => eventGroup.add(el));
+        // Ensure collisionElements is used in the reactive block to trigger updates
+        collisionElements.forEach((el) => collisionGroup.add(el));
+        snapGuides.forEach((el) => snapGroup.add(el));
+      }
+
+      if (isDiffMode) {
+        diffEventMarkerElements.forEach((el) => eventGroup.add(el));
+      }
+
+      two.add(shapeGroup);
+      two.add(lineGroup);
+      two.add(eventGroup);
+      two.add(pointGroup);
+      two.add(collisionGroup);
+      two.add(snapGroup);
+
+      // Apply custom renderers
+      $fieldRenderRegistry.forEach((entry) => {
+        try {
+          entry.fn(two);
+        } catch (e) {
+          console.error(`Error in field renderer ${entry.id}:`, e);
+        }
+      });
+
+      two.update();
+    }
+  });
 </script>
 
 <div
   class="relative"
   style={`width: ${width}px; height: ${height}px;`}
   bind:this={wrapperDiv}
-  on:wheel={(e) => handleWheel(e)}
+  onwheel={(e) => handleWheel(e)}
 >
   <div
     bind:this={twoElement}
@@ -2025,8 +2050,8 @@
       user-drag: none;
       -webkit-user-drag: none;
     "
-    on:contextmenu={handleContextMenu}
-    on:dragstart={(e) => e.preventDefault()}
+    oncontextmenu={handleContextMenu}
+    ondragstart={(e) => e.preventDefault()}
     style:transform={`rotate(${settings.fieldRotation || 0}deg)`}
     style:transition="transform 0.3s ease-in-out"
   >
@@ -2102,7 +2127,7 @@
         class="absolute rounded-lg z-10 max-w-none"
         style={`top: ${y(FIELD_SIZE)}px; left: ${x(0)}px; width: ${x(FIELD_SIZE) - x(0)}px; height: ${y(0) - y(FIELD_SIZE)}px;`}
         draggable="false"
-        on:error={function (e) {
+        onerror={function (e) {
           const target = e.currentTarget || e.target;
           if (target instanceof HTMLImageElement) {
             target.src = "/fields/decode.webp";
@@ -2167,7 +2192,7 @@
             alt="Robot"
             class="w-full h-full object-contain"
             draggable="false"
-            on:error={function (e) {
+            onerror={function (e) {
               const target = e.currentTarget || e.target;
               if (target instanceof HTMLImageElement) {
                 target.src = "/robot.png";
@@ -2218,7 +2243,7 @@
             alt="Ghost Robot"
             class="w-full h-full object-contain grayscale opacity-50"
             draggable="false"
-            on:error={function (e) {
+            onerror={function (e) {
               const target = e.currentTarget || e.target;
               if (target instanceof HTMLImageElement) {
                 target.src = "/robot.png";
@@ -2268,7 +2293,7 @@
           class="w-7 h-7 flex items-center justify-center rounded transition-colors {isDiffMode
             ? 'bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 hover:bg-purple-200 dark:hover:bg-purple-900/50'
             : 'hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-200'}"
-          on:click={toggleDiff}
+          onclick={toggleDiff}
           aria-label={isDiffMode ? "Exit Visual Diff" : "Toggle Visual Diff"}
           title={isDiffMode ? "Exit Diff Mode" : "Compare with Saved"}
         >
@@ -2283,7 +2308,7 @@
       {/if}
       <button
         class="w-7 h-7 flex items-center justify-center rounded hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-200 transition-colors"
-        on:click={() => {
+        onclick={() => {
           followRobotStore.set(false);
           const step = computeZoomStep(zoom, 1);
           const newZoom = Math.min(5.0, Number((zoom + step).toFixed(2)));
@@ -2299,7 +2324,7 @@
       </button>
       <button
         class="w-7 h-7 flex items-center justify-center rounded hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-200 transition-colors"
-        on:click={() => {
+        onclick={() => {
           followRobotStore.set(false);
           const step = computeZoomStep(zoom, -1);
           const newZoom = Math.max(0.1, Number((zoom - step).toFixed(2)));
@@ -2315,7 +2340,7 @@
       </button>
       <button
         class="w-7 h-7 flex items-center justify-center rounded hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-200 transition-colors"
-        on:click={() => {
+        onclick={() => {
           followRobotStore.set(false);
           fieldZoom.set(1.0);
           fieldPan.set({ x: 0, y: 0 });
@@ -2338,7 +2363,7 @@
       >
         <button
           class="w-8 h-8 flex items-center justify-center rounded hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-200 transition-colors"
-          on:click={() => {
+          onclick={() => {
             followRobotStore.set(false);
             const step = computeZoomStep(zoom, 1);
             const newZoom = Math.min(5.0, Number((zoom + step).toFixed(2)));
@@ -2354,7 +2379,7 @@
         </button>
         <button
           class="w-8 h-8 flex items-center justify-center rounded hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-200 transition-colors"
-          on:click={() => {
+          onclick={() => {
             followRobotStore.set(false);
             const step = computeZoomStep(zoom, -1);
             const newZoom = Math.max(0.1, Number((zoom - step).toFixed(2)));
@@ -2370,7 +2395,7 @@
         </button>
         <button
           class="w-8 h-8 flex items-center justify-center rounded hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-200 transition-colors"
-          on:click={() => {
+          onclick={() => {
             followRobotStore.set(false);
             fieldZoom.set(1.0);
             fieldPan.set({ x: 0, y: 0 });
@@ -2383,7 +2408,7 @@
         <div class="h-px bg-neutral-200 dark:bg-neutral-700 my-0.5"></div>
         <button
           class="w-8 h-8 flex items-center justify-center rounded hover:bg-red-100 dark:hover:bg-red-900/30 text-red-600 dark:text-red-400 transition-colors"
-          on:click={() => isPresentationMode.set(false)}
+          onclick={() => isPresentationMode.set(false)}
           aria-label="Exit Presentation Mode"
           title="Exit Presentation Mode (Alt+P)"
         >

@@ -16,12 +16,22 @@
   } from "../../../../utils/settingsPersistence";
   import { isBrowser } from "../../../../utils/platform";
 
-  export let settings: Settings;
-  export let searchQuery: string;
-  export let isOpen: boolean;
+  interface Props {
+    settings: Settings;
+    searchQuery: string;
+    isOpen: boolean;
+  }
 
-  let isCheckingForUpdates = false;
-  let isOnline = typeof navigator !== "undefined" ? navigator.onLine : true;
+  let {
+    settings = $bindable(),
+    searchQuery,
+    isOpen = $bindable(),
+  }: Props = $props();
+
+  let isCheckingForUpdates = $state(false);
+  let isOnline = $state(
+    typeof navigator !== "undefined" ? navigator.onLine : true,
+  );
 
   async function handleCheckForUpdates() {
     const electronAPI = (window as any).electronAPI;
@@ -135,8 +145,8 @@
 </script>
 
 <svelte:window
-  on:online={() => (isOnline = true)}
-  on:offline={() => (isOnline = false)}
+  ononline={() => (isOnline = true)}
+  onoffline={() => (isOnline = false)}
 />
 
 <div class="section-container mb-8">
@@ -207,7 +217,7 @@
     layout="row"
   >
     <button
-      on:click={() => {
+      onclick={() => {
         isOpen = false;
         startTutorial.set(true);
       }}
@@ -225,7 +235,7 @@
       layout="row"
     >
       <button
-        on:click={handleCheckForUpdates}
+        onclick={handleCheckForUpdates}
         disabled={isCheckingForUpdates}
         class="px-3 py-1.5 text-xs font-medium text-neutral-700 dark:text-neutral-300 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 rounded-md transition-colors disabled:opacity-50"
       >
@@ -256,7 +266,7 @@
     layout="row"
   >
     <button
-      on:click={() => showShortcuts.set(true)}
+      onclick={() => showShortcuts.set(true)}
       class="text-sm font-medium text-blue-600 dark:text-blue-400 hover:underline"
     >
       Open Editor
@@ -271,7 +281,7 @@
       layout="row"
     >
       <button
-        on:click={() => {
+        onclick={() => {
           isOpen = false;
           showPluginManager.set(true);
         }}
@@ -308,14 +318,14 @@
   >
     <div class="flex gap-2">
       <button
-        on:click={handleExport}
+        onclick={handleExport}
         title="Export Settings"
         class="px-3 py-1.5 text-xs font-medium text-neutral-700 dark:text-neutral-300 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 rounded-md transition-colors"
       >
         Export
       </button>
       <button
-        on:click={() =>
+        onclick={() =>
           document.getElementById("settings-import-input")?.click()}
         title="Import Settings"
         class="px-3 py-1.5 text-xs font-medium text-neutral-700 dark:text-neutral-300 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 rounded-md transition-colors"
@@ -328,7 +338,7 @@
         class="hidden"
         tabindex="-1"
         accept=".json"
-        on:change={handleImport}
+        onchange={handleImport}
       />
     </div>
   </SettingsItem>
