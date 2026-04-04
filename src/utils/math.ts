@@ -1,7 +1,6 @@
 // Copyright 2026 Matthew Allen. Licensed under the Modified Apache License, Version 2.0.
 import type { Line, Point } from "../types";
 
-// Extracted type for 2D points to DRY up function signatures
 type Point2D = { x: number; y: number };
 
 export function quadraticToCubic(P0: Point2D, P1: Point2D, P2: Point2D) {
