@@ -1701,6 +1701,12 @@
     fieldViewStore.set({ xScale: x, yScale: y, width, height });
   });
   let lines = $derived($linesStore);
+  let sequencedLines = $derived(
+    $sequenceStore
+      .filter((s) => actionRegistry.get(s.kind)?.isPath)
+      .map((s) => lines.find((l) => l.id === (s as any).lineId))
+      .filter((l): l is Line => !!l),
+  );
   let effectiveTimePrediction = $derived(
     $isDraggingStore ? null : timePrediction,
   );
@@ -1892,7 +1898,7 @@
 
       // Fallback if no simulation (e.g. initial load or error)
       return generatePathElements(
-        lines,
+        sequencedLines,
         startPoint,
         (l) => l.color,
         (l) =>
@@ -1941,7 +1947,7 @@
 
       // 2. Current Path (New/Same)
       const currentPaths = generatePathElements(
-        lines,
+        sequencedLines,
         startPoint,
         (l) => {
           // Check if same
