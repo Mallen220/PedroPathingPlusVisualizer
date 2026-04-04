@@ -1,7 +1,7 @@
 {
   "name": "turtle-tracer",
   "private": true,
-  "version": "2.0.1",
+  "version": "2.1.0",
   "main": "electron/main.js",
   "author": "Matthew Allen <FTCTurtleTracer@gmail.com>",
   "email": "FTCTurtleTracer@gmail.com",
@@ -11,7 +11,8 @@
   "scripts": {
     "fix:notice": "node scripts/generate-file-notice.js",
     "fix:headers": "node scripts/add-copyright.js",
-    "version:bump": "node scripts/bump-version.js",
+    "version:bump": "node scripts/bump-version.js && npm run lighthouse",
+    "lighthouse": "npm run build && start-server-and-test preview http://localhost:4173 'node scripts/update-lighthouse-readme-badges.js --url http://localhost:4173'",
     "generate:types": "node scripts/generate-plugin-types.js",
     "generate:icons": "node scripts/generate-windows-icons.cjs",
     "check:tiles": "node scripts/check-tile-assets.cjs",
@@ -69,6 +70,7 @@
     "prettier": "^3.8.1",
     "prettier-plugin-svelte": "^3.5.1",
     "sharp": "^0.34.5",
+    "start-server-and-test": "^3.0.0",
     "svelte": "^5.0.0",
     "svelte-check": "^4.0.0",
     "svelte-eslint-parser": "^0.42.0",

@@ -14,14 +14,35 @@
 
   <p>
     <a href="https://github.com/Mallen220/TurtleTracer/releases">
-      <img src="https://img.shields.io/github/v/release/Mallen220/TurtleTracer?style=for-the-badge&color=007AFF" alt="Latest Release">
+      <img src="https://img.shields.io/github/v/release/Mallen220/TurtleTracer?style=for-the-badge&color=007AFF" alt="Latest Release" height="28">
     </a>
     <a href="LICENSE">
-      <img src="https://img.shields.io/badge/License-Apache_2.0-00C853.svg?style=for-the-badge" alt="License">
+      <img src="README_Content/Modified-License-Apache_2.0.svg" alt="License" height="28">
     </a>
-    <img src="https://img.shields.io/badge/Platform-macOS%20|%20Windows%20|%20Linux-424242.svg?style=for-the-badge" alt="Platform">
-    <a href="https://app.codacy.com/gh/Mallen220/TurtleTracer/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade"><img src="https://app.codacy.com/project/badge/Grade/d5fa1b70a73c4a44909a222418714360"/></a>
+    <img src="https://img.shields.io/badge/Platform-macOS%20|%20Windows%20|%20Linux-424242.svg?style=for-the-badge" alt="Platform" height="28">
   </p>
+
+<p>
+    <a href="https://app.codacy.com/gh/Mallen220/TurtleTracer/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade"><img src="https://app.codacy.com/project/badge/Grade/d5fa1b70a73c4a44909a222418714360"/></a>
+    <a href="https://app.codacy.com/gh/Mallen220/TurtleTracer/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_coverage"><img src="https://app.codacy.com/project/badge/Coverage/d5fa1b70a73c4a44909a222418714360"/></a>
+</p>
+  <!-- LIGHTHOUSE_BADGES_START -->
+  <p>
+    <a href="https://github.com/GoogleChrome/lighthouse">
+      <img src="README_Content/lighthouse-badges/lighthouse_accessibility.svg" alt="Lighthouse Accessibility Badge">
+    </a>
+    <a href="https://github.com/GoogleChrome/lighthouse">
+      <img src="README_Content/lighthouse-badges/lighthouse_best-practices.svg" alt="Lighthouse Best Practices Badge">
+    </a>
+    <a href="https://github.com/GoogleChrome/lighthouse">
+      <img src="README_Content/lighthouse-badges/lighthouse_performance.svg" alt="Lighthouse Performance Badge">
+    </a>
+    <a href="https://github.com/GoogleChrome/lighthouse">
+      <img src="README_Content/lighthouse-badges/lighthouse_seo.svg" alt="Lighthouse SEO Badge">
+    </a>
+  </p>
+  <p><sub>Lighthouse badges generated for v2.1.0</sub></p>
+  <!-- LIGHTHOUSE_BADGES_END -->
 
   <a href="https://apps.microsoft.com/detail/9nk0b4fdj3zw?referrer=appbadge&mode=full" target="_blank" rel="noopener noreferrer">
     <img src="https://get.microsoft.com/images/en-us%20dark.svg" width="180" alt="Get it from Microsoft">
@@ -203,6 +224,9 @@ cd TurtleTracer
 # Install dependencies and start the dev server
 npm install
 npm run dev
+
+# Generate and refresh Lighthouse badges in README (for your deployed URL)
+npm run badges:lighthouse -- --url https://live.turtletracer.com/
 
 # Build for your current platform
 npm run dist

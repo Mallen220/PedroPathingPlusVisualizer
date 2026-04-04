@@ -670,11 +670,8 @@
             : "Copy as Markdown"}
           aria-label="Copy content"
         >
-          {#if activeTab !== "graphs"}
-            <ClipboardIcon className="size-5" />
-          {:else}
-            <PhotoIcon className="size-5" />
-          {/if}
+        <ClipboardIcon className="size-5" />
+          
         </button>
         <button
           onclick={onClose}
