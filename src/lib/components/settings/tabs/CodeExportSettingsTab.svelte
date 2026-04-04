@@ -6,6 +6,7 @@
   import type { Settings } from "../../../../types/index";
   import { currentFilePath, currentDirectoryStore } from "../../../../stores";
   import * as ICONS from "../../icons";
+  import { isBrowser } from "../../../../utils/platform";
 
   interface Props {
     settings: Settings;
@@ -82,6 +83,7 @@
     </h4>
   {/if}
 
+  {#if !isBrowser}
   <SettingsItem
     label="Auto Export Code"
     isModified={settings.autoExportCode !== DEFAULT_SETTINGS.autoExportCode}
@@ -345,5 +347,6 @@
         </div>
       {/if}
     </div>
+  {/if}
   {/if}
 </div>
