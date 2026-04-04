@@ -13,13 +13,7 @@ describe('platform', () => {
   });
 
   afterEach(() => {
-    global.navigator = originalNavigator;
-    global.window = originalWindow;
-    Object.defineProperty(global.process, 'platform', {
-      value: originalProcessPlatform,
-      writable: true,
-      configurable: true,
-    });
+    vi.unstubAllGlobals();
     vi.resetModules();
   });
 
