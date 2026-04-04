@@ -682,9 +682,9 @@
           }
         }); // End of multiSelectedPointIds.forEach
 
-        if (linesChanged) linesStore.set(lines);
-        if (shapesChanged) shapesStore.set(shapes);
-        if (startPointChanged) startPointStore.set(startPoint);
+        if (linesChanged) linesStore.set([...lines]);
+        if (shapesChanged) shapesStore.set([...shapes]);
+        if (startPointChanged) startPointStore.set({...startPoint});
       } else if (isPanning) {
         // Panning Logic
         followRobotStore.set(false);
@@ -1675,13 +1675,15 @@
     fieldViewStore.set({ xScale: x, yScale: y, width, height });
   });
   let lines = $derived($linesStore);
+  let effectiveTimePrediction = $derived($isDraggingStore ? null : timePrediction);
+
   // Derived Values from Stores
   let startPoint = $derived($startPointStore);
   let settings = $derived($settingsStore);
   let mecanumSpeeds = $derived(
     calculateDrivetrainSpeeds(
       $percentStore,
-      timePrediction,
+      effectiveTimePrediction,
       lines,
       startPoint,
       settings,
@@ -1796,7 +1798,7 @@
       x,
       y,
       robotXY,
-      timePrediction,
+      timePrediction: effectiveTimePrediction,
       percentStore: $percentStore,
     }),
   );
@@ -1806,6 +1808,8 @@
       x;
       y; // Trigger reactivity on pan/zoom
       dimmedIds; // Trigger reactivity on selection/dimmed changes
+      lines; // Trigger reactivity when lines are modified during drag
+      startPoint; // Trigger reactivity when start point is modified
       if (isDiffMode) return []; // Don't render standard path in diff mode
       const currentSelectedId = $selectedLineId;
 
@@ -1816,11 +1820,11 @@
 
       // Start with standard lines for the basic "lines" array.
       // To include macro/bridge lines, iterate timeline travel events directly when available.
-      if (timePrediction && timePrediction.timeline) {
+      if (effectiveTimePrediction && effectiveTimePrediction.timeline) {
         const paths: any[] = [];
 
         // Filter travel events
-        const travelEvents = timePrediction.timeline.filter(
+        const travelEvents = effectiveTimePrediction.timeline.filter(
           (e: any) => e.type === "travel" && e.line,
         );
 
@@ -1842,7 +1846,7 @@
             (l) => l.color || "#60a5fa",
             (l) => width,
             `timeline-path-${idx}`,
-            { x, y, uiLength, settings, timePrediction, dimmedIds },
+            { x, y, uiLength, settings, timePrediction: effectiveTimePrediction, dimmedIds },
             isMainLine,
           );
           paths.push(...elems);
@@ -1861,7 +1865,7 @@
             ? uiLength(LINE_WIDTH * 2.5)
             : uiLength(LINE_WIDTH),
         "",
-        { x, y, uiLength, settings, timePrediction, dimmedIds },
+        { x, y, uiLength, settings, timePrediction: effectiveTimePrediction, dimmedIds },
         true,
       );
     })(),
@@ -1881,7 +1885,7 @@
             () => "#ef4444", // Red
             () => uiLength(LINE_WIDTH),
             "diff-old",
-            { x, y, uiLength, settings, timePrediction, dimmedIds },
+            { x, y, uiLength, settings, timePrediction: effectiveTimePrediction, dimmedIds },
             false,
           )
         : [];
@@ -1898,7 +1902,7 @@
         },
         (l) => uiLength(LINE_WIDTH), // No selection highlight in diff mode? Or maybe yes.
         "diff-new",
-        { x, y, uiLength, settings, timePrediction, dimmedIds },
+        { x, y, uiLength, settings, timePrediction: effectiveTimePrediction, dimmedIds },
         false,
       );
 
@@ -1932,7 +1936,7 @@
   let onionLayerElements = $derived(
     generateOnionLayerElements(lines, startPoint, {
       settings,
-      timePrediction,
+      timePrediction: effectiveTimePrediction,
       percentStore: $percentStore,
     }),
   );
@@ -1953,7 +1957,7 @@
       hoveredMarkerId: $hoveredMarkerId,
       multiSelectedPointIds: $multiSelectedPointIds,
       settings,
-      timePrediction,
+      timePrediction: effectiveTimePrediction,
       selectedLineId: $selectedLineId,
       selectedPointId: $selectedPointId,
       actionRegistry,
@@ -1961,7 +1965,7 @@
   );
   // Collision Markers
   let collisionElements = $derived(
-    generateCollisionElements(markers, lines, startPoint, timePrediction, {
+    generateCollisionElements(markers, lines, startPoint, effectiveTimePrediction, {
       x,
       y,
       uiLength,
