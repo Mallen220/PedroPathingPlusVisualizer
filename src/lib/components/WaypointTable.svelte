@@ -7,7 +7,7 @@
     SequenceItem,
     SequenceMacroItem,
   } from "../../types/index";
-  import { loadMacro } from "../projectStore";
+  import { loadMacro, ensureSequenceConsistency } from "../projectStore";
   import {
     reorderSequence,
     getClosestTarget,
@@ -568,29 +568,9 @@
 
   // Watch for missing sequence entries and repair once to keep UI in sync
   $effect(() => {
-    if (Array.isArray(lines) && Array.isArray(sequence) && !repairedOnce) {
-      const missing = lines.filter(
-        (l) =>
-          !l.isMacroElement &&
-          !sequence.some(
-            (s) =>
-              actionRegistry.get(s.kind)?.isPath && (s as any).lineId === l.id,
-          ),
-      );
-      if (missing.length) {
-        console.warn(
-          "[WaypointTable] repairing missing sequence items:",
-          missing.map((m) => m.id),
-        );
-        sequence = [
-          ...sequence,
-          ...missing.map(
-            (l) => ({ kind: "path", lineId: l.id || "" }) as SequenceItem,
-          ),
-        ];
-        repairedOnce = true;
-        if (recordChange) recordChange();
-      }
+    if (lines && sequence && !repairedOnce) {
+      ensureSequenceConsistency();
+      repairedOnce = true;
     }
   });
 

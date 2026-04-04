@@ -729,6 +729,7 @@
 
   // Exported for tests
   export async function recordChange(description: string = "Change") {
+    ensureSequenceConsistency();
     refreshMacros();
     previewOptimizedLines = null;
     history.record(getAppState(), description);

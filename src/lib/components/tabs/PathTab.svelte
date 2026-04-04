@@ -33,7 +33,11 @@
     currentFilePath,
     notification,
   } from "../../../stores";
-  import { loadMacro, macrosStore } from "../../../lib/projectStore";
+  import {
+    loadMacro,
+    macrosStore,
+    ensureSequenceConsistency,
+  } from "../../../lib/projectStore";
   import { get } from "svelte/store";
   import { actionRegistry } from "../../actionRegistry";
   import { getButtonFilledClass } from "../../../utils/buttonStyles";
@@ -854,36 +858,9 @@
       : [],
   );
   run(() => {
-    if (
-      Array.isArray(lines) &&
-      Array.isArray(sequence) &&
-      !repairedSequenceOnce
-    ) {
-      const lineIds = new Set(lines.map((l) => l.id));
-      const pruned = sequence.filter(
-        (s) => s.kind !== "path" || lineIds.has((s as any).lineId),
-      );
-      const presentIds = new Set(
-        pruned.filter((s) => s.kind === "path").map((s) => (s as any).lineId),
-      );
-      const missing = lines.filter(
-        (l) => !presentIds.has(l.id) && !l.isMacroElement,
-      );
-
-      if (missing.length || pruned.length !== sequence.length) {
-        sequence = [
-          ...pruned,
-          ...missing.map(
-            (l) =>
-              ({
-                kind: "path",
-                lineId: l.id as string,
-              }) as unknown as SequenceItem,
-          ),
-        ];
-        repairedSequenceOnce = true;
-        recordChange?.("Repair Sequence");
-      }
+    if (lines && sequence && !repairedSequenceOnce) {
+      ensureSequenceConsistency();
+      repairedSequenceOnce = true;
     }
   });
   let debugSequenceIds = $derived(

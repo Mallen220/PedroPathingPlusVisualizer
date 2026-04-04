@@ -416,7 +416,7 @@ export function importJavaProject(javaCode: string): TurtleData {
               // To map the name properly: Look for the name of the end point if possible
               // In addPath(new BezierLine(start, end)), 'end' is the last identifier.
               // Let's find what the last identifier string was from our argument parsing
-              let pointName = pathName;
+              let pointName = addPathIndices.length > 1 ? `${pathName} - ${pathIdx + 1}` : pathName;
               if (args.length > 1) {
                 const lastArgToks = args[args.length - 1];
                 const pName = lastArgToks.find(
@@ -439,6 +439,7 @@ export function importJavaProject(javaCode: string): TurtleData {
                 endPoint: { ...endPt }, // Clone to allow modifying heading just for this line
                 controlPoints: controlPts,
                 color: getRandomColor(),
+                isChain: pathIdx > 0,
                 eventMarkers: [],
               };
 
@@ -580,16 +581,12 @@ export function importJavaProject(javaCode: string): TurtleData {
               const isReversed = pathTokens.includes("setReversed");
               (line.endPoint as any).reverse = isReversed;
 
-              // If this is a subsequent path in a chain builder, mark it as chained
-              if (pathIdx > 0) {
-                line.isChain = true;
-              }
-
               lines.push(line);
 
               sequence.push({
                 kind: "path",
                 lineId: lineId,
+                isChain: pathIdx > 0,
               } as any);
             }
           }

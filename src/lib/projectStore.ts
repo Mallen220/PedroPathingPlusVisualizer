@@ -68,10 +68,28 @@ export function sanitizeSequence(
     (l) => !presentIds.has(l.id) && !l.isMacroElement,
   );
 
-  return [
-    ...pruned,
-    ...missing.map((l) => ({ kind: "path", lineId: l.id }) as SequencePathItem),
+  // Ensure isChain is synced from lines for ALL path items in the sequence
+  const fullySanitized = [
+    ...pruned.map((s) => {
+      if (actionRegistry.get(s.kind)?.isPath) {
+        const line = lines.find((l) => l.id === (s as any).lineId);
+        if (line && line.isChain !== (s as any).isChain) {
+          return { ...s, isChain: line.isChain };
+        }
+      }
+      return s;
+    }),
+    ...missing.map(
+      (l) =>
+        ({
+          kind: "path",
+          lineId: l.id,
+          isChain: l.isChain,
+        }) as SequencePathItem,
+    ),
   ];
+
+  return fullySanitized;
 }
 
 // Helper: renumber default path names to match display order
