@@ -12,7 +12,7 @@ const createMockStorage = () => {
         delete mockStorage[key];
       }
     },
-    length: 0,
+    get length() { return Object.keys(mockStorage).length; },
     key: (index: number) => Object.keys(mockStorage)[index] || null,
   };
 };
