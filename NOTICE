@@ -428,6 +428,7 @@ scripts/update-lighthouse-readme-badges.js
 src/setupTests.ts
 src/tests/ExportGifDialogWrapper.svelte
 tsconfig.json
+src/types/types.d.ts
 src/tests/icons.test.ts
 src/tests/math.test.ts
 src/tests/contextMenu.test.ts
