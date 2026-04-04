@@ -56,6 +56,15 @@ contextBridge.exposeInMainWorld("electronAPI", {
   // Git operations
   gitShow: (filePath) => ipcRenderer.invoke("git:show", filePath),
   gitStatus: (directory) => ipcRenderer.invoke("git:status", directory),
+  gitListGithubFolders: (repoUrl) =>
+    ipcRenderer.invoke("git:list-github-folders", repoUrl),
+  gitPullFromGithub: (repoUrl, targetDir, baseRepoPath) =>
+    ipcRenderer.invoke(
+      "git:pull-from-github",
+      repoUrl,
+      targetDir,
+      baseRepoPath,
+    ),
 
   // Renderer ready signal
   rendererReady: () => ipcRenderer.invoke("renderer-ready"),

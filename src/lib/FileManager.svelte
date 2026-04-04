@@ -18,6 +18,14 @@
           newPath: string,
         ) => Promise<{ success: boolean; newPath: string }>;
         resolvePath?: (base: string, relative: string) => Promise<string>;
+        gitListGithubFolders?: (
+          repoUrl: string,
+        ) => Promise<{ success: boolean; folders?: string[]; error?: string }>;
+        gitPullFromGithub?: (
+          repoUrl: string,
+          targetDir: string,
+          baseRepoPath: string,
+        ) => Promise<{ success: boolean; error?: string }>;
       };
     }
   }
@@ -74,6 +82,7 @@
 
   import FileManagerToolbar from "./components/filemanager/FileManagerToolbar.svelte";
   import FileManagerBreadcrumbs from "./components/filemanager/FileManagerBreadcrumbs.svelte";
+  import GitHubImportDialog from "./components/filemanager/GitHubImportDialog.svelte";
   import FileList from "./components/filemanager/FileList.svelte";
   import FileGrid from "./components/filemanager/FileGrid.svelte";
   import LoadingSpinner from "./components/common/LoadingSpinner.svelte";
@@ -121,6 +130,9 @@
   let fileInput: HTMLInputElement | undefined = $state();
   let javaInput: HTMLInputElement | undefined = $state();
   let showAddMenu = $state(false);
+
+  let showGitHubDialog = $state(false);
+  let gitHubUrl = $state("");
 
   function handleAddMenuToggle(e: MouseEvent) {
     e.stopPropagation();
@@ -447,6 +459,17 @@
   async function changeDirectoryManual(e: CustomEvent<string>) {
     const newDir = e.detail;
     if (!newDir) return;
+
+    // Check if it looks like a github link
+    if (newDir.startsWith("http://github.com/") || newDir.startsWith("https://github.com/") || newDir.startsWith("github.com/")) {
+       let url = newDir;
+       if (url.startsWith("github.com/")) {
+         url = "https://" + url;
+       }
+       gitHubUrl = url;
+       showGitHubDialog = true;
+       return;
+    }
 
     try {
       // Ensure the manual directory is still within the base directory
@@ -1438,6 +1461,18 @@
 
             <button
               onclick={() => {
+                gitHubUrl = "";
+                showGitHubDialog = true;
+                showAddMenu = false;
+              }}
+              class="px-4 py-2 text-sm text-left text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700 flex items-center gap-2"
+            >
+              <CloudArrowDownIcon className="size-4 text-sky-500" />
+              Import from GitHub
+            </button>
+
+            <button
+              onclick={() => {
                 isOpen = false;
                 showTelemetryDialog.set(true);
                 showAddMenu = false;
@@ -1450,6 +1485,18 @@
           </div>
         {/if}
       </div>
+
+      {#if showGitHubDialog}
+        <GitHubImportDialog
+          bind:isOpen={showGitHubDialog}
+          initialUrl={gitHubUrl}
+          targetDirectory={currentDirectory}
+          on:imported={() => {
+            showGitHubDialog = false;
+            refreshDirectory();
+          }}
+        />
+      {/if}
 
       <!-- Hidden Inputs for Imports -->
       <input
