@@ -736,8 +736,6 @@ export function calculatePathTime(
           // We will NOT insert a wait block. We just leave currentHeading as is for the start of travel.
       }
 
-      const chainRotationRequired = isChained && diff > 0.1 ? diff : 0;
-
       // --- TRAVEL ANALYSIS ---
       // Pass currentHeading to start tracking
       const analysis = analyzePathSegment(
@@ -771,17 +769,23 @@ export function calculatePathTime(
 
         // Build heading profile if Tangential
         if (line.endPoint.heading === "tangential") {
-          headingProfile = [analysis.startHeading]; // Start
-          for (const step of analysis.steps) {
-            headingProfile.push(step.heading);
+          headingProfile = [currentHeading]; // Start
+
+          if (isChained) {
+             const samples = analysis.steps.length;
+             const targetEndHeading = unwrapAngle(getLineEndHeading(line, prevPoint), currentHeading);
+             for (let i = 1; i <= samples; i++) {
+                const ratio = i / samples;
+                // Interpolate from currentHeading to targetEndHeading
+                headingProfile.push(currentHeading + (targetEndHeading - currentHeading) * ratio);
+             }
+          } else {
+              for (const step of analysis.steps) {
+                headingProfile.push(step.heading);
+              }
           }
         } else if (line.endPoint.heading === "facingPoint") {
-          const targetX = (line.endPoint as any).targetX || 0;
-          const targetY = (line.endPoint as any).targetY || 0;
-          headingProfile = [currentHeading];
-          for (const step of analysis.steps) {
-            headingProfile.push(step.heading);
-          }
+          // facingPoint is handled below with more context
         }
       } else {
         const avgVelocity =
@@ -797,15 +801,30 @@ export function calculatePathTime(
       let endHeading = endHeadingRaw;
 
       if (line.endPoint.heading === "tangential") {
-        endHeading = currentHeading + analysis.netRotation;
-        rotationRequired = analysis.tangentRotation;
+        if (isChained) {
+            endHeading = unwrapAngle(endHeadingRaw, currentHeading);
+            rotationRequired = Math.abs(endHeading - currentHeading);
+        } else {
+            endHeading = currentHeading + analysis.netRotation;
+            rotationRequired = analysis.tangentRotation;
+        }
       } else if (line.endPoint.heading === "constant") {
         // Constant heading, apply reverse by flipping 180°
         const constDeg = line.endPoint.reverse
           ? line.endPoint.degrees + 180
           : line.endPoint.degrees;
         endHeading = unwrapAngle(constDeg, currentHeading);
-        rotationRequired = 0;
+        rotationRequired = Math.abs(endHeading - currentHeading);
+
+        if (useMotionProfile && isChained && Math.abs(endHeading - currentHeading) > 0.001) {
+            headingProfile = [currentHeading];
+            const samples = analysis.steps.length;
+            const diff = endHeading - currentHeading;
+            for (let i = 1; i <= samples; i++) {
+                const ratio = i / samples;
+                headingProfile.push(currentHeading + diff * ratio);
+            }
+        }
       } else if (line.endPoint.heading === "linear") {
         const startDeg = line.endPoint.startDeg;
         const endDeg = line.endPoint.endDeg;
@@ -820,11 +839,16 @@ export function calculatePathTime(
 
           if (useMotionProfile) {
             headingProfile = [currentHeading];
-            const baseline = unwrapAngle(startDeg, currentHeading);
+            const targetStartHeading = unwrapAngle(startDeg, currentHeading);
             const samples = analysis.steps.length;
             for (let i = 1; i <= samples; i++) {
               const ratio = i / samples;
-              headingProfile!.push(baseline + longDiff * ratio);
+              if (isChained) {
+                 headingProfile!.push(currentHeading + (endHeading - currentHeading) * ratio);
+              } else {
+                 const interpolatedHeading = targetStartHeading + longDiff * ratio;
+                 headingProfile!.push(interpolatedHeading);
+              }
             }
           }
         } else {
@@ -837,9 +861,12 @@ export function calculatePathTime(
             const samples = analysis.steps.length;
             for (let i = 1; i <= samples; i++) {
               const ratio = i / samples;
-              headingProfile!.push(
-                startUnwound + (endHeading - startUnwound) * ratio,
-              );
+              if (isChained) {
+                  headingProfile!.push(currentHeading + (endHeading - currentHeading) * ratio);
+              } else {
+                  const interpolatedHeading = startUnwound + (endHeading - startUnwound) * ratio;
+                  headingProfile!.push(interpolatedHeading);
+              }
             }
           }
         }
@@ -868,9 +895,14 @@ export function calculatePathTime(
             let angle =
               Math.atan2(targetY - pos.y, targetX - pos.x) * (180 / Math.PI);
             if ((line.endPoint as any).reverse) angle += 180;
-            headingProfile.push(
-              unwrapAngle(angle, headingProfile[headingProfile.length - 1]),
-            );
+            const targetHeading = unwrapAngle(angle, headingProfile[headingProfile.length - 1]);
+
+            if (isChained) {
+                const ratio = i / samples;
+                headingProfile.push(currentHeading + (targetHeading - currentHeading) * ratio);
+            } else {
+                headingProfile.push(targetHeading);
+            }
           }
         }
         rotationRequired = Math.abs(endHeading - currentHeading);
@@ -878,9 +910,10 @@ export function calculatePathTime(
 
       if (!Number.isFinite(endHeading)) endHeading = currentHeading;
 
-      // Ensure any chained rotation required is factored in so the segment takes at least
-      // as long as the robot needs to turn.
-      const totalRotationRequiredForSegment = rotationRequired + chainRotationRequired;
+      // Calculate absolute required rotation to ensure the segment takes at least
+      // as long as the robot needs to physically turn from start to finish.
+      // If chained, it is just the diff from current to end.
+      const totalRotationRequiredForSegment = isChained ? Math.abs(endHeading - currentHeading) : rotationRequired;
 
       // Use simple velocity check for segment duration max check
       // This maintains continuity with previous logic that didn't penalize smooth travel
