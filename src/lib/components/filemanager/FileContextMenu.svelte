@@ -4,6 +4,7 @@
   import { createEventDispatcher, onMount } from "svelte";
   import { run } from "svelte/legacy";
   import { fade } from "svelte/transition";
+  import { menuNavigation } from "../../actions/menuNavigation";
   import {
     ArrowRightIcon,
     ArrowDownTrayIcon,
@@ -71,11 +72,14 @@
 </script>
 
 <div
+  use:menuNavigation
+  onclose={() => dispatch("close")}
   bind:this={menuElement}
   class="fixed z-[1200] min-w-[160px] py-1 bg-white dark:bg-neutral-800 rounded-lg shadow-xl border border-neutral-200 dark:border-neutral-700 text-sm"
   style="top: {adjustedY}px; left: {adjustedX}px;"
   transition:fade={{ duration: 100 }}
   role="menu"
+  tabindex="-1"
 >
   <div
     class="px-3 py-1.5 text-xs font-semibold text-neutral-400 dark:text-neutral-500 border-b border-neutral-100 dark:border-neutral-700 mb-1 truncate max-w-[200px]"
