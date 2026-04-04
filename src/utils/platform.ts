@@ -1,5 +1,4 @@
 // Copyright 2026 Matthew Allen. Licensed under the Modified Apache License, Version 2.0.
-
 export function platform(): string {
   if (typeof process !== "undefined" && process.platform) {
     return process.platform;

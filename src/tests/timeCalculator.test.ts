@@ -111,7 +111,10 @@ describe("Time Calculator", () => {
     });
 
     it("handles zero or undefined maxAngularAcceleration", () => {
-      const settingsNoAngAccel = { ...defaultSettings, maxAngularAcceleration: 0 };
+      const settingsNoAngAccel = {
+        ...defaultSettings,
+        maxAngularAcceleration: 0,
+      };
       // with maxAccel=5, rWidth=18 -> maxAngAccel = 5/9 = 0.555
       const res = calculateRotationTime(90, settingsNoAngAccel);
       expect(res).toBeCloseTo(3.36, 1);
@@ -268,8 +271,21 @@ describe("Time Calculator", () => {
         color: "#fff",
       },
     ];
-    const zeroVelSettings: Settings = { ...defaultSettings, xVelocity: 0, yVelocity: 0, maxVelocity: 0, maxAcceleration: 0, maxDeceleration: 0 };
-    const badStart: Point = { x: 0, y: 0, heading: "linear", startDeg: NaN, endDeg: NaN };
+    const zeroVelSettings: Settings = {
+      ...defaultSettings,
+      xVelocity: 0,
+      yVelocity: 0,
+      maxVelocity: 0,
+      maxAcceleration: 0,
+      maxDeceleration: 0,
+    };
+    const badStart: Point = {
+      x: 0,
+      y: 0,
+      heading: "linear",
+      startDeg: NaN,
+      endDeg: NaN,
+    };
 
     const result = calculatePathTime(badStart, lines, zeroVelSettings);
     expect(Number.isFinite(result.totalTime)).toBe(true);

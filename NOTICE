@@ -433,3 +433,9 @@ src/tests/icons.test.ts
 src/tests/math.test.ts
 src/tests/contextMenu.test.ts
 src/tests/fileContextMenu.test.ts
+src/tests/components/renderer/generators.test.ts
+src/tests/components/shortcuts/properties.test.ts
+src/tests/components/whats-new/features.test.ts
+src/tests/fieldRendererHeading.test.ts
+src/utils/platform.test.ts
+src/utils/platform.ts

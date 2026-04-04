@@ -266,7 +266,16 @@ export async function generateJavaCode(
               .join("");
           }
 
-          return { line, variableName, curveType, startCode, controlPointsCode, endCode, headingMethodCode, eventMarkerCode };
+          return {
+            line,
+            variableName,
+            curveType,
+            startCode,
+            controlPointsCode,
+            endCode,
+            headingMethodCode,
+            eventMarkerCode,
+          };
         });
 
         // Consolidate chained paths
@@ -278,23 +287,22 @@ export async function generateJavaCode(
 
           if (!pd.line.isChain) {
             if (currentBlock) {
-               currentBlock += "\n        .build();";
-               consolidatedBlocks.push(currentBlock);
+              currentBlock += "\n        .build();";
+              consolidatedBlocks.push(currentBlock);
             }
             currentBlock = `${pd.variableName} = follower.pathBuilder()\n        .addPath(\n          ${pd.curveType}(\n            ${pd.startCode},\n            ${pd.controlPointsCode}\n            ${pd.endCode}\n          )\n        )${pd.headingMethodCode}${pd.eventMarkerCode}`;
           } else {
-             currentBlock += `\n        .addPath(\n          ${pd.curveType}(\n            ${pd.startCode},\n            ${pd.controlPointsCode}\n            ${pd.endCode}\n          )\n        )${pd.headingMethodCode}${pd.eventMarkerCode}`;
+            currentBlock += `\n        .addPath(\n          ${pd.curveType}(\n            ${pd.startCode},\n            ${pd.controlPointsCode}\n            ${pd.endCode}\n          )\n        )${pd.headingMethodCode}${pd.eventMarkerCode}`;
           }
         }
 
         if (currentBlock) {
-           currentBlock += "\n        .build();";
-           consolidatedBlocks.push(currentBlock);
+          currentBlock += "\n        .build();";
+          consolidatedBlocks.push(currentBlock);
         }
 
         return consolidatedBlocks.join("\n\n");
-      })()
-    }
+      })()}
   }}
 
     ${
@@ -387,23 +395,23 @@ export async function generateJavaCode(
       if (idx !== -1) {
         const line = lines[idx];
         if (line.isChain) {
-            // Chained paths don't get their own followPath command in the state machine,
-            // they are executed as part of the root chain path before them.
-            stateMachineCode += `\n          // Handled by previous chained path`;
-            stateMachineCode += `\n          setPathState(${stateStep + 1});`;
-            stateMachineCode += `\n          break;`;
-            stateStep += 1;
+          // Chained paths don't get their own followPath command in the state machine,
+          // they are executed as part of the root chain path before them.
+          stateMachineCode += `\n          // Handled by previous chained path`;
+          stateMachineCode += `\n          setPathState(${stateStep + 1});`;
+          stateMachineCode += `\n          break;`;
+          stateStep += 1;
         } else {
-            stateMachineCode += `\n          follower.followPath(paths.${pathChainNames[idx]}, true);`;
-            stateMachineCode += `\n          setPathState(${stateStep + 1});`;
-            stateMachineCode += `\n          break;`;
+          stateMachineCode += `\n          follower.followPath(paths.${pathChainNames[idx]}, true);`;
+          stateMachineCode += `\n          setPathState(${stateStep + 1});`;
+          stateMachineCode += `\n          break;`;
 
-            stateMachineCode += `\n        case ${stateStep + 1}:`;
-            stateMachineCode += `\n          if(!follower.isBusy()) {`;
-            stateMachineCode += `\n            setPathState(${stateStep + 2});`;
-            stateMachineCode += `\n          }`;
-            stateMachineCode += `\n          break;`;
-            stateStep += 2;
+          stateMachineCode += `\n        case ${stateStep + 1}:`;
+          stateMachineCode += `\n          if(!follower.isBusy()) {`;
+          stateMachineCode += `\n            setPathState(${stateStep + 2});`;
+          stateMachineCode += `\n          }`;
+          stateMachineCode += `\n          break;`;
+          stateStep += 2;
         }
       } else {
         stateMachineCode += `\n          setPathState(${stateStep + 1});`;
@@ -927,7 +935,7 @@ export async function generateSequentialCommandCode(
 
     // Skip generating an individual FollowPath command if this line is part of a chained group (but not the first)
     if (line.isChain) {
-        return;
+      return;
     }
 
     // The name of the entire PathChain is the pathName of the root path
@@ -938,11 +946,11 @@ export async function generateSequentialCommandCode(
     let allEventMarkers = [...(line.eventMarkers || [])];
     let nextIdx = lineIdx + 1;
     while (nextIdx < lines.length && lines[nextIdx].isChain) {
-        const nextMarkers = lines[nextIdx].eventMarkers;
-        if (nextMarkers && nextMarkers.length > 0) {
-            allEventMarkers.push(...nextMarkers);
-        }
-        nextIdx++;
+      const nextMarkers = lines[nextIdx].eventMarkers;
+      if (nextMarkers && nextMarkers.length > 0) {
+        allEventMarkers.push(...nextMarkers);
+      }
+      nextIdx++;
     }
 
     // Construct FollowPath instantiation
@@ -1031,9 +1039,7 @@ export async function generateSequentialCommandCode(
     if (isCurve) {
       const controlPoints: string[] = [];
       line.controlPoints.forEach((cp) => {
-        controlPoints.push(
-          `new Pose(${cp.x.toFixed(3)}, ${cp.y.toFixed(3)})`,
-        );
+        controlPoints.push(`new Pose(${cp.x.toFixed(3)}, ${cp.y.toFixed(3)})`);
       });
       controlPointsStr = controlPoints.join(", ") + ", ";
     }
