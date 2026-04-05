@@ -1,6 +1,9 @@
 // Copyright 2026 Matthew Allen. Licensed under the Modified Apache License, Version 2.0.
 import { describe, it, expect, vi } from "vitest";
-import { calculateDrivetrainSpeeds, fieldToRobotCentric } from "../../../utils/drivetrain/velocity";
+import {
+  calculateDrivetrainSpeeds,
+  fieldToRobotCentric,
+} from "../../../utils/drivetrain/velocity";
 import * as animation from "../../../utils/animation";
 
 vi.mock("../../../utils/animation", () => ({

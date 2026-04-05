@@ -153,7 +153,7 @@ describe("nameGenerator", () => {
       ];
       // When duplicating "Name duplicate 9", it checks 9+1=10 which exists, then 11 which exists, then 12.
       expect(generateName("Name duplicate 9", existing)).toBe(
-        "Name duplicate 12"
+        "Name duplicate 12",
       );
     });
 

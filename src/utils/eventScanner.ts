@@ -11,7 +11,7 @@ export interface EventMatch {
 
 export function scanForEvents(
   path: Point[],
-  markers: EventMarker[]
+  markers: EventMarker[],
 ): EventMatch[] {
   if (!path || path.length === 0 || !markers || markers.length === 0) {
     return [];
@@ -30,7 +30,8 @@ export function scanForEvents(
   const matches: EventMatch[] = [];
 
   for (const marker of markers) {
-    const targetDistance = totalDistance * Math.max(0, Math.min(1, marker.position));
+    const targetDistance =
+      totalDistance * Math.max(0, Math.min(1, marker.position));
 
     let closestPoint = path[0];
     let closestPointDistance = distances[0];

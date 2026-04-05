@@ -124,7 +124,9 @@ describe("Global Stores", () => {
       const windowMock = global.window as any;
 
       expect(windowMock.showUpdateAvailableDialog).toBeDefined();
-      expect(windowMock.showUpdateAvailableDialog).toBe(dynamicStores.showUpdateAvailableDialog);
+      expect(windowMock.showUpdateAvailableDialog).toBe(
+        dynamicStores.showUpdateAvailableDialog,
+      );
     });
   });
 });

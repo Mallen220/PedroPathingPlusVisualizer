@@ -1,10 +1,7 @@
 // Copyright 2026 Matthew Allen. Licensed under the Modified Apache License, Version 2.0.
 import type { KeyBinding } from "../types";
 
-export function matchShortcut(
-  event: KeyboardEvent,
-  shortcut: string
-): boolean {
+export function matchShortcut(event: KeyboardEvent, shortcut: string): boolean {
   if (!shortcut) return false;
 
   const options = shortcut.split(",").map((s) => s.trim());
@@ -24,7 +21,8 @@ export function matchShortcut(
       if (part === "ctrl" || part === "control") needsCtrl = true;
       else if (part === "shift") needsShift = true;
       else if (part === "alt") needsAlt = true;
-      else if (part === "cmd" || part === "command" || part === "meta") needsMeta = true;
+      else if (part === "cmd" || part === "command" || part === "meta")
+        needsMeta = true;
       else keyPart = part;
     }
 

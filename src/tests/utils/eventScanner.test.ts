@@ -9,7 +9,9 @@ describe("scanForEvents", () => {
     const path: Point[] = [{ x: 0, y: 0, heading: "tangential" }];
     const markers: EventMarker[] = [];
     expect(scanForEvents(path, markers)).toEqual([]);
-    expect(scanForEvents([], [{ id: "1", name: "m", position: 0 }])).toEqual([]);
+    expect(scanForEvents([], [{ id: "1", name: "m", position: 0 }])).toEqual(
+      [],
+    );
   });
 
   it("should match marker at position 0 to the first point", () => {
@@ -18,7 +20,7 @@ describe("scanForEvents", () => {
       { x: 10, y: 0, heading: "tangential" },
     ];
     const markers: EventMarker[] = [
-      { id: "1", name: "startMarker", position: 0 }
+      { id: "1", name: "startMarker", position: 0 },
     ];
 
     const matches = scanForEvents(path, markers);
@@ -35,7 +37,7 @@ describe("scanForEvents", () => {
       { x: 20, y: 0, heading: "tangential" },
     ];
     const markers: EventMarker[] = [
-      { id: "1", name: "endMarker", position: 1 }
+      { id: "1", name: "endMarker", position: 1 },
     ];
 
     const matches = scanForEvents(path, markers);
@@ -52,7 +54,7 @@ describe("scanForEvents", () => {
       { x: 20, y: 0, heading: "tangential" },
     ];
     const markers: EventMarker[] = [
-      { id: "1", name: "midMarker", position: 0.5 }
+      { id: "1", name: "midMarker", position: 0.5 },
     ];
 
     const matches = scanForEvents(path, markers);
@@ -73,7 +75,7 @@ describe("scanForEvents", () => {
     const markers: EventMarker[] = [
       { id: "1", name: "m1", position: 0.25 }, // should map to distance 5, index 1
       { id: "2", name: "m2", position: 0.75 }, // should map to distance 15, index 3
-      { id: "3", name: "m3", position: 1.5 },  // should map to distance 20 (clamped to 1.0), index 4
+      { id: "3", name: "m3", position: 1.5 }, // should map to distance 20 (clamped to 1.0), index 4
       { id: "4", name: "m4", position: -0.5 }, // should map to distance 0 (clamped to 0), index 0
     ];
 

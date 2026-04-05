@@ -85,7 +85,10 @@ describe("Settings Persistence", () => {
 
     expect(result).toBe(false);
     expect(mockElectronAPI.writeFile).toHaveBeenCalled();
-    expect(console.error).toHaveBeenCalledWith("Error saving settings:", testError);
+    expect(console.error).toHaveBeenCalledWith(
+      "Error saving settings:",
+      testError,
+    );
   });
 
   it("resetSettings saves default settings", async () => {

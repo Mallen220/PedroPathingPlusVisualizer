@@ -43,7 +43,9 @@ describe("formatShortcut", () => {
     });
 
     it("should format string with plus symbols", () => {
-      expect(formatShortcut("ctrl+shift+alt+x", false)).toBe("Ctrl+Shift+Alt+X");
+      expect(formatShortcut("ctrl+shift+alt+x", false)).toBe(
+        "Ctrl+Shift+Alt+X",
+      );
     });
   });
 });

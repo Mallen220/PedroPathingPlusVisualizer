@@ -441,3 +441,6 @@ src/utils/platform.test.ts
 src/utils/platform.ts
 src/tests/stores.test.ts
 src/tests/utils/shortcutFormatter.test.ts
+src/tests/utils/drivetrain/velocity.test.ts
+src/tests/utils/eventScanner.test.ts
+src/tests/utils/shortcuts.test.ts
