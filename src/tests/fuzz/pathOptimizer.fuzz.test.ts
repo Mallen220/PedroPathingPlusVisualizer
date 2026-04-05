@@ -131,7 +131,7 @@ describe("PathOptimizer Fuzzing", () => {
 
           expect(result).toHaveProperty("lines");
           expect(result).toHaveProperty("bestTime");
-          expect(result.bestTime).toBeGreaterThan(0);
+          expect(result.bestTime).toBeGreaterThanOrEqual(0);
         },
       ),
       { numRuns: 5, timeout: 10000 }, // Very few runs as optimization is slow

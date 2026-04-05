@@ -8,9 +8,13 @@ import { loadMacro } from "../lib/projectStore";
 import { DEFAULT_SETTINGS } from "../config/defaults";
 
 // Mock loadMacro
-vi.mock("../lib/projectStore", () => ({
-  loadMacro: vi.fn(),
-}));
+vi.mock("../lib/projectStore", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("../lib/projectStore")>();
+  return {
+    ...actual,
+    loadMacro: vi.fn(),
+  };
+});
 
 describe("WaypointTable Drop Handling", () => {
   const defaultProps = {

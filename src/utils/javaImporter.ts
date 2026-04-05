@@ -416,7 +416,10 @@ export function importJavaProject(javaCode: string): TurtleData {
               // To map the name properly: Look for the name of the end point if possible
               // In addPath(new BezierLine(start, end)), 'end' is the last identifier.
               // Let's find what the last identifier string was from our argument parsing
-              let pointName = addPathIndices.length > 1 ? `${pathName} - ${pathIdx + 1}` : pathName;
+              let pointName =
+                addPathIndices.length > 1
+                  ? `${pathName} - ${pathIdx + 1}`
+                  : pathName;
               if (args.length > 1) {
                 const lastArgToks = args[args.length - 1];
                 const pName = lastArgToks.find(
