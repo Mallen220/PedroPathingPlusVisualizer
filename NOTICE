@@ -440,3 +440,4 @@ src/tests/fieldRendererHeading.test.ts
 src/utils/platform.test.ts
 src/utils/platform.ts
 src/tests/stores.test.ts
+src/tests/utils/shortcutFormatter.test.ts
