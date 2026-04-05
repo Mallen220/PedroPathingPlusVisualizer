@@ -1,10 +1,25 @@
 // Copyright 2026 Matthew Allen. Licensed under the Modified Apache License, Version 2.0.
 import { describe, it, expect, vi } from "vitest";
-import { POTATO_THEME_CSS, firePotatoConfetti } from "../../utils/potatoTheme";
+import { POTATO_THEME_CSS, firePotatoConfetti, getThemeColors, darkColors, lightColors } from "../../utils/potatoTheme";
 
 describe("potatoTheme", () => {
-  it("should export CSS string", () => {
-    expect(POTATO_THEME_CSS).toContain("--potato-flesh");
+  describe("getThemeColors", () => {
+    it("should return dark colors when isDark is true", () => {
+      expect(getThemeColors(true)).toBe(darkColors);
+    });
+
+    it("should return light colors when isDark is false", () => {
+      expect(getThemeColors(false)).toBe(lightColors);
+    });
+  });
+
+  it("should export CSS string with all theme values", () => {
+    expect(POTATO_THEME_CSS).toContain("--potato-flesh: #F9F3D8");
+    expect(POTATO_THEME_CSS).toContain("--potato-skin: #D4B483");
+    expect(POTATO_THEME_CSS).toContain("--potato-dark: #6D4C41");
+    expect(POTATO_THEME_CSS).toContain("--potato-shadow: #8D6E63");
+    expect(POTATO_THEME_CSS).toContain("--potato-accent: #8B4513");
+    expect(POTATO_THEME_CSS).toContain("--potato-text-dark: #3E2723");
   });
 
   it("should fire potato confetti by appending to DOM and removing later", () => {
