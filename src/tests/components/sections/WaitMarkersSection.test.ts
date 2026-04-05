@@ -5,11 +5,13 @@ import WaitMarkersSection from "../../../lib/components/sections/WaitMarkersSect
 describe("WaitMarkersSection", () => {
   it("renders correctly", () => {
     const { container } = render(WaitMarkersSection, {
-      wait: {
-        type: "wait",
-        id: "1",
-        time: 0,
-        eventMarkers: []
+      props: {
+        wait: {
+          type: "wait",
+          id: "1",
+          time: 0,
+          eventMarkers: []
+        }
       }
     });
     expect(container).toBeTruthy();
