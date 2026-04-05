@@ -660,7 +660,7 @@
         aria-label="Editor View Selection"
       >
         {#each $tabRegistry as tab (tab.id)}
-          {#if (tab.id !== "code" || settings?.autoExportCode) && (tab.id !== "telemetry" || shouldShowTelemetry)}
+          {#if (tab.id !== "code" || (!isBrowser && settings?.autoExportCode)) && (tab.id !== "telemetry" || shouldShowTelemetry)}
             <button
               role="tab"
               aria-selected={activeTab === tab.id}
@@ -703,7 +703,7 @@
       aria-labelledby="{activeTab}-tab"
     >
       {#each $tabRegistry as tab (tab.id)}
-        {#if (tab.id !== "code" || settings?.autoExportCode) && (tab.id !== "telemetry" || shouldShowTelemetry)}
+        {#if (tab.id !== "code" || (!isBrowser && settings?.autoExportCode)) && (tab.id !== "telemetry" || shouldShowTelemetry)}
           <div class:hidden={activeTab !== tab.id} class="w-full h-full">
             <tab.component
               bind:this={tabInstances[tab.id]}

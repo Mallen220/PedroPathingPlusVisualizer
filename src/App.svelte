@@ -1548,6 +1548,8 @@
         $exportDialogState.format,
         $exportDialogState.exporterName,
       );
+      // Reset the trigger so Svelte reactivity doesn't re-open it unintentionally
+      exportDialogState.update(s => ({ ...s, isOpen: false }));
     }
   });
   // --- Apply Theme ---

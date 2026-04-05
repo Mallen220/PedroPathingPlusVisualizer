@@ -19,6 +19,7 @@
   import type { Settings } from "../../../types/index";
   import { settingsActiveTab } from "../../../stores";
   import { SIDEBAR_ITEMS } from "../../../config/sidebarItems";
+  import { isBrowser } from "../../../utils/platform";
   import * as ICONS from "../icons";
   import GeneralSettingsTab from "../settings/tabs/GeneralSettingsTab.svelte";
   import RobotSettingsTab from "../settings/tabs/RobotSettingsTab.svelte";
@@ -53,7 +54,7 @@
     }
   }
 
-  const tabs = [
+  const allTabs = [
     {
       id: "general",
       label: "General",
@@ -95,6 +96,10 @@
       iconComponent: ICONS.InfoIcon,
     },
   ] as const;
+
+  let tabs = $derived(
+    isBrowser ? allTabs.filter((t) => t.id !== "code-export") : allTabs,
+  );
 
   onMount(async () => {
     try {
@@ -192,7 +197,12 @@
   // Sync active tab from store when opening
   run(() => {
     if (isOpen) {
-      activeTab = $settingsActiveTab as TabId;
+      const savedTab = ($settingsActiveTab as TabId) || "general";
+      if (isBrowser && savedTab === "code-export") {
+        activeTab = "general";
+      } else {
+        activeTab = savedTab;
+      }
     }
   });
   // Reset tab when closed so it's fresh on next open
@@ -414,7 +424,7 @@
             {/if}
 
             <!-- Code Export Section -->
-            {#if activeTab === "code-export" || searchQuery}
+            {#if !isBrowser && (activeTab === "code-export" || searchQuery)}
               <CodeExportSettingsTab bind:settings {searchQuery} />
             {/if}
 
