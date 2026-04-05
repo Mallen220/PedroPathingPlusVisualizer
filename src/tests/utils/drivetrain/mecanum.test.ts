@@ -1,6 +1,52 @@
 // Copyright 2026 Matthew Allen. Licensed under the Modified Apache License, Version 2.0.
 import { describe, it, expect } from "vitest";
-import { calculateFieldCentricMecanum } from "../../../utils/drivetrain/mecanum";
+import {
+  calculateFieldCentricMecanum,
+  calculateMecanumWheelSpeeds,
+} from "../../../utils/drivetrain/mecanum";
+
+describe("calculateMecanumWheelSpeeds", () => {
+  it("should calculate correct wheel speeds when going straight forward", () => {
+    // vx = 1, vy = 0, omega = 0
+    const speeds = calculateMecanumWheelSpeeds(1, 0, 0, 10, 10);
+    expect(speeds.frontLeft).toBeCloseTo(1);
+    expect(speeds.backLeft).toBeCloseTo(1);
+    expect(speeds.frontRight).toBeCloseTo(1);
+    expect(speeds.backRight).toBeCloseTo(1);
+  });
+
+  it("should calculate correct wheel speeds when strafing right", () => {
+    // vx = 0, vy = 1, omega = 0
+    const speeds = calculateMecanumWheelSpeeds(0, 1, 0, 10, 10);
+    expect(speeds.frontLeft).toBeCloseTo(1);
+    expect(speeds.backLeft).toBeCloseTo(-1);
+    expect(speeds.frontRight).toBeCloseTo(-1);
+    expect(speeds.backRight).toBeCloseTo(1);
+  });
+
+  it("should calculate correct wheel speeds when rotating right", () => {
+    // vx = 0, vy = 0, omega = 1, trackWidth=10, wheelBase=10 -> r=10
+    // Rotating right (clockwise) means left wheels forward (+), right wheels backward (-)
+    const speeds = calculateMecanumWheelSpeeds(0, 0, 1, 10, 10);
+    expect(speeds.frontLeft).toBeCloseTo(10);
+    expect(speeds.backLeft).toBeCloseTo(10);
+    expect(speeds.frontRight).toBeCloseTo(-10);
+    expect(speeds.backRight).toBeCloseTo(-10);
+  });
+
+  it("should handle mixed inputs appropriately", () => {
+    // vx = 1, vy = 1, omega = 1, r=10
+    // FL: 1 + 1 + 10 = 12
+    // FR: 1 - 1 - 10 = -10
+    // BL: 1 - 1 + 10 = 10
+    // BR: 1 + 1 - 10 = -8
+    const speeds = calculateMecanumWheelSpeeds(1, 1, 1, 10, 10);
+    expect(speeds.frontLeft).toBeCloseTo(12);
+    expect(speeds.backLeft).toBeCloseTo(10);
+    expect(speeds.frontRight).toBeCloseTo(-10);
+    expect(speeds.backRight).toBeCloseTo(-8);
+  });
+});
 
 describe("calculateFieldCentricMecanum", () => {
   it("should calculate correct wheel speeds when going straight forward (0 heading)", () => {

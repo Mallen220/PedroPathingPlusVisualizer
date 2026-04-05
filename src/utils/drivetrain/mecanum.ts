@@ -6,6 +6,26 @@ export interface WheelSpeeds {
   backRight: number;
 }
 
+export function calculateMecanumWheelSpeeds(
+  vx: number,
+  vy: number,
+  omega: number,
+  trackWidth: number,
+  wheelBase: number,
+): WheelSpeeds {
+  // Standard mecanum kinematics
+  // vx = forward (+), vy = strafe right (+), omega = clockwise rotation (+)
+  // To rotate right (clockwise), left wheels must move forward (+) and right wheels backward (-)
+  const r = (trackWidth + wheelBase) / 2;
+
+  return {
+    frontLeft: vx + vy + omega * r,
+    frontRight: vx - vy - omega * r,
+    backLeft: vx - vy + omega * r,
+    backRight: vx + vy - omega * r,
+  };
+}
+
 export function calculateFieldCentricMecanum(
   forward: number,
   strafe: number,
