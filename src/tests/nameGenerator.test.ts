@@ -127,5 +127,35 @@ describe("nameGenerator", () => {
       // "Name" exists as "name". So it should duplicate.
       expect(generateName("Name", existing)).toBe("Name duplicate");
     });
+
+    it("should handle base names ending in numbers", () => {
+      const existing = ["Name 99"];
+      expect(generateName("Name 99", existing)).toBe("Name 99 duplicate");
+    });
+
+    it("should skip over multiple existing numbered items", () => {
+      const existing = [
+        "Name",
+        "Name duplicate",
+        "Name duplicate 1",
+        "Name duplicate 2",
+        "Name duplicate 3",
+      ];
+      expect(generateName("Name", existing)).toBe("Name duplicate 4");
+    });
+
+    it("should duplicate an item with a large existing number", () => {
+      const existing = ["Item duplicate 99"];
+      expect(generateName("Item duplicate 99", existing)).toBe(
+        "Item duplicate 100",
+      );
+    });
+
+    it("should handle base names that exactly match the suffix string", () => {
+      const existing = [" duplicate"];
+      // Currently the code logic sees " duplicate" -> match=true, coreName="", currentNum=0
+      // Next is coreName + " duplicate " + i => " duplicate 1"
+      expect(generateName(" duplicate", existing)).toBe(" duplicate 1");
+    });
   });
 });
