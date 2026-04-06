@@ -7,11 +7,10 @@ describe("WaitMarkersSection", () => {
     const { container } = render(WaitMarkersSection, {
       props: {
         wait: {
-          type: "wait",
           id: "1",
           time: 0,
           eventMarkers: []
-        }
+        } as any
       }
     });
     expect(container).toBeTruthy();
