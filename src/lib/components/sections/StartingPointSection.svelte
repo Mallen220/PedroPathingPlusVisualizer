@@ -107,7 +107,7 @@
             toUser(startPoint, settings?.coordinateSystem || "Pedro").x,
             settings,
           )}
-          onchange={(e) => {
+          oninput={(e) => {
             let val = parseFloat(e.currentTarget.value);
             if (!isNaN(val)) {
               if (settings?.visualizerUnits === "metric") val = cmToInch(val);
@@ -120,6 +120,7 @@
                 settings?.coordinateSystem || "Pedro",
               );
               startPoint.x = newPt.x;
+              startPoint = { ...startPoint };
             }
           }}
           min="0"
@@ -143,7 +144,7 @@
             toUser(startPoint, settings?.coordinateSystem || "Pedro").y,
             settings,
           )}
-          onchange={(e) => {
+          oninput={(e) => {
             let val = parseFloat(e.currentTarget.value);
             if (!isNaN(val)) {
               if (settings?.visualizerUnits === "metric") val = cmToInch(val);
@@ -156,6 +157,7 @@
                 settings?.coordinateSystem || "Pedro",
               );
               startPoint.y = newPt.y;
+              startPoint = { ...startPoint };
             }
           }}
           min="0"

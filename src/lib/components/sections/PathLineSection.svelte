@@ -356,7 +356,7 @@
                 min={$settingsStore.coordinateSystem === "FTC" ? "-72" : "0"}
                 max={$settingsStore.coordinateSystem === "FTC" ? "72" : "144"}
                 value={formatDisplayCoordinate(userPoint.x, $settingsStore)}
-                onchange={(e) => {
+                oninput={(e) => {
                   let val = parseFloat(e.currentTarget.value);
                   if (!isNaN(val)) {
                     if ($settingsStore.visualizerUnits === "metric") {
@@ -368,6 +368,8 @@
                     );
                     line.endPoint.x = newPt.x;
                     line.endPoint.y = newPt.y;
+                    lines[idx] = { ...line, endPoint: { ...line.endPoint } };
+                    lines = [...lines];
                   }
                 }}
                 disabled={line.locked}
@@ -389,7 +391,7 @@
                 max={$settingsStore.coordinateSystem === "FTC" ? "72" : "144"}
                 type="number"
                 value={formatDisplayCoordinate(userPoint.y, $settingsStore)}
-                onchange={(e) => {
+                oninput={(e) => {
                   let val = parseFloat(e.currentTarget.value);
                   if (!isNaN(val)) {
                     if ($settingsStore.visualizerUnits === "metric") {
@@ -401,6 +403,8 @@
                     );
                     line.endPoint.x = newPt.x;
                     line.endPoint.y = newPt.y;
+                    lines[idx] = { ...line, endPoint: { ...line.endPoint } };
+                    lines = [...lines];
                   }
                 }}
                 disabled={line.locked}
