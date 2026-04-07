@@ -22,10 +22,13 @@ import {
   stripProjectExtension,
 } from "../../utils/fileExtensions";
 import { exporterRegistry } from "./index";
+import { notification } from "../../stores";
 
 /**
  * Generate Java code from path data
  */
+
+let hasWarnedAboutEventMarkers = false;
 
 const AUTO_GENERATED_FILE_WARNING_MESSAGE: string = `
 /* ============================================================= *
@@ -84,6 +87,16 @@ export async function generateJavaCode(
         });
       }
     });
+  }
+
+  if (eventMarkerNames.size > 0 && !hasWarnedAboutEventMarkers) {
+    notification.set({
+      message:
+        "Event markers are not supported in basic Java export yet. They have been omitted from the generated code.",
+      type: "warning",
+      timeout: 5000,
+    });
+    hasWarnedAboutEventMarkers = true;
   }
 
   const pathChainNames: string[] = [];
@@ -268,14 +281,6 @@ export async function generateJavaCode(
 
           // Add event markers to the path builder
           let eventMarkerCode = "";
-          if (line.eventMarkers && line.eventMarkers.length > 0) {
-            eventMarkerCode = line.eventMarkers
-              .map(
-                (event) =>
-                  `\n        .addEventMarker(${event.position.toFixed(3)}, "${event.name}")`,
-              )
-              .join("");
-          }
 
           return {
             line,
@@ -346,25 +351,6 @@ export async function generateJavaCode(
 
   // Add NamedCommands registration instructions
   let namedCommandsSection = "";
-  if (eventMarkerNames.size > 0) {
-    namedCommandsSection = `
-    
-    // ===== NAMED COMMANDS REGISTRATION =====
-    // In your RobotContainer class, register named commands like this:
-    // 
-    // NamedCommands.registerCommand("CommandName", yourCommand);
-    // 
-    // Example for the event markers in this path:
-    ${Array.from(eventMarkerNames)
-      .map(
-        (name) =>
-          `// NamedCommands.registerCommand("${name}", your${name.replace(/_/g, "")}Command);`,
-      )
-      .join("\n    ")}
-    
-    // Make sure to register all named commands BEFORE creating any paths or autos.
-    `;
-  }
 
   // Generate state machine logic
   let stateMachineCode = "";
@@ -561,7 +547,6 @@ export async function generateJavaCode(
     import com.pedropathing.paths.PathChain;
     import com.pedropathing.geometry.Pose;
     import com.pedropathing.paths.HeadingInterpolator;
-    ${eventMarkerNames.size > 0 ? "import com.pedropathing.NamedCommands;" : ""}
     
     @Autonomous(name = "Turtle Tracer Autonomous", group = "Autonomous")
     ${classAnnotations}
