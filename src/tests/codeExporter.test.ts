@@ -163,12 +163,12 @@ describe("codeExporter", () => {
       expect(codeReverse).toContain(".setReversed()");
     });
 
-    it("should include event markers", async () => {
+    it("should omit event markers when using basic java export", async () => {
       const lines = [line3];
       const code = await generateJavaCode(startPoint, lines, false);
 
-      expect(code).toContain('.addEventMarker(0.500, "marker1")');
-      expect(code).toContain(
+      expect(code).not.toContain('.addEventMarker(0.500, "marker1")');
+      expect(code).not.toContain(
         '// NamedCommands.registerCommand("marker1", yourmarker1Command);',
       );
     });
@@ -193,7 +193,7 @@ describe("codeExporter", () => {
       expect(code).not.toContain("public PathChain");
     });
 
-    it("should handle wait events in sequence when provided", async () => {
+    it("should omit wait events in sequence when provided", async () => {
       const sequence: SequenceItem[] = [
         {
           kind: waitKind(),
@@ -204,7 +204,7 @@ describe("codeExporter", () => {
       // generateJavaCode uses sequence ONLY to collect event marker names for NamedCommands
       const code = await generateJavaCode(startPoint, [], false, sequence);
 
-      expect(code).toContain(
+      expect(code).not.toContain(
         'NamedCommands.registerCommand("waitMarker", yourwaitMarkerCommand)',
       );
     });
