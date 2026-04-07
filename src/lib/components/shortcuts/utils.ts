@@ -44,7 +44,16 @@ export function shouldBlockShortcut(
     actionId === "redo" ||
     actionId === "play-pause" ||
     actionId === "open-settings" ||
-    actionId === "toggle-sidebar"
+    actionId === "toggle-sidebar" ||
+    actionId === "confirm-dialog" ||
+    actionId === "cancel-dialog" ||
+    actionId === "new-file" ||
+    actionId === "toggle-file-manager" ||
+    actionId === "export-java" ||
+    actionId === "export-points" ||
+    actionId === "export-sequential" ||
+    actionId === "export-pp" ||
+    actionId === "focus-name"
   )
     return false;
   if (e.key === "Escape") return false;
