@@ -118,7 +118,8 @@
   <div class="mt-6 space-y-4">
     <SettingsItem
       label="Draw Tool Tolerance"
-      isModified={settings.drawToolTolerance !== DEFAULT_SETTINGS.drawToolTolerance}
+      isModified={settings.drawToolTolerance !==
+        DEFAULT_SETTINGS.drawToolTolerance}
       onReset={() => {
         settings.drawToolTolerance = DEFAULT_SETTINGS.drawToolTolerance;
         settings = { ...settings };

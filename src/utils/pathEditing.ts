@@ -280,7 +280,7 @@ export function generateLinesFromDrawing(
   startPoint: Point,
   lines: Line[],
   sequence: SequenceItem[],
-  settings?: any
+  settings?: any,
 ): { startPoint: Point; lines: Line[]; sequence: SequenceItem[] } | null {
   if (drawnPoints.length < 2) return null;
 

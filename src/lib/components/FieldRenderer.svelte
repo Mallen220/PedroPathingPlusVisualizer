@@ -1121,7 +1121,7 @@
             startPoint,
             lines,
             sequence,
-            $settingsStore
+            $settingsStore,
           );
           if (result) {
             startPointStore.set(result.startPoint);
