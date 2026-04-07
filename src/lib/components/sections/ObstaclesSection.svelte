@@ -336,7 +336,9 @@
                     shapes = [...shapes];
                     shapesStore.set(shapes);
                     recordChange?.(
-                      shapes[shapeIdx].visible ? "Show Obstacle" : "Hide Obstacle",
+                      shapes[shapeIdx].visible
+                        ? "Show Obstacle"
+                        : "Hide Obstacle",
                     );
                   }}
                   class="p-1 rounded-md hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-400 transition-colors"
@@ -364,7 +366,9 @@
                     shapes = [...shapes];
                     shapesStore.set(shapes);
                     recordChange?.(
-                      shapes[shapeIdx].locked ? "Lock Obstacle" : "Unlock Obstacle",
+                      shapes[shapeIdx].locked
+                        ? "Lock Obstacle"
+                        : "Unlock Obstacle",
                     );
                   }}
                   class="p-1 rounded-md hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-400 transition-colors"

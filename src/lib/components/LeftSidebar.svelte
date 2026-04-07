@@ -72,6 +72,7 @@
     ExportGifIcon,
     PuzzleIcon,
   } from "./icons";
+  import * as ICONS from "./icons";
   import {
     SIDEBAR_ITEMS,
     type SidebarItemConfig,
@@ -90,6 +91,7 @@
   };
 
   const ICON_COMPONENT_MAP: Record<string, any> = {
+    ...ICONS,
     List: ListIcon,
     Play: PlayIcon,
     Arrow: ArrowRightIcon,
