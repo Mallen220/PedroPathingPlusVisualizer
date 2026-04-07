@@ -9,7 +9,7 @@
     gridSize,
     focusRequest,
   } from "../../../stores";
-  import { settingsStore } from "../../projectStore";
+  import { settingsStore, shapesStore } from "../../projectStore";
   import {
     toUserCoordinate,
     toFieldCoordinate,
@@ -287,6 +287,7 @@
                   disabled={shape.locked ?? false}
                   onblur={() => {
                     shapes = [...shapes];
+                    shapesStore.set(shapes);
                     recordChange?.("Rename Obstacle");
                   }}
                 />
@@ -297,6 +298,7 @@
                   disabled={shape.locked ?? false}
                   onchange={() => {
                     shapes = [...shapes];
+                    shapesStore.set(shapes);
                     recordChange?.("Change Obstacle Type");
                   }}
                 >
@@ -308,9 +310,11 @@
                   bind:color={shape.color}
                   oninput={() => {
                     shapes = [...shapes];
+                    shapesStore.set(shapes);
                   }}
                   onchange={() => {
                     shapes = [...shapes];
+                    shapesStore.set(shapes);
                     recordChange?.("Change Obstacle Color");
                   }}
                   title="Change Obstacle Color"
@@ -325,10 +329,14 @@
                     ? "Hide Shape"
                     : "Show Shape"}
                   onclick={() => {
-                    shape.visible = !(shape.visible !== false);
+                    shapes[shapeIdx] = {
+                      ...shapes[shapeIdx],
+                      visible: !(shape.visible !== false),
+                    };
                     shapes = [...shapes];
+                    shapesStore.set(shapes);
                     recordChange?.(
-                      shape.visible ? "Show Obstacle" : "Hide Obstacle",
+                      shapes[shapeIdx].visible ? "Show Obstacle" : "Hide Obstacle",
                     );
                   }}
                   class="p-1 rounded-md hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-400 transition-colors"
@@ -349,10 +357,14 @@
                     : "Lock Obstacle"}
                   aria-pressed={shape.locked ?? false}
                   onclick={() => {
-                    shape.locked = !(shape.locked ?? false);
+                    shapes[shapeIdx] = {
+                      ...shapes[shapeIdx],
+                      locked: !(shape.locked ?? false),
+                    };
                     shapes = [...shapes];
+                    shapesStore.set(shapes);
                     recordChange?.(
-                      shape.locked ? "Lock Obstacle" : "Unlock Obstacle",
+                      shapes[shapeIdx].locked ? "Lock Obstacle" : "Unlock Obstacle",
                     );
                   }}
                   class="p-1 rounded-md hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-400 transition-colors"
@@ -367,7 +379,8 @@
                   title="Remove Shape"
                   onclick={() => {
                     shapes.splice(shapeIdx, 1);
-                    shapes = shapes;
+                    shapes = [...shapes];
+                    shapesStore.set(shapes);
                     // Also remove the collapsed state for this obstacle
                     collapsedObstacles.splice(shapeIdx, 1);
                     collapsedObstacles = [...collapsedObstacles];
@@ -408,6 +421,7 @@
                                 $settingsStore.coordinateSystem || "Pedro",
                               );
                               shapes = [...shapes];
+                              shapesStore.set(shapes);
                             }
                           }}
                           onblur={() => recordChange?.("Move Obstacle Vertex")}
@@ -446,6 +460,7 @@
                                 $settingsStore.coordinateSystem || "Pedro",
                               );
                               shapes = [...shapes];
+                              shapesStore.set(shapes);
                             }
                           }}
                           onblur={() => recordChange?.("Move Obstacle Vertex")}
@@ -483,6 +498,7 @@
                             shape.vertices.splice(vertexIdx + 1, 0, newVertex);
                             shape.vertices = shape.vertices;
                             shapes = [...shapes];
+                            shapesStore.set(shapes);
                             recordChange?.("Add Obstacle Vertex");
                           }}
                           disabled={shape.locked ?? false}
@@ -496,6 +512,7 @@
                               shape.vertices.splice(vertexIdx, 1);
                               shape.vertices = shape.vertices;
                               shapes = [...shapes];
+                              shapesStore.set(shapes);
                               recordChange?.("Remove Obstacle Vertex");
                             }}
                             disabled={shape.locked ?? false}
