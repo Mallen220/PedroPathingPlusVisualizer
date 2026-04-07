@@ -687,8 +687,12 @@
       item.kind === "rotate" ||
       item.kind === "macro"
     ) {
-      (item as any).locked = !(item.locked ?? false);
-      sequence = [...sequence];
+      const newSeq = [...sequence];
+      newSeq[index] = {
+        ...item,
+        locked: !(item.locked ?? false),
+      } as SequenceItem;
+      sequence = newSeq;
       if (recordChange) recordChange();
     }
   }
@@ -944,9 +948,9 @@
   function toggleLock(seqIndex: number) {
     const item = sequence[seqIndex];
     if (item.kind === "path") {
-      const line = lines.find((l) => l.id === (item as any).lineId);
-      if (line) {
-        line.locked = !line.locked;
+      const lineIdx = lines.findIndex((l) => l.id === (item as any).lineId);
+      if (lineIdx !== -1) {
+        lines[lineIdx] = { ...lines[lineIdx], locked: !lines[lineIdx].locked };
         lines = [...lines]; // Trigger reactivity
       }
     } else {
@@ -955,7 +959,7 @@
       newSeq[seqIndex] = {
         ...item,
         locked: !item.locked,
-      };
+      } as SequenceItem;
       sequence = newSeq;
     }
     if (recordChange) recordChange();
@@ -1602,8 +1606,14 @@
                   aria-label={line.hidden ? "Show Path" : "Hide Path"}
                   onclick={(e) => {
                     e.stopPropagation();
-                    line.hidden = !line.hidden;
-                    lines = [...lines];
+                    const lIdx = lines.findIndex((l) => l.id === line.id);
+                    if (lIdx !== -1) {
+                      lines[lIdx] = {
+                        ...lines[lIdx],
+                        hidden: !lines[lIdx].hidden,
+                      };
+                      lines = [...lines];
+                    }
                     if (recordChange) recordChange();
                   }}
                   class="inline-flex items-center justify-center h-6 w-6 p-0.5 rounded hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
@@ -1621,8 +1631,14 @@
                   aria-label={line.locked ? "Unlock Path" : "Lock Path"}
                   onclick={(e) => {
                     e.stopPropagation();
-                    line.locked = !line.locked;
-                    lines = [...lines];
+                    const lIdx = lines.findIndex((l) => l.id === line.id);
+                    if (lIdx !== -1) {
+                      lines[lIdx] = {
+                        ...lines[lIdx],
+                        locked: !lines[lIdx].locked,
+                      };
+                      lines = [...lines];
+                    }
                     if (recordChange) recordChange();
                   }}
                   class="inline-flex items-center justify-center h-6 w-6 p-0.5 rounded hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
