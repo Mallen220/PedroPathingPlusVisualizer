@@ -329,11 +329,14 @@
                     ? "Hide Shape"
                     : "Show Shape"}
                   onclick={() => {
-                    shape.visible = !(shape.visible !== false);
+                    shapes[shapeIdx] = {
+                      ...shapes[shapeIdx],
+                      visible: !(shape.visible !== false),
+                    };
                     shapes = [...shapes];
                     shapesStore.set(shapes);
                     recordChange?.(
-                      shape.visible ? "Show Obstacle" : "Hide Obstacle",
+                      shapes[shapeIdx].visible ? "Show Obstacle" : "Hide Obstacle",
                     );
                   }}
                   class="p-1 rounded-md hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-400 transition-colors"
@@ -354,11 +357,14 @@
                     : "Lock Obstacle"}
                   aria-pressed={shape.locked ?? false}
                   onclick={() => {
-                    shape.locked = !(shape.locked ?? false);
+                    shapes[shapeIdx] = {
+                      ...shapes[shapeIdx],
+                      locked: !(shape.locked ?? false),
+                    };
                     shapes = [...shapes];
                     shapesStore.set(shapes);
                     recordChange?.(
-                      shape.locked ? "Lock Obstacle" : "Unlock Obstacle",
+                      shapes[shapeIdx].locked ? "Lock Obstacle" : "Unlock Obstacle",
                     );
                   }}
                   class="p-1 rounded-md hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-400 transition-colors"
