@@ -1794,12 +1794,32 @@
         ? (effectiveTimePrediction.totalTime / 1000) * ($percentStore / 100)
         : 0;
       const targetTime = baseTime + offset + activeTimeSec;
-      // find first point at or after targetTime
-      let target = pts[0];
-      for (const pt of pts) {
-        if (pt.time >= targetTime) {
-          target = pt;
-          break;
+      // interpolate target position based on targetTime
+      let target = pts[pts.length - 1]; // default to last point
+      if (targetTime <= pts[0].time) {
+        target = pts[0];
+      } else {
+        for (let i = 0; i < pts.length - 1; i++) {
+          if (targetTime >= pts[i].time && targetTime <= pts[i + 1].time) {
+            const p1 = pts[i];
+            const p2 = pts[i + 1];
+            const tDiff = p2.time - p1.time;
+            if (tDiff <= 0) {
+              target = p2;
+            } else {
+              const ratio = (targetTime - p1.time) / tDiff;
+              let hDiff = (p2.heading - p1.heading) % 360;
+              if (hDiff > 180) hDiff -= 360;
+              if (hDiff < -180) hDiff += 360;
+              target = {
+                time: targetTime,
+                x: p1.x + (p2.x - p1.x) * ratio,
+                y: p1.y + (p2.y - p1.y) * ratio,
+                heading: p1.heading + hDiff * ratio
+              };
+            }
+            break;
+          }
         }
       }
       ghostRobotState = { x: target.x, y: target.y, heading: target.heading };
