@@ -173,7 +173,10 @@
     <select
       id="autosave-mode"
       value={settings.autosaveMode}
-      onchange={(e) => (settings.autosaveMode = e.currentTarget.value as any)}
+      onchange={(e) => {
+        settings.autosaveMode = e.currentTarget.value as any;
+        settings = { ...settings };
+      }}
       class="w-full px-3 py-2 rounded-md border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
     >
       <option value="never">Never</option>
@@ -201,8 +204,10 @@
         <select
           id="autosave-interval"
           value={settings.autosaveInterval}
-          onchange={(e) =>
-            (settings.autosaveInterval = parseInt(e.currentTarget.value))}
+          onchange={(e) => {
+            settings.autosaveInterval = parseInt(e.currentTarget.value);
+            settings = { ...settings };
+          }}
           class="w-full px-3 py-2 rounded-md border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
         >
           {#each [1, 5, 10, 15, 20, 40, 60] as interval}

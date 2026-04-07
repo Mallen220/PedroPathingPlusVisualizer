@@ -165,7 +165,11 @@
       <input
         id="x-velocity"
         type="number"
-        bind:value={settings.xVelocity}
+        value={settings.xVelocity}
+        oninput={(e) => {
+          settings.xVelocity = parseFloat(e.currentTarget.value) || 0;
+          settings = { ...settings };
+        }}
         min="0"
         step="1"
         onchange={handleXVelocityInput}
@@ -185,7 +189,11 @@
       <input
         id="y-velocity"
         type="number"
-        bind:value={settings.yVelocity}
+        value={settings.yVelocity}
+        oninput={(e) => {
+          settings.yVelocity = parseFloat(e.currentTarget.value) || 0;
+          settings = { ...settings };
+        }}
         min="0"
         step="1"
         onchange={handleYVelocityInput}
@@ -274,7 +282,11 @@
     <input
       id="max-velocity"
       type="number"
-      bind:value={settings.maxVelocity}
+      value={settings.maxVelocity}
+      oninput={(e) => {
+        settings.maxVelocity = parseFloat(e.currentTarget.value) || 0;
+        settings = { ...settings };
+      }}
       min="0"
       step="1"
       onchange={handleMaxVelocityInput}
@@ -296,7 +308,11 @@
       <input
         id="max-acceleration"
         type="number"
-        bind:value={settings.maxAcceleration}
+        value={settings.maxAcceleration}
+        oninput={(e) => {
+          settings.maxAcceleration = parseFloat(e.currentTarget.value) || 0;
+          settings = { ...settings };
+        }}
         min="0"
         step="1"
         onchange={handleMaxAccelerationInput}
@@ -316,7 +332,11 @@
       <input
         id="max-deceleration"
         type="number"
-        bind:value={settings.maxDeceleration}
+        value={settings.maxDeceleration}
+        oninput={(e) => {
+          settings.maxDeceleration = parseFloat(e.currentTarget.value) || 0;
+          settings = { ...settings };
+        }}
         min="0"
         step="1"
         onchange={handleMaxDecelerationInput}
@@ -339,7 +359,11 @@
     <input
       id="friction-coefficient"
       type="number"
-      bind:value={settings.kFriction}
+      value={settings.kFriction}
+      oninput={(e) => {
+        settings.kFriction = parseFloat(e.currentTarget.value) || 0;
+        settings = { ...settings };
+      }}
       min="0"
       step="0.1"
       onchange={handleFrictionInput}

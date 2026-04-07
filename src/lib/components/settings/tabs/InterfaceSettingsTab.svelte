@@ -88,7 +88,11 @@
   >
     <select
       id="theme-select"
-      bind:value={settings.theme}
+      value={settings.theme}
+      onchange={(e) => {
+        settings.theme = e.currentTarget.value as any;
+        settings = { ...settings };
+      }}
       class="w-full px-3 py-2 rounded-md border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
     >
       <option value="auto">Auto (System Preference)</option>
@@ -128,7 +132,11 @@
         min="75"
         max="150"
         step="5"
-        bind:value={settings.programFontSize}
+        value={settings.programFontSize}
+        oninput={(e) => {
+          settings.programFontSize = parseInt(e.currentTarget.value);
+          settings = { ...settings };
+        }}
         class="flex-1 h-2 bg-neutral-200 dark:bg-neutral-700 rounded-lg appearance-none cursor-pointer accent-blue-500"
       />
       <span
@@ -153,7 +161,11 @@
     <div class="flex gap-2">
       <select
         id="field-map-select"
-        bind:value={settings.fieldMap}
+        value={settings.fieldMap}
+        onchange={(e) => {
+          settings.fieldMap = e.currentTarget.value as any;
+          settings = { ...settings };
+        }}
         class="w-full px-3 py-2 rounded-md border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
       >
         {#each availableMaps as field}
@@ -227,7 +239,11 @@
   >
     <select
       id="coordinate-system-select"
-      bind:value={settings.coordinateSystem}
+      value={settings.coordinateSystem}
+      onchange={(e) => {
+        settings.coordinateSystem = e.currentTarget.value as any;
+        settings = { ...settings };
+      }}
       class="w-full px-3 py-2 rounded-md border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
     >
       <option value="Pedro">Pedro Pathing (0-144)</option>
@@ -248,7 +264,11 @@
   >
     <select
       id="visualizer-units-select"
-      bind:value={settings.visualizerUnits}
+      value={settings.visualizerUnits}
+      onchange={(e) => {
+        settings.visualizerUnits = e.currentTarget.value as any;
+        settings = { ...settings };
+      }}
       class="w-full px-3 py-2 rounded-md border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
     >
       <option value="imperial">Imperial (Inches)</option>
@@ -269,7 +289,11 @@
   >
     <input
       type="checkbox"
-      bind:checked={settings.showOnionLayers}
+      checked={settings.showOnionLayers}
+      onchange={(e) => {
+        settings.showOnionLayers = e.currentTarget.checked;
+        settings = { ...settings };
+      }}
       class="w-5 h-5 rounded border-neutral-300 dark:border-neutral-600 text-indigo-500 focus:ring-2 focus:ring-indigo-500 cursor-pointer"
     />
   </SettingsItem>
@@ -293,7 +317,11 @@
       >
         <input
           type="checkbox"
-          bind:checked={settings.onionSkinCurrentPathOnly}
+          checked={settings.onionSkinCurrentPathOnly}
+          onchange={(e) => {
+            settings.onionSkinCurrentPathOnly = e.currentTarget.checked;
+            settings = { ...settings };
+          }}
           class="w-5 h-5 rounded border-neutral-300 dark:border-neutral-600 text-indigo-500 focus:ring-2 focus:ring-indigo-500 cursor-pointer"
         />
       </SettingsItem>
@@ -315,7 +343,12 @@
             min="2"
             max="20"
             step="1"
-            bind:value={settings.onionLayerSpacing}
+            value={settings.onionLayerSpacing}
+            oninput={(e) => {
+              settings.onionLayerSpacing =
+                parseFloat(e.currentTarget.value) || 0;
+              settings = { ...settings };
+            }}
             class="flex-1 h-2 bg-neutral-200 dark:bg-neutral-700 rounded-lg appearance-none cursor-pointer accent-indigo-500"
           />
           <span
@@ -341,7 +374,11 @@
   >
     <input
       type="checkbox"
-      bind:checked={settings.smartSnapping}
+      checked={settings.smartSnapping}
+      onchange={(e) => {
+        settings.smartSnapping = e.currentTarget.checked;
+        settings = { ...settings };
+      }}
       class="w-5 h-5 rounded border-neutral-300 dark:border-neutral-600 text-blue-500 focus:ring-2 focus:ring-blue-500 cursor-pointer"
     />
   </SettingsItem>
@@ -360,7 +397,11 @@
   >
     <input
       type="checkbox"
-      bind:checked={settings.showVelocityHeatmap}
+      checked={settings.showVelocityHeatmap}
+      onchange={(e) => {
+        settings.showVelocityHeatmap = e.currentTarget.checked;
+        settings = { ...settings };
+      }}
       class="w-5 h-5 rounded border-neutral-300 dark:border-neutral-600 text-emerald-500 focus:ring-2 focus:ring-emerald-500 cursor-pointer"
     />
   </SettingsItem>
@@ -380,8 +421,12 @@
     <input
       id="follow-robot"
       type="checkbox"
-      bind:checked={settings.followRobot}
-      onchange={() => followRobotStore.set(!!settings.followRobot)}
+      checked={settings.followRobot}
+      onchange={(e) => {
+        settings.followRobot = e.currentTarget.checked;
+        settings = { ...settings };
+        followRobotStore.set(!!settings.followRobot);
+      }}
       class="w-5 h-5 rounded border-neutral-300 dark:border-neutral-600 text-blue-500 focus:ring-2 focus:ring-blue-500 cursor-pointer"
     />
   </SettingsItem>

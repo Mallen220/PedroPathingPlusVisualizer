@@ -96,7 +96,11 @@
     >
       <input
         type="checkbox"
-        bind:checked={settings.autoExportCode}
+        checked={settings.autoExportCode}
+        onchange={(e) => {
+          settings.autoExportCode = e.currentTarget.checked;
+          settings = { ...settings };
+        }}
         class="w-5 h-5 rounded border-neutral-300 dark:border-neutral-600 text-blue-500 focus:ring-2 focus:ring-blue-500 cursor-pointer"
       />
     </SettingsItem>
@@ -154,7 +158,11 @@
           <div class="flex gap-2">
             <input
               type="text"
-              bind:value={settings.autoExportPath}
+              value={settings.autoExportPath}
+              oninput={(e) => {
+                settings.autoExportPath = e.currentTarget.value;
+                settings = { ...settings };
+              }}
               class="w-full px-3 py-2 rounded-md border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono text-sm"
               placeholder="GeneratedCode"
             />
@@ -189,7 +197,11 @@
           layout="col"
         >
           <select
-            bind:value={settings.autoExportFormat}
+            value={settings.autoExportFormat}
+            onchange={(e) => {
+              settings.autoExportFormat = e.currentTarget.value as any;
+              settings = { ...settings };
+            }}
             class="w-full px-3 py-2 rounded-md border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             <option value="java">Java Class</option>
@@ -211,7 +223,11 @@
           layout="col"
         >
           <select
-            bind:value={settings.codeUnits}
+            value={settings.codeUnits}
+            onchange={(e) => {
+              settings.codeUnits = e.currentTarget.value as any;
+              settings = { ...settings };
+            }}
             class="w-full px-3 py-2 rounded-md border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             <option value="imperial">Imperial (Inches)</option>
@@ -248,7 +264,11 @@
             >
               <input
                 type="checkbox"
-                bind:checked={settings.autoExportFullClass}
+                checked={settings.autoExportFullClass}
+                onchange={(e) => {
+                  settings.autoExportFullClass = e.currentTarget.checked;
+                  settings = { ...settings };
+                }}
                 class="w-5 h-5 rounded border-neutral-300 dark:border-neutral-600 text-blue-500 focus:ring-2 focus:ring-blue-500 cursor-pointer"
               />
             </SettingsItem>
@@ -267,7 +287,12 @@
               layout="col"
             >
               <select
-                bind:value={settings.telemetryImplementation}
+                value={settings.telemetryImplementation}
+                onchange={(e) => {
+                  settings.telemetryImplementation = e.currentTarget
+                    .value as any;
+                  settings = { ...settings };
+                }}
                 class="w-full px-3 py-2 rounded-md border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="Panels">Panels (Bylazar)</option>
@@ -293,7 +318,12 @@
               layout="col"
             >
               <select
-                bind:value={settings.autoExportTargetLibrary}
+                value={settings.autoExportTargetLibrary}
+                onchange={(e) => {
+                  settings.autoExportTargetLibrary = e.currentTarget
+                    .value as any;
+                  settings = { ...settings };
+                }}
                 class="w-full px-3 py-2 rounded-md border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="SolversLib">SolversLib</option>
@@ -316,7 +346,11 @@
             >
               <input
                 type="checkbox"
-                bind:checked={settings.autoExportEmbedPoseData}
+                checked={settings.autoExportEmbedPoseData}
+                onchange={(e) => {
+                  settings.autoExportEmbedPoseData = e.currentTarget.checked;
+                  settings = { ...settings };
+                }}
                 class="w-5 h-5 rounded border-neutral-300 dark:border-neutral-600 text-blue-500 focus:ring-2 focus:ring-blue-500 cursor-pointer"
               />
             </SettingsItem>
@@ -339,7 +373,11 @@
             >
               <input
                 type="text"
-                bind:value={settings.javaPackageName}
+                value={settings.javaPackageName}
+                oninput={(e) => {
+                  settings.javaPackageName = e.currentTarget.value;
+                  settings = { ...settings };
+                }}
                 class="w-full px-3 py-2 rounded-md border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono text-sm"
                 placeholder="org.firstinspires.ftc.teamcode.Commands.AutoCommands"
               />
