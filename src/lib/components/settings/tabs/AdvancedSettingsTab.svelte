@@ -110,7 +110,11 @@
   >
     <input
       type="checkbox"
-      bind:checked={settings.showDebugSequence}
+      checked={settings.showDebugSequence}
+      onchange={(e) => {
+        settings.showDebugSequence = e.currentTarget.checked;
+        settings = { ...settings };
+      }}
       class="w-5 h-5 rounded border-neutral-300 dark:border-neutral-600 text-pink-500 focus:ring-2 focus:ring-pink-500 cursor-pointer"
     />
   </SettingsItem>
@@ -134,7 +138,11 @@
           min="1"
           max="60"
           step="1"
-          bind:value={settings.drawToolTolerance}
+          value={settings.drawToolTolerance}
+          oninput={(e) => {
+            settings.drawToolTolerance = parseFloat(e.currentTarget.value) || 0;
+            settings = { ...settings };
+          }}
           onchange={handleToleranceInput}
           class="w-32 px-2 py-1.5 rounded border border-neutral-300 dark:border-neutral-600 text-teal-700 dark:text-teal-300 bg-white dark:bg-neutral-800 focus:ring-2 focus:ring-teal-500"
         />
@@ -158,7 +166,11 @@
           min="0"
           max="1"
           step="0.01"
-          bind:value={settings.drawToolTension}
+          value={settings.drawToolTension}
+          oninput={(e) => {
+            settings.drawToolTension = parseFloat(e.currentTarget.value) || 0;
+            settings = { ...settings };
+          }}
           onchange={handleTensionInput}
           class="w-32 px-2 py-1.5 rounded border border-neutral-300 dark:border-neutral-600 text-cyan-700 dark:text-cyan-300 bg-white dark:bg-neutral-800 focus:ring-2 focus:ring-cyan-500"
         />
@@ -184,7 +196,12 @@
           min="10"
           max="3000"
           step="1"
-          bind:value={settings.optimizationIterations}
+          value={settings.optimizationIterations}
+          oninput={(e) => {
+            settings.optimizationIterations =
+              parseFloat(e.currentTarget.value) || 0;
+            settings = { ...settings };
+          }}
           onchange={handleIterationsInput}
           class="w-32 px-2 py-1.5 rounded border border-neutral-300 dark:border-neutral-600 text-purple-700 dark:text-purple-300 bg-white dark:bg-neutral-800 focus:ring-2 focus:ring-purple-500"
         />
@@ -209,7 +226,12 @@
           min="10"
           max="200"
           step="1"
-          bind:value={settings.optimizationPopulationSize}
+          value={settings.optimizationPopulationSize}
+          oninput={(e) => {
+            settings.optimizationPopulationSize =
+              parseFloat(e.currentTarget.value) || 0;
+            settings = { ...settings };
+          }}
           onchange={handlePopulationInput}
           class="w-32 px-2 py-1.5 rounded border border-neutral-300 dark:border-neutral-600 text-blue-700 dark:text-blue-300 bg-white dark:bg-neutral-800 focus:ring-2 focus:ring-blue-500"
         />
@@ -234,7 +256,12 @@
           min="0.01"
           max="1"
           step="0.01"
-          bind:value={settings.optimizationMutationRate}
+          value={settings.optimizationMutationRate}
+          oninput={(e) => {
+            settings.optimizationMutationRate =
+              parseFloat(e.currentTarget.value) || 0;
+            settings = { ...settings };
+          }}
           onchange={handleMutationRateInput}
           class="w-32 px-2 py-1.5 rounded border border-neutral-300 dark:border-neutral-600 text-green-700 dark:text-green-300 bg-white dark:bg-neutral-800 focus:ring-2 focus:ring-green-500"
         />
@@ -259,7 +286,12 @@
           min="0.1"
           max="20"
           step="0.1"
-          bind:value={settings.optimizationMutationStrength}
+          value={settings.optimizationMutationStrength}
+          oninput={(e) => {
+            settings.optimizationMutationStrength =
+              parseFloat(e.currentTarget.value) || 0;
+            settings = { ...settings };
+          }}
           onchange={handleMutationStrengthInput}
           class="w-32 px-2 py-1.5 rounded border border-neutral-300 dark:border-neutral-600 text-orange-700 dark:text-orange-300 bg-white dark:bg-neutral-800 focus:ring-2 focus:ring-orange-500"
         />

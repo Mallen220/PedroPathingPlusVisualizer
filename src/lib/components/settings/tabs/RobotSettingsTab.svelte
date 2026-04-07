@@ -141,7 +141,11 @@
       <input
         id="robot-length"
         type="number"
-        bind:value={settings.rLength}
+        value={settings.rLength}
+        oninput={(e) => {
+          settings.rLength = parseFloat(e.currentTarget.value) || 0;
+          settings = { ...settings };
+        }}
         min="1"
         max="36"
         step="0.5"
@@ -163,7 +167,11 @@
       <input
         id="robot-width"
         type="number"
-        bind:value={settings.rWidth}
+        value={settings.rWidth}
+        oninput={(e) => {
+          settings.rWidth = parseFloat(e.currentTarget.value) || 0;
+          settings = { ...settings };
+        }}
         min="1"
         max="36"
         step="0.5"
@@ -187,7 +195,11 @@
   >
     <input
       type="checkbox"
-      bind:checked={settings.validationDisabled}
+      checked={settings.validationDisabled}
+      onchange={(e) => {
+        settings.validationDisabled = e.currentTarget.checked;
+        settings = { ...settings };
+      }}
       class="w-5 h-5 rounded border-neutral-300 dark:border-neutral-600 text-blue-500 focus:ring-2 focus:ring-blue-500 cursor-pointer"
     />
   </SettingsItem>
@@ -207,7 +219,11 @@
       <input
         id="safety-margin"
         type="number"
-        bind:value={settings.safetyMargin}
+        value={settings.safetyMargin}
+        oninput={(e) => {
+          settings.safetyMargin = parseFloat(e.currentTarget.value) || 0;
+          settings = { ...settings };
+        }}
         min="0"
         max="24"
         step="0.5"
@@ -231,7 +247,11 @@
     >
       <input
         type="checkbox"
-        bind:checked={settings.validateFieldBoundaries}
+        checked={settings.validateFieldBoundaries}
+        onchange={(e) => {
+          settings.validateFieldBoundaries = e.currentTarget.checked;
+          settings = { ...settings };
+        }}
         class="w-5 h-5 rounded border-neutral-300 dark:border-neutral-600 text-blue-500 focus:ring-2 focus:ring-blue-500 cursor-pointer"
       />
     </SettingsItem>
@@ -250,7 +270,11 @@
     >
       <input
         type="checkbox"
-        bind:checked={settings.continuousValidation}
+        checked={settings.continuousValidation}
+        onchange={(e) => {
+          settings.continuousValidation = e.currentTarget.checked;
+          settings = { ...settings };
+        }}
         class="w-5 h-5 rounded border-neutral-300 dark:border-neutral-600 text-blue-500 focus:ring-2 focus:ring-blue-500 cursor-pointer"
       />
     </SettingsItem>
@@ -271,7 +295,11 @@
   >
     <input
       type="checkbox"
-      bind:checked={settings.restrictDraggingToField}
+      checked={settings.restrictDraggingToField}
+      onchange={(e) => {
+        settings.restrictDraggingToField = e.currentTarget.checked;
+        settings = { ...settings };
+      }}
       class="w-5 h-5 rounded border-neutral-300 dark:border-neutral-600 text-blue-500 focus:ring-2 focus:ring-blue-500 cursor-pointer"
     />
   </SettingsItem>
@@ -456,7 +484,11 @@
           </div>
           <input
             type="checkbox"
-            bind:checked={settings.showRobotArrows}
+            checked={settings.showRobotArrows}
+            onchange={(e) => {
+              settings.showRobotArrows = e.currentTarget.checked;
+              settings = { ...settings };
+            }}
             class="w-5 h-5 rounded border-neutral-300 dark:border-neutral-600 text-blue-500 focus:ring-2 focus:ring-blue-500 cursor-pointer"
           />
         </div>
@@ -480,7 +512,11 @@
       >
         <input
           type="checkbox"
-          bind:checked={settings.showFakeHeadingArrow}
+          checked={settings.showFakeHeadingArrow}
+          onchange={(e) => {
+            settings.showFakeHeadingArrow = e.currentTarget.checked;
+            settings = { ...settings };
+          }}
           class="w-5 h-5 rounded border-neutral-300 dark:border-neutral-600 text-blue-500 focus:ring-2 focus:ring-blue-500 cursor-pointer"
         />
       </SettingsItem>
@@ -501,7 +537,11 @@
         >
           <input
             type="color"
-            bind:value={settings.fakeHeadingArrowColor}
+            value={settings.fakeHeadingArrowColor}
+            oninput={(e) => {
+              settings.fakeHeadingArrowColor = e.currentTarget.value;
+              settings = { ...settings };
+            }}
             class="w-8 h-8 rounded border border-neutral-300 dark:border-neutral-600 cursor-pointer p-0"
           />
         </SettingsItem>
