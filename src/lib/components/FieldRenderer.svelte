@@ -1791,11 +1791,12 @@
         const offset = $telemetryOffset || 0;
         const currentSimTime = $percentStore * (effectiveTimePrediction?.totalTime || 0);
         const targetTime = baseTime + offset + currentSimTime;
-        // find first point at or after targetTime
+        // find last point at or before targetTime to hold position
         let target = pts[0];
         for (const pt of pts) {
-          if (pt.time >= targetTime) {
+          if (pt.time <= targetTime) {
             target = pt;
+          } else {
             break;
           }
         }
