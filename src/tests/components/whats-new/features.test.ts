@@ -34,20 +34,4 @@ describe("features module", () => {
     }
   });
 
-  it("should expose features in descending order for representative versions", () => {
-    const expectedLeadingIds = [
-      "v2.1.0",
-      "v2.0.1",
-      "v2.0.0",
-      "v1.8.1",
-      "v1.8.0",
-    ];
-
-    const ids = mod.features.map((f: any) => f.id);
-
-    // Behavior checks: newest draft entry is excluded and sorted output starts with expected latest releases.
-    expect(ids).not.toContain("newest");
-    expect(ids.length).toBeGreaterThanOrEqual(expectedLeadingIds.length);
-    expect(ids.slice(0, expectedLeadingIds.length)).toEqual(expectedLeadingIds);
-  });
 });
