@@ -1011,9 +1011,9 @@ export function calculatePathTime(
         const cDistBefore = chainMeta ? chainMeta.distanceBefore : 0;
 
         if (globalHeadingMode === "tangential") {
-          if (isChained && !isGlobalOverride) {
-            // Chained: race toward the ABSOLUTE geometric tangent of the curve at each
-            // sample, capped by max angular velocity * dt. We must use getCurvePoint
+          if (isChained) {
+            // Chained (with or without global override): race toward the ABSOLUTE geometric
+            // tangent of the curve at each sample, capped by max angular velocity * dt.
             // finite-difference here — analysis.steps[i].heading only tracks curvature
             // deltas added to currentHeading, NOT the path's true absolute tangent, so
             // it would compare 90° vs 89°,88°... instead of 90° vs 45°,44°... etc.
@@ -1061,7 +1061,7 @@ export function calculatePathTime(
           const finalTargetDeg = isReverse ? targetConstDeg + 180 : targetConstDeg;
           const targetConstHeading = unwrapAngle(finalTargetDeg, currentHeading);
 
-          if (isChained && !isGlobalOverride) {
+          if (isChained) {
             for (let i = 1; i <= samples; i++) {
               const stepTime = motionProfile[i];
               const ratio =
