@@ -11,6 +11,46 @@ export interface BasePoint {
   originalId?: string;
 }
 
+export type PiecewiseSegment = {
+  tStart: number;
+  tEnd: number;
+} & (
+  | {
+      heading: "linear";
+      startDeg: number;
+      endDeg: number;
+      degrees?: never;
+      targetX?: never;
+      targetY?: never;
+    }
+  | {
+      heading: "constant";
+      degrees: number;
+      startDeg?: never;
+      endDeg?: never;
+      targetX?: never;
+      targetY?: never;
+    }
+  | {
+      heading: "tangential";
+      degrees?: never;
+      startDeg?: never;
+      endDeg?: never;
+      targetX?: never;
+      targetY?: never;
+    }
+  | {
+      heading: "facingPoint";
+      targetX: number;
+      targetY: number;
+      degrees?: never;
+      startDeg?: never;
+      endDeg?: never;
+    }
+) & {
+    reverse?: boolean;
+  };
+
 export type Point = BasePoint &
   (
     | {
@@ -20,6 +60,7 @@ export type Point = BasePoint &
         degrees?: never;
         targetX?: never;
         targetY?: never;
+        segments?: never;
       }
     | {
         heading: "constant";
@@ -28,6 +69,7 @@ export type Point = BasePoint &
         endDeg?: never;
         targetX?: never;
         targetY?: never;
+        segments?: never;
       }
     | {
         heading: "tangential";
@@ -36,6 +78,7 @@ export type Point = BasePoint &
         endDeg?: never;
         targetX?: never;
         targetY?: never;
+        segments?: never;
       }
     | {
         heading: "facingPoint";
@@ -44,6 +87,16 @@ export type Point = BasePoint &
         degrees?: never;
         startDeg?: never;
         endDeg?: never;
+        segments?: never;
+      }
+    | {
+        heading: "piecewise";
+        segments: PiecewiseSegment[];
+        degrees?: never;
+        startDeg?: never;
+        endDeg?: never;
+        targetX?: never;
+        targetY?: never;
       }
   ) & {
     reverse?: boolean;
@@ -91,6 +144,14 @@ export interface Line {
   macroId?: string;
   originalId?: string;
   isChain?: boolean;
+  globalHeading?: Point["heading"] | "none"; // Used when isChain is true, acts as a global override
+  globalDegrees?: number;
+  globalStartDeg?: number;
+  globalEndDeg?: number;
+  globalTargetX?: number;
+  globalTargetY?: number;
+  globalReverse?: boolean;
+  globalSegments?: PiecewiseSegment[];
 }
 
 export type SequencePathItem = {

@@ -396,54 +396,131 @@ export async function generateSequentialCommandCode(
       controlPointsStr = controlPoints.join(", ") + ", ";
     }
 
-    // Determine heading interpolation
     let headingConfig = "";
-    if (line.endPoint.heading === "constant") {
-      if (hardcodeValues) {
-        headingConfig = `setConstantHeadingInterpolation(Math.toRadians(${line.endPoint.degrees || 0}))`;
-      } else {
-        headingConfig = `setConstantHeadingInterpolation(${endPoseVar}.getHeading())`;
-      }
-    } else if (line.endPoint.heading === "linear") {
-      if (hardcodeValues) {
-        headingConfig = `setLinearHeadingInterpolation(Math.toRadians(${line.endPoint.startDeg || 0}), Math.toRadians(${line.endPoint.endDeg || 0}))`;
-      } else {
-        headingConfig = `setLinearHeadingInterpolation(${actualStartPose}.getHeading(), ${endPoseVar}.getHeading())`;
-      }
-    } else if (line.endPoint.heading === "facingPoint") {
-      let hxStr = "0";
-      let hyStr = "0";
+    // Helper to generate a HeadingInterpolator string representation (e.g. "HeadingInterpolator.tangent")
+    const generateInterpolatorString = (pointDef: any, startPoseVarInner: string, endPoseVarInner: string) => {
+      let config = "";
       if (coordinateSystem === "FTC") {
-        const uTarget = toUser(
-          {
-            x: line.endPoint.targetX || 0,
-            y: line.endPoint.targetY || 0,
-          },
-          "FTC",
-        );
-        hxStr = uTarget.x.toFixed(3);
-        hyStr = uTarget.y.toFixed(3);
+        if (pointDef.heading === "constant") {
+          // If hardcode values is disabled, we don't have access to .getHeading() on the fly easily for just the segment string unless we map it 
+          // But Piecewise with variables might be tricky, so we rely on hardcoding or variables.
+          if (hardcodeValues || pointDef.degrees !== undefined) config = `Math.toRadians(${toUserHeading(pointDef.degrees || 0, "FTC").toFixed(3)})`;
+          else config = `${endPoseVarInner}.getHeading()`;
+        } else if (pointDef.heading === "linear") {
+          if (hardcodeValues || (pointDef.startDeg !== undefined && pointDef.endDeg !== undefined)) config = `Math.toRadians(${toUserHeading(pointDef.startDeg || 0, "FTC").toFixed(3)}), Math.toRadians(${toUserHeading(pointDef.endDeg || 0, "FTC").toFixed(3)})`;
+          else config = `${startPoseVarInner}.getHeading(), ${endPoseVarInner}.getHeading()`;
+        } else if (pointDef.heading === "facingPoint") {
+          const uTarget = toUser({ x: pointDef.targetX || 0, y: pointDef.targetY || 0 }, "FTC");
+          config = `new Pose(${uTarget.x.toFixed(3)}, ${uTarget.y.toFixed(3)})`;
+        }
       } else {
-        let targetX = line.endPoint.targetX || 0;
-        let targetY = line.endPoint.targetY || 0;
-        hxStr =
-          codeUnits === "metric"
-            ? `cmToInches(${(targetX * 2.54).toFixed(3)})`
-            : targetX.toFixed(3);
-        hyStr =
-          codeUnits === "metric"
-            ? `cmToInches(${(targetY * 2.54).toFixed(3)})`
-            : targetY.toFixed(3);
+        if (pointDef.heading === "constant") {
+          if (hardcodeValues || pointDef.degrees !== undefined) config = `Math.toRadians(${pointDef.degrees || 0})`;
+          else config = `${endPoseVarInner}.getHeading()`;
+        } else if (pointDef.heading === "linear") {
+          if (hardcodeValues || (pointDef.startDeg !== undefined && pointDef.endDeg !== undefined)) config = `Math.toRadians(${pointDef.startDeg || 0}), Math.toRadians(${pointDef.endDeg || 0})`;
+          else config = `${startPoseVarInner}.getHeading(), ${endPoseVarInner}.getHeading()`;
+        } else if (pointDef.heading === "facingPoint") {
+          const targetX = pointDef.targetX || 0;
+          const targetY = pointDef.targetY || 0;
+          const hx = codeUnits === "metric" ? `cmToInches(${(targetX * 2.54).toFixed(3)})` : targetX.toFixed(3);
+          const hy = codeUnits === "metric" ? `cmToInches(${(targetY * 2.54).toFixed(3)})` : targetY.toFixed(3);
+          config = `new Pose(${hx}, ${hy})`;
+        }
       }
-      headingConfig = `setHeadingInterpolation(HeadingInterpolator.facingPoint(new Pose(${hxStr}, ${hyStr})))`;
-    } else {
-      headingConfig = `setTangentHeadingInterpolation()`;
+
+      let baseName = "";
+      if (pointDef.heading === "constant") {
+        baseName = `HeadingInterpolator.constant(${config})`;
+      } else if (pointDef.heading === "linear") {
+        baseName = `HeadingInterpolator.linear(${config})`;
+      } else if (pointDef.heading === "tangential") {
+        baseName = `HeadingInterpolator.tangent`;
+      } else if (pointDef.heading === "facingPoint") {
+        baseName = `HeadingInterpolator.facingPoint(${config})`;
+      }
+
+      if (pointDef.reverse) {
+        if (pointDef.heading === "tangential") return "HeadingInterpolator.reversedTangent";
+        if (pointDef.heading === "linear") return `HeadingInterpolator.reversedLinear(${config})`;
+        if (pointDef.heading === "constant") return `HeadingInterpolator.reversedConstant(${config})`;
+        if (pointDef.heading === "facingPoint") return `HeadingInterpolator.reversedFacingPoint(${config})`;
+      }
+      return baseName;
+    };
+
+    let headingMethodCode = "";
+    let globalHeadingCode = ""; 
+
+    const constructHeadingMethod = (targetConfig: any) => {
+      if (targetConfig.heading === "piecewise") {
+        const segmentsStr = (targetConfig.segments || []).map((seg: any) => {
+           const interpStr = generateInterpolatorString(seg, actualStartPose, endPoseVar);
+           return `\n                new HeadingInterpolator.PiecewiseNode(${seg.tStart}, ${seg.tEnd}, ${interpStr})`;
+        }).join(",");
+        return `.setHeadingInterpolation(HeadingInterpolator.piecewise(${segmentsStr}\n            ))`;
+      }
+
+      let hConfig = generateInterpolatorString(targetConfig, actualStartPose, endPoseVar); 
+      let args = "";
+      if (hConfig.indexOf("(") !== -1) {
+        args = hConfig.substring(hConfig.indexOf("(") + 1, hConfig.lastIndexOf(")"));
+      }
+
+      if (targetConfig.reverse) {
+        if (targetConfig.heading === "constant") {
+          return `.setHeadingInterpolation(HeadingInterpolator.constant(${args}))\n            .setReversed()`;
+        } else if (targetConfig.heading === "linear") {
+          return `.setHeadingInterpolation(HeadingInterpolator.linear(${args}))\n            .setReversed()`;
+        } else if (targetConfig.heading === "tangential") {
+          return `.setHeadingInterpolation(HeadingInterpolator.tangent)\n            .setReversed()`;
+        } else if (targetConfig.heading === "facingPoint") {
+          return `.setHeadingInterpolation(HeadingInterpolator.facingPoint(${args}))\n            .setReversed()`;
+        }
+      } else {
+        if (targetConfig.heading === "constant") {
+          return `.setConstantHeadingInterpolation(${args})`;
+        } else if (targetConfig.heading === "linear") {
+          return `.setLinearHeadingInterpolation(${args})`;
+        } else if (targetConfig.heading === "tangential") {
+          return `.setTangentHeadingInterpolation()`;
+        } else if (targetConfig.heading === "facingPoint") {
+          return `.setHeadingInterpolation(HeadingInterpolator.facingPoint(${args}))`;
+        }
+      }
+      return "";
+    };
+
+    const isChainRoot = !line.isChain && idx + 1 < lines.length && lines[idx + 1].isChain;
+    let hasGlobalHeading = false;
+    
+    let tempIdx = idx;
+    let rootLine = line;
+    while(rootLine.isChain && tempIdx > 0) {
+       tempIdx--;
+       rootLine = lines[tempIdx];
+    }
+    if (rootLine.globalHeading && rootLine.globalHeading !== ("none" as any)) {
+       hasGlobalHeading = true;
+       if (!line.isChain) { 
+         const globalConfig = {
+            heading: rootLine.globalHeading,
+            reverse: rootLine.globalReverse,
+            degrees: rootLine.globalDegrees,
+            startDeg: rootLine.globalStartDeg,
+            endDeg: rootLine.globalEndDeg,
+            targetX: rootLine.globalTargetX,
+            targetY: rootLine.globalTargetY,
+            segments: rootLine.globalSegments
+         };
+         const globalInterpStr = constructHeadingMethod(globalConfig).replace(/set(Constant|Linear|Tangent|Heading)Interpolation\(/, "setGlobalHeadingInterpolation(");
+         globalHeadingCode = `\n            ${globalInterpStr}`;
+       }
     }
 
-    // Build reverse config
-    const reverseConfig = line.endPoint.reverse
-      ? "\n                .setReversed()"
-      : "";
+    if (!hasGlobalHeading) {
+       headingMethodCode = constructHeadingMethod(line.endPoint);
+    }
 
     if (!line.isChain) {
       if (currentBuilderStr !== "") {
@@ -452,11 +529,11 @@ export async function generateSequentialCommandCode(
       }
       currentBuilderStr = `        ${pathName} = follower.pathBuilder()
             .addPath(new ${curveType}(${actualStartPose}, ${controlPointsStr}${endPoseVar}))
-            .${headingConfig}${reverseConfig}`;
+            ${headingMethodCode}${globalHeadingCode}`;
     } else {
       currentBuilderStr += `
             .addPath(new ${curveType}(${actualStartPose}, ${controlPointsStr}${endPoseVar}))
-            .${headingConfig}${reverseConfig}`;
+            ${headingMethodCode}`;
     }
   });
 

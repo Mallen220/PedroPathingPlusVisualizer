@@ -137,6 +137,76 @@
     }
   });
 
+  let isChainContinuation = $derived(line.isChain ?? false);
+  let isChainRoot = $derived(!isChainContinuation && idx + 1 < lines.length && lines[idx + 1].isChain);
+  
+  let chainRootIndex = $derived.by(() => {
+    if (isChainRoot) return idx;
+    if (isChainContinuation) {
+      for (let i = idx; i >= 0; i--) {
+        if (!lines[i].isChain) return i;
+      }
+    }
+    return -1;
+  });
+
+  let chainGlobalSourceLine = $derived.by(() => {
+    if (chainRootIndex === -1) return null;
+    if (lines[chainRootIndex].globalHeading !== undefined) return lines[chainRootIndex];
+    for (let i = chainRootIndex + 1; i < lines.length; i++) {
+        if (!lines[i].isChain) break;
+        if (lines[i].globalHeading !== undefined) return lines[i];
+    }
+    return null;
+  });
+
+  let isPartOfChain = $derived(isChainRoot || isChainContinuation);
+  let hasGlobalHeadingDef = $derived(line.globalHeading !== undefined);
+  let isOverriddenByGlobalHeading = $derived(chainGlobalSourceLine !== null && chainGlobalSourceLine !== line);
+  let canShowGlobalHeadingToggle = $derived(isPartOfChain && !isOverriddenByGlobalHeading);
+
+  let pseudoGlobalEndPoint = $state({
+     heading: "tangential",
+     reverse: false,
+     degrees: 0,
+     startDeg: 0,
+     endDeg: 0,
+     targetX: 72,
+     targetY: 72,
+     segments: [] as any[]
+  });
+
+  // Track if we are syncing so we don't trigger circular updates
+  let isSyncingToPseudo = false;
+  $effect(() => {
+     if (line.globalHeading) {
+        isSyncingToPseudo = true;
+        pseudoGlobalEndPoint.heading = line.globalHeading;
+        pseudoGlobalEndPoint.reverse = line.globalReverse ?? false;
+        pseudoGlobalEndPoint.degrees = line.globalDegrees ?? 0;
+        pseudoGlobalEndPoint.startDeg = line.globalStartDeg ?? 0;
+        pseudoGlobalEndPoint.endDeg = line.globalEndDeg ?? 0;
+        pseudoGlobalEndPoint.targetX = line.globalTargetX ?? 72;
+        pseudoGlobalEndPoint.targetY = line.globalTargetY ?? 72;
+        pseudoGlobalEndPoint.segments = (line.globalSegments ? structuredClone(line.globalSegments) : []);
+        isSyncingToPseudo = false;
+     }
+  });
+
+  function handleGlobalChange() {
+     if (isSyncingToPseudo) return;
+     line.globalHeading = pseudoGlobalEndPoint.heading as any;
+     line.globalReverse = pseudoGlobalEndPoint.reverse;
+     line.globalDegrees = pseudoGlobalEndPoint.degrees;
+     line.globalStartDeg = pseudoGlobalEndPoint.startDeg;
+     line.globalEndDeg = pseudoGlobalEndPoint.endDeg;
+     line.globalTargetX = pseudoGlobalEndPoint.targetX;
+     line.globalTargetY = pseudoGlobalEndPoint.targetY;
+     line.globalSegments = structuredClone(pseudoGlobalEndPoint.segments);
+     lines[idx] = {...line};
+     lines = [...lines];
+  }
+
   function handleLinkHoverEnter(e: MouseEvent, id: string | null) {
     hoveredLinkId = id;
     hoveredLinkAnchor = e.currentTarget as HTMLElement;
@@ -428,27 +498,86 @@
         </div>
 
         <!-- Heading Control -->
-        <div class="space-y-2" class:col-span-2={!isNarrow}>
-          <span
-            class="text-xs font-semibold text-neutral-500 uppercase tracking-wide block"
+        {#if !isOverriddenByGlobalHeading && !hasGlobalHeadingDef}
+          <div 
+            class="space-y-2" 
+            class:col-span-2={!isNarrow && line.endPoint.heading !== "piecewise"}
+            class:col-span-3={!isNarrow && line.endPoint.heading === "piecewise"}
           >
-            Heading
-          </span>
-          <HeadingControls
-            bind:this={headingControls}
-            endPoint={line.endPoint}
-            locked={line.locked}
-            on:change={() => {
-              lines[idx] = { ...line, endPoint: { ...line.endPoint } };
-              lines = [...lines];
-            }}
-            on:commit={() => {
-              lines[idx] = { ...line, endPoint: { ...line.endPoint } };
-              lines = [...lines];
-              recordChange("Update Heading");
-            }}
-          />
-        </div>
+            <span
+              class="text-xs font-semibold text-neutral-500 uppercase tracking-wide block"
+            >
+              Heading
+            </span>
+            <HeadingControls
+              bind:this={headingControls}
+              endPoint={line.endPoint}
+              locked={line.locked}
+              on:change={() => {
+                lines[idx] = { ...line, endPoint: { ...line.endPoint } };
+                lines = [...lines];
+              }}
+              on:commit={() => {
+                lines[idx] = { ...line, endPoint: { ...line.endPoint } };
+                lines = [...lines];
+                if (recordChange) recordChange("Update Heading");
+              }}
+            />
+          </div>
+        {:else}
+          <div class="space-y-2" class:col-span-2={!isNarrow}>
+            <span class="text-xs font-semibold text-neutral-500 uppercase tracking-wide block">Heading</span>
+            <div class="text-sm text-neutral-400 p-2 bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-200 dark:border-neutral-700/50 rounded-lg flex items-center gap-2">
+              <LinkIcon className="size-4 shrink-0 text-purple-500" />
+              Overridden by Global Chain Heading
+            </div>
+          </div>
+        {/if}
+
+        {#if canShowGlobalHeadingToggle}
+          <div class="space-y-2 col-span-1 border-t border-neutral-100 dark:border-neutral-700 pt-2" class:col-span-3={!isNarrow}>
+            <label class="flex items-center gap-2 cursor-pointer w-fit">
+              <input 
+                type="checkbox" 
+                checked={hasGlobalHeadingDef}
+                onchange={(e) => {
+                  if (e.currentTarget.checked) {
+                     line.globalHeading = line.endPoint.heading;
+                     if (line.endPoint.degrees !== undefined) line.globalDegrees = line.endPoint.degrees;
+                     if (line.endPoint.targetX !== undefined) line.globalTargetX = line.endPoint.targetX;
+                     if (line.endPoint.targetY !== undefined) line.globalTargetY = line.endPoint.targetY;
+                     if (line.endPoint.reverse !== undefined) line.globalReverse = line.endPoint.reverse;
+                     if (line.endPoint.startDeg !== undefined) line.globalStartDeg = line.endPoint.startDeg;
+                     if (line.endPoint.endDeg !== undefined) line.globalEndDeg = line.endPoint.endDeg;
+                     if (line.endPoint.segments !== undefined) line.globalSegments = structuredClone(line.endPoint.segments);
+                  } else {
+                     line.globalHeading = undefined;
+                  }
+                  lines[idx] = {...line};
+                  lines = [...lines];
+                  if(recordChange) recordChange("Toggle Global Heading");
+                }}
+                disabled={line.locked}
+                class="rounded text-purple-500 focus:ring-purple-500 bg-neutral-100 dark:bg-neutral-900 border-neutral-300 dark:border-neutral-700"
+              />
+              <span class="text-sm font-semibold text-neutral-600 dark:text-neutral-300">Global Chain Heading</span>
+            </label>
+
+            {#if hasGlobalHeadingDef}
+              <div class="pl-2 mt-2 ml-1 border-l-2 border-purple-500/30">
+                 <HeadingControls
+                    bind:endPoint={pseudoGlobalEndPoint}
+                    locked={line.locked}
+                    on:change={handleGlobalChange}
+                    on:commit={() => {
+                      handleGlobalChange();
+                      if (recordChange) recordChange("Update Global Heading");
+                    }}
+                 />
+              </div>
+            {/if}
+          </div>
+        {/if}
       </div>
 
       <ControlPointsSection
