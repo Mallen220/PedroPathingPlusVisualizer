@@ -1012,29 +1012,45 @@ export function calculatePathTime(
 
         if (globalHeadingMode === "tangential") {
           if (isChained && !isGlobalOverride) {
-            // Continuously track the path tangent at each step with physics-limited catchup.
-            // This is more accurate than interpolating to a fixed endHeading: the robot
-            // always tries to face the current tangent direction rather than the final one.
+            // Chained: race toward the ABSOLUTE geometric tangent of the curve at each
+            // sample, capped by max angular velocity * dt. We must use getCurvePoint
+            // finite-difference here — analysis.steps[i].heading only tracks curvature
+            // deltas added to currentHeading, NOT the path's true absolute tangent, so
+            // it would compare 90° vs 89°,88°... instead of 90° vs 45°,44°... etc.
+            const cps = [prevPoint, ...line.controlPoints, line.endPoint];
+            const isReverse = (line.endPoint as any).reverse;
+            const maxAngVelDegPerSec =
+              Math.max(safeSettings.aVelocity, 0.001) * (180 / Math.PI);
+            const eps = 0.005;
             let simH = currentHeading;
             for (let i = 1; i <= samples; i++) {
-              const stepTangent = analysis.steps[Math.min(i - 1, analysis.steps.length - 1)].heading;
-              const wTarget = unwrapAngle(stepTangent, simH);
-              const dt = (motionProfile[i] ?? motionProfile[motionProfile.length - 1])
-                       - (motionProfile[i - 1] ?? 0);
-              const catchUp = Math.abs(wTarget - simH);
-              const stepPhyTime = calculateRotationTime(catchUp, safeSettings);
-              let next: number;
-              if (stepPhyTime > 0 && dt < stepPhyTime) {
-                next = simH + (wTarget - simH) * (dt / stepPhyTime);
+              const t = i / samples;
+              const tA = Math.max(0, t - eps);
+              const tB = Math.min(1, t + eps);
+              const posA = getCurvePoint(tA, cps);
+              const posB = getCurvePoint(tB, cps);
+              const dx = posB.x - posA.x;
+              const dy = posB.y - posA.y;
+              let idealTarget: number;
+              if (Math.abs(dx) < 1e-9 && Math.abs(dy) < 1e-9) {
+                idealTarget = simH; // degenerate — hold current
               } else {
-                next = wTarget;
+                const absTangentDeg = Math.atan2(dy, dx) * (180 / Math.PI);
+                idealTarget = unwrapAngle(
+                  isReverse ? absTangentDeg + 180 : absTangentDeg,
+                  simH,
+                );
               }
-              simH = next;
+              const dt =
+                (motionProfile[i] ?? motionProfile[motionProfile.length - 1]) -
+                (motionProfile[i - 1] ?? 0);
+              const maxRot = maxAngVelDegPerSec * dt;
+              simH += Math.max(-maxRot, Math.min(maxRot, idealTarget - simH));
               headingProfile.push(simH);
             }
           } else {
-            // Non-chained or global override: just push the raw tangent steps.
-            // For global override the re-unwrap pass will stitch continuity.
+            // Non-chained or global override: instantly track the geometric tangent.
+            // analyzePathSegment seeds from currentHeading so the profile is continuous.
             for (const step of analysis.steps) {
               headingProfile.push(step.heading);
             }
@@ -1123,45 +1139,19 @@ export function calculatePathTime(
           const targetY = isGlobalOverride ? rootLine.globalTargetY || 0 : (line.endPoint as any).targetY || 0;
           const isReverse = isGlobalOverride ? rootLine.globalReverse : (line.endPoint as any).reverse;
 
+          // Always track the ideal per-position facing angle continuously — no isChained
+          // branching. Using a running simH (last profile entry) ensures the angle is
+          // unwrapped relative to the most recently achieved heading, not an old anchor.
+          let simH = currentHeading;
           for (let i = 1; i <= samples; i++) {
             const t = i / samples;
             const pos = getCurvePoint(t, cps);
             let angle =
               Math.atan2(targetY - pos.y, targetX - pos.x) * (180 / Math.PI);
             if (isReverse) angle += 180;
-            const targetHeading = unwrapAngle(
-              angle,
-              headingProfile[headingProfile.length - 1],
-            );
-
-            if (isGlobalOverride) {
-              // Global override: instantly track the ideal facing angle (no rotation lag).
-              headingProfile.push(targetHeading);
-            } else if (isChained) {
-              // Continuously track the facing angle at each step with physics-limited catchup.
-              // Use a running simH (the previous headingProfile entry) so catchup builds
-              // on actual achieved heading rather than always anchoring to currentHeading.
-              const prevH = headingProfile[headingProfile.length - 1];
-              const wTarget = unwrapAngle(
-                Math.atan2(targetY - getCurvePoint(i / samples, cps).y,
-                           targetX - getCurvePoint(i / samples, cps).x) * (180 / Math.PI)
-                + (isReverse ? 180 : 0),
-                prevH,
-              );
-              const dt = (motionProfile[i] ?? motionProfile[motionProfile.length - 1])
-                       - (motionProfile[i - 1] ?? 0);
-              const catchUp = Math.abs(wTarget - prevH);
-              const stepPhyTime = calculateRotationTime(catchUp, safeSettings);
-              let next: number;
-              if (stepPhyTime > 0 && dt < stepPhyTime) {
-                next = prevH + (wTarget - prevH) * (dt / stepPhyTime);
-              } else {
-                next = wTarget;
-              }
-              headingProfile.push(next);
-            } else {
-              headingProfile.push(targetHeading);
-            }
+            const targetHeading = unwrapAngle(angle, simH);
+            simH = targetHeading;
+            headingProfile.push(simH);
           }
         } else if (globalHeadingMode === "piecewise") {
           const cps = [prevPoint, ...line.controlPoints, line.endPoint];
