@@ -109,6 +109,37 @@ export function generatePointElements(
       pointText.weight = 700;
       pointGroup.add(pointElem, pointText);
       _points.push(pointGroup);
+    } else if (line.endPoint.heading === "piecewise") {
+      const segments = line.endPoint.segments || [];
+      segments.forEach((seg, segIdx) => {
+        if (seg.heading === "facingPoint") {
+          const pathColor = line.color || "#60a5fa";
+          let pointGroup = new Two.Group();
+          pointGroup.id = `targetpoint-${idx + 1}-piecewise-${segIdx}`;
+          let pointElem = new Two.Circle(
+            x(seg.targetX || 72),
+            y(seg.targetY || 72),
+            uiLength(POINT_RADIUS * 0.85),
+          );
+          pointElem.id = `targetpoint-${idx + 1}-piecewise-${segIdx}-background`;
+          pointElem.fill = pathColor;
+          pointElem.noStroke();
+          let pointText = new Two.Text(
+            "T",
+            x(seg.targetX || 72),
+            y(seg.targetY || 72) - uiLength(0.05),
+          );
+          pointText.id = `targetpoint-${idx + 1}-piecewise-${segIdx}-text`;
+          pointText.size = uiLength(1.4);
+          pointText.family = "ui-sans-serif, system-ui, sans-serif";
+          pointText.alignment = "center";
+          pointText.baseline = "middle";
+          pointText.fill = "white";
+          pointText.weight = 700;
+          pointGroup.add(pointElem, pointText);
+          _points.push(pointGroup);
+        }
+      });
     }
   });
 

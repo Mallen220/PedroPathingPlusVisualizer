@@ -648,17 +648,29 @@
               shapes[shapeIdx] = { ...shapes[shapeIdx], vertices: newVertices };
               shapesChanged = true;
             } else if (id.startsWith("targetpoint-")) {
-              const line = Number(id.split("-")[1]) - 1;
+              const parts = id.split("-");
+              const line = Number(parts[1]) - 1;
               if (lines[line] && lines[line].endPoint) {
-                lines[line] = {
-                  ...lines[line],
-                  endPoint: {
-                    ...lines[line].endPoint,
-                    targetX: inchX,
-                    targetY: inchY,
-                  } as Point,
-                };
-                linesChanged = true;
+                if (parts.length > 2 && parts[2] === "piecewise") {
+                  const segIdx = Number(parts[3]);
+                  const segments = lines[line].endPoint.segments || [];
+                  if (segments[segIdx]) {
+                    const newSegs = [...segments];
+                    newSegs[segIdx] = { ...newSegs[segIdx], targetX: inchX, targetY: inchY };
+                    lines[line] = { ...lines[line], endPoint: { ...lines[line].endPoint, segments: newSegs } as Point };
+                    linesChanged = true;
+                  }
+                } else {
+                  lines[line] = {
+                    ...lines[line],
+                    endPoint: {
+                      ...lines[line].endPoint,
+                      targetX: inchX,
+                      targetY: inchY,
+                    } as Point,
+                  };
+                  linesChanged = true;
+                }
               }
             } else {
               const line = Number(id.split("-")[1]) - 1;
@@ -1038,10 +1050,20 @@
               objectY = shapes[shapeIdx].vertices[vertexIdx].y;
             }
           } else if (currentElem.startsWith("targetpoint-")) {
-            const line = Number(currentElem.split("-")[1]) - 1;
+            const parts = currentElem.split("-");
+            const line = Number(parts[1]) - 1;
             if (lines[line] && lines[line].endPoint) {
-              objectX = lines[line].endPoint.targetX || 0;
-              objectY = lines[line].endPoint.targetY || 0;
+              if (parts.length > 2 && parts[2] === "piecewise") {
+                 const segIdx = Number(parts[3]);
+                 const segments = lines[line].endPoint.segments || [];
+                 if (segments[segIdx]) {
+                    objectX = segments[segIdx].targetX || 0;
+                    objectY = segments[segIdx].targetY || 0;
+                 }
+              } else {
+                 objectX = lines[line].endPoint.targetX || 0;
+                 objectY = lines[line].endPoint.targetY || 0;
+              }
             }
           } else if (currentElem.startsWith("point-")) {
             const line = Number(currentElem.split("-")[1]) - 1;
@@ -1074,10 +1096,20 @@
                 oy = shapes[shapeIdx].vertices[vertexIdx].y;
               }
             } else if (id.startsWith("targetpoint-")) {
-              const line = Number(id.split("-")[1]) - 1;
+              const parts = id.split("-");
+              const line = Number(parts[1]) - 1;
               if (lines[line] && lines[line].endPoint) {
-                ox = lines[line].endPoint.targetX || 0;
-                oy = lines[line].endPoint.targetY || 0;
+                if (parts.length > 2 && parts[2] === "piecewise") {
+                   const segIdx = Number(parts[3]);
+                   const segments = lines[line].endPoint.segments || [];
+                   if (segments[segIdx]) {
+                      ox = segments[segIdx].targetX || 0;
+                      oy = segments[segIdx].targetY || 0;
+                   }
+                } else {
+                   ox = lines[line].endPoint.targetX || 0;
+                   oy = lines[line].endPoint.targetY || 0;
+                }
               }
             } else if (id.startsWith("point-")) {
               const line = Number(id.split("-")[1]) - 1;
