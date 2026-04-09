@@ -82,6 +82,7 @@
     getRandomColor,
     updateRobotImageDisplay,
     getLineStartHeading,
+    getInitialTangentialHeading,
   } from "../../utils";
   import { getAlignmentMenuItems } from "../../utils/alignmentMenu";
   import { toUser } from "../../utils/coordinates";
@@ -1854,7 +1855,8 @@
       lines &&
       lines.length > 0
     ) {
-      const derived = getLineStartHeading(lines[0], startPoint);
+      const derived = getLineStartHeading(lines[0], startPoint, lines[0]);
+
       if (
         typeof startPoint.startDeg !== "number" ||
         Math.abs(startPoint.startDeg - derived) > 1e-6

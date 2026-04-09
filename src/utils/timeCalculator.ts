@@ -816,9 +816,16 @@ export function calculatePathTime(
         ((item as any).isChain === true || line.isChain === true)
       );
 
+      const chainMeta = globalChainMeta.get(line.id!);
+      const rootLine = chainMeta?.rootLine;
+
       // --- ROTATION CHECK (Initial Turn-to-Face or Wait) ---
       // Unwind requiredStartHeading relative to currentHeading
-      let requiredStartHeadingRaw = getLineStartHeading(line, prevPoint);
+      let requiredStartHeadingRaw = getLineStartHeading(
+        line,
+        prevPoint,
+        rootLine,
+      );
       // Unwind: find value closest to currentHeading
       let requiredStartHeading = unwrapAngle(
         requiredStartHeadingRaw,
@@ -898,7 +905,7 @@ export function calculatePathTime(
             if (prevLine) {
               // Start of the previous line isn't immediately available, but we can rough it from currentHeading
               // A better heuristic is to look at the immediate start angle of this line vs the inherited currentHeading
-              let thisStartHeading = getLineStartHeading(line, prevPoint);
+              let thisStartHeading = getLineStartHeading(line, prevPoint, rootLine);
               let diff = Math.abs(
                 getAngularDifference(currentHeading, thisStartHeading),
               );
@@ -918,6 +925,7 @@ export function calculatePathTime(
             let nextStartHeading = getLineStartHeading(
               nextLine,
               line.endPoint as Point,
+              globalChainMeta.get(nextLine.id!)?.rootLine,
             );
             let diff = Math.abs(
               getAngularDifference(thisEndHeading, nextStartHeading),
@@ -946,12 +954,12 @@ export function calculatePathTime(
       let rotationRequired = 0;
 
       // Determine End Heading (Unwound)
-      let endHeadingRaw = getLineEndHeading(line, prevPoint);
+      let endHeadingRaw = getLineEndHeading(line, prevPoint, rootLine);
       let endHeading = endHeadingRaw;
 
       // Resolve global chain heading override for endHeading/rotation calculation
-      const chainMeta = globalChainMeta.get(line.id!);
-      const rootLine = chainMeta?.rootLine;
+      // const chainMeta = globalChainMeta.get(line.id!);
+      // const rootLine = chainMeta?.rootLine;
       const isGlobalOverride = !!(
         rootLine?.globalHeading && rootLine.globalHeading !== "none"
       );

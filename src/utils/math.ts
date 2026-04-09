@@ -202,12 +202,30 @@ function getHeadingBase(
 export function getLineStartHeading(
   line: Line | undefined,
   previousPoint: Point,
+  globalOverride?: Line,
 ): number {
   if (!line || !line.endPoint) return 0;
-  if (line.endPoint.heading === "linear") return line.endPoint.startDeg;
 
-  if (line.endPoint.heading === "piecewise") {
-    const segments = line.endPoint.segments || [];
+  const effectiveSource =
+    globalOverride &&
+    globalOverride.globalHeading &&
+    globalOverride.globalHeading !== "none"
+      ? {
+          heading: globalOverride.globalHeading,
+          degrees: globalOverride.globalDegrees,
+          startDeg: globalOverride.globalStartDeg,
+          endDeg: globalOverride.globalEndDeg,
+          targetX: globalOverride.globalTargetX,
+          targetY: globalOverride.globalTargetY,
+          reverse: globalOverride.globalReverse,
+          segments: globalOverride.globalSegments,
+        }
+      : line.endPoint;
+
+  if (effectiveSource.heading === "linear") return (effectiveSource as any).startDeg;
+
+  if (effectiveSource.heading === "piecewise") {
+    const segments = (effectiveSource as any).segments || [];
     let firstSeg = null;
     for (const seg of segments) {
       if (0 >= seg.tStart && 0 <= seg.tEnd) {
@@ -219,14 +237,18 @@ export function getLineStartHeading(
 
     if (firstSeg) {
       if (firstSeg.heading === "linear") return firstSeg.startDeg ?? 0;
-      if (firstSeg.heading === "constant") return transformAngle((firstSeg.degrees ?? 0) + (firstSeg.reverse ? 180 : 0));
-      
+      if (firstSeg.heading === "constant")
+        return transformAngle(
+          (firstSeg.degrees ?? 0) + (firstSeg.reverse ? 180 : 0),
+        );
+
       let nextP: Point2D = line.endPoint;
       if (
         firstSeg.heading === "tangential" &&
         line.controlPoints?.length > 0
       ) {
-        nextP = getFirstValidControlPoint(line.controlPoints, previousPoint) || nextP;
+        nextP =
+          getFirstValidControlPoint(line.controlPoints, previousPoint) || nextP;
       }
       return getHeadingBase(firstSeg as any, previousPoint, nextP);
     }
@@ -235,14 +257,14 @@ export function getLineStartHeading(
 
   let nextP: Point2D = line.endPoint;
   if (
-    line.endPoint.heading === "tangential" &&
+    effectiveSource.heading === "tangential" &&
     line.controlPoints?.length > 0
   ) {
     nextP =
       getFirstValidControlPoint(line.controlPoints, previousPoint) || nextP;
   }
 
-  return getHeadingBase(line.endPoint, previousPoint, nextP);
+  return getHeadingBase(effectiveSource as any, previousPoint, nextP);
 }
 
 export function getInitialTangentialHeading(
@@ -256,12 +278,31 @@ export function getInitialTangentialHeading(
 export function getLineEndHeading(
   line: Line | undefined,
   previousPoint: Point,
+  globalOverride?: Line,
 ): number {
   if (!line || !line.endPoint) return 0;
-  if (line.endPoint.heading === "linear") return line.endPoint.endDeg;
 
-  if (line.endPoint.heading === "piecewise") {
-    const segments = line.endPoint.segments || [];
+  const effectiveSource =
+    globalOverride &&
+    globalOverride.globalHeading &&
+    globalOverride.globalHeading !== "none"
+      ? {
+          heading: globalOverride.globalHeading,
+          degrees: globalOverride.globalDegrees,
+          startDeg: globalOverride.globalStartDeg,
+          endDeg: globalOverride.globalEndDeg,
+          targetX: globalOverride.globalTargetX,
+          targetY: globalOverride.globalTargetY,
+          reverse: globalOverride.globalReverse,
+          segments: globalOverride.globalSegments,
+        }
+      : line.endPoint;
+
+  if (effectiveSource.heading === "linear")
+    return (effectiveSource as any).endDeg;
+
+  if (effectiveSource.heading === "piecewise") {
+    const segments = (effectiveSource as any).segments || [];
     let lastSeg = null;
     for (const seg of segments) {
       if (1 >= seg.tStart && 1 <= seg.tEnd) {
@@ -269,28 +310,32 @@ export function getLineEndHeading(
         break;
       }
     }
-    if (!lastSeg && segments.length > 0) lastSeg = segments[segments.length - 1];
+    if (!lastSeg && segments.length > 0)
+      lastSeg = segments[segments.length - 1];
 
     if (lastSeg) {
       if (lastSeg.heading === "linear") {
-         const sDeg = lastSeg.startDeg ?? 0;
-         const eDeg = lastSeg.endDeg ?? 0;
-         if (lastSeg.reverse) {
-            const shortDiff = eDeg - sDeg;
-            const normalizedShort = ((shortDiff % 360) + 360) % 360;
-            const longDiff = normalizedShort <= 180 ? normalizedShort - 360 : normalizedShort;
-            return sDeg + longDiff;
-         }
-         return eDeg;
+        const sDeg = lastSeg.startDeg ?? 0;
+        const eDeg = lastSeg.endDeg ?? 0;
+        if (lastSeg.reverse) {
+          const shortDiff = eDeg - sDeg;
+          const normalizedShort = ((shortDiff % 360) + 360) % 360;
+          const longDiff =
+            normalizedShort <= 180 ? normalizedShort - 360 : normalizedShort;
+          return sDeg + longDiff;
+        }
+        return eDeg;
       }
-      if (lastSeg.heading === "constant") return transformAngle((lastSeg.degrees ?? 0) + (lastSeg.reverse ? 180 : 0));
-      
+      if (lastSeg.heading === "constant")
+        return transformAngle(
+          (lastSeg.degrees ?? 0) + (lastSeg.reverse ? 180 : 0),
+        );
+
       let prevP: Point2D = previousPoint;
-      if (
-        lastSeg.heading === "tangential" &&
-        line.controlPoints?.length > 0
-      ) {
-        prevP = getFirstValidControlPoint(line.controlPoints, line.endPoint, true) || prevP;
+      if (lastSeg.heading === "tangential" && line.controlPoints?.length > 0) {
+        prevP =
+          getFirstValidControlPoint(line.controlPoints, line.endPoint, true) ||
+          prevP;
       }
       return getHeadingBase(
         lastSeg as any,
@@ -303,7 +348,7 @@ export function getLineEndHeading(
 
   let prevP: Point2D = previousPoint;
   if (
-    line.endPoint.heading === "tangential" &&
+    effectiveSource.heading === "tangential" &&
     line.controlPoints?.length > 0
   ) {
     prevP =
@@ -312,8 +357,8 @@ export function getLineEndHeading(
   }
 
   return getHeadingBase(
-    line.endPoint,
-    line.endPoint.heading === "facingPoint" ? line.endPoint : prevP,
+    effectiveSource as any,
+    effectiveSource.heading === "facingPoint" ? line.endPoint : prevP,
     line.endPoint,
   );
 }
