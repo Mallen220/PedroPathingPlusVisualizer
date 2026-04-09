@@ -649,27 +649,67 @@
               shapesChanged = true;
             } else if (id.startsWith("targetpoint-")) {
               const parts = id.split("-");
-              const line = Number(parts[1]) - 1;
-              if (lines[line] && lines[line].endPoint) {
-                if (parts.length > 2 && parts[2] === "piecewise") {
-                  const segIdx = Number(parts[3]);
-                  const segments = lines[line].endPoint.segments || [];
-                  if (segments[segIdx]) {
-                    const newSegs = [...segments];
-                    newSegs[segIdx] = { ...newSegs[segIdx], targetX: inchX, targetY: inchY };
-                    lines[line] = { ...lines[line], endPoint: { ...lines[line].endPoint, segments: newSegs } as Point };
+              const lineIdx = Number(parts[1]) - 1;
+              const line = lines[lineIdx];
+              if (line && line.endPoint) {
+                const isPiecewise = parts.length > 2 && parts[2] === "piecewise";
+                const segIdx = isPiecewise ? Number(parts[3]) : -1;
+                
+                // If this line has global heading def, update global values
+                if (line.globalHeading !== undefined) {
+                  if (isPiecewise) {
+                    const segments = line.globalSegments || [];
+                    const seg = segments[segIdx];
+                    if (seg && seg.heading === "facingPoint") {
+                      const newSegs = [...segments] as any[];
+                      newSegs[segIdx] = {
+                        ...seg,
+                        targetX: inchX,
+                        targetY: inchY,
+                      };
+                      lines[lineIdx] = { ...line, globalSegments: newSegs };
+                      linesChanged = true;
+                    }
+                  } else {
+                    lines[lineIdx] = {
+                      ...line,
+                      globalTargetX: inchX,
+                      globalTargetY: inchY,
+                    };
                     linesChanged = true;
                   }
                 } else {
-                  lines[line] = {
-                    ...lines[line],
-                    endPoint: {
-                      ...lines[line].endPoint,
-                      targetX: inchX,
-                      targetY: inchY,
-                    } as Point,
-                  };
-                  linesChanged = true;
+                  // Fallback to local endpoint if no global heading def
+                  if (isPiecewise) {
+                    const segments = line.endPoint.segments || [];
+                    const seg = segments[segIdx];
+                    if (seg && seg.heading === "facingPoint") {
+                      const newSegs = [...segments] as any[];
+                      newSegs[segIdx] = {
+                        ...seg,
+                        targetX: inchX,
+                        targetY: inchY,
+                      };
+                      lines[lineIdx] = {
+                        ...line,
+                        endPoint: {
+                          ...line.endPoint,
+                          segments: newSegs,
+                        } as Point,
+                      };
+                      linesChanged = true;
+                    }
+                  } else {
+                    lines[lineIdx] = {
+                      ...line,
+                      endPoint: {
+                        ...line.endPoint,
+                        targetX: inchX,
+                        targetY: inchY,
+                      } as Point,
+                    };
+                    linesChanged = true;
+                  }
                 }
               }
             } else {
@@ -1862,7 +1902,7 @@
 
   // Points (Start, Control, End, Obstacle Vertices)
   let points = $derived(
-    generatePointElements(startPoint, lines, shapes, {
+    generatePointElements(startPoint, lines, shapes, sequence, {
       x,
       y,
       uiLength,

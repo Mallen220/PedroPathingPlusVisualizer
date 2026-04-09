@@ -1,5 +1,6 @@
 <!-- Copyright 2026 Matthew Allen. Licensed under the Modified Apache License, Version 2.0. -->
 <script lang="ts">
+  import { untrack } from "svelte";
   import { run, stopPropagation, createBubbler } from "svelte/legacy";
 
   const bubble = createBubbler();
@@ -137,8 +138,12 @@
     }
   });
 
-  let isChainContinuation = $derived(line.isChain ?? false);
-  let isChainRoot = $derived(!isChainContinuation && idx + 1 < lines.length && lines[idx + 1].isChain);
+  let isChainContinuation = $derived(line.isChain === true);
+  let isChainRoot = $derived(
+    !isChainContinuation &&
+      idx + 1 < lines.length &&
+      lines[idx + 1].isChain === true,
+  );
   
   let chainRootIndex = $derived.by(() => {
     if (isChainRoot) return idx;
@@ -179,18 +184,66 @@
   // Track if we are syncing so we don't trigger circular updates
   let isSyncingToPseudo = false;
   $effect(() => {
-     if (line.globalHeading) {
+    // SYNC STORE -> SIDEBAR
+    // Only watch global props
+    const gh = line.globalHeading;
+    const gr = line.globalReverse;
+    const gd = line.globalDegrees;
+    const gsd = line.globalStartDeg;
+    const ged = line.globalEndDeg;
+    const gtx = line.globalTargetX;
+    const gty = line.globalTargetY;
+    const gsegs = line.globalSegments;
+
+    untrack(() => {
+      if (gh !== undefined && !isSyncingToPseudo) {
+        // Equal check to prevent depth-exceeded
+        const areEqual =
+          pseudoGlobalEndPoint.heading === gh &&
+          pseudoGlobalEndPoint.reverse === (gr ?? false) &&
+          pseudoGlobalEndPoint.degrees === (gd ?? 0) &&
+          pseudoGlobalEndPoint.startDeg === (gsd ?? 0) &&
+          pseudoGlobalEndPoint.endDeg === (ged ?? 0) &&
+          pseudoGlobalEndPoint.targetX === (gtx ?? 72) &&
+          pseudoGlobalEndPoint.targetY === (gty ?? 72) &&
+          JSON.stringify($state.snapshot(pseudoGlobalEndPoint.segments)) ===
+            JSON.stringify(gsegs || []);
+
+        if (areEqual) return;
+
         isSyncingToPseudo = true;
-        pseudoGlobalEndPoint.heading = line.globalHeading;
-        pseudoGlobalEndPoint.reverse = line.globalReverse ?? false;
-        pseudoGlobalEndPoint.degrees = line.globalDegrees ?? 0;
-        pseudoGlobalEndPoint.startDeg = line.globalStartDeg ?? 0;
-        pseudoGlobalEndPoint.endDeg = line.globalEndDeg ?? 0;
-        pseudoGlobalEndPoint.targetX = line.globalTargetX ?? 72;
-        pseudoGlobalEndPoint.targetY = line.globalTargetY ?? 72;
-        pseudoGlobalEndPoint.segments = (line.globalSegments ? structuredClone(line.globalSegments) : []);
+        pseudoGlobalEndPoint.heading = gh;
+        pseudoGlobalEndPoint.reverse = gr ?? false;
+        pseudoGlobalEndPoint.degrees = gd ?? 0;
+        pseudoGlobalEndPoint.startDeg = gsd ?? 0;
+        pseudoGlobalEndPoint.endDeg = ged ?? 0;
+        pseudoGlobalEndPoint.targetX = gtx ?? 72;
+        pseudoGlobalEndPoint.targetY = gty ?? 72;
+        pseudoGlobalEndPoint.segments = (gsegs
+          ? $state.snapshot(gsegs)
+          : []) as any;
         isSyncingToPseudo = false;
-     }
+      }
+    });
+  });
+
+  // Watch pseudo state and sync back to line (SIDEBAR -> STORE)
+  $effect(() => {
+    // Manually track pseudo props
+    pseudoGlobalEndPoint.heading;
+    pseudoGlobalEndPoint.reverse;
+    pseudoGlobalEndPoint.degrees;
+    pseudoGlobalEndPoint.startDeg;
+    pseudoGlobalEndPoint.endDeg;
+    pseudoGlobalEndPoint.targetX;
+    pseudoGlobalEndPoint.targetY;
+    pseudoGlobalEndPoint.segments;
+
+    untrack(() => {
+      if (!isSyncingToPseudo && line.globalHeading !== undefined) {
+        handleGlobalChange();
+      }
+    });
   });
 
   function handleGlobalChange() {
@@ -202,7 +255,7 @@
      line.globalEndDeg = pseudoGlobalEndPoint.endDeg;
      line.globalTargetX = pseudoGlobalEndPoint.targetX;
      line.globalTargetY = pseudoGlobalEndPoint.targetY;
-     line.globalSegments = structuredClone(pseudoGlobalEndPoint.segments);
+     line.globalSegments = $state.snapshot(pseudoGlobalEndPoint.segments);
      lines[idx] = {...line};
      lines = [...lines];
   }
@@ -549,7 +602,7 @@
                      if (line.endPoint.reverse !== undefined) line.globalReverse = line.endPoint.reverse;
                      if (line.endPoint.startDeg !== undefined) line.globalStartDeg = line.endPoint.startDeg;
                      if (line.endPoint.endDeg !== undefined) line.globalEndDeg = line.endPoint.endDeg;
-                     if (line.endPoint.segments !== undefined) line.globalSegments = structuredClone(line.endPoint.segments);
+                     if (line.endPoint.segments !== undefined) line.globalSegments = $state.snapshot(line.endPoint.segments);
                   } else {
                      line.globalHeading = undefined;
                   }

@@ -23,13 +23,18 @@ export function generateFacingLineElements(lines: Line[], ctx: RenderContext) {
       (e: any) => currentSeconds >= e.startTime && currentSeconds <= e.endTime,
     ) ?? timePrediction.timeline[timePrediction.timeline.length - 1];
 
-  // Only render if it's a travel event on a facingPoint segment
+  // Only render if it's a travel event
   if (activeEvent.type !== "travel") return [];
   const activeLine: Line | undefined =
     activeEvent.line ?? lines[activeEvent.lineIndex];
   if (!activeLine || !activeLine.endPoint) return [];
-  if (activeLine.endPoint.heading === "piecewise") {
-    const segments = activeLine.endPoint.segments || [];
+
+  const isGlobal = activeEvent.isGlobalOverride;
+  const rootLine = activeEvent.rootLine;
+  const headingMode = isGlobal ? activeEvent.globalHeading : activeLine.endPoint.heading;
+
+  if (headingMode === "piecewise") {
+    const segments = isGlobal && rootLine ? (rootLine.globalSegments || []) : (activeLine.endPoint.segments || []);
     const t = activeEvent.endTime > activeEvent.startTime 
            ? (currentSeconds - activeEvent.startTime) / (activeEvent.endTime - activeEvent.startTime) 
            : 1.0;
@@ -49,10 +54,16 @@ export function generateFacingLineElements(lines: Line[], ctx: RenderContext) {
     }
   }
 
-  if (activeLine.endPoint.heading !== "facingPoint") return [];
+  if (headingMode !== "facingPoint") return [];
 
-  const targetX = (activeLine.endPoint as any).targetX ?? 72;
-  const targetY = (activeLine.endPoint as any).targetY ?? 72;
+  const targetX = isGlobal && rootLine 
+    ? (rootLine.globalTargetX ?? 72)
+    : ((activeLine.endPoint as any).targetX ?? 72);
+    
+  const targetY = isGlobal && rootLine 
+    ? (rootLine.globalTargetY ?? 72)
+    : ((activeLine.endPoint as any).targetY ?? 72);
+
   const pathColor = activeLine.color || "#60a5fa";
   return [
     {
