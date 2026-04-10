@@ -13,7 +13,7 @@ export function registerGitHandlers() {
       const root = await git.revparse(["--show-toplevel"]);
       const relativePath = path
         .relative(root.trim(), filePath)
-        .replace(/\\/g, "/");
+        .replaceAll("\\", "/");
       const content = await git.show([`HEAD:${relativePath}`]);
       return content;
     } catch (error) {
