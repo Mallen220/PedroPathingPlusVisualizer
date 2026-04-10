@@ -18,39 +18,92 @@ interface BasePoint {
   originalId?: string;
 }
 
+type PiecewiseSegment = {
+  tStart: number;
+  tEnd: number;
+} & (
+  | {
+      heading: "linear";
+      startDeg: number;
+      endDeg: number;
+      degrees?: undefined;
+      targetX?: undefined;
+      targetY?: undefined;
+    }
+  | {
+      heading: "constant";
+      degrees: number;
+      startDeg?: undefined;
+      endDeg?: undefined;
+      targetX?: undefined;
+      targetY?: undefined;
+    }
+  | {
+      heading: "tangential";
+      degrees?: undefined;
+      startDeg?: undefined;
+      endDeg?: undefined;
+      targetX?: undefined;
+      targetY?: undefined;
+    }
+  | {
+      heading: "facingPoint";
+      targetX: number;
+      targetY: number;
+      degrees?: undefined;
+      startDeg?: undefined;
+      endDeg?: undefined;
+    }
+) & {
+    reverse?: boolean;
+  };
+
 type Point = BasePoint &
   (
     | {
         heading: "linear";
         startDeg: number;
         endDeg: number;
-        degrees?: never;
-        targetX?: never;
-        targetY?: never;
+        degrees?: undefined;
+        targetX?: undefined;
+        targetY?: undefined;
+        segments?: undefined;
       }
     | {
         heading: "constant";
         degrees: number;
-        startDeg?: never;
-        endDeg?: never;
-        targetX?: never;
-        targetY?: never;
+        startDeg?: undefined;
+        endDeg?: undefined;
+        targetX?: undefined;
+        targetY?: undefined;
+        segments?: undefined;
       }
     | {
         heading: "tangential";
-        degrees?: never;
-        startDeg?: never;
-        endDeg?: never;
-        targetX?: never;
-        targetY?: never;
+        degrees?: undefined;
+        startDeg?: undefined;
+        endDeg?: undefined;
+        targetX?: undefined;
+        targetY?: undefined;
+        segments?: undefined;
       }
     | {
         heading: "facingPoint";
         targetX: number;
         targetY: number;
-        degrees?: never;
-        startDeg?: never;
-        endDeg?: never;
+        degrees?: undefined;
+        startDeg?: undefined;
+        endDeg?: undefined;
+        segments?: undefined;
+      }
+    | {
+        heading: "piecewise";
+        segments: PiecewiseSegment[];
+        degrees?: undefined;
+        startDeg?: undefined;
+        endDeg?: undefined;
+        targetX?: undefined;
+        targetY?: undefined;
       }
   ) & {
     reverse?: boolean;
@@ -98,6 +151,14 @@ interface Line {
   macroId?: string;
   originalId?: string;
   isChain?: boolean;
+  globalHeading?: Point["heading"] | "none"; // Used when isChain is true, acts as a global override
+  globalDegrees?: number;
+  globalStartDeg?: number;
+  globalEndDeg?: number;
+  globalTargetX?: number;
+  globalTargetY?: number;
+  globalReverse?: boolean;
+  globalSegments?: PiecewiseSegment[];
 }
 
 type SequencePathItem = {
@@ -326,6 +387,9 @@ interface TimelineEvent {
   velocityProfile?: number[];
   // Detailed heading profile for travel events: maps step index to unwrapped heading
   headingProfile?: number[];
+  isGlobalOverride?: boolean;
+  rootLine?: Line;
+  globalHeading?: Point["heading"];
 }
 
 interface TimePrediction {

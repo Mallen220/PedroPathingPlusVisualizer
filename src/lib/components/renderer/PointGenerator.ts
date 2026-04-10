@@ -1,7 +1,7 @@
-// Copyright 2026 Matthew Allen. Licensed under the Modified Apache License, Version 2.0.
 import Two from "two.js";
-import type { Line, Point, Shape } from "../../../types";
+import type { Line, Point, Shape, SequenceItem } from "../../../types";
 import { POINT_RADIUS } from "../../../config";
+import { calculateGlobalChainMeta } from "../../../utils/timeCalculator";
 
 interface RenderContext {
   x: d3.ScaleLinear<number, number>;
@@ -14,6 +14,7 @@ export function generatePointElements(
   startPoint: Point,
   lines: Line[],
   shapes: Shape[],
+  sequence: SequenceItem[],
   ctx: RenderContext,
 ) {
   let _points: (
@@ -22,6 +23,8 @@ export function generatePointElements(
   )[] = [];
   const { x, y, uiLength, multiSelectedPointIds } = ctx;
   const multiSelectedSet = new Set(multiSelectedPointIds);
+
+  const chainMeta = calculateGlobalChainMeta(sequence, lines, startPoint);
 
   let startPointElem = new Two.Circle(
     x(startPoint.x),
@@ -83,13 +86,36 @@ export function generatePointElements(
       }
     });
 
-    if (line.endPoint.heading === "facingPoint") {
+    const meta = chainMeta.get(line.id!);
+    const rootLine = meta?.rootLine;
+    const isGlobalOverride = !!(rootLine?.globalHeading && rootLine.globalHeading !== 'none');
+    
+    // Determine which heading info to use for dot rendering
+    let targetX: number | undefined;
+    let targetY: number | undefined;
+    let headingType: string | undefined;
+    let segments: any[] | undefined;
+
+    if (isGlobalOverride) {
+      headingType = rootLine!.globalHeading;
+      targetX = rootLine!.globalTargetX;
+      targetY = rootLine!.globalTargetY;
+      segments = rootLine!.globalSegments;
+    } else {
+      // Standard local heading
+      headingType = line.endPoint.heading;
+      targetX = (line.endPoint as any).targetX;
+      targetY = (line.endPoint as any).targetY;
+      segments = line.endPoint.segments;
+    }
+
+    if (headingType === "facingPoint") {
       const pathColor = line.color || "#60a5fa";
       let pointGroup = new Two.Group();
       pointGroup.id = `targetpoint-${idx + 1}`;
       let pointElem = new Two.Circle(
-        x((line.endPoint as any).targetX || 72),
-        y((line.endPoint as any).targetY || 72),
+        x(targetX || 72),
+        y(targetY || 72),
         uiLength(POINT_RADIUS * 0.85),
       );
       pointElem.id = `targetpoint-${idx + 1}-background`;
@@ -97,8 +123,8 @@ export function generatePointElements(
       pointElem.noStroke();
       let pointText = new Two.Text(
         "T",
-        x((line.endPoint as any).targetX || 72),
-        y((line.endPoint as any).targetY || 72) - uiLength(0.05),
+        x(targetX || 72),
+        y(targetY || 72) - uiLength(0.05),
       );
       pointText.id = `targetpoint-${idx + 1}-text`;
       pointText.size = uiLength(1.4);
@@ -109,6 +135,37 @@ export function generatePointElements(
       pointText.weight = 700;
       pointGroup.add(pointElem, pointText);
       _points.push(pointGroup);
+    } else if (headingType === "piecewise") {
+      const segs = segments || [];
+      segs.forEach((seg, segIdx) => {
+        if (seg.heading === "facingPoint") {
+          const pathColor = line.color || "#60a5fa";
+          let pointGroup = new Two.Group();
+          pointGroup.id = `targetpoint-${idx + 1}-piecewise-${segIdx}`;
+          let pointElem = new Two.Circle(
+            x(seg.targetX || 72),
+            y(seg.targetY || 72),
+            uiLength(POINT_RADIUS * 0.85),
+          );
+          pointElem.id = `targetpoint-${idx + 1}-piecewise-${segIdx}-background`;
+          pointElem.fill = pathColor;
+          pointElem.noStroke();
+          let pointText = new Two.Text(
+            "T",
+            x(seg.targetX || 72),
+            y(seg.targetY || 72) - uiLength(0.05),
+          );
+          pointText.id = `targetpoint-${idx + 1}-piecewise-${segIdx}-text`;
+          pointText.size = uiLength(1.4);
+          pointText.family = "ui-sans-serif, system-ui, sans-serif";
+          pointText.alignment = "center";
+          pointText.baseline = "middle";
+          pointText.fill = "white";
+          pointText.weight = 700;
+          pointGroup.add(pointElem, pointText);
+          _points.push(pointGroup);
+        }
+      });
     }
   });
 

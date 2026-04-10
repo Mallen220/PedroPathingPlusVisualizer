@@ -89,6 +89,9 @@
     toggleHeadingMode,
     toggleReverse,
     toggleLock,
+    togglePathChain,
+    togglePiecewise,
+    toggleGlobalHeading,
   } from "./shortcuts/properties";
   import {
     cycleGridSize,
@@ -252,6 +255,9 @@
     toggleHeadingMode: () => toggleHeadingMode(recordChange),
     toggleReverse: () => toggleReverse(recordChange),
     toggleLock: () => toggleLock(recordChange),
+    togglePathChain: () => togglePathChain(recordChange),
+    togglePiecewise: () => togglePiecewise(recordChange),
+    toggleGlobalHeading: () => toggleGlobalHeading(recordChange),
     toggleOnion: () =>
       settingsStore.update((s) => ({
         ...s,
@@ -639,7 +645,7 @@
       }
     },
     resetSettings: () => {
-      settingsStore.set(structuredClone(DEFAULT_SETTINGS));
+      settingsStore.set($state.snapshot(DEFAULT_SETTINGS));
     },
     cycleTheme: () => {
       settingsStore.update((s) => {
