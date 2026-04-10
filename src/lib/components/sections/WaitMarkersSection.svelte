@@ -55,7 +55,7 @@
   }
 
   function handlePositionInput(e: any, evt: EventMarker) {
-    const value = parseFloat(e.target?.value);
+    const value = Number.parseFloat(e.target?.value);
     if (!isNaN(value)) {
       evt.position = value;
       wait.eventMarkers = [...(wait.eventMarkers ?? [])];
@@ -63,7 +63,7 @@
   }
 
   function handlePositionBlur(e: any, evt: EventMarker) {
-    const value = parseFloat(e.target?.value);
+    const value = Number.parseFloat(e.target?.value);
     if (isNaN(value) || value < 0 || value > 1) {
       if (e && e.target) e.target.value = String(evt.position);
       return;
@@ -75,7 +75,7 @@
   function handlePositionKeydown(e: any, evt: EventMarker) {
     const tgt = e?.target;
     if (e.key === "Enter") {
-      const value = parseFloat(tgt?.value);
+      const value = Number.parseFloat(tgt?.value);
       if (isNaN(value) || value < 0 || value > 1) {
         if (tgt) tgt.value = String(evt.position);
         e.preventDefault();

@@ -243,7 +243,7 @@
     lineId?: string,
   ) {
     const input = e.target as HTMLInputElement;
-    let val = parseFloat(input.value);
+    let val = Number.parseFloat(input.value);
     if (!isNaN(val)) {
       if (
         settings?.visualizerUnits === "metric" &&

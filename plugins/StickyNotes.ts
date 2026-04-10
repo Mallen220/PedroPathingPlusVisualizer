@@ -463,8 +463,8 @@ interface StickyNote {
       const fieldView = turtle.stores.get(fieldViewStore);
 
       // Parse px values from style
-      const finalPxX = parseFloat(el.style.left);
-      const finalPxY = parseFloat(el.style.top);
+      const finalPxX = Number.parseFloat(el.style.left);
+      const finalPxY = Number.parseFloat(el.style.top);
 
       const inchX = fieldView.xScale.invert(finalPxX);
       const inchY = fieldView.yScale.invert(finalPxY);

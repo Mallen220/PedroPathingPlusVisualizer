@@ -50,7 +50,7 @@
 
   function handleInput(e: Event, event: any) {
     const target = e.target as HTMLInputElement;
-    const value = parseFloat(target.value);
+    const value = Number.parseFloat(target.value);
     if (!isNaN(value)) {
       event.position = value;
       line.eventMarkers = [...line.eventMarkers!];
@@ -59,7 +59,7 @@
 
   function handleBlur(e: Event, event: any) {
     const target = e.target as HTMLInputElement;
-    const value = parseFloat(target.value);
+    const value = Number.parseFloat(target.value);
     if (isNaN(value) || value < 0 || value > 1) {
       // Invalid - revert to current value
       target.value = event.position.toString();
@@ -73,7 +73,7 @@
   function handleKeydown(e: KeyboardEvent, event: any) {
     if (e.key === "Enter") {
       const target = e.target as HTMLInputElement;
-      const value = parseFloat(target.value);
+      const value = Number.parseFloat(target.value);
       if (isNaN(value) || value < 0 || value > 1) {
         // Invalid - revert
         target.value = event.position.toString();

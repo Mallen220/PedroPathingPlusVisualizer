@@ -224,8 +224,8 @@
             bwidth = cw;
             bheight = ch;
           } else {
-            bwidth = parseFloat(originalWidth) || 800;
-            bheight = parseFloat(originalHeight) || 800;
+            bwidth = Number.parseFloat(originalWidth) || 800;
+            bheight = Number.parseFloat(originalHeight) || 800;
           }
         }
 

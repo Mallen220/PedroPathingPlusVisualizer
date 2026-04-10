@@ -494,7 +494,7 @@
                 max={$settingsStore.coordinateSystem === "FTC" ? "72" : "144"}
                 value={formatDisplayCoordinate(userPoint.x, $settingsStore)}
                 oninput={(e) => {
-                  let val = parseFloat(e.currentTarget.value);
+                  let val = Number.parseFloat(e.currentTarget.value);
                   if (!isNaN(val)) {
                     if ($settingsStore.visualizerUnits === "metric") {
                       val = cmToInch(val);
@@ -529,7 +529,7 @@
                 type="number"
                 value={formatDisplayCoordinate(userPoint.y, $settingsStore)}
                 oninput={(e) => {
-                  let val = parseFloat(e.currentTarget.value);
+                  let val = Number.parseFloat(e.currentTarget.value);
                   if (!isNaN(val)) {
                     if ($settingsStore.visualizerUnits === "metric") {
                       val = cmToInch(val);

@@ -38,7 +38,7 @@
   // Helper to handle constant heading input safely
   function handleConstantInput(e: Event) {
     const target = e.target as HTMLInputElement;
-    const value = parseFloat(target.value);
+    const value = Number.parseFloat(target.value);
     if (!isNaN(value)) {
       endPoint.degrees = value;
     }
@@ -98,7 +98,7 @@
   }
 
   function updateTransition(i: number, valStr: string) {
-    const val = parseFloat(valStr);
+    const val = Number.parseFloat(valStr);
     if (!isNaN(val)) {
       endPoint.segments[i].tStart = val;
       endPoint.segments[i - 1].tEnd = val;
@@ -343,7 +343,7 @@
           type="number"
           value={endPoint.startDeg}
           oninput={(e) => {
-            const val = parseFloat(e.currentTarget.value);
+            const val = Number.parseFloat(e.currentTarget.value);
             if (!isNaN(val)) endPoint.startDeg = val;
             dispatch("change");
           }}
@@ -385,7 +385,7 @@
           type="number"
           value={endPoint.endDeg}
           oninput={(e) => {
-            const val = parseFloat(e.currentTarget.value);
+            const val = Number.parseFloat(e.currentTarget.value);
             if (!isNaN(val)) endPoint.endDeg = val;
             dispatch("change");
           }}
@@ -475,7 +475,7 @@
           type="number"
           value={endPoint.targetX}
           oninput={(e) => {
-            const val = parseFloat(e.currentTarget.value);
+            const val = Number.parseFloat(e.currentTarget.value);
             if (!isNaN(val)) endPoint.targetX = val;
             dispatch("change");
           }}
@@ -497,7 +497,7 @@
           type="number"
           value={endPoint.targetY}
           oninput={(e) => {
-            const val = parseFloat(e.currentTarget.value);
+            const val = Number.parseFloat(e.currentTarget.value);
             if (!isNaN(val)) endPoint.targetY = val;
             dispatch("change");
           }}

@@ -109,7 +109,7 @@
             settings,
           )}
           oninput={(e) => {
-            let val = parseFloat(e.currentTarget.value);
+            let val = Number.parseFloat(e.currentTarget.value);
             if (!isNaN(val)) {
               if (settings?.visualizerUnits === "metric") val = cmToInch(val);
               const newPt = toField(
@@ -146,7 +146,7 @@
             settings,
           )}
           oninput={(e) => {
-            let val = parseFloat(e.currentTarget.value);
+            let val = Number.parseFloat(e.currentTarget.value);
             if (!isNaN(val)) {
               if (settings?.visualizerUnits === "metric") val = cmToInch(val);
               const newPt = toField(

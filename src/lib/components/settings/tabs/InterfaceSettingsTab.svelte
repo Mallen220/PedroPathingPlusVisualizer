@@ -346,7 +346,7 @@
             value={settings.onionLayerSpacing}
             oninput={(e) => {
               settings.onionLayerSpacing =
-                parseFloat(e.currentTarget.value) || 0;
+                Number.parseFloat(e.currentTarget.value) || 0;
               settings = { ...settings };
             }}
             class="flex-1 h-2 bg-neutral-200 dark:bg-neutral-700 rounded-lg appearance-none cursor-pointer accent-indigo-500"

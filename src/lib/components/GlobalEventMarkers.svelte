@@ -445,12 +445,12 @@
                 oninput={(e) =>
                   handleGlobalPositionInput(
                     marker,
-                    parseFloat(e.currentTarget.value),
+                    Number.parseFloat(e.currentTarget.value),
                   )}
                 onchange={(e) =>
                   handleGlobalPositionCommit(
                     marker,
-                    parseFloat(e.currentTarget.value),
+                    Number.parseFloat(e.currentTarget.value),
                   )}
               />
               <input
@@ -464,7 +464,7 @@
                 onchange={(e) =>
                   handleGlobalPositionCommit(
                     marker,
-                    parseFloat(e.currentTarget.value),
+                    Number.parseFloat(e.currentTarget.value),
                   )}
               />
             </div>

@@ -61,7 +61,7 @@ function parsePoseCreation(tokens: string[]): Partial<Point> | null {
       const parenEnd = currentGroup.indexOf(")", parenStart);
       if (parenStart !== -1 && parenEnd !== -1) {
         const numStr = currentGroup.slice(parenStart + 1, parenEnd).join("");
-        const num = parseFloat(numStr);
+        const num = Number.parseFloat(numStr);
         parsedArgs.push({ value: num, isRadians: true });
         i = parenEnd; // skip
       }
@@ -75,7 +75,7 @@ function parsePoseCreation(tokens: string[]): Partial<Point> | null {
         offset = 1;
       }
       if (!isNaN(parseFloat(numStr))) {
-        parsedArgs.push({ value: parseFloat(numStr), isRadians: false });
+        parsedArgs.push({ value: Number.parseFloat(numStr), isRadians: false });
         i += offset;
       } else if (/^[a-zA-Z_]\w*$/.test(t)) {
         parsedArgs.push({ value: t, isRadians: false, isIdentifier: true });
@@ -530,7 +530,7 @@ export function importJavaProject(javaCode: string): TurtleData {
                   line.eventMarkers!.push({
                     id: makeId(),
                     name: strTok.replaceAll(/"/g, ""),
-                    position: parseFloat(numStr),
+                    position: Number.parseFloat(numStr),
                   });
                 }
               });
@@ -567,7 +567,7 @@ export function importJavaProject(javaCode: string): TurtleData {
         if (parenStart !== -1 && parenEnd !== -1) {
           const timeStr = tokens.slice(parenStart + 1, parenEnd).join("");
           if (!isNaN(parseFloat(timeStr))) {
-            let time = parseFloat(timeStr);
+            let time = Number.parseFloat(timeStr);
             // Often, if the library uses `new WaitCommand(1000)`, it's in ms.
             // If they use `new Delay(1.5)`, it's seconds, but `Delay(1500)` would be ms.
             // We assume if it's Delay and < 100 it's probably seconds.

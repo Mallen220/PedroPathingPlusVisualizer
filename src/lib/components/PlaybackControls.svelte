@@ -168,7 +168,7 @@
   function handleSeekInput(e: Event) {
     if (draggingMarkerIndex !== null) return;
     const target = e.target as HTMLInputElement;
-    let val = parseFloat(target.value);
+    let val = Number.parseFloat(target.value);
 
     // Snap to markers/events if Shift is NOT held
     if (!shiftHeld) {
@@ -252,9 +252,9 @@
     str = str.replaceAll("s", "").trim();
     const parts = str.split(":");
     if (parts.length === 2) {
-      return parseFloat(parts[0]) * 60 + parseFloat(parts[1]);
+      return Number.parseFloat(parts[0]) * 60 + Number.parseFloat(parts[1]);
     }
-    return parseFloat(str);
+    return Number.parseFloat(str);
   }
 
   function commitTime() {
