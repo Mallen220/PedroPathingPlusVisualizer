@@ -15,7 +15,7 @@
     showSettings,
     settingsActiveTab,
   } from "../../../stores";
-  import { debounce } from "lodash";
+  import debounce from "lodash/debounce";
   import { onMount } from "svelte";
   import { getButtonFilledClass } from "../../../utils/buttonStyles";
   import codeStyle from "svelte-highlight/styles/androidstudio";

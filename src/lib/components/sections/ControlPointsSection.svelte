@@ -2,7 +2,7 @@
 <script lang="ts">
   import { run, stopPropagation } from "svelte/legacy";
 
-  import _ from "lodash";
+  import random from "lodash/random";
   import {
     snapToGrid,
     showGrid,
@@ -181,8 +181,8 @@
         line.controlPoints = [
           ...line.controlPoints,
           {
-            x: _.random(36, 108),
-            y: _.random(36, 108),
+            x: random(36, 108),
+            y: random(36, 108),
           },
         ];
         recordChange();

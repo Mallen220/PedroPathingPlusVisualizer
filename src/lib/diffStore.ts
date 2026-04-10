@@ -18,7 +18,7 @@ import type {
   EventMarker,
 } from "../types/index";
 import { calculatePathTime } from "../utils";
-import _ from "lodash";
+import isEqual from "lodash/isEqual";
 
 export interface ProjectData {
   startPoint: Point;
@@ -313,8 +313,8 @@ function computeDiff(current: ProjectData, old: ProjectData): DiffResult {
 
 function areLinesEqual(l1: Line, l2: Line): boolean {
   return (
-    _.isEqual(l1.endPoint, l2.endPoint) &&
-    _.isEqual(l1.controlPoints, l2.controlPoints) &&
+    isEqual(l1.endPoint, l2.endPoint) &&
+    isEqual(l1.controlPoints, l2.controlPoints) &&
     l1.name === l2.name
   );
 }

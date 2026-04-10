@@ -5,7 +5,7 @@
   import { onMount, onDestroy } from "svelte";
   import { get } from "svelte/store";
   import * as d3 from "d3";
-  import { debounce } from "lodash";
+  import debounce from "lodash/debounce";
 
   // ⚡ Bolt Optimization:
   // Caching d3.scaleLinear() avoids repeated expensive instantiations during

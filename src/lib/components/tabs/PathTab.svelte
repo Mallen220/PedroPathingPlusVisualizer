@@ -12,7 +12,7 @@
     Settings,
   } from "../../../types/index";
   import { tick } from "svelte";
-  import _ from "lodash";
+  import random from "lodash/random";
   import {
     reorderSequence,
     getClosestTarget,
@@ -337,8 +337,8 @@
    *   - for "tangential" / "facingPoint": copies reverse / targetX,Y
    */
   function makeNewEndPointFrom(prev: Point): Point {
-    const x = _.random(36, 108);
-    const y = _.random(36, 108);
+    const x = random(36, 108);
+    const y = random(36, 108);
     if (prev.heading === "linear") {
       const linPrev = prev as Extract<Point, { heading: "linear" }>;
       const deg = linPrev.endDeg ?? linPrev.startDeg ?? 0;
@@ -462,8 +462,8 @@
     const endPoint: Point = lastLine
       ? makeNewEndPointFrom(lastLine.endPoint)
       : {
-          x: _.random(0, 144),
-          y: _.random(0, 144),
+          x: random(0, 144),
+          y: random(0, 144),
           heading: "tangential",
           reverse: false,
         };
@@ -572,8 +572,8 @@
     const endPoint: Point = firstLine
       ? makeNewEndPointFrom(firstLine.endPoint)
       : {
-          x: _.random(0, 144),
-          y: _.random(0, 144),
+          x: random(0, 144),
+          y: random(0, 144),
           heading: "tangential",
           reverse: false,
         };
@@ -650,8 +650,8 @@
     const endPoint: Point = prevEndPoint
       ? makeNewEndPointFrom(prevEndPoint)
       : {
-          x: _.random(36, 108),
-          y: _.random(36, 108),
+          x: random(36, 108),
+          y: random(36, 108),
           heading: "tangential",
           reverse: false,
         };
