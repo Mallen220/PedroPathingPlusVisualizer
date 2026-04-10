@@ -205,7 +205,7 @@
           id="autosave-interval"
           value={settings.autosaveInterval}
           onchange={(e) => {
-            settings.autosaveInterval = parseInt(e.currentTarget.value);
+            settings.autosaveInterval = Number.parseInt(e.currentTarget.value);
             settings = { ...settings };
           }}
           class="w-full px-3 py-2 rounded-md border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-blue-500"

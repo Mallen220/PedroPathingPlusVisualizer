@@ -49,7 +49,7 @@ export function generateName(
     // or just re-match since we know it matches
     const subMatch = baseName.match(/ duplicate(?: (\d+))?$/);
     if (subMatch && subMatch[1]) {
-      currentNum = parseInt(subMatch[1], 10);
+      currentNum = Number.parseInt(subMatch[1], 10);
     } else {
       // " duplicate" implies number 0 (conceptually, next is 1)
       currentNum = 0;

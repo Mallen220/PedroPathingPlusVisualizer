@@ -85,9 +85,9 @@ function processFile(filePath, styleType) {
   let endYear = CURRENT_YEAR;
 
   if (match) {
-    startYear = parseInt(match[1]);
+    startYear = Number.parseInt(match[1]);
     if (match[2]) {
-      endYear = parseInt(match[2]);
+      endYear = Number.parseInt(match[2]);
     }
     if (endYear < CURRENT_YEAR) {
       endYear = CURRENT_YEAR;

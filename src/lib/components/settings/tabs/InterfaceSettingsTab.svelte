@@ -134,7 +134,7 @@
         step="5"
         value={settings.programFontSize}
         oninput={(e) => {
-          settings.programFontSize = parseInt(e.currentTarget.value);
+          settings.programFontSize = Number.parseInt(e.currentTarget.value);
           settings = { ...settings };
         }}
         class="flex-1 h-2 bg-neutral-200 dark:bg-neutral-700 rounded-lg appearance-none cursor-pointer accent-blue-500"

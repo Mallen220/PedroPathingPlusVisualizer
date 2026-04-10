@@ -18,7 +18,7 @@ function compareVersions(a: string, b: string): number {
     v
       .replaceAll(/^v/g, "")
       .split(".")
-      .map((n) => parseInt(n, 10) || 0);
+      .map((n) => Number.parseInt(n, 10) || 0);
   const pa = parse(a);
   const pb = parse(b);
   const len = Math.max(pa.length, pb.length);

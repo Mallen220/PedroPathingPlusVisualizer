@@ -428,7 +428,7 @@
 
     if (!target) return;
 
-    const index = parseInt(target.element.getAttribute("data-seq-index") || "");
+    const index = Number.parseInt(target.element.getAttribute("data-seq-index") || "");
     if (isNaN(index)) return;
 
     // Start Point special case: cannot drop before it (index -1, top)
@@ -496,7 +496,7 @@
       const target = getClosestTarget(e, "tr[data-seq-index]", document.body);
       let dropIndex = sequence.length;
       if (target) {
-        const idx = parseInt(
+        const idx = Number.parseInt(
           target.element.getAttribute("data-seq-index") || "",
         );
         if (!isNaN(idx)) {

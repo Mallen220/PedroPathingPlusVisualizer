@@ -24,7 +24,7 @@ export const generateName = (baseName: string, existingNames: string[]) => {
 
   if (match) {
     rootName = match[1];
-    startNum = match[2] ? parseInt(match[2], 10) : 1;
+    startNum = match[2] ? Number.parseInt(match[2], 10) : 1;
     startNum++;
   }
 

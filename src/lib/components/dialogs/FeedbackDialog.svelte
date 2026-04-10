@@ -172,7 +172,7 @@
       // Check cooldown
       const lastSubmitStr = $settingsStore.lastFeedbackSubmit;
       if (lastSubmitStr) {
-        const elapsed = Date.now() - parseInt(lastSubmitStr);
+        const elapsed = Date.now() - Number.parseInt(lastSubmitStr);
         if (elapsed < 300000) {
           cooldownSeconds = Math.ceil((300000 - elapsed) / 1000);
           startCooldownTimer();

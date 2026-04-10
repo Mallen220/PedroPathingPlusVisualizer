@@ -67,11 +67,11 @@
           const pa = a.id
             .replaceAll(/^v/g, "")
             .split(".")
-            .map((n) => parseInt(n, 10) || 0);
+            .map((n) => Number.parseInt(n, 10) || 0);
           const pb = b.id
             .replaceAll(/^v/g, "")
             .split(".")
-            .map((n) => parseInt(n, 10) || 0);
+            .map((n) => Number.parseInt(n, 10) || 0);
           for (let i = 0; i < Math.max(pa.length, pb.length); i++) {
             if ((pb[i] || 0) !== (pa[i] || 0))
               return (pb[i] || 0) - (pa[i] || 0);
