@@ -1097,6 +1097,7 @@
             canMoveUp={sIdx !== 0}
             canMoveDown={sIdx !== sequence.length - 1}
             {recordChange}
+            onScrollToItem={scrollToItem}
           />
         {/if}
       {:else if def && def.sectionComponent}

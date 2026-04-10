@@ -59,6 +59,7 @@
     onMoveDown: () => void;
     canMoveUp?: boolean;
     canMoveDown?: boolean;
+    onScrollToItem?: (id: string) => void;
   }
 
   let {
@@ -77,6 +78,7 @@
     onMoveDown,
     canMoveUp = true,
     canMoveDown = true,
+    onScrollToItem,
   }: Props = $props();
 
   let isSelected = $derived($selectedLineId === line.id);
@@ -574,10 +576,18 @@
         {:else}
           <div class="space-y-2" class:col-span-2={!isNarrow}>
             <span class="text-xs font-semibold text-neutral-500 uppercase tracking-wide block">Heading</span>
-            <div class="text-sm text-neutral-400 p-2 bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-200 dark:border-neutral-700/50 rounded-lg flex items-center gap-2">
+            <button 
+              class="w-full text-left text-sm text-neutral-400 p-2 bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-200 dark:border-neutral-700/50 rounded-lg flex items-center gap-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+              onclick={() => {
+                if (onScrollToItem && chainGlobalSourceLine?.id) {
+                  onScrollToItem(chainGlobalSourceLine.id);
+                }
+              }}
+              title="Jump to global source"
+            >
               <LinkIcon className="size-4 shrink-0 text-purple-500" />
               Overridden by Global Chain Heading
-            </div>
+            </button>
           </div>
         {/if}
 
