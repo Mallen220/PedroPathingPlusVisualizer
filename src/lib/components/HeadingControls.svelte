@@ -10,7 +10,7 @@
     ChevronDownIcon,
     ChevronUpIcon,
     EllipsisVerticalIcon,
-    TrashIcon
+    TrashIcon,
   } from "./icons";
   import HeadingControls from "./HeadingControls.svelte";
   import {
@@ -180,19 +180,22 @@
     }
 
     // Preserve the original tStart/tEnd bounds
-    const oldBounds = endPoint.segments.map((s: any) => ({ tStart: s.tStart, tEnd: s.tEnd }));
-    
+    const oldBounds = endPoint.segments.map((s: any) => ({
+      tStart: s.tStart,
+      tEnd: s.tEnd,
+    }));
+
     endPoint.segments = reorderSequence(
       endPoint.segments,
       draggingIndex,
       dragOverIndex,
-      dragPosition
+      dragPosition,
     );
 
     // Reapply bounds purely temporally top-to-bottom
     endPoint.segments.forEach((seg: any, i: number) => {
-       seg.tStart = oldBounds[i].tStart;
-       seg.tEnd = oldBounds[i].tEnd;
+      seg.tStart = oldBounds[i].tStart;
+      seg.tEnd = oldBounds[i].tEnd;
     });
 
     dispatch("change");
@@ -210,16 +213,19 @@
     const targetIndex = index + delta;
     if (targetIndex < 0 || targetIndex >= endPoint.segments.length) return;
 
-    const oldBounds = endPoint.segments.map((s: any) => ({ tStart: s.tStart, tEnd: s.tEnd }));
-    
+    const oldBounds = endPoint.segments.map((s: any) => ({
+      tStart: s.tStart,
+      tEnd: s.tEnd,
+    }));
+
     const newSegments = [...endPoint.segments];
     const temp = newSegments[index];
     newSegments[index] = newSegments[targetIndex];
     newSegments[targetIndex] = temp;
 
     newSegments.forEach((seg: any, i: number) => {
-       seg.tStart = oldBounds[i].tStart;
-       seg.tEnd = oldBounds[i].tEnd;
+      seg.tStart = oldBounds[i].tStart;
+      seg.tEnd = oldBounds[i].tEnd;
     });
 
     endPoint.segments = newSegments;
@@ -290,7 +296,10 @@
   </select>
 
   <label
-    class="flex items-center justify-center px-2 py-1.5 bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-lg cursor-pointer hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors shrink-0 {endPoint.heading === 'piecewise' ? 'hidden' : ''}"
+    class="flex items-center justify-center px-2 py-1.5 bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-lg cursor-pointer hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors shrink-0 {endPoint.heading ===
+    'piecewise'
+      ? 'hidden'
+      : ''}"
     title="Reverse the direction of the heading interpolation"
   >
     <input
@@ -506,11 +515,15 @@
 {#if endPoint.heading === "piecewise"}
   <div class="flex items-center mt-3 pl-1 mb-1">
     <button
-      onclick={() => { isPiecewiseCollapsed = !isPiecewiseCollapsed; }}
+      onclick={() => {
+        isPiecewiseCollapsed = !isPiecewiseCollapsed;
+      }}
       class="flex items-center gap-1.5 text-xs font-semibold text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-200 uppercase tracking-wide transition-colors"
     >
       <ChevronDownIcon
-        className="size-3.5 transition-transform duration-200 {isPiecewiseCollapsed ? '-rotate-90' : 'rotate-0'}"
+        className="size-3.5 transition-transform duration-200 {isPiecewiseCollapsed
+          ? '-rotate-90'
+          : 'rotate-0'}"
         strokeWidth={2.5}
       />
       Piecewise Segments ({endPoint.segments?.length || 0})
@@ -521,17 +534,27 @@
     <div bind:this={containerRef} class="flex flex-col gap-0 w-full mt-1 pl-3">
       {#each endPoint.segments || [] as segment, i}
         <div class="flex items-center -ml-[13px]">
-          <div class="w-2.5 h-2.5 rounded-full bg-purple-500 mr-2 z-10 shrink-0"></div>
+          <div
+            class="w-2.5 h-2.5 rounded-full bg-purple-500 mr-2 z-10 shrink-0"
+          ></div>
           {#if i === 0}
-            <span class="text-[10px] text-neutral-400 font-bold bg-neutral-100 dark:bg-neutral-800 px-1.5 py-0.5 rounded border border-neutral-200 dark:border-neutral-700 select-none">
+            <span
+              class="text-[10px] text-neutral-400 font-bold bg-neutral-100 dark:bg-neutral-800 px-1.5 py-0.5 rounded border border-neutral-200 dark:border-neutral-700 select-none"
+            >
               t = 0.00
             </span>
           {:else}
-            <div class="flex items-center gap-2 bg-neutral-100 dark:bg-neutral-800 px-1.5 py-0.5 rounded border border-neutral-200 dark:border-neutral-700">
-              <span class="text-[10px] text-neutral-500 font-bold select-none">t =</span>
+            <div
+              class="flex items-center gap-2 bg-neutral-100 dark:bg-neutral-800 px-1.5 py-0.5 rounded border border-neutral-200 dark:border-neutral-700"
+            >
+              <span class="text-[10px] text-neutral-500 font-bold select-none"
+                >t =</span
+              >
               <input
                 type="number"
-                step="0.01" min="0" max="1"
+                step="0.01"
+                min="0"
+                max="1"
                 value={segment.tStart}
                 oninput={(e) => updateTransition(i, e.currentTarget.value)}
                 onblur={() => dispatch("commit")}
@@ -539,7 +562,7 @@
                 class="w-14 px-1 py-0.5 text-xs bg-white dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-600 rounded focus:ring-1 focus:ring-purple-500 outline-none"
               />
               {#if !locked}
-                <button 
+                <button
                   onclick={() => removeTransition(i)}
                   class="text-red-500 hover:text-red-700 p-0.5 rounded hover:bg-red-500/10 transition-colors"
                   title="Remove Transition"
@@ -550,8 +573,8 @@
             </div>
           {/if}
         </div>
-        
-        <div 
+
+        <div
           class="border-l-2 border-purple-500/30 ml-[-7px] pl-4 py-2 relative"
           data-seg-index={i}
           role="listitem"
@@ -559,7 +582,7 @@
           ondragstart={(e) => handleDragStart(e, i)}
           ondragend={handleDragEnd}
         >
-          <div 
+          <div
             class="relative transition-all duration-200 flex items-center gap-2 group"
             class:border-t-4={dragOverIndex === i && dragPosition === "top"}
             class:border-b-4={dragOverIndex === i && dragPosition === "bottom"}
@@ -570,29 +593,36 @@
           >
             <!-- Drag Handle Column -->
             {#if !locked}
-              <div class="cursor-grab active:cursor-grabbing text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 shrink-0">
+              <div
+                class="cursor-grab active:cursor-grabbing text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 shrink-0"
+              >
                 <EllipsisVerticalIcon className="size-4" />
               </div>
             {/if}
 
-            <div class="flex flex-col items-center bg-white dark:bg-neutral-800 rounded border border-neutral-200 dark:border-neutral-700 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity shrink-0">
-               <button
-                 title={locked ? "Locked" : "Move up"}
-                 onclick={stopPropagation(() => moveSegment(i, -1))}
-                 class="p-0.5 hover:bg-neutral-50 dark:hover:bg-neutral-700 text-neutral-500 dark:text-neutral-400 disabled:opacity-30 rounded-t focus:outline-none focus:ring-2 focus:ring-purple-500"
-                 disabled={i === 0 || locked}
-               >
-                 <ChevronUpIcon className="size-3" />
-               </button>
-               <div class="w-full h-px bg-neutral-200 dark:bg-neutral-700" role="presentation"></div>
-               <button
-                 title={locked ? "Locked" : "Move down"}
-                 onclick={stopPropagation(() => moveSegment(i, 1))}
-                 class="p-0.5 hover:bg-neutral-50 dark:hover:bg-neutral-700 text-neutral-500 dark:text-neutral-400 disabled:opacity-30 rounded-b focus:outline-none focus:ring-2 focus:ring-purple-500"
-                 disabled={i === endPoint.segments.length - 1 || locked}
-               >
-                 <ChevronDownIcon className="size-3" />
-               </button>
+            <div
+              class="flex flex-col items-center bg-white dark:bg-neutral-800 rounded border border-neutral-200 dark:border-neutral-700 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity shrink-0"
+            >
+              <button
+                title={locked ? "Locked" : "Move up"}
+                onclick={stopPropagation(() => moveSegment(i, -1))}
+                class="p-0.5 hover:bg-neutral-50 dark:hover:bg-neutral-700 text-neutral-500 dark:text-neutral-400 disabled:opacity-30 rounded-t focus:outline-none focus:ring-2 focus:ring-purple-500"
+                disabled={i === 0 || locked}
+              >
+                <ChevronUpIcon className="size-3" />
+              </button>
+              <div
+                class="w-full h-px bg-neutral-200 dark:bg-neutral-700"
+                role="presentation"
+              ></div>
+              <button
+                title={locked ? "Locked" : "Move down"}
+                onclick={stopPropagation(() => moveSegment(i, 1))}
+                class="p-0.5 hover:bg-neutral-50 dark:hover:bg-neutral-700 text-neutral-500 dark:text-neutral-400 disabled:opacity-30 rounded-b focus:outline-none focus:ring-2 focus:ring-purple-500"
+                disabled={i === endPoint.segments.length - 1 || locked}
+              >
+                <ChevronDownIcon className="size-3" />
+              </button>
             </div>
 
             <!-- Segment Body -->
@@ -610,10 +640,14 @@
       {/each}
 
       <div class="flex items-center -ml-[13px] pb-1 mt-1">
-          <div class="w-2.5 h-2.5 rounded-full bg-purple-500 mr-2 z-10 shrink-0"></div>
-          <span class="text-[10px] text-neutral-400 font-bold bg-neutral-100 dark:bg-neutral-800 px-1.5 py-0.5 rounded border border-neutral-200 dark:border-neutral-700 select-none">
-            t = 1.00
-          </span>
+        <div
+          class="w-2.5 h-2.5 rounded-full bg-purple-500 mr-2 z-10 shrink-0"
+        ></div>
+        <span
+          class="text-[10px] text-neutral-400 font-bold bg-neutral-100 dark:bg-neutral-800 px-1.5 py-0.5 rounded border border-neutral-200 dark:border-neutral-700 select-none"
+        >
+          t = 1.00
+        </span>
       </div>
 
       {#if !locked}
@@ -622,7 +656,18 @@
             class="text-[11px] bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-600 dark:text-neutral-300 px-3 py-1 rounded-full transition-colors font-semibold shadow-sm border border-neutral-200 dark:border-neutral-700 flex items-center gap-1 w-fit"
             onclick={addSegment}
           >
-            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"></path></svg>
+            <svg
+              class="w-3 h-3"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              ><path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2.5"
+                d="M12 4v16m8-8H4"
+              ></path></svg
+            >
             Add Transition
           </button>
         </div>

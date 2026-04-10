@@ -267,7 +267,10 @@ export async function generateJavaCode(
                 const uhEnd = toUserHeading(pointDef.endDeg || 0, "FTC");
                 config = `Math.toRadians(${uhStart.toFixed(3)}), Math.toRadians(${uhEnd.toFixed(3)})`;
               } else if (pointDef.heading === "facingPoint") {
-                const uTarget = toUser({ x: pointDef.targetX || 0, y: pointDef.targetY || 0 }, "FTC");
+                const uTarget = toUser(
+                  { x: pointDef.targetX || 0, y: pointDef.targetY || 0 },
+                  "FTC",
+                );
                 config = `new Pose(${uTarget.x.toFixed(3)}, ${uTarget.y.toFixed(3)})`;
               }
             } else {
@@ -276,8 +279,14 @@ export async function generateJavaCode(
               } else if (pointDef.heading === "linear") {
                 config = `Math.toRadians(${pointDef.startDeg || 0}), Math.toRadians(${pointDef.endDeg || 0})`;
               } else if (pointDef.heading === "facingPoint") {
-                const hx = codeUnits === "metric" ? `cmToInches(${((pointDef.targetX || 0) * 2.54).toFixed(3)})` : (pointDef.targetX || 0).toFixed(3);
-                const hy = codeUnits === "metric" ? `cmToInches(${((pointDef.targetY || 0) * 2.54).toFixed(3)})` : (pointDef.targetY || 0).toFixed(3);
+                const hx =
+                  codeUnits === "metric"
+                    ? `cmToInches(${((pointDef.targetX || 0) * 2.54).toFixed(3)})`
+                    : (pointDef.targetX || 0).toFixed(3);
+                const hy =
+                  codeUnits === "metric"
+                    ? `cmToInches(${((pointDef.targetY || 0) * 2.54).toFixed(3)})`
+                    : (pointDef.targetY || 0).toFixed(3);
                 config = `new Pose(${hx}, ${hy})`;
               }
             }
@@ -294,85 +303,103 @@ export async function generateJavaCode(
             }
 
             if (pointDef.reverse) {
-              if (pointDef.heading === "tangential") return "HeadingInterpolator.reversedTangent";
-              if (pointDef.heading === "linear") return `HeadingInterpolator.reversedLinear(${config})`;
-              if (pointDef.heading === "constant") return `HeadingInterpolator.reversedConstant(${config})`;
-              if (pointDef.heading === "facingPoint") return `HeadingInterpolator.reversedFacingPoint(${config})`;
+              if (pointDef.heading === "tangential")
+                return "HeadingInterpolator.reversedTangent";
+              if (pointDef.heading === "linear")
+                return `HeadingInterpolator.reversedLinear(${config})`;
+              if (pointDef.heading === "constant")
+                return `HeadingInterpolator.reversedConstant(${config})`;
+              if (pointDef.heading === "facingPoint")
+                return `HeadingInterpolator.reversedFacingPoint(${config})`;
             }
             return baseName;
           };
 
           const constructHeadingMethod = (targetConfig: any) => {
-             if (targetConfig.heading === "piecewise") {
-                const segs = targetConfig.segments || [];
-                if (segs.length === 0) {
-                   return ".setTangentHeadingInterpolation()";
-                }
-                const segmentsStr = segs.map((seg: any) => {
-                   const interpStr = generateInterpolatorString(seg);
-                   return `\n          new HeadingInterpolator.PiecewiseNode(${seg.tStart}, ${seg.tEnd}, ${interpStr})`;
-                }).join(",");
-                return `.setHeadingInterpolation(HeadingInterpolator.piecewise(${segmentsStr}\n        ))`;
-             }
+            if (targetConfig.heading === "piecewise") {
+              const segs = targetConfig.segments || [];
+              if (segs.length === 0) {
+                return ".setTangentHeadingInterpolation()";
+              }
+              const segmentsStr = segs
+                .map((seg: any) => {
+                  const interpStr = generateInterpolatorString(seg);
+                  return `\n          new HeadingInterpolator.PiecewiseNode(${seg.tStart}, ${seg.tEnd}, ${interpStr})`;
+                })
+                .join(",");
+              return `.setHeadingInterpolation(HeadingInterpolator.piecewise(${segmentsStr}\n        ))`;
+            }
 
-             let hConfig = generateInterpolatorString(targetConfig); 
-             let args = "";
-             if (hConfig.indexOf("(") !== -1) {
-                args = hConfig.substring(hConfig.indexOf("(") + 1, hConfig.lastIndexOf(")"));
-             }
+            let hConfig = generateInterpolatorString(targetConfig);
+            let args = "";
+            if (hConfig.indexOf("(") !== -1) {
+              args = hConfig.substring(
+                hConfig.indexOf("(") + 1,
+                hConfig.lastIndexOf(")"),
+              );
+            }
 
-             if (targetConfig.reverse) {
-               if (targetConfig.heading === "constant") {
-                 return `.setHeadingInterpolation(HeadingInterpolator.constant(${args}))\n        .setReversed()`;
-               } else if (targetConfig.heading === "linear") {
-                 return `.setHeadingInterpolation(HeadingInterpolator.linear(${args}))\n        .setReversed()`;
-               } else if (targetConfig.heading === "tangential") {
-                 return `.setHeadingInterpolation(HeadingInterpolator.tangent)\n        .setReversed()`;
-               } else if (targetConfig.heading === "facingPoint") {
-                 return `.setHeadingInterpolation(HeadingInterpolator.facingPoint(${args}))\n        .setReversed()`;
-               }
-             } else {
-               if (targetConfig.heading === "constant") {
-                 return `.setConstantHeadingInterpolation(${args})`;
-               } else if (targetConfig.heading === "linear") {
-                 return `.setLinearHeadingInterpolation(${args})`;
-               } else if (targetConfig.heading === "tangential") {
-                 return `.setTangentHeadingInterpolation()`;
-               } else if (targetConfig.heading === "facingPoint") {
-                 return `.setHeadingInterpolation(HeadingInterpolator.facingPoint(${args}))`;
-               }
-             }
-             return "";
+            if (targetConfig.reverse) {
+              if (targetConfig.heading === "constant") {
+                return `.setHeadingInterpolation(HeadingInterpolator.constant(${args}))\n        .setReversed()`;
+              } else if (targetConfig.heading === "linear") {
+                return `.setHeadingInterpolation(HeadingInterpolator.linear(${args}))\n        .setReversed()`;
+              } else if (targetConfig.heading === "tangential") {
+                return `.setHeadingInterpolation(HeadingInterpolator.tangent)\n        .setReversed()`;
+              } else if (targetConfig.heading === "facingPoint") {
+                return `.setHeadingInterpolation(HeadingInterpolator.facingPoint(${args}))\n        .setReversed()`;
+              }
+            } else {
+              if (targetConfig.heading === "constant") {
+                return `.setConstantHeadingInterpolation(${args})`;
+              } else if (targetConfig.heading === "linear") {
+                return `.setLinearHeadingInterpolation(${args})`;
+              } else if (targetConfig.heading === "tangential") {
+                return `.setTangentHeadingInterpolation()`;
+              } else if (targetConfig.heading === "facingPoint") {
+                return `.setHeadingInterpolation(HeadingInterpolator.facingPoint(${args}))`;
+              }
+            }
+            return "";
           };
 
-          const isChainRoot = !line.isChain && idx + 1 < lines.length && lines[idx + 1].isChain;
+          const isChainRoot =
+            !line.isChain && idx + 1 < lines.length && lines[idx + 1].isChain;
           let hasGlobalHeading = false;
           let tempIdx = idx;
           let rootLine = line;
-          while(rootLine.isChain && tempIdx > 0) {
-             tempIdx--;
-             rootLine = lines[tempIdx];
+          while (rootLine.isChain && tempIdx > 0) {
+            tempIdx--;
+            rootLine = lines[tempIdx];
           }
-          if (rootLine.globalHeading && rootLine.globalHeading !== ("none" as any)) {
-             hasGlobalHeading = true;
-             if (!line.isChain) { 
-               const globalConfig = {
-                  heading: rootLine.globalHeading,
-                  reverse: rootLine.globalReverse,
-                  degrees: rootLine.globalDegrees,
-                  startDeg: rootLine.globalStartDeg,
-                  endDeg: rootLine.globalEndDeg,
-                  targetX: rootLine.globalTargetX,
-                  targetY: rootLine.globalTargetY,
-                  segments: rootLine.globalSegments
-               };
-               const globalInterpStr = constructHeadingMethod(globalConfig).replace(/set(Constant|Linear|Tangent|Heading)Interpolation\(/, "setGlobalHeadingInterpolation(");
-               globalHeadingCode = `\n        ${globalInterpStr}`;
-             }
+          if (
+            rootLine.globalHeading &&
+            rootLine.globalHeading !== ("none" as any)
+          ) {
+            hasGlobalHeading = true;
+            if (!line.isChain) {
+              const globalConfig = {
+                heading: rootLine.globalHeading,
+                reverse: rootLine.globalReverse,
+                degrees: rootLine.globalDegrees,
+                startDeg: rootLine.globalStartDeg,
+                endDeg: rootLine.globalEndDeg,
+                targetX: rootLine.globalTargetX,
+                targetY: rootLine.globalTargetY,
+                segments: rootLine.globalSegments,
+              };
+              const globalInterpStr = constructHeadingMethod(
+                globalConfig,
+              ).replace(
+                /set(Constant|Linear|Tangent|Heading)Interpolation\(/,
+                "setGlobalHeadingInterpolation(",
+              );
+              globalHeadingCode = `\n        ${globalInterpStr}`;
+            }
           }
 
           if (!hasGlobalHeading) {
-             headingMethodCode = constructHeadingMethod(line.endPoint);
+            headingMethodCode = constructHeadingMethod(line.endPoint);
           }
 
           // Add event markers to the path builder

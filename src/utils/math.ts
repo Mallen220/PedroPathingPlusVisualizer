@@ -259,7 +259,9 @@ export function getLineStartHeading(
         const shortest = normalized > 180 ? normalized - 360 : normalized;
         const longest = shortest > 0 ? shortest - 360 : shortest + 360;
 
-        return transformAngle(sDeg + (activeSeg.reverse ? longest : shortest) * localT);
+        return transformAngle(
+          sDeg + (activeSeg.reverse ? longest : shortest) * localT,
+        );
       }
       if (activeSeg.heading === "constant")
         return transformAngle(
@@ -267,7 +269,10 @@ export function getLineStartHeading(
         );
 
       let nextP: Point2D = line.endPoint;
-      if (activeSeg.heading === "tangential" && line.controlPoints?.length > 0) {
+      if (
+        activeSeg.heading === "tangential" &&
+        line.controlPoints?.length > 0
+      ) {
         nextP =
           getFirstValidControlPoint(line.controlPoints, previousPoint) || nextP;
       } else if (activeSeg.heading === "facingPoint") {
@@ -365,7 +370,9 @@ export function getLineEndHeading(
         const shortest = normalized > 180 ? normalized - 360 : normalized;
         const longest = shortest > 0 ? shortest - 360 : shortest + 360;
 
-        return transformAngle(sDeg + (lastSeg.reverse ? longest : shortest) * localT);
+        return transformAngle(
+          sDeg + (lastSeg.reverse ? longest : shortest) * localT,
+        );
       }
       if (lastSeg.heading === "constant")
         return transformAngle(

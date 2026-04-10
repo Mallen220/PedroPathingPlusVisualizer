@@ -459,3 +459,6 @@ src/lib/exporters/javaExporter.ts
 src/lib/exporters/pointsExporter.ts
 src/lib/exporters/sequentialExporter.ts
 src/tests/lib/components/shortcuts/utils.test.ts
+src/lib/components/icons/EllipsisVerticalIcon.svelte
+src/lib/components/renderer/FacingLineGenerator.ts
+src/lib/components/renderer/PointGenerator.ts

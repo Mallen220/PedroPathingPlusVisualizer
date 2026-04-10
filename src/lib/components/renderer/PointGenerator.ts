@@ -1,3 +1,4 @@
+// Copyright 2026 Matthew Allen. Licensed under the Modified Apache License, Version 2.0.
 import Two from "two.js";
 import type { Line, Point, Shape, SequenceItem } from "../../../types";
 import { POINT_RADIUS } from "../../../config";
@@ -88,8 +89,10 @@ export function generatePointElements(
 
     const meta = chainMeta.get(line.id!);
     const rootLine = meta?.rootLine;
-    const isGlobalOverride = !!(rootLine?.globalHeading && rootLine.globalHeading !== 'none');
-    
+    const isGlobalOverride = !!(
+      rootLine?.globalHeading && rootLine.globalHeading !== "none"
+    );
+
     // Determine which heading info to use for dot rendering
     let targetX: number | undefined;
     let targetY: number | undefined;

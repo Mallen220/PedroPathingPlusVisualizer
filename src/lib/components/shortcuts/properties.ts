@@ -385,7 +385,9 @@ export function togglePathChain(recordChange: (action?: string) => void) {
 
   const sequence = [...get(sequenceStore)];
   const lines = [...get(linesStore)];
-  const sIdx = sequence.findIndex((s) => s.kind === "path" && s.lineId === selId);
+  const sIdx = sequence.findIndex(
+    (s) => s.kind === "path" && s.lineId === selId,
+  );
   if (sIdx === -1 || sIdx === 0) return; // Cannot chain the first path
 
   const item = sequence[sIdx] as any;
@@ -474,7 +476,12 @@ export function togglePiecewise(recordChange: (action?: string) => void) {
           ...line.endPoint,
           heading: "piecewise",
           segments: [
-            { tStart: 0, tEnd: 1, heading: "tangential", reverse: line.endPoint.reverse ?? false },
+            {
+              tStart: 0,
+              tEnd: 1,
+              heading: "tangential",
+              reverse: line.endPoint.reverse ?? false,
+            },
           ],
         } as unknown as Point,
       };
@@ -505,8 +512,11 @@ export function toggleGlobalHeading(recordChange: (action?: string) => void) {
 
   // Find if it's already part of a chain
   let isChainContinuation = line.isChain === true;
-  let isChainRoot = !isChainContinuation && idx + 1 < lines.length && lines[idx + 1].isChain === true;
-  
+  let isChainRoot =
+    !isChainContinuation &&
+    idx + 1 < lines.length &&
+    lines[idx + 1].isChain === true;
+
   if (!isChainRoot && !isChainContinuation) return; // Only works for chains
 
   // Find chain root
@@ -531,17 +541,30 @@ export function toggleGlobalHeading(recordChange: (action?: string) => void) {
   } else {
     // Enable global heading using current endPoint values
     targetLine.globalHeading = line.endPoint.heading;
-    if (line.endPoint.degrees !== undefined) targetLine.globalDegrees = line.endPoint.degrees;
-    if (line.endPoint.targetX !== undefined) targetLine.globalTargetX = line.endPoint.targetX;
-    if (line.endPoint.targetY !== undefined) targetLine.globalTargetY = line.endPoint.targetY;
-    if (line.endPoint.reverse !== undefined) targetLine.globalReverse = line.endPoint.reverse;
-    if (line.endPoint.startDeg !== undefined) targetLine.globalStartDeg = line.endPoint.startDeg;
-    if (line.endPoint.endDeg !== undefined) targetLine.globalEndDeg = line.endPoint.endDeg;
-    
+    if (line.endPoint.degrees !== undefined)
+      targetLine.globalDegrees = line.endPoint.degrees;
+    if (line.endPoint.targetX !== undefined)
+      targetLine.globalTargetX = line.endPoint.targetX;
+    if (line.endPoint.targetY !== undefined)
+      targetLine.globalTargetY = line.endPoint.targetY;
+    if (line.endPoint.reverse !== undefined)
+      targetLine.globalReverse = line.endPoint.reverse;
+    if (line.endPoint.startDeg !== undefined)
+      targetLine.globalStartDeg = line.endPoint.startDeg;
+    if (line.endPoint.endDeg !== undefined)
+      targetLine.globalEndDeg = line.endPoint.endDeg;
+
     if (line.endPoint.segments && line.endPoint.segments.length > 0) {
       targetLine.globalSegments = [...line.endPoint.segments];
     } else if (line.endPoint.heading === "piecewise") {
-      targetLine.globalSegments = [{ tStart: 0, tEnd: 1, heading: "tangential", reverse: line.endPoint.reverse ?? false }];
+      targetLine.globalSegments = [
+        {
+          tStart: 0,
+          tEnd: 1,
+          heading: "tangential",
+          reverse: line.endPoint.reverse ?? false,
+        },
+      ];
     }
   }
 

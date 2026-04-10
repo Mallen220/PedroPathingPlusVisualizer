@@ -653,9 +653,10 @@
               const lineIdx = Number(parts[1]) - 1;
               const line = lines[lineIdx];
               if (line && line.endPoint) {
-                const isPiecewise = parts.length > 2 && parts[2] === "piecewise";
+                const isPiecewise =
+                  parts.length > 2 && parts[2] === "piecewise";
                 const segIdx = isPiecewise ? Number(parts[3]) : -1;
-                
+
                 // Find the effective global source line (always the root of the chain)
                 let rootIdx = lineIdx;
                 if (lines[lineIdx].isChain) {
@@ -1111,18 +1112,28 @@
             if (lines[lineIdx] && lines[lineIdx].endPoint) {
               const targetLine = lines[lineIdx];
               // Check for Global Heading override
-              const isGlobal = targetLine.globalHeading !== undefined && targetLine.globalHeading !== "none";
-              
+              const isGlobal =
+                targetLine.globalHeading !== undefined &&
+                targetLine.globalHeading !== "none";
+
               if (parts.length > 2 && parts[2] === "piecewise") {
-                 const segIdx = Number(parts[3]);
-                 const segments = isGlobal ? (targetLine.globalSegments || []) : (targetLine.endPoint.segments || []);
-                 if (segments[segIdx]) {
-                    objectX = segments[segIdx].targetX || 0;
-                    objectY = segments[segIdx].targetY || 0;
-                 }
+                const segIdx = Number(parts[3]);
+                const segments = isGlobal
+                  ? targetLine.globalSegments || []
+                  : targetLine.endPoint.segments || [];
+                if (segments[segIdx]) {
+                  objectX = segments[segIdx].targetX || 0;
+                  objectY = segments[segIdx].targetY || 0;
+                }
               } else {
-                 objectX = (isGlobal ? targetLine.globalTargetX : targetLine.endPoint.targetX) || 0;
-                 objectY = (isGlobal ? targetLine.globalTargetY : targetLine.endPoint.targetY) || 0;
+                objectX =
+                  (isGlobal
+                    ? targetLine.globalTargetX
+                    : targetLine.endPoint.targetX) || 0;
+                objectY =
+                  (isGlobal
+                    ? targetLine.globalTargetY
+                    : targetLine.endPoint.targetY) || 0;
               }
             }
           } else if (currentElem.startsWith("point-")) {
@@ -1160,18 +1171,28 @@
               const lineIdx = Number(parts[1]) - 1;
               if (lines[lineIdx] && lines[lineIdx].endPoint) {
                 const targetLine = lines[lineIdx];
-                const isGlobal = targetLine.globalHeading !== undefined && targetLine.globalHeading !== "none";
-                
+                const isGlobal =
+                  targetLine.globalHeading !== undefined &&
+                  targetLine.globalHeading !== "none";
+
                 if (parts.length > 2 && parts[2] === "piecewise") {
-                   const segIdx = Number(parts[3]);
-                   const segments = isGlobal ? (targetLine.globalSegments || []) : (targetLine.endPoint.segments || []);
-                   if (segments[segIdx]) {
-                      ox = segments[segIdx].targetX || 0;
-                      oy = segments[segIdx].targetY || 0;
-                   }
+                  const segIdx = Number(parts[3]);
+                  const segments = isGlobal
+                    ? targetLine.globalSegments || []
+                    : targetLine.endPoint.segments || [];
+                  if (segments[segIdx]) {
+                    ox = segments[segIdx].targetX || 0;
+                    oy = segments[segIdx].targetY || 0;
+                  }
                 } else {
-                   ox = (isGlobal ? targetLine.globalTargetX : targetLine.endPoint.targetX) || 0;
-                   oy = (isGlobal ? targetLine.globalTargetY : targetLine.endPoint.targetY) || 0;
+                  ox =
+                    (isGlobal
+                      ? targetLine.globalTargetX
+                      : targetLine.endPoint.targetX) || 0;
+                  oy =
+                    (isGlobal
+                      ? targetLine.globalTargetY
+                      : targetLine.endPoint.targetY) || 0;
                 }
               }
             } else if (id.startsWith("point-")) {

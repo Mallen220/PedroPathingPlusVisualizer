@@ -9,5 +9,9 @@
   fill="currentColor"
   class={className}
 >
-  <path fill-rule="evenodd" d="M12 5.25a1.5 1.5 0 110-3 1.5 1.5 0 010 3zm0 8.25a1.5 1.5 0 110-3 1.5 1.5 0 010 3zm0 8.25a1.5 1.5 0 110-3 1.5 1.5 0 010 3z" clip-rule="evenodd" />
+  <path
+    fill-rule="evenodd"
+    d="M12 5.25a1.5 1.5 0 110-3 1.5 1.5 0 010 3zm0 8.25a1.5 1.5 0 110-3 1.5 1.5 0 010 3zm0 8.25a1.5 1.5 0 110-3 1.5 1.5 0 010 3z"
+    clip-rule="evenodd"
+  />
 </svg>

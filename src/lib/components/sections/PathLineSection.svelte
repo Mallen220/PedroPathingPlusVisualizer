@@ -147,7 +147,7 @@
       idx + 1 < lines.length &&
       lines[idx + 1].isChain === true,
   );
-  
+
   let chainRootIndex = $derived.by(() => {
     if (isChainRoot) return idx;
     if (isChainContinuation) {
@@ -160,28 +160,33 @@
 
   let chainGlobalSourceLine = $derived.by(() => {
     if (chainRootIndex === -1) return null;
-    if (lines[chainRootIndex].globalHeading !== undefined) return lines[chainRootIndex];
+    if (lines[chainRootIndex].globalHeading !== undefined)
+      return lines[chainRootIndex];
     for (let i = chainRootIndex + 1; i < lines.length; i++) {
-        if (!lines[i].isChain) break;
-        if (lines[i].globalHeading !== undefined) return lines[i];
+      if (!lines[i].isChain) break;
+      if (lines[i].globalHeading !== undefined) return lines[i];
     }
     return null;
   });
 
   let isPartOfChain = $derived(isChainRoot || isChainContinuation);
   let hasGlobalHeadingDef = $derived(line.globalHeading !== undefined);
-  let isOverriddenByGlobalHeading = $derived(chainGlobalSourceLine !== null && chainGlobalSourceLine !== line);
-  let canShowGlobalHeadingToggle = $derived(isPartOfChain && !isOverriddenByGlobalHeading);
+  let isOverriddenByGlobalHeading = $derived(
+    chainGlobalSourceLine !== null && chainGlobalSourceLine !== line,
+  );
+  let canShowGlobalHeadingToggle = $derived(
+    isPartOfChain && !isOverriddenByGlobalHeading,
+  );
 
   let pseudoGlobalEndPoint = $state({
-     heading: "tangential",
-     reverse: false,
-     degrees: 0,
-     startDeg: 0,
-     endDeg: 0,
-     targetX: 72,
-     targetY: 72,
-     segments: [] as any[]
+    heading: "tangential",
+    reverse: false,
+    degrees: 0,
+    startDeg: 0,
+    endDeg: 0,
+    targetX: 72,
+    targetY: 72,
+    segments: [] as any[],
   });
 
   // Watch STORE -> SIDEBAR (Sync only when store changes externally)
@@ -206,11 +211,13 @@
         pseudoGlobalEndPoint.endDeg = ged ?? 0;
         pseudoGlobalEndPoint.targetX = gtx ?? 72;
         pseudoGlobalEndPoint.targetY = gty ?? 72;
-        
+
         // Initialize segments if Piecewise is active but list is empty
         let nextSegs = gsegs ? $state.snapshot(gsegs) : [];
         if (gh === "piecewise" && nextSegs.length === 0) {
-          nextSegs = [{ tStart: 0, tEnd: 1, heading: "tangential", reverse: gr ?? false }];
+          nextSegs = [
+            { tStart: 0, tEnd: 1, heading: "tangential", reverse: gr ?? false },
+          ];
         }
         pseudoGlobalEndPoint.segments = nextSegs;
       }
@@ -548,10 +555,12 @@
 
         <!-- Heading Control -->
         {#if !isOverriddenByGlobalHeading && !hasGlobalHeadingDef}
-          <div 
-            class="space-y-2" 
-            class:col-span-2={!isNarrow && line.endPoint.heading !== "piecewise"}
-            class:col-span-3={!isNarrow && line.endPoint.heading === "piecewise"}
+          <div
+            class="space-y-2"
+            class:col-span-2={!isNarrow &&
+              line.endPoint.heading !== "piecewise"}
+            class:col-span-3={!isNarrow &&
+              line.endPoint.heading === "piecewise"}
           >
             <span
               class="text-xs font-semibold text-neutral-500 uppercase tracking-wide block"
@@ -575,8 +584,11 @@
           </div>
         {:else}
           <div class="space-y-2" class:col-span-2={!isNarrow}>
-            <span class="text-xs font-semibold text-neutral-500 uppercase tracking-wide block">Heading</span>
-            <button 
+            <span
+              class="text-xs font-semibold text-neutral-500 uppercase tracking-wide block"
+              >Heading</span
+            >
+            <button
               class="w-full text-left text-sm text-neutral-400 p-2 bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-200 dark:border-neutral-700/50 rounded-lg flex items-center gap-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
               onclick={() => {
                 if (onScrollToItem && chainGlobalSourceLine?.id) {
@@ -592,10 +604,13 @@
         {/if}
 
         {#if canShowGlobalHeadingToggle}
-          <div class="space-y-2 col-span-1 border-t border-neutral-100 dark:border-neutral-700 pt-2" class:col-span-3={!isNarrow}>
+          <div
+            class="space-y-2 col-span-1 border-t border-neutral-100 dark:border-neutral-700 pt-2"
+            class:col-span-3={!isNarrow}
+          >
             <label class="flex items-center gap-2 cursor-pointer w-fit">
-              <input 
-                type="checkbox" 
+              <input
+                type="checkbox"
                 checked={hasGlobalHeadingDef}
                 onchange={(e) => {
                   const targetIdx =
@@ -615,12 +630,22 @@
                       targetLine.globalStartDeg = line.endPoint.startDeg;
                     if (line.endPoint.endDeg !== undefined)
                       targetLine.globalEndDeg = line.endPoint.endDeg;
-                    if (line.endPoint.segments && line.endPoint.segments.length > 0)
+                    if (
+                      line.endPoint.segments &&
+                      line.endPoint.segments.length > 0
+                    )
                       targetLine.globalSegments = $state.snapshot(
                         line.endPoint.segments,
                       );
                     else if (line.endPoint.heading === "piecewise") {
-                      targetLine.globalSegments = [{ tStart: 0, tEnd: 1, heading: "tangential", reverse: line.endPoint.reverse ?? false }];
+                      targetLine.globalSegments = [
+                        {
+                          tStart: 0,
+                          tEnd: 1,
+                          heading: "tangential",
+                          reverse: line.endPoint.reverse ?? false,
+                        },
+                      ];
                     }
                   } else {
                     targetLine.globalHeading = undefined;
@@ -653,20 +678,23 @@
                 disabled={line.locked}
                 class="rounded text-purple-500 focus:ring-purple-500 bg-neutral-100 dark:bg-neutral-900 border-neutral-300 dark:border-neutral-700"
               />
-              <span class="text-sm font-semibold text-neutral-600 dark:text-neutral-300">Global Chain Heading</span>
+              <span
+                class="text-sm font-semibold text-neutral-600 dark:text-neutral-300"
+                >Global Chain Heading</span
+              >
             </label>
 
             {#if hasGlobalHeadingDef}
               <div class="pl-2 mt-2 ml-1 border-l-2 border-purple-500/30">
-                 <HeadingControls
-                    endPoint={pseudoGlobalEndPoint}
-                    locked={line.locked}
-                    on:change={handleGlobalChange}
-                    on:commit={() => {
-                      handleGlobalChange();
-                      if (recordChange) recordChange("Update Global Heading");
-                    }}
-                 />
+                <HeadingControls
+                  endPoint={pseudoGlobalEndPoint}
+                  locked={line.locked}
+                  on:change={handleGlobalChange}
+                  on:commit={() => {
+                    handleGlobalChange();
+                    if (recordChange) recordChange("Update Global Heading");
+                  }}
+                />
               </div>
             {/if}
           </div>

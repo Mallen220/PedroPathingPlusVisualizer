@@ -707,7 +707,9 @@ export function calculatePathTime(
             const tx = rootLine.globalTargetX || 0;
             const ty = rootLine.globalTargetY || 0;
             const rev = rootLine.globalReverse;
-            let angle = Math.atan2(ty - startPoint.y, tx - startPoint.x) * (180 / Math.PI);
+            let angle =
+              Math.atan2(ty - startPoint.y, tx - startPoint.x) *
+              (180 / Math.PI);
             if (rev) angle += 180;
             currentHeading = angle;
             startOverrideFound = true;
@@ -755,7 +757,11 @@ export function calculatePathTime(
       lineById.set(ln.id, ln);
     });
 
-    const globalChainMeta = calculateGlobalChainMeta(seq, contextLines, lastPoint);
+    const globalChainMeta = calculateGlobalChainMeta(
+      seq,
+      contextLines,
+      lastPoint,
+    );
 
     seq.forEach((item, idx) => {
       // Registry Check
@@ -1079,7 +1085,9 @@ export function calculatePathTime(
               const shortDiff = eDeg - sDeg;
               const normalizedShort = ((shortDiff % 360) + 360) % 360;
               const longDiff =
-                normalizedShort <= 180 ? normalizedShort - 360 : normalizedShort;
+                normalizedShort <= 180
+                  ? normalizedShort - 360
+                  : normalizedShort;
               const startUnwound = unwrapAngle(sDeg, currentHeading);
               targetHeading = startUnwound + longDiff;
             } else {
@@ -1179,10 +1187,19 @@ export function calculatePathTime(
             }
           }
         } else if (globalHeadingMode === "constant") {
-          const targetConstDeg = isGlobalOverride ? rootLine.globalDegrees || 0 : (line.endPoint as any).degrees || 0;
-          const isReverse = isGlobalOverride ? rootLine.globalReverse : (line.endPoint as any).reverse;
-          const finalTargetDeg = isReverse ? targetConstDeg + 180 : targetConstDeg;
-          const targetConstHeading = unwrapAngle(finalTargetDeg, currentHeading);
+          const targetConstDeg = isGlobalOverride
+            ? rootLine.globalDegrees || 0
+            : (line.endPoint as any).degrees || 0;
+          const isReverse = isGlobalOverride
+            ? rootLine.globalReverse
+            : (line.endPoint as any).reverse;
+          const finalTargetDeg = isReverse
+            ? targetConstDeg + 180
+            : targetConstDeg;
+          const targetConstHeading = unwrapAngle(
+            finalTargetDeg,
+            currentHeading,
+          );
 
           if (isChained) {
             for (let i = 1; i <= samples; i++) {
@@ -1201,9 +1218,15 @@ export function calculatePathTime(
             }
           }
         } else if (globalHeadingMode === "linear") {
-          const startDeg = isGlobalOverride ? rootLine.globalStartDeg || 0 : (line.endPoint as any).startDeg || 0;
-          const endDeg = isGlobalOverride ? rootLine.globalEndDeg || 0 : (line.endPoint as any).endDeg || 0;
-          const isReverse = isGlobalOverride ? rootLine.globalReverse : (line.endPoint as any).reverse;
+          const startDeg = isGlobalOverride
+            ? rootLine.globalStartDeg || 0
+            : (line.endPoint as any).startDeg || 0;
+          const endDeg = isGlobalOverride
+            ? rootLine.globalEndDeg || 0
+            : (line.endPoint as any).endDeg || 0;
+          const isReverse = isGlobalOverride
+            ? rootLine.globalReverse
+            : (line.endPoint as any).reverse;
 
           if (isReverse) {
             const shortDiff = endDeg - startDeg;
@@ -1214,8 +1237,11 @@ export function calculatePathTime(
 
             for (let i = 1; i <= samples; i++) {
               if (isGlobalOverride) {
-                 const t = cTotalLen > 0 ? (cDistBefore + (i / samples) * length) / cTotalLen : (i / samples);
-                 headingProfile.push(targetStartHeading + longDiff * t);
+                const t =
+                  cTotalLen > 0
+                    ? (cDistBefore + (i / samples) * length) / cTotalLen
+                    : i / samples;
+                headingProfile.push(targetStartHeading + longDiff * t);
               } else if (isChained) {
                 const stepTime = motionProfile[i];
                 const ratio =
@@ -1227,7 +1253,8 @@ export function calculatePathTime(
                 );
               } else {
                 const ratio = i / samples;
-                const interpolatedHeading = targetStartHeading + longDiff * ratio;
+                const interpolatedHeading =
+                  targetStartHeading + longDiff * ratio;
                 headingProfile!.push(interpolatedHeading);
               }
             }
@@ -1236,8 +1263,13 @@ export function calculatePathTime(
             const unwrappedEnd = unwrapAngle(endDeg, startUnwound);
             for (let i = 1; i <= samples; i++) {
               if (isGlobalOverride) {
-                 const t = cTotalLen > 0 ? (cDistBefore + (i / samples) * length) / cTotalLen : (i / samples);
-                 headingProfile.push(startUnwound + (unwrappedEnd - startUnwound) * t);
+                const t =
+                  cTotalLen > 0
+                    ? (cDistBefore + (i / samples) * length) / cTotalLen
+                    : i / samples;
+                headingProfile.push(
+                  startUnwound + (unwrappedEnd - startUnwound) * t,
+                );
               } else if (isChained) {
                 const stepTime = motionProfile[i];
                 const ratio =
@@ -1255,12 +1287,17 @@ export function calculatePathTime(
               }
             }
           }
-
         } else if (globalHeadingMode === "facingPoint") {
           const cps = [prevPoint, ...line.controlPoints, line.endPoint];
-          const targetX = isGlobalOverride ? rootLine.globalTargetX || 0 : (line.endPoint as any).targetX || 0;
-          const targetY = isGlobalOverride ? rootLine.globalTargetY || 0 : (line.endPoint as any).targetY || 0;
-          const isReverse = isGlobalOverride ? rootLine.globalReverse : (line.endPoint as any).reverse;
+          const targetX = isGlobalOverride
+            ? rootLine.globalTargetX || 0
+            : (line.endPoint as any).targetX || 0;
+          const targetY = isGlobalOverride
+            ? rootLine.globalTargetY || 0
+            : (line.endPoint as any).targetY || 0;
+          const isReverse = isGlobalOverride
+            ? rootLine.globalReverse
+            : (line.endPoint as any).reverse;
 
           // Always track the ideal per-position facing angle continuously — no isChained
           // branching. Using a running simH (last profile entry) ensures the angle is
@@ -1278,95 +1315,109 @@ export function calculatePathTime(
           }
         } else if (globalHeadingMode === "piecewise") {
           const cps = [prevPoint, ...line.controlPoints, line.endPoint];
-          const segments = isGlobalOverride ? rootLine.globalSegments || [] : line.endPoint.segments || [];
+          const segments = isGlobalOverride
+            ? rootLine.globalSegments || []
+            : line.endPoint.segments || [];
           let simHeading = currentHeading;
-          
+
           for (let i = 1; i <= samples; i++) {
             const localRatio = i / samples;
-            const t = isGlobalOverride && cTotalLen > 0
-               ? (cDistBefore + localRatio * length) / cTotalLen
-               : localRatio;
+            const t =
+              isGlobalOverride && cTotalLen > 0
+                ? (cDistBefore + localRatio * length) / cTotalLen
+                : localRatio;
 
             let activeSeg = null;
             for (const seg of segments) {
-               if (t >= seg.tStart && t <= seg.tEnd) {
-                 activeSeg = seg;
-                 break;
-               }
+              if (t >= seg.tStart && t <= seg.tEnd) {
+                activeSeg = seg;
+                break;
+              }
             }
             if (!activeSeg) {
-               headingProfile.push(simHeading);
-               continue;
+              headingProfile.push(simHeading);
+              continue;
             }
 
             let targetHeading = simHeading;
             if (activeSeg.heading === "constant") {
-               let deg = activeSeg.degrees ?? 0;
-               if (activeSeg.reverse) deg += 180;
-               targetHeading = unwrapAngle(deg, simHeading);
+              let deg = activeSeg.degrees ?? 0;
+              if (activeSeg.reverse) deg += 180;
+              targetHeading = unwrapAngle(deg, simHeading);
             } else if (activeSeg.heading === "tangential") {
-               const tA = Math.max(0, localRatio - eps);
-               const tB = Math.min(1, localRatio + eps);
-               const posA = getCurvePoint(tA, cps);
-               const posB = getCurvePoint(tB, cps);
-               const dx = posB.x - posA.x;
-               const dy = posB.y - posA.y;
-               if (Math.abs(dx) < 1e-9 && Math.abs(dy) < 1e-9) {
-                  targetHeading = simHeading;
-               } else {
-                  const absTangentDeg = Math.atan2(dy, dx) * (180 / Math.PI);
-                  targetHeading = unwrapAngle(
-                    activeSeg.reverse ? absTangentDeg + 180 : absTangentDeg,
-                    simHeading,
-                  );
-               }
+              const tA = Math.max(0, localRatio - eps);
+              const tB = Math.min(1, localRatio + eps);
+              const posA = getCurvePoint(tA, cps);
+              const posB = getCurvePoint(tB, cps);
+              const dx = posB.x - posA.x;
+              const dy = posB.y - posA.y;
+              if (Math.abs(dx) < 1e-9 && Math.abs(dy) < 1e-9) {
+                targetHeading = simHeading;
+              } else {
+                const absTangentDeg = Math.atan2(dy, dx) * (180 / Math.PI);
+                targetHeading = unwrapAngle(
+                  activeSeg.reverse ? absTangentDeg + 180 : absTangentDeg,
+                  simHeading,
+                );
+              }
             } else if (activeSeg.heading === "linear") {
-               let sDeg = activeSeg.startDeg ?? 0;
-               let eDeg = activeSeg.endDeg ?? 0;
-               let localT = 0;
-               if (activeSeg.tEnd > activeSeg.tStart) {
-                  localT = (t - activeSeg.tStart) / (activeSeg.tEnd - activeSeg.tStart);
-               }
-               if (localT < 0) localT = 0;
-               if (localT > 1) localT = 1;
-               
-               const startUnwound = unwrapAngle(sDeg, simHeading);
-               if (activeSeg.reverse) {
-                  // Shortest path in long direction logic
-                  const shortDiff = eDeg - sDeg;
-                  const normalizedShort = ((shortDiff % 360) + 360) % 360;
-                  const longDiff = normalizedShort <= 180 ? normalizedShort - 360 : normalizedShort;
-                  targetHeading = startUnwound + longDiff * localT;
-               } else {
-                  // Support multi-revolution: preserve actual range
-                  const totalDiff = eDeg - sDeg;
-                  targetHeading = startUnwound + totalDiff * localT;
-               }
+              let sDeg = activeSeg.startDeg ?? 0;
+              let eDeg = activeSeg.endDeg ?? 0;
+              let localT = 0;
+              if (activeSeg.tEnd > activeSeg.tStart) {
+                localT =
+                  (t - activeSeg.tStart) / (activeSeg.tEnd - activeSeg.tStart);
+              }
+              if (localT < 0) localT = 0;
+              if (localT > 1) localT = 1;
+
+              const startUnwound = unwrapAngle(sDeg, simHeading);
+              if (activeSeg.reverse) {
+                // Shortest path in long direction logic
+                const shortDiff = eDeg - sDeg;
+                const normalizedShort = ((shortDiff % 360) + 360) % 360;
+                const longDiff =
+                  normalizedShort <= 180
+                    ? normalizedShort - 360
+                    : normalizedShort;
+                targetHeading = startUnwound + longDiff * localT;
+              } else {
+                // Support multi-revolution: preserve actual range
+                const totalDiff = eDeg - sDeg;
+                targetHeading = startUnwound + totalDiff * localT;
+              }
             } else if (activeSeg.heading === "facingPoint") {
-               const targetX = activeSeg.targetX || 0;
-               const targetY = activeSeg.targetY || 0;
-                const pos = getCurvePoint(localRatio, cps);
-                let angle =
-                  Math.atan2(targetY - pos.y, targetX - pos.x) * (180 / Math.PI);
-               if (activeSeg.reverse) angle += 180;
-               targetHeading = unwrapAngle(angle, simHeading);
+              const targetX = activeSeg.targetX || 0;
+              const targetY = activeSeg.targetY || 0;
+              const pos = getCurvePoint(localRatio, cps);
+              let angle =
+                Math.atan2(targetY - pos.y, targetX - pos.x) * (180 / Math.PI);
+              if (activeSeg.reverse) angle += 180;
+              targetHeading = unwrapAngle(angle, simHeading);
             }
 
-            const dt = motionProfile[i] - motionProfile[i-1];
+            const dt = motionProfile[i] - motionProfile[i - 1];
             let nextHeading;
 
             if (activeSeg.heading === "tangential") {
-                const maxRot = maxAngVelDegPerSec * dt;
-                nextHeading = simHeading + Math.max(-maxRot, Math.min(maxRot, targetHeading - simHeading));
+              const maxRot = maxAngVelDegPerSec * dt;
+              nextHeading =
+                simHeading +
+                Math.max(-maxRot, Math.min(maxRot, targetHeading - simHeading));
             } else {
-                const catchUpRequired = Math.abs(targetHeading - simHeading);
-                const stepPhysicalTime = calculateRotationTime(catchUpRequired, safeSettings);
-                if (stepPhysicalTime > 0 && dt < stepPhysicalTime) {
-                    const ratio = dt / stepPhysicalTime;
-                    nextHeading = simHeading + (targetHeading - simHeading) * Math.min(1.0, ratio);
-                } else {
-                    nextHeading = targetHeading;
-                }
+              const catchUpRequired = Math.abs(targetHeading - simHeading);
+              const stepPhysicalTime = calculateRotationTime(
+                catchUpRequired,
+                safeSettings,
+              );
+              if (stepPhysicalTime > 0 && dt < stepPhysicalTime) {
+                const ratio = dt / stepPhysicalTime;
+                nextHeading =
+                  simHeading +
+                  (targetHeading - simHeading) * Math.min(1.0, ratio);
+              } else {
+                nextHeading = targetHeading;
+              }
             }
             simHeading = nextHeading;
             headingProfile.push(simHeading);
@@ -1391,23 +1442,23 @@ export function calculatePathTime(
 
       segmentTimes.push(segmentTime);
       const lineIndex = contextLines.findIndex((l) => l.id === line.id);
-        timeline.push({
-          type: "travel",
-          duration: segmentTime,
-          startTime: currentTime,
-          endTime: currentTime + segmentTime,
-          lineIndex,
-          line: line, // Pass direct reference
-          prevPoint: prevPoint as Point, // Pass direct reference
-          motionProfile: motionProfile,
-          velocityProfile: velocityProfile,
-          headingProfile: headingProfile,
-          isGlobalOverride: isGlobalOverride,
-          rootLine: rootLine,
-          globalHeading: (isGlobalOverride
-            ? rootLine.globalHeading!
-            : line.endPoint.heading) as any,
-        });
+      timeline.push({
+        type: "travel",
+        duration: segmentTime,
+        startTime: currentTime,
+        endTime: currentTime + segmentTime,
+        lineIndex,
+        line: line, // Pass direct reference
+        prevPoint: prevPoint as Point, // Pass direct reference
+        motionProfile: motionProfile,
+        velocityProfile: velocityProfile,
+        headingProfile: headingProfile,
+        isGlobalOverride: isGlobalOverride,
+        rootLine: rootLine,
+        globalHeading: (isGlobalOverride
+          ? rootLine.globalHeading!
+          : line.endPoint.heading) as any,
+      });
       currentTime += segmentTime;
 
       // Update state: seed from actual last heading profile value if available
