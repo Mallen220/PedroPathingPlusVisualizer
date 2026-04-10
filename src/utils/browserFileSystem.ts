@@ -319,7 +319,7 @@ export const browserFileSystem = {
     }
 
     const up = baseParts.length - commonLen;
-    const rel = Array(up)
+    const rel = new Array(up)
       .fill("..")
       .concat(targetParts.slice(commonLen))
       .join("/");

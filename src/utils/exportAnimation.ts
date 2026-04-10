@@ -181,7 +181,7 @@ async function renderFrameToCanvas(
       }
       resolve();
     };
-    img.onerror = (err) => reject(err);
+    img.onerror = () => reject(new Error("Failed to rasterize SVG to image"));
     img.src = data;
   });
 }
@@ -242,7 +242,7 @@ async function urlToDataUri(url: string): Promise<string> {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.onloadend = () => resolve(reader.result as string);
-      reader.onerror = reject;
+      reader.onerror = () => reject(new Error("Failed to convert blob to data URI"));
       reader.readAsDataURL(blob);
     });
   } catch (e) {
@@ -525,7 +525,7 @@ export async function exportPathToGif(
                 } catch (e) {}
                 res();
               };
-              im.onerror = (e) => rej(e);
+              im.onerror = () => rej(new Error("Failed to load GIF frame image"));
               im.src = dataUrl;
             });
           }
