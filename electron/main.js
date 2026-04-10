@@ -648,7 +648,6 @@ async function ensureDefaultPlugins() {
     const sourcePluginsDir = path.join(__dirname, "../plugins");
 
     try {
-
       const files = await fs.readdir(sourcePluginsDir);
       for (const file of files) {
         if (
@@ -662,10 +661,8 @@ async function ensureDefaultPlugins() {
         const destFile = path.join(pluginsDir, file);
 
         try {
-
           await fs.access(destFile);
         } catch {
-
           await fs.copyFile(srcFile, destFile);
         }
       }

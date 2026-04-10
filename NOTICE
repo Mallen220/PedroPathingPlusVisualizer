@@ -459,3 +459,4 @@ src/tests/lib/components/shortcuts/utils.test.ts
 src/lib/components/icons/EllipsisVerticalIcon.svelte
 src/lib/components/renderer/FacingLineGenerator.ts
 src/lib/components/renderer/PointGenerator.ts
+.codacy.yaml

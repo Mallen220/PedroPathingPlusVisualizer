@@ -112,7 +112,7 @@ export function registerPluginHandlers() {
   ipcMain.handle("plugins:open-folder", async () => {
     const fullPath = getSafePluginsDirectory();
     try {
-      // nosemgrep: codacy.tools-configs.javascript_pathtraversal_rule-non-literal-fs-filename
+      // nosemgrep: .tools-configs.javascript_pathtraversal_rule-non-literal-fs-filename
       await fs.mkdir(fullPath, { recursive: true });
       await shell.openPath(fullPath);
       return true;
@@ -126,7 +126,7 @@ export function registerPluginHandlers() {
     const basePath = getSafePluginsDirectory();
     const fullPath = await resolvePluginFilePath(basePath, filename);
     try {
-      // nosemgrep: codacy.tools-configs.javascript_pathtraversal_rule-non-literal-fs-filename
+      // nosemgrep: .tools-configs.javascript_pathtraversal_rule-non-literal-fs-filename
       await fs.unlink(fullPath);
       return true;
     } catch (error) {

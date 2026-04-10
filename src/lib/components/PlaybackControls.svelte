@@ -461,7 +461,9 @@
         style="left: {loopRange[0]}%; transform: translateX(-50%);"
         onmousedown={(e) => startDragLoopHandle(e, "min")}
       >
-        <div class="absolute inset-0 m-auto w-2 h-4 rounded-sm bg-purple-500 hover:bg-purple-400 shadow-md"></div>
+        <div
+          class="absolute inset-0 m-auto w-2 h-4 rounded-sm bg-purple-500 hover:bg-purple-400 shadow-md"
+        ></div>
       </div>
       <!-- B Handle -->
 
@@ -477,7 +479,9 @@
         style="left: {loopRange[1]}%; transform: translateX(-50%);"
         onmousedown={(e) => startDragLoopHandle(e, "max")}
       >
-        <div class="absolute inset-0 m-auto w-2 h-4 rounded-sm bg-purple-500 hover:bg-purple-400 shadow-md"></div>
+        <div
+          class="absolute inset-0 m-auto w-2 h-4 rounded-sm bg-purple-500 hover:bg-purple-400 shadow-md"
+        ></div>
       </div>
     {/if}
 
@@ -529,7 +533,9 @@
           </div>
 
           <!-- Map Pin Icon -->
-          <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+          <div
+            class="absolute inset-0 flex items-center justify-center pointer-events-none"
+          >
             <MapPinIcon
               className="w-4 h-4 drop-shadow-md transition-transform group-hover:scale-125"
               style={item.color ? `color: ${item.color}` : ""}

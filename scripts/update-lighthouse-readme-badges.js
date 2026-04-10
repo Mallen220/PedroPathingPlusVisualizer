@@ -132,7 +132,7 @@ async function main() {
 
   await verifyArtifacts();
 
-  // nosemgrep: codacy.tools-configs.javascript_pathtraversal_rule-non-literal-fs-filename
+  // nosemgrep: .tools-configs.javascript_pathtraversal_rule-non-literal-fs-filename
   // nosemgrep
   const packageJsonContent = await fs.readFile(
     new URL("../package.json", import.meta.url),

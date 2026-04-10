@@ -39,7 +39,7 @@ async function run() {
 
     // Run jscpd
     // Execute jscpd
-    // We restrict to typescript and javascript as per .codacy.yaml to match the expected count
+    // We restrict to typescript and javascript as per ..yaml to match the expected count
     try {
       execSync(
         `npx jscpd src --reporters json --output tmp/jscpd --threshold 0 --min-tokens 40 --format typescript,javascript`,

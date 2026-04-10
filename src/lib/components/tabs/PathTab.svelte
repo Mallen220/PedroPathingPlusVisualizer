@@ -962,179 +962,189 @@
 
   <div role="list" class="flex flex-col gap-4">
     {#each sequence as item, sIdx (getItemId(item))}
-    {@const isLocked = isItemLocked(item, lines)}
-    {@const def = $actionRegistry[item.kind]}
-    {@const prevItem = sIdx > 0 ? sequence[sIdx - 1] : null}
-    {@const nextItem = sIdx < sequence.length - 1 ? sequence[sIdx + 1] : null}
-    {@const isChain =
-      item.kind === "path" &&
-      prevItem?.kind === "path" &&
-      (item as any).isChain}
-    {@const isChainedWithNext =
-      item.kind === "path" &&
-      nextItem?.kind === "path" &&
-      (nextItem as any).isChain}
+      {@const isLocked = isItemLocked(item, lines)}
+      {@const def = $actionRegistry[item.kind]}
+      {@const prevItem = sIdx > 0 ? sequence[sIdx - 1] : null}
+      {@const nextItem = sIdx < sequence.length - 1 ? sequence[sIdx + 1] : null}
+      {@const isChain =
+        item.kind === "path" &&
+        prevItem?.kind === "path" &&
+        (item as any).isChain}
+      {@const isChainedWithNext =
+        item.kind === "path" &&
+        nextItem?.kind === "path" &&
+        (nextItem as any).isChain}
 
-    {#if item.kind === "path" && prevItem?.kind === "path"}
-      <div class="flex justify-center -my-3 z-10 relative">
-        <button
-          class="bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-full p-1 hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-colors shadow-sm {isChain
-            ? 'text-green-500 dark:text-green-400 bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800'
-            : 'text-neutral-400 dark:text-neutral-500'}"
-          title={isChain ? "Unchain paths" : "Chain paths"}
-          aria-label={isChain ? "Unchain paths" : "Chain paths"}
-          onclick={() => {
-            const newIsChain = !(item as any).isChain;
+      {#if item.kind === "path" && prevItem?.kind === "path"}
+        <div class="flex justify-center -my-3 z-10 relative">
+          <button
+            class="bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-full p-1 hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-colors shadow-sm {isChain
+              ? 'text-green-500 dark:text-green-400 bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800'
+              : 'text-neutral-400 dark:text-neutral-500'}"
+            title={isChain ? "Unchain paths" : "Chain paths"}
+            aria-label={isChain ? "Unchain paths" : "Chain paths"}
+            onclick={() => {
+              const newIsChain = !(item as any).isChain;
 
-            if (!newIsChain) {
-              // Find the root of the former chain
-              let rootIdx = sIdx;
-              while (
-                rootIdx > 0 &&
-                sequence[rootIdx - 1].kind === "path" &&
-                (sequence[rootIdx] as any).isChain
-              ) {
-                rootIdx--;
-              }
+              if (!newIsChain) {
+                // Find the root of the former chain
+                let rootIdx = sIdx;
+                while (
+                  rootIdx > 0 &&
+                  sequence[rootIdx - 1].kind === "path" &&
+                  (sequence[rootIdx] as any).isChain
+                ) {
+                  rootIdx--;
+                }
 
-              // Find the end of the former chain
-              let endIdx = sIdx;
-              while (
-                endIdx + 1 < sequence.length &&
-                sequence[endIdx + 1].kind === "path" &&
-                (sequence[endIdx + 1] as any).isChain
-              ) {
-                endIdx++;
-              }
+                // Find the end of the former chain
+                let endIdx = sIdx;
+                while (
+                  endIdx + 1 < sequence.length &&
+                  sequence[endIdx + 1].kind === "path" &&
+                  (sequence[endIdx + 1] as any).isChain
+                ) {
+                  endIdx++;
+                }
 
-              // Reset globalHeading for all paths in the former chain island
-              for (let i = rootIdx; i <= endIdx; i++) {
-                const sItem = sequence[i];
-                if (sItem.kind === "path") {
-                  const lIdx = lines.findIndex(
-                    (l) => l.id === (sItem as any).lineId,
-                  );
-                  if (lIdx !== -1 && lines[lIdx].globalHeading !== undefined) {
-                    lines[lIdx] = { ...lines[lIdx], globalHeading: undefined };
+                // Reset globalHeading for all paths in the former chain island
+                for (let i = rootIdx; i <= endIdx; i++) {
+                  const sItem = sequence[i];
+                  if (sItem.kind === "path") {
+                    const lIdx = lines.findIndex(
+                      (l) => l.id === (sItem as any).lineId,
+                    );
+                    if (
+                      lIdx !== -1 &&
+                      lines[lIdx].globalHeading !== undefined
+                    ) {
+                      lines[lIdx] = {
+                        ...lines[lIdx],
+                        globalHeading: undefined,
+                      };
+                    }
                   }
                 }
               }
-            }
 
-            // Need to create a new object to trigger reactivity in Svelte 5 for the `isChain` derived value
-            sequence[sIdx] = { ...item, isChain: newIsChain };
+              // Need to create a new object to trigger reactivity in Svelte 5 for the `isChain` derived value
+              sequence[sIdx] = { ...item, isChain: newIsChain };
 
-            // Also update the line object
-            const lIdx = lines.findIndex((l) => l.id === (item as any).lineId);
-            if (lIdx !== -1) {
-              lines[lIdx] = { ...lines[lIdx], isChain: newIsChain };
-            }
-            lines = [...lines];
-            sequence = [...sequence];
-            if (recordChange) recordChange("Toggle Path Chain");
-          }}
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke-width="2"
-            stroke="currentColor"
-            class="w-4 h-4"
+              // Also update the line object
+              const lIdx = lines.findIndex(
+                (l) => l.id === (item as any).lineId,
+              );
+              if (lIdx !== -1) {
+                lines[lIdx] = { ...lines[lIdx], isChain: newIsChain };
+              }
+              lines = [...lines];
+              sequence = [...sequence];
+              if (recordChange) recordChange("Toggle Path Chain");
+            }}
           >
-            {#if isChain}
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                d="M13.19 8.688a4.5 4.5 0 0 1 1.242 7.244l-4.5 4.5a4.5 4.5 0 0 1-6.364-6.364l1.757-1.757m13.35-.622 1.757-1.757a4.5 4.5 0 0 0-6.364-6.364l-4.5 4.5a4.5 4.5 0 0 0 1.242 7.244"
-              />
-            {:else}
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                d="M13.19 8.688a4.5 4.5 0 0 1 1.242 7.244l-4.5 4.5a4.5 4.5 0 0 1-6.364-6.364l1.757-1.757m13.35-.622 1.757-1.757a4.5 4.5 0 0 0-6.364-6.364l-4.5 4.5a4.5 4.5 0 0 0 1.242 7.244"
-                stroke-dasharray="2 2"
-              />
-            {/if}
-          </svg>
-        </button>
-      </div>
-    {/if}
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke-width="2"
+              stroke="currentColor"
+              class="w-4 h-4"
+            >
+              {#if isChain}
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M13.19 8.688a4.5 4.5 0 0 1 1.242 7.244l-4.5 4.5a4.5 4.5 0 0 1-6.364-6.364l1.757-1.757m13.35-.622 1.757-1.757a4.5 4.5 0 0 0-6.364-6.364l-4.5 4.5a4.5 4.5 0 0 0 1.242 7.244"
+                />
+              {:else}
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M13.19 8.688a4.5 4.5 0 0 1 1.242 7.244l-4.5 4.5a4.5 4.5 0 0 1-6.364-6.364l1.757-1.757m13.35-.622 1.757-1.757a4.5 4.5 0 0 0-6.364-6.364l-4.5 4.5a4.5 4.5 0 0 0 1.242 7.244"
+                  stroke-dasharray="2 2"
+                />
+              {/if}
+            </svg>
+          </button>
+        </div>
+      {/if}
 
-    <div
-      role="listitem"
-      data-index={sIdx}
-      id={`sequence-item-${getItemId(item)}`}
-      class="w-full transition-all duration-200 rounded-lg {isChain
-        ? '-mt-2'
-        : ''} {isChainedWithNext ? '-mb-2' : ''}"
-      draggable={!isItemLocked(item, lines)}
-      ondragstart={(e) => handleDragStart(e, sIdx)}
-      ondragend={handleDragEnd}
-      class:border-t-4={dragOverIndex === sIdx && dragPosition === "top"}
-      class:border-b-4={dragOverIndex === sIdx && dragPosition === "bottom"}
-      class:border-blue-500={dragOverIndex === sIdx}
-      class:dark:border-blue-400={dragOverIndex === sIdx}
-      class:opacity-50={draggingIndex === sIdx}
-    >
-      {#if item.kind === "path"}
-        {@const lineIdx = lines.findIndex((l) => l.id === getPathLineId(item))}
-        {#if lineIdx !== -1}
-          <PathLineSection
-            line={lines[lineIdx]}
-            idx={lineIdx}
-            bind:lines
-            bind:collapsed={collapsedSections.lines[lineIdx]}
-            bind:collapsedControlPoints={
-              collapsedSections.controlPoints[lineIdx]
-            }
-            onRemove={() => removeLine(lineIdx)}
-            onInsertAfter={() => insertLineAfter(sIdx)}
+      <div
+        role="listitem"
+        data-index={sIdx}
+        id={`sequence-item-${getItemId(item)}`}
+        class="w-full transition-all duration-200 rounded-lg {isChain
+          ? '-mt-2'
+          : ''} {isChainedWithNext ? '-mb-2' : ''}"
+        draggable={!isItemLocked(item, lines)}
+        ondragstart={(e) => handleDragStart(e, sIdx)}
+        ondragend={handleDragEnd}
+        class:border-t-4={dragOverIndex === sIdx && dragPosition === "top"}
+        class:border-b-4={dragOverIndex === sIdx && dragPosition === "bottom"}
+        class:border-blue-500={dragOverIndex === sIdx}
+        class:dark:border-blue-400={dragOverIndex === sIdx}
+        class:opacity-50={draggingIndex === sIdx}
+      >
+        {#if item.kind === "path"}
+          {@const lineIdx = lines.findIndex(
+            (l) => l.id === getPathLineId(item),
+          )}
+          {#if lineIdx !== -1}
+            <PathLineSection
+              line={lines[lineIdx]}
+              idx={lineIdx}
+              bind:lines
+              bind:collapsed={collapsedSections.lines[lineIdx]}
+              bind:collapsedControlPoints={
+                collapsedSections.controlPoints[lineIdx]
+              }
+              onRemove={() => removeLine(lineIdx)}
+              onInsertAfter={() => insertLineAfter(sIdx)}
+              onAddWaitAfter={() =>
+                handleAddActionAfter(sIdx, $actionRegistry["wait"])}
+              onAddRotateAfter={() =>
+                handleAddActionAfter(sIdx, $actionRegistry["rotate"])}
+              onAddAction={addActionAfterFor.bind(null, sIdx)}
+              onMoveUp={() => moveSequenceItem(sIdx, -1)}
+              onMoveDown={() => moveSequenceItem(sIdx, 1)}
+              canMoveUp={sIdx !== 0}
+              canMoveDown={sIdx !== sequence.length - 1}
+              {recordChange}
+              onScrollToItem={scrollToItem}
+            />
+          {/if}
+        {:else if def && def.sectionComponent}
+          <def.sectionComponent
+            {...{ [def.kind]: item }}
+            bind:sequence
+            collapsed={collapsedSections.items[getItemId(item)]}
+            onRemove={() => {
+              const newSeq = [...sequence];
+              newSeq.splice(sIdx, 1);
+              sequence = newSeq;
+              recordChange?.("Remove Item");
+            }}
+            onInsertAfter={() => handleAddActionAfter(sIdx, def)}
+            onAddPathAfter={() => insertLineAfter(sIdx)}
             onAddWaitAfter={() =>
               handleAddActionAfter(sIdx, $actionRegistry["wait"])}
             onAddRotateAfter={() =>
               handleAddActionAfter(sIdx, $actionRegistry["rotate"])}
             onAddAction={addActionAfterFor.bind(null, sIdx)}
+            onUnlink={() => {
+              if (item.kind === "macro") {
+                unlinkMacro(item, sIdx);
+              }
+            }}
             onMoveUp={() => moveSequenceItem(sIdx, -1)}
             onMoveDown={() => moveSequenceItem(sIdx, 1)}
             canMoveUp={sIdx !== 0}
             canMoveDown={sIdx !== sequence.length - 1}
             {recordChange}
-            onScrollToItem={scrollToItem}
           />
         {/if}
-      {:else if def && def.sectionComponent}
-        <def.sectionComponent
-          {...{ [def.kind]: item }}
-          bind:sequence
-          collapsed={collapsedSections.items[getItemId(item)]}
-          onRemove={() => {
-            const newSeq = [...sequence];
-            newSeq.splice(sIdx, 1);
-            sequence = newSeq;
-            recordChange?.("Remove Item");
-          }}
-          onInsertAfter={() => handleAddActionAfter(sIdx, def)}
-          onAddPathAfter={() => insertLineAfter(sIdx)}
-          onAddWaitAfter={() =>
-            handleAddActionAfter(sIdx, $actionRegistry["wait"])}
-          onAddRotateAfter={() =>
-            handleAddActionAfter(sIdx, $actionRegistry["rotate"])}
-          onAddAction={addActionAfterFor.bind(null, sIdx)}
-          onUnlink={() => {
-            if (item.kind === "macro") {
-              unlinkMacro(item, sIdx);
-            }
-          }}
-          onMoveUp={() => moveSequenceItem(sIdx, -1)}
-          onMoveDown={() => moveSequenceItem(sIdx, 1)}
-          canMoveUp={sIdx !== 0}
-          canMoveDown={sIdx !== sequence.length - 1}
-          {recordChange}
-        />
-      {/if}
-    </div>
-  {/each}
+      </div>
+    {/each}
   </div>
   <!-- Add Buttons at end of list -->
   {#if sequence.length > 0}

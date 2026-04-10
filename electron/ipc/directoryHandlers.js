@@ -124,7 +124,6 @@ export function registerDirectoryHandlers() {
       };
     }
     try {
-
       const files = await fs.readdir(resolvedPath);
       const projectFiles = files.filter((file) => isProjectFilePath(file));
 

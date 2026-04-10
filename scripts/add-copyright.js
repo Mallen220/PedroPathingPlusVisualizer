@@ -41,11 +41,11 @@ function getHeader(yearRange, styleType) {
 }
 
 function traverse(dir) {
-  // nosemgrep: codacy.tools-configs.javascript_pathtraversal_rule-non-literal-fs-filename
+  // nosemgrep: .tools-configs.javascript_pathtraversal_rule-non-literal-fs-filename
   const files = fs.readdirSync(dir);
   for (const file of files) {
     const filePath = path.join(dir, file);
-    // nosemgrep: codacy.tools-configs.javascript_pathtraversal_rule-non-literal-fs-filename
+    // nosemgrep: .tools-configs.javascript_pathtraversal_rule-non-literal-fs-filename
     const stat = fs.statSync(filePath);
 
     if (stat.isDirectory()) {
@@ -74,7 +74,7 @@ function traverse(dir) {
 }
 
 function processFile(filePath, styleType) {
-  // nosemgrep: codacy.tools-configs.javascript_pathtraversal_rule-non-literal-fs-filename
+  // nosemgrep: .tools-configs.javascript_pathtraversal_rule-non-literal-fs-filename
   const originalContent = fs.readFileSync(filePath, "utf8");
   let content = originalContent;
 
@@ -148,7 +148,7 @@ function processFile(filePath, styleType) {
   const finalContent = shebang + newHeader + body;
 
   if (finalContent !== originalContent) {
-    // nosemgrep: codacy.tools-configs.javascript_pathtraversal_rule-non-literal-fs-filename
+    // nosemgrep: .tools-configs.javascript_pathtraversal_rule-non-literal-fs-filename
     fs.writeFileSync(filePath, finalContent);
     console.log(`Updated ${filePath}`);
   }

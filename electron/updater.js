@@ -88,9 +88,7 @@ class AppUpdater {
 
   loadSkippedVersions() {
     try {
-
       if (fs.existsSync(this.updaterSettingsPath)) {
-
         const data = fs.readFileSync(this.updaterSettingsPath, "utf8");
         const settings = JSON.parse(data);
         return settings.skippedVersions || [];
