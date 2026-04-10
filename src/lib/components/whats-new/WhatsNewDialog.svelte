@@ -1,19 +1,17 @@
 <!-- Copyright 2026 Matthew Allen. Licensed under the Modified Apache License, Version 2.0. -->
 <script lang="ts">
-  import { run } from "svelte/legacy";
-
-  import { createEventDispatcher, onMount } from "svelte";
+  import { onMount } from "svelte";
   import MarkdownIt from "markdown-it";
   import { features, getAllFeatures, type FeatureHighlight } from "./features";
   import { ChevronLeftIcon, ChevronRightIcon, CloseIcon } from "../icons";
 
   interface Props {
     show?: boolean;
+    onclose?: () => void;
   }
 
-  let { show = $bindable(false) }: Props = $props();
+  let { show = $bindable(false), onclose }: Props = $props();
 
-  const dispatch = createEventDispatcher();
   const md = new MarkdownIt({
     html: true,
     linkify: true,
@@ -23,13 +21,7 @@
   // Mode can be 'features' (viewing individual features of current release) or 'releases' (viewing full changelogs)
   let viewMode: "features" | "releases" = $state("features");
 
-  let currentRelease: FeatureHighlight | null = $state(null);
-  let allReleases: FeatureHighlight[] = $state([]);
-
   // Left menu state
-  let parsedFeatures: { id: string; title: string; content: string }[] = $state(
-    [],
-  );
   let activeFeatureId: string | null = $state(null);
   let activeReleaseId: string | null = $state(null);
 
@@ -38,6 +30,8 @@
   let displayedFeatures = $derived(
     features.length ? getAllFeatures() : runtimeFeatures,
   );
+  let allReleases = $derived(displayedFeatures);
+  let currentRelease = $derived(allReleases.length > 0 ? allReleases[0] : null);
 
   onMount(async () => {
     // Dynamic import fallback (kept from original implementation)
@@ -90,15 +84,11 @@
   });
 
   // Re-run parsing automatically when the displayed features update (e.g. via Vite HMR for live preview)
-  run(() => {
-    allReleases = displayedFeatures;
-  });
-  run(() => {
-    currentRelease = allReleases.length > 0 ? allReleases[0] : null;
-  });
-
-  run(() => {
-    if (currentRelease && show) {
+  let parsedFeatures = $derived(
+    (() => {
+      if (!(currentRelease && show)) {
+        return [];
+      }
       const lines = currentRelease.content.split("\n");
       const extracted: { id: string; title: string; content: string }[] = [];
       let currentTitle = "Overview";
@@ -137,22 +127,25 @@
         });
       }
 
-      parsedFeatures = extracted;
-      // Auto-select the first feature if we don't have one selected or if it was removed
-      if (
-        parsedFeatures.length > 0 &&
-        (!activeFeatureId ||
-          !parsedFeatures.find((f) => f.id === activeFeatureId))
-      ) {
-        activeFeatureId = parsedFeatures[0].id;
-      }
+      return extracted;
+    })(),
+  );
+
+  $effect(() => {
+    // Auto-select the first feature if we don't have one selected or if it was removed
+    if (
+      parsedFeatures.length > 0 &&
+      (!activeFeatureId ||
+        !parsedFeatures.find((f) => f.id === activeFeatureId))
+    ) {
+      activeFeatureId = parsedFeatures[0].id;
     }
   });
 
   function close() {
     show = false;
     viewMode = "features";
-    dispatch("close");
+    onclose?.();
   }
 
   function handleKeydown(e: KeyboardEvent) {

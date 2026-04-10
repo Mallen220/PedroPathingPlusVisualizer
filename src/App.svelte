@@ -1776,7 +1776,7 @@
   />
 {/if}
 
-<WhatsNewDialog bind:show={$showWhatsNew} on:close={closeWhatsNew} />
+<WhatsNewDialog bind:show={$showWhatsNew} onclose={closeWhatsNew} />
 <SetupDialog bind:show={setupMode} />
 <NotificationToast />
 <OnboardingTutorial
