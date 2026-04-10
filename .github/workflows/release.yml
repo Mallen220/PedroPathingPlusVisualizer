@@ -11,15 +11,15 @@ on:
         required: true
         default: ""
 
-permissions:
-  contents: write
-  packages: write
+permissions: {}
 
 env:
   TAG_NAME: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.tag || github.ref_name }}
 
 jobs:
   prepare-release:
+    permissions:
+      contents: write
     runs-on: ubuntu-latest
     outputs:
       upload_url: ${{ steps.ensure-release.outputs.upload_url }}
@@ -124,6 +124,8 @@ jobs:
 
   release-mac:
     needs: prepare-release
+    permissions:
+      contents: write
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
@@ -167,6 +169,8 @@ jobs:
 
   release-win:
     needs: prepare-release
+    permissions:
+      contents: write
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
@@ -232,6 +236,8 @@ jobs:
 
   release-linux:
     needs: prepare-release
+    permissions:
+      contents: write
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
