@@ -124,7 +124,7 @@ export function registerDirectoryHandlers() {
       };
     }
     try {
-      // nosemgrep: codacy.tools-configs.javascript_pathtraversal_rule-non-literal-fs-filename
+
       const files = await fs.readdir(resolvedPath);
       const projectFiles = files.filter((file) => isProjectFilePath(file));
 
@@ -133,7 +133,7 @@ export function registerDirectoryHandlers() {
 
       for (const file of projectFiles) {
         const filePath = path.join(dirPath, file);
-        // nosemgrep: codacy.tools-configs.javascript_pathtraversal_rule-non-literal-fs-filename
+
         const stats = await fs.stat(filePath);
         totalSize += stats.size;
         if (stats.mtime > latestModified) {

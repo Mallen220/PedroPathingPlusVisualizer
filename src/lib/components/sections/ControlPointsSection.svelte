@@ -162,7 +162,7 @@
   <div class="flex items-center justify-between w-full py-1">
     <button
       onclick={toggleCollapsed}
-      class="flex items-center gap-2 text-xs font-semibold text-neutral-500 uppercase tracking-wide hover:text-neutral-800 dark:hover:text-neutral-300 transition-colors"
+      class="flex items-center gap-2 px-3 py-2 text-xs font-semibold text-neutral-700 dark:text-neutral-200 uppercase tracking-wide hover:text-neutral-900 dark:hover:text-neutral-100 rounded-md focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 transition-colors"
       title="{collapsed ? 'Show' : 'Hide'} control points"
       aria-expanded={!collapsed}
       aria-controls="control-points-list-{lineIdx}"

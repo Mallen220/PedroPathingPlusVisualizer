@@ -315,6 +315,7 @@
       }}
       disabled={locked}
       {tabindex}
+      aria-label="Reverse heading direction"
       class="sr-only"
     />
     <ArrowCircleIcon

@@ -324,7 +324,7 @@
             : 'rotate-90'}"
         />
         <span
-          class="text-xs font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500 whitespace-nowrap"
+          class="text-xs font-bold uppercase tracking-wider text-neutral-600 dark:text-neutral-300 whitespace-nowrap"
           >Path {idx + 1}</span
         >
       </button>
@@ -475,7 +475,7 @@
         <!-- Target Position -->
         <div class="space-y-2">
           <span
-            class="text-xs font-semibold text-neutral-500 uppercase tracking-wide block"
+            class="text-xs font-semibold text-neutral-700 dark:text-neutral-300 uppercase tracking-wide block"
           >
             Target Position
           </span>
@@ -563,7 +563,7 @@
               line.endPoint.heading === "piecewise"}
           >
             <span
-              class="text-xs font-semibold text-neutral-500 uppercase tracking-wide block"
+              class="text-xs font-semibold text-neutral-700 dark:text-neutral-300 uppercase tracking-wide block"
             >
               Heading
             </span>
@@ -585,7 +585,7 @@
         {:else}
           <div class="space-y-2" class:col-span-2={!isNarrow}>
             <span
-              class="text-xs font-semibold text-neutral-500 uppercase tracking-wide block"
+              class="text-xs font-semibold text-neutral-700 dark:text-neutral-300 uppercase tracking-wide block"
               >Heading</span
             >
             <button

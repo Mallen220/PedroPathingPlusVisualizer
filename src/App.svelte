@@ -53,6 +53,7 @@
     showExportImage,
     showStrategySheet,
     showShortcuts,
+    startTutorial,
     exportDialogState,
     selectedPointId,
     collisionMarkers,
@@ -1918,6 +1919,13 @@
         <div
           class="relative shadow-inner w-full h-full flex justify-center items-center"
         >
+          <button
+            id="field-container-anchor"
+            type="button"
+            class="absolute inset-0 opacity-0 pointer-events-none"
+            aria-label="Field workspace tutorial target"
+            tabindex={$startTutorial ? 0 : -1}
+          ></button>
           <SvelteComponent_1
             bind:this={fieldRenderer}
             width={fieldRenderWidth}
@@ -1933,7 +1941,7 @@
       <!-- Resizer Handle (Desktop) -->
       {#if isLargeScreen && effectiveShowSidebar && !$isPresentationMode}
         <button
-          class="group w-3 cursor-col-resize flex justify-center items-center hover:bg-purple-500/10 active:bg-purple-500/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 transition-colors select-none z-40 border-none bg-neutral-200 dark:bg-neutral-800 p-0 m-0 border-l border-r border-neutral-300 dark:border-neutral-700"
+          class="group w-6 cursor-col-resize flex justify-center items-center hover:bg-purple-500/10 active:bg-purple-500/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 transition-colors select-none z-40 border-none bg-neutral-200 dark:bg-neutral-800 p-0 m-0 border-l border-r border-neutral-300 dark:border-neutral-700"
           onmousedown={() => startResize("horizontal")}
           onkeydown={(e) => handleResizeKeyDown(e, "horizontal")}
           ondblclick={() => {

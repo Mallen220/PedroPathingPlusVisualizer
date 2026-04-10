@@ -73,7 +73,6 @@ export const getDirectorySettingsPath = () => {
 export const loadDirectorySettings = async () => {
   const settingsPath = getDirectorySettingsPath();
   try {
-    // nosemgrep: codacy.tools-configs.javascript_pathtraversal_rule-non-literal-fs-filename
     const data = await fs.readFile(settingsPath, "utf-8");
     return JSON.parse(data);
   } catch (error) {
@@ -96,7 +95,6 @@ export const loadDirectorySettings = async () => {
 export const saveDirectorySettings = async (settings) => {
   const settingsPath = getDirectorySettingsPath();
   try {
-    // nosemgrep: codacy.tools-configs.javascript_pathtraversal_rule-non-literal-fs-filename
     await fs.writeFile(
       settingsPath,
       JSON.stringify(settings, null, 2),

@@ -643,13 +643,12 @@ registerIpcHandlers({
 async function ensureDefaultPlugins() {
   const pluginsDir = getPluginsDirectory();
   try {
-    // nosemgrep: codacy.tools-configs.javascript_pathtraversal_rule-non-literal-fs-filename
     await fs.mkdir(pluginsDir, { recursive: true });
 
     const sourcePluginsDir = path.join(__dirname, "../plugins");
 
     try {
-      // nosemgrep: codacy.tools-configs.javascript_pathtraversal_rule-non-literal-fs-filename
+
       const files = await fs.readdir(sourcePluginsDir);
       for (const file of files) {
         if (
@@ -663,10 +662,10 @@ async function ensureDefaultPlugins() {
         const destFile = path.join(pluginsDir, file);
 
         try {
-          // nosemgrep: codacy.tools-configs.javascript_pathtraversal_rule-non-literal-fs-filename
+
           await fs.access(destFile);
         } catch {
-          // nosemgrep: codacy.tools-configs.javascript_pathtraversal_rule-non-literal-fs-filename
+
           await fs.copyFile(srcFile, destFile);
         }
       }

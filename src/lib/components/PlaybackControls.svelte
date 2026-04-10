@@ -451,22 +451,34 @@
 
       <div
         role="slider"
+        aria-label="Loop range start"
+        aria-valuemin="0"
+        aria-valuemax="100"
+        aria-orientation="horizontal"
         aria-valuenow={loopRange[0]}
         tabindex="0"
-        class="absolute top-1/2 -translate-y-1/2 w-2 h-4 bg-purple-500 hover:bg-purple-400 cursor-ew-resize z-20 rounded-sm shadow-md"
+        class="absolute top-1/2 -translate-y-1/2 w-6 h-6 z-20 rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500"
         style="left: {loopRange[0]}%; transform: translateX(-50%);"
         onmousedown={(e) => startDragLoopHandle(e, "min")}
-      ></div>
+      >
+        <div class="absolute inset-0 m-auto w-2 h-4 rounded-sm bg-purple-500 hover:bg-purple-400 shadow-md"></div>
+      </div>
       <!-- B Handle -->
 
       <div
         role="slider"
+        aria-label="Loop range end"
+        aria-valuemin="0"
+        aria-valuemax="100"
+        aria-orientation="horizontal"
         aria-valuenow={loopRange[1]}
         tabindex="0"
-        class="absolute top-1/2 -translate-y-1/2 w-2 h-4 bg-purple-500 hover:bg-purple-400 cursor-ew-resize z-20 rounded-sm shadow-md"
+        class="absolute top-1/2 -translate-y-1/2 w-6 h-6 z-20 rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500"
         style="left: {loopRange[1]}%; transform: translateX(-50%);"
         onmousedown={(e) => startDragLoopHandle(e, "max")}
-      ></div>
+      >
+        <div class="absolute inset-0 m-auto w-2 h-4 rounded-sm bg-purple-500 hover:bg-purple-400 shadow-md"></div>
+      </div>
     {/if}
 
     <!-- The Slider -->
@@ -489,7 +501,7 @@
     {#each timelineItems as item, index}
       {#if item.type === "marker"}
         <div
-          class="absolute z-20 group rounded-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:ring-offset-1 dark:focus-visible:ring-offset-neutral-900"
+          class="absolute z-20 group rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:ring-offset-1 dark:focus-visible:ring-offset-neutral-900"
           role="button"
           tabindex="0"
           onmousedown={(e) => handleMarkerDragStart(e, index, item)}
@@ -503,7 +515,7 @@
           }}
           style="left: {draggingMarkerIndex === index
             ? draggingMarkerPercent
-            : item.percent}%; top: -4px; transform: translateX(-50%); cursor: {draggingMarkerIndex ===
+            : item.percent}%; top: -4px; transform: translateX(-50%); width: 24px; height: 24px; cursor: {draggingMarkerIndex ===
           index
             ? 'grabbing'
             : 'grab'}; pointer-events: auto;"
@@ -517,10 +529,12 @@
           </div>
 
           <!-- Map Pin Icon -->
-          <MapPinIcon
-            className="w-6 h-6 drop-shadow-md transition-transform group-hover:scale-125"
-            style={item.color ? `color: ${item.color}` : ""}
-          />
+          <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+            <MapPinIcon
+              className="w-4 h-4 drop-shadow-md transition-transform group-hover:scale-125"
+              style={item.color ? `color: ${item.color}` : ""}
+            />
+          </div>
         </div>
       {:else if item.type === "dot"}
         <div
@@ -531,7 +545,7 @@
           onkeydown={(e) => {
             if (e.key === "Enter" || e.key === " ") handleSeek(item.percent);
           }}
-          style={`left: ${item.percent}%; top: 50%; transform: translate(-50%, -50%); width: 12px; height: 12px; background: ${item.color}; cursor: pointer;`}
+          style={`left: ${item.percent}%; top: 50%; transform: translate(-50%, -50%); width: 14px; height: 14px; background: ${item.color}; cursor: pointer;`}
           aria-label={item.name}
         >
           <!-- Tooltip (CSS Hover) -->
@@ -551,7 +565,7 @@
     <div class="relative">
       <button
         title="Open playback speed menu"
-        aria-label="Playback speed options"
+        aria-label={`Playback speed options, current speed ${(playbackSpeed ?? 1).toFixed(2)}x`}
         aria-haspopup="menu"
         aria-expanded={showSpeedMenu}
         onclick={stopPropagation(toggleSpeedMenu)}

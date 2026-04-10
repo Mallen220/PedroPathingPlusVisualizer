@@ -394,8 +394,6 @@ src/lib/components/icons/ShowRobotArrowsIcon.svelte
 src/lib/components/icons/SortDateIcon.svelte
 src/lib/components/icons/StepBackIcon.svelte
 src/lib/components/icons/StepForwardIcon.svelte
-.codacy/cli.sh
-.github/workflows/codacy.yml
 electron/utils.js
 scripts/analyze-clones.js
 scripts/analyze-clusters.js
@@ -422,7 +420,6 @@ src/lib/components/tools/SimpleChart.svelte
 src/tests/canvasMocks.ts
 src/tests/exportMocks.ts
 src/tests/localStorageMock.ts
-.codacy/codacy.yaml
 .prettierignore
 scripts/update-lighthouse-readme-badges.js
 src/setupTests.ts

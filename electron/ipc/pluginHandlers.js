@@ -39,7 +39,6 @@ async function resolvePluginFilePath(basePath, filename) {
     throw new Error("Invalid plugin filename");
   }
 
-  // nosemgrep: codacy.tools-configs.javascript_pathtraversal_rule-non-literal-fs-filename
   const entries = await fs.readdir(basePath, { withFileTypes: true });
   const matchedEntry = entries.find(
     (entry) => entry.isFile() && entry.name === safeFilename,
@@ -86,9 +85,7 @@ export function registerPluginHandlers() {
   ipcMain.handle("plugins:list", async () => {
     const fullPath = getSafePluginsDirectory();
     try {
-      // nosemgrep: codacy.tools-configs.javascript_pathtraversal_rule-non-literal-fs-filename
       await fs.mkdir(fullPath, { recursive: true });
-      // nosemgrep: codacy.tools-configs.javascript_pathtraversal_rule-non-literal-fs-filename
       const files = await fs.readdir(fullPath);
       return files.filter(
         (f) =>
@@ -105,7 +102,6 @@ export function registerPluginHandlers() {
     const basePath = getSafePluginsDirectory();
     const fullPath = await resolvePluginFilePath(basePath, filename);
     try {
-      // nosemgrep: codacy.tools-configs.javascript_pathtraversal_rule-non-literal-fs-filename
       return await fs.readFile(fullPath, "utf-8");
     } catch (error) {
       console.error("Error reading plugin:", error);

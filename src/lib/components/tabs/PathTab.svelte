@@ -960,7 +960,8 @@
     </EmptyState>
   {/if}
 
-  {#each sequence as item, sIdx (getItemId(item))}
+  <div role="list" class="flex flex-col gap-4">
+    {#each sequence as item, sIdx (getItemId(item))}
     {@const isLocked = isItemLocked(item, lines)}
     {@const def = $actionRegistry[item.kind]}
     {@const prevItem = sIdx > 0 ? sequence[sIdx - 1] : null}
@@ -1134,6 +1135,7 @@
       {/if}
     </div>
   {/each}
+  </div>
   <!-- Add Buttons at end of list -->
   {#if sequence.length > 0}
     <div class="flex flex-row justify-center items-center gap-3 pt-4 flex-wrap">

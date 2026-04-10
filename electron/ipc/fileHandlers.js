@@ -64,7 +64,7 @@ export function registerFileHandlers() {
     }
 
     try {
-      // nosemgrep: codacy.tools-configs.javascript_pathtraversal_rule-non-literal-fs-filename
+
       const dirents = await fs.readdir(resolvedDir, { withFileTypes: true });
       const projectFilesAndDirs = dirents.filter(
         (dirent) => dirent.isDirectory() || isProjectFilePath(dirent.name),
@@ -102,7 +102,7 @@ export function registerFileHandlers() {
       const fileDetails = await Promise.all(
         projectFilesAndDirs.map(async (dirent) => {
           const filePath = path.join(directory, dirent.name);
-          // nosemgrep: codacy.tools-configs.javascript_pathtraversal_rule-non-literal-fs-filename
+
           const stats = await fs.stat(filePath);
           const resolvedPath = path.resolve(filePath);
           return {
