@@ -531,7 +531,7 @@ export function importJavaProject(javaCode: string): TurtleData {
                 if (numStr && strTok) {
                   line.eventMarkers!.push({
                     id: makeId(),
-                    name: strTok.replaceAll(/"/g, ""),
+                    name: strTok.replaceAll(`"`, ""),
                     position: Number.parseFloat(numStr),
                   });
                 }

@@ -12,7 +12,7 @@ import type { Line, SequenceItem } from "../../../types/index";
 import { isUIElementFocused, getSelectedSequenceIndex } from "./utils";
 
 // Internal clipboard state for shortcuts
-export let clipboard: SequenceItem | Line | null = null;
+export const clipboard: SequenceItem | Line | null = null;
 
 // Helper to generate unique name
 export const generateName = (baseName: string, existingNames: string[]) => {
