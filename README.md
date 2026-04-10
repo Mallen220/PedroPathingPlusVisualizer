@@ -22,10 +22,14 @@
     <img src="https://img.shields.io/badge/Platform-macOS%20|%20Windows%20|%20Linux-424242.svg?style=for-the-badge" alt="Platform" height="28">
   </p>
 
-<!-- <p>
-    <a href="https://app.codacy.com/gh/Mallen220/TurtleTracer/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade"><img src="https://app.codacy.com/project/badge/Grade/d5fa1b70a73c4a44909a222418714360"/></a>
-    <a href="https://app.codacy.com/gh/Mallen220/TurtleTracer/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_coverage"><img src="https://app.codacy.com/project/badge/Coverage/d5fa1b70a73c4a44909a222418714360"/></a>
-</p> -->
+<p>
+    <img src="https://sonarcloud.io/api/project_badges/measure?project=Mallen220_TurtleTracer&metric=alert_status"/>
+    <img src="https://sonarcloud.io/api/project_badges/measure?project=Mallen220_TurtleTracer&metric=reliability_rating"/>
+    <img src="https://sonarcloud.io/api/project_badges/measure?project=Mallen220_TurtleTracer&metric=security_rating"/>
+    <img src="https://sonarcloud.io/api/project_badges/measure?project=Mallen220_TurtleTracer&metric=sqale_rating"/>
+    <img src="https://sonarcloud.io/api/project_badges/measure?project=Mallen220_TurtleTracer&metric=vulnerabilities"/>
+    <img src="https://sonarcloud.io/api/project_badges/measure?project=Mallen220_TurtleTracer&metric=bugs"/>
+</p>
   <!-- LIGHTHOUSE_BADGES_START -->
   <p>
     <a href="https://github.com/GoogleChrome/lighthouse">
