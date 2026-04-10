@@ -112,7 +112,11 @@ export async function scanEventsInDirectory(directory: string) {
       }),
     );
 
-    diskEventNamesStore.set(Array.from(eventNames).sort());
+    diskEventNamesStore.set(
+      Array.from(eventNames).sort((a, b) =>
+        a.localeCompare(b, undefined, { numeric: true, sensitivity: "base" }),
+      ),
+    );
   } catch (err) {
     console.error("Error scanning events in directory:", err);
   }

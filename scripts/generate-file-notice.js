@@ -57,7 +57,9 @@ function getModifiedFiles() {
     ];
 
     // Sort for consistent output
-    files.sort();
+    files.sort((a, b) =>
+      a.localeCompare(b, undefined, { numeric: true, sensitivity: "base" }),
+    );
 
     return files;
   } catch (error) {
