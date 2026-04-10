@@ -1,7 +1,7 @@
 // Copyright 2026 Matthew Allen. Licensed under the Modified Apache License, Version 2.0.
 import { get } from "svelte/store";
 import { linesStore, sequenceStore, startPointStore } from "../../projectStore";
-import { selectedLineId, selectedPointId } from "../../../stores";
+import { selectedLineId, selectedPointId, notification } from "../../../stores";
 import { actionRegistry } from "../../actionRegistry";
 import {
   updateLinkedWaits,
@@ -376,4 +376,204 @@ export function toggleLock(recordChange: (action?: string) => void) {
     });
     recordChange("Toggle Lock");
   }
+}
+
+export function togglePathChain(recordChange: (action?: string) => void) {
+  if (isUIElementFocused()) return;
+  const selId = get(selectedLineId);
+  if (!selId) return;
+
+  const sequence = [...get(sequenceStore)];
+  const lines = [...get(linesStore)];
+  const sIdx = sequence.findIndex((s) => s.kind === "path" && s.lineId === selId);
+  if (sIdx === -1 || sIdx === 0) return; // Cannot chain the first path
+
+  const item = sequence[sIdx] as any;
+  const newIsChain = !item.isChain;
+
+  if (!newIsChain) {
+    // Reset globalHeading for all paths in the former chain island
+    let rootIdx = sIdx;
+    while (
+      rootIdx > 0 &&
+      sequence[rootIdx - 1].kind === "path" &&
+      (sequence[rootIdx] as any).isChain
+    ) {
+      rootIdx--;
+    }
+
+    let endIdx = sIdx;
+    while (
+      endIdx + 1 < sequence.length &&
+      sequence[endIdx + 1].kind === "path" &&
+      (sequence[endIdx + 1] as any).isChain
+    ) {
+      endIdx++;
+    }
+
+    for (let i = rootIdx; i <= endIdx; i++) {
+      const sItem = sequence[i];
+      if (sItem.kind === "path") {
+        const lIdx = lines.findIndex((l) => l.id === (sItem as any).lineId);
+        if (lIdx !== -1 && lines[lIdx].globalHeading !== undefined) {
+          lines[lIdx] = { ...lines[lIdx], globalHeading: undefined };
+        }
+      }
+    }
+  }
+
+  sequence[sIdx] = { ...item, isChain: newIsChain };
+  const lIdx = lines.findIndex((l) => l.id === selId);
+  if (lIdx !== -1) {
+    lines[lIdx] = { ...lines[lIdx], isChain: newIsChain };
+  }
+
+  linesStore.set([...lines]);
+  sequenceStore.set([...sequence]);
+  recordChange("Toggle Path Chain");
+
+  notification.set({
+    message: `Path chain ${newIsChain ? "enabled" : "disabled"}`,
+    type: "success",
+    timeout: 2000,
+  });
+}
+
+export function togglePiecewise(recordChange: (action?: string) => void) {
+  if (isUIElementFocused()) return;
+  const sel = get(selectedPointId);
+  if (!sel || !sel.startsWith("point-")) return;
+
+  const lines = [...get(linesStore)];
+  const parts = sel.split("-");
+  const lineNum = Number(parts[1]);
+  const ptIdx = Number(parts[2]);
+
+  if (lineNum > 0 && ptIdx === 0) {
+    const lineIndex = lineNum - 1;
+    const line = lines[lineIndex];
+    if (!line || line.locked) return;
+
+    const isPiecewise = line.endPoint.heading === "piecewise";
+    if (isPiecewise) {
+      // Toggle back to tangential
+      lines[lineIndex] = {
+        ...line,
+        endPoint: {
+          ...line.endPoint,
+          heading: "tangential",
+          reverse: false,
+          segments: undefined,
+        } as unknown as Point,
+      };
+    } else {
+      // Toggle to piecewise
+      lines[lineIndex] = {
+        ...line,
+        endPoint: {
+          ...line.endPoint,
+          heading: "piecewise",
+          segments: [
+            { tStart: 0, tEnd: 1, heading: "tangential", reverse: line.endPoint.reverse ?? false },
+          ],
+        } as unknown as Point,
+      };
+    }
+    linesStore.set(lines);
+    recordChange("Toggle Piecewise Heading");
+
+    notification.set({
+      message: `Piecewise heading ${!isPiecewise ? "enabled" : "disabled"}`,
+      type: "success",
+      timeout: 2000,
+    });
+  }
+}
+
+export function toggleGlobalHeading(recordChange: (action?: string) => void) {
+  if (isUIElementFocused()) return;
+  const selId = get(selectedLineId);
+  if (!selId) return;
+
+  const lines = [...get(linesStore)];
+  const sequence = get(sequenceStore);
+  const idx = lines.findIndex((l) => l.id === selId);
+  if (idx === -1) return;
+
+  const line = lines[idx];
+  if (line.locked) return;
+
+  // Find if it's already part of a chain
+  let isChainContinuation = line.isChain === true;
+  let isChainRoot = !isChainContinuation && idx + 1 < lines.length && lines[idx + 1].isChain === true;
+  
+  if (!isChainRoot && !isChainContinuation) return; // Only works for chains
+
+  // Find chain root
+  let chainRootIndex = -1;
+  if (isChainRoot) chainRootIndex = idx;
+  else {
+    for (let i = idx; i >= 0; i--) {
+      if (!lines[i].isChain) {
+        chainRootIndex = i;
+        break;
+      }
+    }
+  }
+
+  if (chainRootIndex === -1) return;
+
+  const targetLine = lines[chainRootIndex];
+  const hasGlobalHeading = targetLine.globalHeading !== undefined;
+
+  if (hasGlobalHeading) {
+    targetLine.globalHeading = undefined;
+  } else {
+    // Enable global heading using current endPoint values
+    targetLine.globalHeading = line.endPoint.heading;
+    if (line.endPoint.degrees !== undefined) targetLine.globalDegrees = line.endPoint.degrees;
+    if (line.endPoint.targetX !== undefined) targetLine.globalTargetX = line.endPoint.targetX;
+    if (line.endPoint.targetY !== undefined) targetLine.globalTargetY = line.endPoint.targetY;
+    if (line.endPoint.reverse !== undefined) targetLine.globalReverse = line.endPoint.reverse;
+    if (line.endPoint.startDeg !== undefined) targetLine.globalStartDeg = line.endPoint.startDeg;
+    if (line.endPoint.endDeg !== undefined) targetLine.globalEndDeg = line.endPoint.endDeg;
+    
+    if (line.endPoint.segments && line.endPoint.segments.length > 0) {
+      targetLine.globalSegments = [...line.endPoint.segments];
+    } else if (line.endPoint.heading === "piecewise") {
+      targetLine.globalSegments = [{ tStart: 0, tEnd: 1, heading: "tangential", reverse: line.endPoint.reverse ?? false }];
+    }
+  }
+
+  // Sync starting point if root is index 0
+  if (chainRootIndex === 0) {
+    startPointStore.update((s) => {
+      const h = targetLine.globalHeading;
+      if (h === "constant" || h === "linear") {
+        s.heading = h;
+        if (h === "constant") s.degrees = targetLine.globalDegrees || 0;
+        else {
+          s.startDeg = targetLine.globalStartDeg || 0;
+          s.endDeg = targetLine.globalEndDeg || 0;
+        }
+      } else if (h === "tangential" || h === "facingPoint") {
+        s.heading = h;
+        if (h === "facingPoint") {
+          s.targetX = targetLine.globalTargetX || 0;
+          s.targetY = targetLine.globalTargetY || 0;
+        }
+      }
+      return { ...s };
+    });
+  }
+
+  lines[chainRootIndex] = { ...targetLine };
+  linesStore.set(lines);
+  recordChange("Toggle Global Heading");
+
+  notification.set({
+    message: `Global chain heading ${!hasGlobalHeading ? "enabled" : "disabled"}`,
+    type: "success",
+    timeout: 2000,
+  });
 }

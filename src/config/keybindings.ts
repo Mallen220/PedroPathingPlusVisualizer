@@ -239,6 +239,27 @@ export const DEFAULT_KEY_BINDINGS: KeyBinding[] = [
     action: "toggleLock",
     category: "Editing",
   },
+  {
+    id: "toggle-path-chain",
+    key: "shift+k",
+    description: "Toggle Path Chain",
+    action: "togglePathChain",
+    category: "Editing",
+  },
+  {
+    id: "toggle-piecewise",
+    key: "alt+k",
+    description: "Toggle Piecewise Heading",
+    action: "togglePiecewise",
+    category: "Editing",
+  },
+  {
+    id: "toggle-global-heading",
+    key: "shift+g",
+    description: "Toggle Global Chain Heading",
+    action: "toggleGlobalHeading",
+    category: "Editing",
+  },
 
   // Playback
   {
