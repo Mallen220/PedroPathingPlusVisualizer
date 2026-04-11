@@ -2,7 +2,6 @@
   <img src="public/icon.png" alt="Turtle Tracer Logo" width="150" height="150">
   
   <h1>Turtle Tracer</h1>
-  <p><em>(Previously called Pedro Pathing Plus Visualizer)</em></p>
   
   <p>
     <b>The modern, intuitive, and native path planner for FIRST Tech Challenge.</b>
