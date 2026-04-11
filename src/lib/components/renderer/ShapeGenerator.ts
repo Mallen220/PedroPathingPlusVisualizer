@@ -3,11 +3,7 @@ import Two from "two.js";
 import type { Path } from "two.js/src/path";
 import type { Shape } from "../../../types";
 
-interface RenderContext {
-  x: d3.ScaleLinear<number, number>;
-  y: d3.ScaleLinear<number, number>;
-  uiLength: (inches: number) => number;
-}
+import { type RenderContext } from "./GeneratorUtils";
 
 export function generateShapeElements(shapes: Shape[], ctx: RenderContext) {
   let _shapes: Path[] = [];

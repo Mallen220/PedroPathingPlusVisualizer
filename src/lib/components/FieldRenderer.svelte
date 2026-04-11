@@ -99,6 +99,7 @@
   import { generateCollisionElements } from "./renderer/CollisionMarkerGenerator";
   import { generateOnionLayerElements } from "./renderer/OnionLayerGenerator";
   import { generateFacingLineElements } from "./renderer/FacingLineGenerator";
+  import { type RenderContext } from "./renderer/GeneratorUtils";
 
   import { updateLinkedWaypoints } from "../../utils/pointLinking";
   import type { Line, Point, BasePoint } from "../../types/index";
@@ -1943,28 +1944,29 @@
       (currentFile && $isUnsaved),
   );
   let dimmedIds = $derived($dimmedLinesStore);
+  
+  let ctx = $derived<RenderContext>({
+    x,
+    y,
+    uiLength,
+    settings,
+    timePrediction: effectiveTimePrediction,
+    percentStore: $percentStore,
+    dimmedIds,
+    multiSelectedPointIds: $multiSelectedPointIds,
+    robotXY,
+  });
   // --- Two.js Object Creation Logic (moved from App.svelte) ---
 
-  // Points (Start, Control, End, Obstacle Vertices)
+  // Paths (Lines) - Standard
   let points = $derived(
-    generatePointElements(startPoint, lines, shapes, sequence, {
-      x,
-      y,
-      uiLength,
-      multiSelectedPointIds: $multiSelectedPointIds,
-    }),
+    generatePointElements(startPoint, lines, shapes, sequence, ctx),
   );
   // Animated facing-point line: drawn from current robot position to the facing target.
   // Only shown when the robot is actively driving on that facingPoint segment.
   // Rendered as SVG overlay to avoid clearing Two.js scene.
   let facingLineElements = $derived(
-    generateFacingLineElements(lines, {
-      x,
-      y,
-      robotXY,
-      timePrediction: effectiveTimePrediction,
-      percentStore: $percentStore,
-    }),
+    generateFacingLineElements(lines, ctx),
   );
   // Paths (Lines) - Standard
   let path = $derived(
@@ -2010,14 +2012,7 @@
             (l) => l.color || "#60a5fa",
             (l) => width,
             `timeline-path-${idx}`,
-            {
-              x,
-              y,
-              uiLength,
-              settings,
-              timePrediction: effectiveTimePrediction,
-              dimmedIds,
-            },
+            ctx,
             isMainLine,
           );
           paths.push(...elems);
@@ -2036,14 +2031,7 @@
             ? uiLength(LINE_WIDTH * 2.5)
             : uiLength(LINE_WIDTH),
         "",
-        {
-          x,
-          y,
-          uiLength,
-          settings,
-          timePrediction: effectiveTimePrediction,
-          dimmedIds,
-        },
+        ctx,
         true,
       );
     })(),
@@ -2063,14 +2051,7 @@
             () => "#ef4444", // Red
             () => uiLength(LINE_WIDTH),
             "diff-old",
-            {
-              x,
-              y,
-              uiLength,
-              settings,
-              timePrediction: effectiveTimePrediction,
-              dimmedIds,
-            },
+            ctx,
             false,
           )
         : [];
@@ -2087,14 +2068,7 @@
         },
         (l) => uiLength(LINE_WIDTH), // No selection highlight in diff mode? Or maybe yes.
         "diff-new",
-        {
-          x,
-          y,
-          uiLength,
-          settings,
-          timePrediction: effectiveTimePrediction,
-          dimmedIds,
-        },
+        ctx,
         false,
       );
 
@@ -2111,9 +2085,7 @@
       startPoint,
       sequence,
       {
-        x,
-        y,
-        uiLength,
+        ...ctx,
         hoveredMarkerId: $hoveredMarkerId,
         ppI,
       },
@@ -2121,35 +2093,22 @@
   );
   // Shapes (Obstacles)
   let shapeElements = $derived(
-    generateShapeElements(shapes, { x, y, uiLength }),
+    generateShapeElements(shapes, ctx),
   );
   // Onion Layers
   // Rendered as SVG overlay to avoid clearing Two.js scene.
   let onionLayerElements = $derived(
-    generateOnionLayerElements(lines, startPoint, {
-      settings,
-      timePrediction: effectiveTimePrediction,
-      percentStore: $percentStore,
-    }),
+    generateOnionLayerElements(lines, startPoint, ctx),
   );
   // Preview Paths
   let previewPathElements = $derived(
-    generatePreviewPathElements(previewOptimizedLines, startPoint, {
-      x,
-      y,
-      uiLength,
-    }),
+    generatePreviewPathElements(previewOptimizedLines, startPoint, ctx),
   );
   // Event Markers
   let eventMarkerElements = $derived(
     generateEventMarkerElements(lines, startPoint, sequence, {
-      x,
-      y,
-      uiLength,
+      ...ctx,
       hoveredMarkerId: $hoveredMarkerId,
-      multiSelectedPointIds: $multiSelectedPointIds,
-      settings,
-      timePrediction: effectiveTimePrediction,
       selectedLineId: $selectedLineId,
       selectedPointId: $selectedPointId,
       actionRegistry,
@@ -2162,11 +2121,7 @@
       lines,
       startPoint,
       effectiveTimePrediction,
-      {
-        x,
-        y,
-        uiLength,
-      },
+      ctx,
     ),
   );
   // Render Loop
@@ -2279,7 +2234,7 @@
     >
       {#each onionLayerElements as layer}
         <polygon
-          points={layer.corners.map((c) => `${x(c.x)},${y(c.y)}`).join(" ")}
+          points={layer.corners.map((c: any) => `${x(c.x)},${y(c.y)}`).join(" ")}
           fill="none"
           stroke="#818cf8"
           stroke-width={uiLength(0.5)}

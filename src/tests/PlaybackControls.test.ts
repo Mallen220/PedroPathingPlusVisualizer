@@ -66,7 +66,7 @@ describe("PlaybackControls", () => {
       props: createProps({ setPlaybackSpeed }),
     });
 
-    const speedBtn = screen.getByLabelText("Playback speed options");
+    const speedBtn = screen.getByLabelText(/Playback speed options/);
     await fireEvent.click(speedBtn);
 
     const speedOption = screen.getByText("2.00x");

@@ -3,6 +3,15 @@ import type { Line, Point } from "../types";
 
 type Point2D = { x: number; y: number };
 
+export function rotateVector(x: number, y: number, angleRad: number) {
+  const cos = Math.cos(angleRad);
+  const sin = Math.sin(angleRad);
+  return {
+    x: x * cos - y * sin,
+    y: x * sin + y * cos,
+  };
+}
+
 export function quadraticToCubic(P0: Point2D, P1: Point2D, P2: Point2D) {
   const Q1 = lerp2d(2 / 3, P0, P1);
   const Q2 = lerp2d(2 / 3, P2, P1);

@@ -1,15 +1,11 @@
-// Copyright 2026 Matthew Allen. Licensed under the Modified Apache License, Version 2.0.
 import Two from "two.js";
+import { 
+  type RenderContext, 
+  setupTextLabel 
+} from "./GeneratorUtils";
 import type { Line, Point, Shape, SequenceItem } from "../../../types";
 import { POINT_RADIUS } from "../../../config";
 import { calculateGlobalChainMeta } from "../../../utils/timeCalculator";
-
-interface RenderContext {
-  x: d3.ScaleLinear<number, number>;
-  y: d3.ScaleLinear<number, number>;
-  uiLength: (inches: number) => number;
-  multiSelectedPointIds: string[];
-}
 
 export function generatePointElements(
   startPoint: Point,
@@ -61,14 +57,7 @@ export function generatePointElements(
           x(point.x),
           y(point.y) - uiLength(0.15),
         );
-        pointText.id = `point-${idx + 1}-${idx1}-text`;
-        pointText.size = uiLength(1.55);
-        pointText.leading = 1;
-        pointText.family = "ui-sans-serif, system-ui, sans-serif";
-        pointText.alignment = "center";
-        pointText.baseline = "middle";
-        pointText.fill = "white";
-        pointText.noStroke();
+        setupTextLabel(pointText, `point-${idx + 1}-${idx1}-text`, uiLength(1.55));
         pointGroup.add(pointElem, pointText);
         _points.push(pointGroup);
       } else {
@@ -106,10 +95,10 @@ export function generatePointElements(
       segments = rootLine!.globalSegments;
     } else {
       // Standard local heading
-      headingType = line.endPoint.heading;
+      headingType = line.endPoint!.heading;
       targetX = (line.endPoint as any).targetX;
       targetY = (line.endPoint as any).targetY;
-      segments = line.endPoint.segments;
+      segments = line.endPoint!.segments;
     }
 
     if (headingType === "facingPoint") {
@@ -129,13 +118,7 @@ export function generatePointElements(
         x(targetX || 72),
         y(targetY || 72) - uiLength(0.05),
       );
-      pointText.id = `targetpoint-${idx + 1}-text`;
-      pointText.size = uiLength(1.4);
-      pointText.family = "ui-sans-serif, system-ui, sans-serif";
-      pointText.alignment = "center";
-      pointText.baseline = "middle";
-      pointText.fill = "white";
-      pointText.weight = 700;
+      setupTextLabel(pointText, `targetpoint-${idx + 1}-text`, uiLength(1.4), 700);
       pointGroup.add(pointElem, pointText);
       _points.push(pointGroup);
     } else if (headingType === "piecewise") {
@@ -158,13 +141,7 @@ export function generatePointElements(
             x(seg.targetX || 72),
             y(seg.targetY || 72) - uiLength(0.05),
           );
-          pointText.id = `targetpoint-${idx + 1}-piecewise-${segIdx}-text`;
-          pointText.size = uiLength(1.4);
-          pointText.family = "ui-sans-serif, system-ui, sans-serif";
-          pointText.alignment = "center";
-          pointText.baseline = "middle";
-          pointText.fill = "white";
-          pointText.weight = 700;
+          setupTextLabel(pointText, `targetpoint-${idx + 1}-piecewise-${segIdx}-text`, uiLength(1.4), 700);
           pointGroup.add(pointElem, pointText);
           _points.push(pointGroup);
         }
@@ -189,14 +166,7 @@ export function generatePointElements(
         x(vertex.x),
         y(vertex.y) - uiLength(0.15),
       );
-      pointText.id = `obstacle-${shapeIdx}-${vertexIdx}-text`;
-      pointText.size = uiLength(1.55);
-      pointText.leading = 1;
-      pointText.family = "ui-sans-serif, system-ui, sans-serif";
-      pointText.alignment = "center";
-      pointText.baseline = "middle";
-      pointText.fill = "white";
-      pointText.noStroke();
+      setupTextLabel(pointText, `obstacle-${shapeIdx}-${vertexIdx}-text`, uiLength(1.55));
       pointGroup.add(pointElem, pointText);
       _points.push(pointGroup);
     });

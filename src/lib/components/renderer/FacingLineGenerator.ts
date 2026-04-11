@@ -1,30 +1,23 @@
 // Copyright 2026 Matthew Allen. Licensed under the Modified Apache License, Version 2.0.
+import { 
+  type RenderContext, 
+  findActiveEvent 
+} from "./GeneratorUtils";
 import type { Line } from "../../../types";
-
-interface RenderContext {
-  x: d3.ScaleLinear<number, number>;
-  y: d3.ScaleLinear<number, number>;
-  robotXY: { x: number; y: number } | null;
-  timePrediction: any;
-  percentStore: number;
-}
 
 export function generateFacingLineElements(lines: Line[], ctx: RenderContext) {
   const { x, y, robotXY, timePrediction, percentStore } = ctx;
 
   if (!robotXY || !timePrediction?.timeline?.length) return [];
 
-  // Determine the currently active travel event
   const totalDuration =
-    timePrediction.timeline[timePrediction.timeline.length - 1].endTime;
-  const currentSeconds = (percentStore / 100) * totalDuration;
-  const activeEvent =
-    timePrediction.timeline.find(
-      (e: any) => currentSeconds >= e.startTime && currentSeconds <= e.endTime,
-    ) ?? timePrediction.timeline[timePrediction.timeline.length - 1];
+    timePrediction.timeline[timePrediction.timeline.length - 1]?.endTime || 0;
+  const currentSeconds = (percentStore! / 100) * totalDuration;
 
-  // Only render if it's a travel event
-  if (activeEvent.type !== "travel") return [];
+  // Determine the currently active travel event
+  const activeEvent = findActiveEvent(timePrediction, percentStore!);
+  if (!activeEvent || activeEvent.type !== "travel") return [];
+
   const activeLine: Line | undefined =
     activeEvent.line ?? lines[activeEvent.lineIndex];
   if (!activeLine || !activeLine.endPoint) return [];

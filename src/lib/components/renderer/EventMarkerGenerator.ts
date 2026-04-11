@@ -3,18 +3,7 @@ import Two from "two.js";
 import type { Line, Point, SequenceItem } from "../../../types";
 import { getCurvePoint } from "../../../utils/math";
 
-interface RenderContext {
-  x: d3.ScaleLinear<number, number>;
-  y: d3.ScaleLinear<number, number>;
-  uiLength: (inches: number) => number;
-  hoveredMarkerId: string | null;
-  multiSelectedPointIds: string[];
-  settings: any;
-  timePrediction: any;
-  selectedLineId: string | null;
-  selectedPointId: string | null;
-  actionRegistry: any;
-}
+import { type RenderContext } from "./GeneratorUtils";
 
 export function generateEventMarkerElements(
   lines: Line[],
