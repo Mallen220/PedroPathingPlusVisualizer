@@ -79,7 +79,7 @@ function processFile(filePath, styleType) {
   let content = originalContent;
 
   // Regex to detect existing copyright info to preserve years
-  const copyrightRegex = /Copyright (\d{4})(?:-(\d{4}))? (.*?)(?:\.|,|\n)/i;
+  const copyrightRegex = /Copyright (\d{4})(?:-(\d{4}))? (.*?)[.,\n]/i;
   const match = content.match(copyrightRegex);
 
   let startYear = CURRENT_YEAR;
@@ -131,7 +131,7 @@ function processFile(filePath, styleType) {
   // 3. Remove Hash Comments (# ...)
   const hashBlockRegex = /^(\s*#[^\n]*\n)+/;
   const m = body.match(hashBlockRegex);
-  if (m && m[0].includes("Copyright") && m[0].includes("Matthew Allen")) {
+  if (m?.[0].includes("Copyright") && m[0].includes("Matthew Allen")) {
     body = body.substring(m[0].length);
   }
 

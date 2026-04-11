@@ -1,3 +1,4 @@
+// Copyright 2026 Matthew Allen. Licensed under the Modified Apache License, Version 2.0.
 import Two from "two.js";
 import type { Path } from "two.js/src/path";
 import type { Line as PathLine } from "two.js/src/shapes/line";

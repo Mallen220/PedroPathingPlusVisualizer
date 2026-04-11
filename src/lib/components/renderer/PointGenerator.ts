@@ -1,3 +1,4 @@
+// Copyright 2026 Matthew Allen. Licensed under the Modified Apache License, Version 2.0.
 import Two from "two.js";
 import { type RenderContext, setupTextLabel } from "./GeneratorUtils";
 import type { Line, Point, Shape, SequenceItem } from "../../../types";

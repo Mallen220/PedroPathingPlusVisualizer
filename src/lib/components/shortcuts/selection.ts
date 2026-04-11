@@ -159,10 +159,7 @@ export function removeSelected(recordChange: (action?: string) => void) {
   eventMarkersToDelete.forEach(({ itemType, itemId, evIdx }) => {
     if (itemType === "wait" || itemType === "rotate") {
       const item = findSequenceItem(sequence, itemId, itemType);
-      if (
-        item?.eventMarkers?.[evIdx] &&
-        !item.locked
-      ) {
+      if (item?.eventMarkers?.[evIdx] && !item.locked) {
         const itemIdx = findSequenceItemIndex(sequence, itemId, itemType);
         if (itemIdx !== -1) {
           sequence[itemIdx] = {
@@ -464,7 +461,7 @@ export function syncSelectionToUI(controlTabRef: any) {
     }
   } else if (info.type === "event-line") {
     const line = lines[info.lineIdx];
-    if (line && line.eventMarkers && line.eventMarkers[info.evIdx]) {
+    if (line?.eventMarkers?.[info.evIdx]) {
       controlTabRef.scrollToItem("event", line.eventMarkers[info.evIdx].id);
     }
   }

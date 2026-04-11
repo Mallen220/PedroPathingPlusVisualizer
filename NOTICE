@@ -460,3 +460,9 @@ src/lib/components/icons/EllipsisVerticalIcon.svelte
 src/lib/components/renderer/FacingLineGenerator.ts
 src/lib/components/renderer/PointGenerator.ts
 .codacy.yaml
+DuplicationReport_New.txt
+src/lib/components/renderer/OnionLayerGenerator.ts
+src/lib/components/renderer/PathGenerator.ts
+src/lib/components/renderer/PreviewPathGenerator.ts
+src/utils/drivetrain/swerve.ts
+src/utils/javaImporter/visitor.ts

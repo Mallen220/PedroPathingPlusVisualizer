@@ -66,10 +66,7 @@ export function modifyValue(
     const itemIdx = findSequenceItemIndex(sequence, info.id, kind);
     if (itemIdx !== -1) {
       const item = sequence[itemIdx] as any;
-      if (
-        item?.eventMarkers?.[info.evIdx] &&
-        !item.locked
-      ) {
+      if (item?.eventMarkers?.[info.evIdx] && !item.locked) {
         const newPos = updateEventMarkerPosition(
           item.eventMarkers[info.evIdx],
           0.01 * delta,
@@ -88,10 +85,7 @@ export function modifyValue(
   }
   if (info.type === "event-line") {
     const line = lines[info.lineIdx];
-    if (
-      line?.eventMarkers?.[info.evIdx] &&
-      !line.locked
-    ) {
+    if (line?.eventMarkers?.[info.evIdx] && !line.locked) {
       const newPos = updateEventMarkerPosition(
         line.eventMarkers[info.evIdx],
         0.01 * delta,
@@ -109,11 +103,7 @@ export function modifyValue(
     const lineIdx = lines.findIndex((l) => l.id === get(selectedLineId));
     if (lineIdx !== -1) {
       const line = lines[lineIdx];
-      if (
-        line?.eventMarkers &&
-        line.eventMarkers?.length > 0 &&
-        !line.locked
-      ) {
+      if (line?.eventMarkers && line.eventMarkers?.length > 0 && !line.locked) {
         const lastIdx = line.eventMarkers.length - 1;
         const newPos = updateEventMarkerPosition(
           line.eventMarkers[lastIdx],

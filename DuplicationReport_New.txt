@@ -657,7 +657,7 @@ src/tests/fuzz/geometry.fuzz.test.ts
 1 // Copyright 2026 Matthew Allen. Licensed under the Modified Apache License, Version 2.0.
 2 import { describe, it, expect } from "vitest";
 3 
-4 import { createRequire } from "module";
+4 import { createRequire } from "node:module";
 5 import { existsSync } from "node:fs";
 6 import path from "node:path";
 7 
@@ -674,7 +674,7 @@ src/tests/fuzz/math.fuzz.test.ts
 
 1 // Copyright 2026 Matthew Allen. Licensed under the Modified Apache License, Version 2.0.
 2 import { describe, it, expect } from "vitest";
-3 import { createRequire } from "module";
+3 import { createRequire } from "node:module";
 4 
 5 import { existsSync } from "node:fs";
 6 import path from "node:path";
