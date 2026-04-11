@@ -9,6 +9,12 @@ import {
 } from "../../../utils/pointLinking";
 import type { Point } from "../../../types/index";
 import { isUIElementFocused } from "./utils";
+import { 
+  parseSelectionId, 
+  findSequenceItem, 
+  findSequenceItemIndex, 
+  updateEventMarkerPosition 
+} from "./itemUtils";
 
 export function modifyValue(
   delta: number,
@@ -20,18 +26,16 @@ export function modifyValue(
   const lines = [...get(linesStore)];
   if (!current) return;
 
-  if (current.startsWith("wait-")) {
-    const waitId = current.substring(5);
-    const item = sequence.find(
-      (s) => actionRegistry.get(s.kind)?.isWait && (s as any).id === waitId,
-    ) as any;
-    if (item) {
-      if (item.locked) return; // Don't modify locked waits
+  const info = parseSelectionId(current);
+
+  if (info.type === "wait") {
+    const item = findSequenceItem(sequence, info.id, "wait");
+    if (item && !item.locked) {
       const newItem = {
         ...item,
         durationMs: Math.max(0, item.durationMs + delta * 100),
       };
-      const itemIdx = sequence.findIndex((s) => (s as any).id === waitId);
+      const itemIdx = findSequenceItemIndex(sequence, info.id, "wait");
       if (itemIdx !== -1) {
         sequence[itemIdx] = newItem;
         sequenceStore.set([...updateLinkedWaits(sequence, newItem.id)]);
@@ -40,19 +44,15 @@ export function modifyValue(
     }
     return;
   }
-  if (current.startsWith("rotate-")) {
-    const rotateId = current.substring(7);
-    const item = sequence.find(
-      (s) => actionRegistry.get(s.kind)?.isRotate && (s as any).id === rotateId,
-    ) as any;
-    if (item) {
-      if (item.locked) return; // Don't modify locked rotates
+  if (info.type === "rotate") {
+    const item = findSequenceItem(sequence, info.id, "rotate");
+    if (item && !item.locked) {
       const step = 5;
       const newItem = {
         ...item,
         degrees: Number((item.degrees + delta * step).toFixed(2)),
       };
-      const itemIdx = sequence.findIndex((s) => (s as any).id === rotateId);
+      const itemIdx = findSequenceItemIndex(sequence, info.id, "rotate");
       if (itemIdx !== -1) {
         sequence[itemIdx] = newItem;
         sequenceStore.set([...updateLinkedRotations(sequence, newItem.id)]);
@@ -61,24 +61,15 @@ export function modifyValue(
     }
     return;
   }
-  if (current.startsWith("event-wait-")) {
-    const parts = current.split("-");
-    const evIdx = Number(parts.pop());
-    const waitId = parts.slice(2).join("-");
-
-    const itemIdx = sequence.findIndex(
-      (s) => actionRegistry.get(s.kind)?.isWait && (s as any).id === waitId,
-    );
+  if (info.type === "event-wait" || info.type === "event-rotate") {
+    const kind = info.type === "event-wait" ? "wait" : "rotate";
+    const itemIdx = findSequenceItemIndex(sequence, info.id, kind);
     if (itemIdx !== -1) {
       const item = sequence[itemIdx] as any;
-      if (item && item.eventMarkers && item.eventMarkers[evIdx]) {
-        if (item.locked) return; // Don't modify event markers on locked waits
-        const step = 0.01 * delta;
-        let newPos = item.eventMarkers[evIdx].position + step;
-        newPos = Math.max(0, Math.min(1, newPos));
-
+      if (item && item.eventMarkers && item.eventMarkers[info.evIdx] && !item.locked) {
+        const newPos = updateEventMarkerPosition(item.eventMarkers[info.evIdx], 0.01 * delta);
         const newMarkers = [...item.eventMarkers];
-        newMarkers[evIdx] = { ...newMarkers[evIdx], position: newPos };
+        newMarkers[info.evIdx] = { ...newMarkers[info.evIdx], position: newPos };
         sequence[itemIdx] = { ...item, eventMarkers: newMarkers };
         sequenceStore.set([...sequence]);
         recordChange("Move Event Marker");
@@ -86,45 +77,13 @@ export function modifyValue(
     }
     return;
   }
-  if (current.startsWith("event-rotate-")) {
-    const parts = current.split("-");
-    const evIdx = Number(parts.pop());
-    const rotateId = parts.slice(2).join("-");
-
-    const itemIdx = sequence.findIndex(
-      (s) => actionRegistry.get(s.kind)?.isRotate && (s as any).id === rotateId,
-    );
-    if (itemIdx !== -1) {
-      const item = sequence[itemIdx] as any;
-      if (item && item.eventMarkers && item.eventMarkers[evIdx]) {
-        if (item.locked) return; // Don't modify event markers on locked rotates
-        const step = 0.01 * delta;
-        let newPos = item.eventMarkers[evIdx].position + step;
-        newPos = Math.max(0, Math.min(1, newPos));
-
-        const newMarkers = [...item.eventMarkers];
-        newMarkers[evIdx] = { ...newMarkers[evIdx], position: newPos };
-        sequence[itemIdx] = { ...item, eventMarkers: newMarkers };
-        sequenceStore.set([...sequence]);
-        recordChange("Move Event Marker");
-      }
-    }
-    return;
-  }
-  if (current.startsWith("event-")) {
-    const parts = current.split("-");
-    const lineIdx = Number(parts[1]);
-    const evIdx = Number(parts[2]);
-    const line = lines[lineIdx];
-    if (line && line.eventMarkers && line.eventMarkers[evIdx]) {
-      if (line.locked) return; // Don't modify event markers on locked lines
-      const step = 0.01 * delta;
-      let newPos = line.eventMarkers[evIdx].position + step;
-      newPos = Math.max(0, Math.min(1, newPos));
-
+  if (info.type === "event-line") {
+    const line = lines[info.lineIdx];
+    if (line && line.eventMarkers && line.eventMarkers[info.evIdx] && !line.locked) {
+      const newPos = updateEventMarkerPosition(line.eventMarkers[info.evIdx], 0.01 * delta);
       const newMarkers = [...line.eventMarkers];
-      newMarkers[evIdx] = { ...newMarkers[evIdx], position: newPos };
-      lines[lineIdx] = { ...line, eventMarkers: newMarkers };
+      newMarkers[info.evIdx] = { ...newMarkers[info.evIdx], position: newPos };
+      lines[info.lineIdx] = { ...line, eventMarkers: newMarkers };
       linesStore.set([...lines]);
       recordChange("Move Event Marker");
     }
@@ -135,13 +94,9 @@ export function modifyValue(
     const lineIdx = lines.findIndex((l) => l.id === get(selectedLineId));
     if (lineIdx !== -1) {
       const line = lines[lineIdx];
-      if (line && line.eventMarkers && line.eventMarkers.length > 0) {
-        if (line.locked) return; // Don't modify event markers on locked lines
+      if (line && line.eventMarkers && line.eventMarkers.length > 0 && !line.locked) {
         const lastIdx = line.eventMarkers.length - 1;
-        const step = 0.01 * delta;
-        let newPos = line.eventMarkers[lastIdx].position + step;
-        newPos = Math.max(0, Math.min(1, newPos));
-
+        const newPos = updateEventMarkerPosition(line.eventMarkers[lastIdx], 0.01 * delta);
         const newMarkers = [...line.eventMarkers];
         newMarkers[lastIdx] = { ...newMarkers[lastIdx], position: newPos };
         lines[lineIdx] = { ...line, eventMarkers: newMarkers };
@@ -305,12 +260,13 @@ export function toggleLock(recordChange: (action?: string) => void) {
   const selLineId = get(selectedLineId);
 
   if (!sel) return;
+  const info = parseSelectionId(sel);
 
-  if (sel.startsWith("wait-")) {
-    const waitId = sel.substring(5);
+  if (info.type === "wait" || info.type === "rotate") {
+    const kind = info.type === "wait" ? "wait" : "rotate";
     sequenceStore.update((seq) =>
       seq.map((s) => {
-        if (actionRegistry.get(s.kind)?.isWait && (s as any).id === waitId) {
+        if (actionRegistry.get(s.kind)?.[kind === 'wait' ? 'isWait' : 'isRotate'] && (s as any).id === info.id) {
           return { ...s, locked: !(s as any).locked };
         }
         return s;
@@ -320,34 +276,14 @@ export function toggleLock(recordChange: (action?: string) => void) {
     return;
   }
 
-  if (sel.startsWith("rotate-")) {
-    const rotateId = sel.substring(7);
-    sequenceStore.update((seq) =>
-      seq.map((s) => {
-        if (
-          actionRegistry.get(s.kind)?.isRotate &&
-          (s as any).id === rotateId
-        ) {
-          return { ...s, locked: !(s as any).locked };
-        }
-        return s;
-      }),
-    );
-    recordChange("Toggle Lock");
-    return;
-  }
-
-  if (sel.startsWith("point-")) {
-    const parts = sel.split("-");
-    const lineNum = Number(parts[1]);
-
-    if (lineNum === 0) {
+  if (info.type === "point") {
+    if (info.lineNum === 0) {
       startPointStore.update((p) => ({ ...p, locked: !p.locked }));
       recordChange("Toggle Lock");
       return;
     }
 
-    const lineIndex = lineNum - 1;
+    const lineIndex = info.lineNum - 1;
     linesStore.update((l) => {
       const newLines = [...l];
       if (newLines[lineIndex]) {

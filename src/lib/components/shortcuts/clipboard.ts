@@ -10,9 +10,14 @@ import { selectedLineId, selectedPointId, notification } from "../../../stores";
 import { actionRegistry } from "../../actionRegistry";
 import type { Line, SequenceItem } from "../../../types/index";
 import { isUIElementFocused, getSelectedSequenceIndex } from "./utils";
+import { 
+  parseSelectionId, 
+  findSequenceItem, 
+  findSequenceItemIndex 
+} from "./itemUtils";
 
 // Internal clipboard state for shortcuts
-export const clipboard: SequenceItem | Line | null = null;
+export let clipboard: SequenceItem | Line | null = null;
 
 // Helper to generate unique name
 export const generateName = (baseName: string, existingNames: string[]) => {
@@ -48,6 +53,37 @@ export const generateName = (baseName: string, existingNames: string[]) => {
   return rootName + " duplicate " + Date.now(); // Fallback
 };
 
+function duplicateSequenceItem(
+  item: any,
+  kind: 'wait' | 'rotate',
+  sequence: SequenceItem[],
+  recordChange: (action?: string) => void
+) {
+  const newItem = JSON.parse(JSON.stringify(item));
+  newItem.id = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+
+  const existingNames = sequence
+    .filter((s) => actionRegistry.get(s.kind)?.[kind === 'wait' ? 'isWait' : 'isRotate'])
+    .map((s) => (s as any).name || "");
+  
+  if (item.name && item.name.trim() !== "") {
+    newItem.name = generateName(item.name, existingNames);
+  } else {
+    newItem.name = "";
+  }
+
+  const insertIdx = getSelectedSequenceIndex();
+  if (insertIdx !== null) {
+    sequenceStore.update((s) => {
+      const s2 = [...s];
+      s2.splice(insertIdx + 1, 0, newItem);
+      return s2;
+    });
+    selectedPointId.set(`${kind}-${newItem.id}`);
+    recordChange("Duplicate Selection");
+  }
+}
+
 export function duplicate(recordChange: (action?: string) => void) {
   if (isUIElementFocused()) return;
   const sel = get(selectedPointId);
@@ -56,69 +92,17 @@ export function duplicate(recordChange: (action?: string) => void) {
   const startPoint = get(startPointStore);
 
   if (!sel) return;
+  const info = parseSelectionId(sel);
 
-  if (sel.startsWith("wait-")) {
-    const waitId = sel.substring(5);
-    const waitItem = sequence.find(
-      (s) => actionRegistry.get(s.kind)?.isWait && (s as any).id === waitId,
-    ) as any;
-    if (!waitItem) return;
-
-    const newWait = JSON.parse(JSON.stringify(waitItem));
-    newWait.id = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
-
-    const existingWaitNames = sequence
-      .filter((s) => actionRegistry.get(s.kind)?.isWait)
-      .map((s) => (s as any).name || "");
-    // Preserve empty name when duplicating unnamed waits
-    if (waitItem.name && waitItem.name.trim() !== "") {
-      newWait.name = generateName(waitItem.name, existingWaitNames);
-    } else {
-      newWait.name = "";
-    }
-
-    const insertIdx = getSelectedSequenceIndex();
-    if (insertIdx !== null) {
-      sequenceStore.update((s) => {
-        const s2 = [...s];
-        s2.splice(insertIdx + 1, 0, newWait);
-        return s2;
-      });
-      selectedPointId.set(`wait-${newWait.id}`);
-      recordChange("Duplicate Selection");
-    }
+  if (info.type === "wait") {
+    const item = findSequenceItem(sequence, info.id, "wait");
+    if (item) duplicateSequenceItem(item, "wait", sequence, recordChange);
     return;
   }
 
-  if (sel.startsWith("rotate-")) {
-    const rotateId = sel.substring(7);
-    const rotateItem = sequence.find(
-      (s) => actionRegistry.get(s.kind)?.isRotate && (s as any).id === rotateId,
-    ) as any;
-    if (!rotateItem) return;
-
-    const newRotate = JSON.parse(JSON.stringify(rotateItem));
-    newRotate.id = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
-    const existingRotateNames = sequence
-      .filter((s) => actionRegistry.get(s.kind)?.isRotate)
-      .map((s) => (s as any).name || "");
-    // Preserve empty name when duplicating unnamed rotates
-    if (rotateItem.name && rotateItem.name.trim() !== "") {
-      newRotate.name = generateName(rotateItem.name, existingRotateNames);
-    } else {
-      newRotate.name = "";
-    }
-
-    const insertIdx = getSelectedSequenceIndex();
-    if (insertIdx !== null) {
-      sequenceStore.update((s) => {
-        const s2 = [...s];
-        s2.splice(insertIdx + 1, 0, newRotate);
-        return s2;
-      });
-      selectedPointId.set(`rotate-${newRotate.id}`);
-      recordChange("Duplicate Selection");
-    }
+  if (info.type === "rotate") {
+    const item = findSequenceItem(sequence, info.id, "rotate");
+    if (item) duplicateSequenceItem(item, "rotate", sequence, recordChange);
     return;
   }
 
@@ -225,25 +209,17 @@ export function copy(activeControlTab: string, controlTabRef: any) {
 
   if (!sel) return;
 
-  if (sel.startsWith("wait-")) {
-    const waitId = sel.substring(5);
-    const waitItem = sequence.find(
-      (s) => actionRegistry.get(s.kind)?.isWait && (s as any).id === waitId,
-    ) as any;
-    if (waitItem) {
-      clipboard = JSON.parse(JSON.stringify(waitItem));
-    }
+  const info = parseSelectionId(sel);
+
+  if (info.type === "wait") {
+    const item = findSequenceItem(sequence, info.id, "wait");
+    if (item) clipboard = JSON.parse(JSON.stringify(item));
     return;
   }
 
-  if (sel.startsWith("rotate-")) {
-    const rotateId = sel.substring(7);
-    const rotateItem = sequence.find(
-      (s) => actionRegistry.get(s.kind)?.isRotate && (s as any).id === rotateId,
-    ) as any;
-    if (rotateItem) {
-      clipboard = JSON.parse(JSON.stringify(rotateItem));
-    }
+  if (info.type === "rotate") {
+    const item = findSequenceItem(sequence, info.id, "rotate");
+    if (item) clipboard = JSON.parse(JSON.stringify(item));
     return;
   }
 
@@ -299,72 +275,35 @@ export function paste(recordChange: (action?: string) => void) {
   const clipKind = (clipboard as any).kind;
   const clipDef = clipKind ? actionRegistry.get(clipKind) : null;
 
-  // Handle Wait
-  if (clipDef?.isWait) {
-    const waitItem = clipboard as SequenceItem;
-    const newWait = JSON.parse(JSON.stringify(waitItem)) as any;
-    newWait.id = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+  // Handle Wait/Rotate
+  if (clipDef?.isWait || clipDef?.isRotate) {
+    const kind = clipDef.isWait ? "wait" : "rotate";
+    const item = clipboard as SequenceItem;
+    const newItem = JSON.parse(JSON.stringify(item)) as any;
+    newItem.id = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
 
-    // Generate unique name
-    const existingWaitNames = sequence
-      .filter((s) => actionRegistry.get(s.kind)?.isWait)
+    const existingNames = sequence
+      .filter((s) => actionRegistry.get(s.kind)?.[kind === 'wait' ? 'isWait' : 'isRotate'])
       .map((s) => (s as any).name || "");
-    if (newWait.name && newWait.name.trim() !== "") {
-      newWait.name = generateName(newWait.name, existingWaitNames);
+    
+    if (newItem.name && newItem.name.trim() !== "") {
+      newItem.name = generateName(newItem.name, existingNames);
     } else {
-      newWait.name = "";
+      newItem.name = "";
     }
 
     const insertIdx = getSelectedSequenceIndex();
-    if (insertIdx !== null) {
-      sequenceStore.update((s) => {
-        const s2 = [...s];
-        s2.splice(insertIdx + 1, 0, newWait);
-        return s2;
-      });
-    } else {
-      sequenceStore.update((s) => [...s, newWait]);
-    }
-    selectedPointId.set(`wait-${newWait.id}`);
-    recordChange("Paste");
-    notification.set({
-      message: "Wait pasted",
-      type: "success",
-      timeout: 1500,
+    sequenceStore.update((s) => {
+      const s2 = [...s];
+      if (insertIdx !== null) s2.splice(insertIdx + 1, 0, newItem);
+      else s2.push(newItem);
+      return s2;
     });
-    return;
-  }
 
-  // Handle Rotate
-  if (clipDef?.isRotate) {
-    const rotateItem = clipboard as SequenceItem;
-    const newRotate = JSON.parse(JSON.stringify(rotateItem)) as any;
-    newRotate.id = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
-
-    // Generate unique name
-    const existingRotateNames = sequence
-      .filter((s) => actionRegistry.get(s.kind)?.isRotate)
-      .map((s) => (s as any).name || "");
-    if (newRotate.name && newRotate.name.trim() !== "") {
-      newRotate.name = generateName(newRotate.name, existingRotateNames);
-    } else {
-      newRotate.name = "";
-    }
-
-    const insertIdx = getSelectedSequenceIndex();
-    if (insertIdx !== null) {
-      sequenceStore.update((s) => {
-        const s2 = [...s];
-        s2.splice(insertIdx + 1, 0, newRotate);
-        return s2;
-      });
-    } else {
-      sequenceStore.update((s) => [...s, newRotate]);
-    }
-    selectedPointId.set(`rotate-${newRotate.id}`);
+    selectedPointId.set(`${kind}-${newItem.id}`);
     recordChange("Paste");
     notification.set({
-      message: "Rotate pasted",
+      message: `${kind.charAt(0).toUpperCase() + kind.slice(1)} pasted`,
       type: "success",
       timeout: 1500,
     });
