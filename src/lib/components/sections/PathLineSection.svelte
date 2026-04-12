@@ -571,11 +571,11 @@
               bind:this={headingControls}
               endPoint={line.endPoint}
               locked={line.locked}
-              on:change={() => {
+              onchange={() => {
                 lines[idx] = { ...line, endPoint: { ...line.endPoint } };
                 lines = [...lines];
               }}
-              on:commit={() => {
+              oncommit={() => {
                 lines[idx] = { ...line, endPoint: { ...line.endPoint } };
                 lines = [...lines];
                 if (recordChange) recordChange("Update Heading");
@@ -689,8 +689,8 @@
                 <HeadingControls
                   endPoint={pseudoGlobalEndPoint}
                   locked={line.locked}
-                  on:change={handleGlobalChange}
-                  on:commit={() => {
+                  onchange={handleGlobalChange}
+                  oncommit={() => {
                     handleGlobalChange();
                     if (recordChange) recordChange("Update Global Heading");
                   }}
