@@ -597,7 +597,7 @@ export function calculateGlobalChainMeta(
   seq.forEach((item, idx) => {
     if (item.kind !== "path") return;
     const line = lineById.get((item as any).lineId);
-    if (!line || !line.endPoint) return;
+    if (!line?.endPoint) return;
 
     const prevItem = idx > 0 ? seq[idx - 1] : null;
     const isChained = !!(
@@ -809,7 +809,7 @@ export function calculatePathTime(
       }
 
       const line = lineById.get((item as any).lineId);
-      if (!line || !line.endPoint) {
+      if (!line?.endPoint) {
         return;
       }
       const prevPoint = lastPoint;

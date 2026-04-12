@@ -206,7 +206,7 @@ interface StickyNote {
   function addNoteAtCenter() {
     const { fieldViewStore } = turtle.stores.app;
     const view = turtle.stores.get(fieldViewStore);
-    if (!view || !view.xScale || !view.yScale) return;
+    if (!view?.xScale || !view.yScale) return;
 
     // Center of viewport
     const cx = view.width / 2;
@@ -250,7 +250,7 @@ interface StickyNote {
   }
 
   function render(notes: StickyNote[], fieldView: any) {
-    if (!fieldView || !fieldView.xScale) return;
+    if (!fieldView?.xScale) return;
 
     const container = document.getElementById(CONTAINER_ID);
     if (!container) return; // Wait for mount

@@ -42,7 +42,7 @@ export function splitPathAtPercent(
     (e) => globalTime >= e.startTime && globalTime <= e.endTime,
   );
 
-  if (!activeEvent || activeEvent.type !== "travel") return null;
+  if (activeEvent?.type !== "travel") return null;
 
   // Identify Line
   const lineIndex = activeEvent.lineIndex!;

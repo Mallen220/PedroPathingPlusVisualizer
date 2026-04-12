@@ -213,7 +213,7 @@ class AppUpdater {
       return true;
     } catch {
       // Ignore errors (e.g. terminal missing or not executable)
-      console.log("e.g. terminal missing or not executable")
+      console.log("e.g. terminal missing or not executable");
     }
     return false;
   }

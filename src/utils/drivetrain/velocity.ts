@@ -17,11 +17,7 @@ export function calculateDrivetrainSpeeds(
 ): WheelSpeeds | null {
   if (!showRobot || settings.robotImage !== "none") return null;
 
-  if (
-    !timePrediction ||
-    !timePrediction.timeline ||
-    timePrediction.timeline.length === 0
-  ) {
+  if (!timePrediction?.timeline || timePrediction.timeline.length === 0) {
     return { frontLeft: 0, backLeft: 0, frontRight: 0, backRight: 0 };
   }
 

@@ -47,7 +47,7 @@ if (import.meta.env.DEV) {
   const newestModule = Object.entries(modules).find(([path]) =>
     path.endsWith("/newest.md"),
   );
-  if (newestModule && newestModule[1]) {
+  if (newestModule?.[1]) {
     const content = newestModule[1];
     // Only use newest.md if it's not just the template
     if (!isNewestTemplate(content)) {

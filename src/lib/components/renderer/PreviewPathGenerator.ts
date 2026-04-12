@@ -16,7 +16,7 @@ export function generatePreviewPathElements(
 
   if (previewOptimizedLines && previewOptimizedLines.length > 0) {
     previewOptimizedLines.forEach((line, idx) => {
-      if (!line || !line.endPoint) return;
+      if (!line?.endPoint) return;
       let _startPoint =
         idx === 0
           ? startPoint

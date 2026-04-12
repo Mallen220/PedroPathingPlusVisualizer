@@ -87,7 +87,7 @@ export function removeSelected(recordChange: (action?: string) => void) {
       linesToRemove.add(lineIndex);
     } else {
       const cpIndex = ptIdx - 1;
-      if (line.controlPoints && line.controlPoints[cpIndex] !== undefined) {
+      if (line.controlPoints?.[cpIndex] !== undefined) {
         // Create a new line object with new controlPoints array
         lines[lineIndex] = {
           ...line,
@@ -174,12 +174,7 @@ export function removeSelected(recordChange: (action?: string) => void) {
     } else if (itemType === "line") {
       const lineIdx = Number(itemId);
       const line = lines[lineIdx];
-      if (
-        line &&
-        line.eventMarkers &&
-        line.eventMarkers[evIdx] &&
-        !line.locked
-      ) {
+      if (line?.eventMarkers?.[evIdx] && !line.locked) {
         lines[lineIdx] = {
           ...line,
           eventMarkers: line.eventMarkers.filter(
@@ -349,7 +344,7 @@ export function movePoint(
       const itemIdx = findSequenceItemIndex(sequence, info.id, kind);
       if (itemIdx !== -1) {
         const item = sequence[itemIdx] as any;
-        if (item && item.eventMarkers && item.eventMarkers[info.evIdx]) {
+        if (item?.eventMarkers?.[info.evIdx]) {
           const newPos = updateEventMarkerPosition(
             item.eventMarkers[info.evIdx],
             0.01 * (dx + dy),
@@ -365,7 +360,7 @@ export function movePoint(
       }
     } else if (info.type === "event-line") {
       const line = lines[info.lineIdx];
-      if (line && line.eventMarkers && line.eventMarkers[info.evIdx]) {
+      if (line?.eventMarkers?.[info.evIdx]) {
         const newPos = updateEventMarkerPosition(
           line.eventMarkers[info.evIdx],
           0.01 * (dx + dy),
@@ -439,7 +434,7 @@ export function syncSelectionToUI(controlTabRef: any) {
   const sequence = get(sequenceStore);
   const lines = get(linesStore);
 
-  if (!sel || !controlTabRef || !controlTabRef.scrollToItem) return;
+  if (!sel || !controlTabRef?.scrollToItem) return;
   const info = parseSelectionId(sel);
 
   if (info.type === "wait") {
@@ -449,14 +444,14 @@ export function syncSelectionToUI(controlTabRef: any) {
   } else if (info.type === "point") {
     if (info.lineNum > 0) {
       const line = lines[info.lineNum - 1];
-      if (line && line.id) {
+      if (line?.id) {
         controlTabRef.scrollToItem("path", line.id);
       }
     }
   } else if (info.type === "event-wait" || info.type === "event-rotate") {
     const kind = info.type === "event-wait" ? "wait" : "rotate";
     const item = findSequenceItem(sequence, info.id, kind);
-    if (item && item.eventMarkers && item.eventMarkers[info.evIdx]) {
+    if (item?.eventMarkers?.[info.evIdx]) {
       controlTabRef.scrollToItem("event", item.eventMarkers[info.evIdx].id);
     }
   } else if (info.type === "event-line") {

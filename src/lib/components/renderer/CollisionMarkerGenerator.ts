@@ -52,8 +52,7 @@ export function generateCollisionElements(
       if (
         marker.endTime !== undefined &&
         marker.endTime > marker.time &&
-        timePrediction &&
-        timePrediction.timeline
+        timePrediction?.timeline
       ) {
         // Range Rendering
         const start = marker.time;

@@ -1,6 +1,5 @@
 <!-- Copyright 2026 Matthew Allen. Licensed under the Modified Apache License, Version 2.0. -->
 <script lang="ts">
-
   import { transformAngle } from "../../utils/math";
   import HeadingIndicator from "./common/HeadingIndicator.svelte";
   import {
@@ -18,7 +17,6 @@
     getClosestTarget,
     type DragPosition,
   } from "../../utils/dragDrop";
-
 
   interface Props {
     endPoint: any;
@@ -611,7 +609,10 @@
             >
               <button
                 title={locked ? "Locked" : "Move up"}
-                onclick={(e) => { e.stopPropagation(); moveSegment(i, -1); }}
+                onclick={(e) => {
+                  e.stopPropagation();
+                  moveSegment(i, -1);
+                }}
                 class="p-0.5 hover:bg-neutral-50 dark:hover:bg-neutral-700 text-neutral-500 dark:text-neutral-400 disabled:opacity-30 rounded-t focus:outline-none focus:ring-2 focus:ring-purple-500"
                 disabled={i === 0 || locked}
               >
@@ -623,7 +624,10 @@
               ></div>
               <button
                 title={locked ? "Locked" : "Move down"}
-                onclick={(e) => { e.stopPropagation(); moveSegment(i, 1); }}
+                onclick={(e) => {
+                  e.stopPropagation();
+                  moveSegment(i, 1);
+                }}
                 class="p-0.5 hover:bg-neutral-50 dark:hover:bg-neutral-700 text-neutral-500 dark:text-neutral-400 disabled:opacity-30 rounded-b focus:outline-none focus:ring-2 focus:ring-purple-500"
                 disabled={i === endPoint.segments.length - 1 || locked}
               >

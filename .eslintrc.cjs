@@ -9,6 +9,7 @@ module.exports = {
     ecmaVersion: "latest",
     sourceType: "module",
   },
+  plugins: ["@typescript-eslint"],
   ignorePatterns: [
     "node_modules/",
     "dist/",
@@ -22,7 +23,15 @@ module.exports = {
     {
       files: ["**/*.ts"],
       parser: "@typescript-eslint/parser",
+      parserOptions: {
+        project: ["./tsconfig.eslint.json"],
+        tsconfigRootDir: __dirname,
+        createDefaultProgram: true,
+      },
       extends: ["plugin:prettier/recommended"],
+      rules: {
+        "@typescript-eslint/prefer-optional-chain": "error",
+      },
     },
     {
       files: ["**/*.svelte"],

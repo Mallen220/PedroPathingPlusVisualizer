@@ -51,7 +51,7 @@ export class PluginManager {
 
   static async init() {
     const electronAPI = (window as any).electronAPI;
-    if (!electronAPI || !electronAPI.listPlugins) return;
+    if (!electronAPI?.listPlugins) return;
 
     // Reset internal lists
     this.allExporters = [];
@@ -543,14 +543,14 @@ export class PluginManager {
 
   static async openPluginsFolder() {
     const electronAPI = (window as any).electronAPI;
-    if (electronAPI && electronAPI.openPluginsFolder) {
+    if (electronAPI?.openPluginsFolder) {
       await electronAPI.openPluginsFolder();
     }
   }
 
   static async deletePlugin(name: string) {
     const electronAPI = (window as any).electronAPI;
-    if (electronAPI && electronAPI.deletePlugin) {
+    if (electronAPI?.deletePlugin) {
       await electronAPI.deletePlugin(name);
       await this.reloadPlugins();
     }

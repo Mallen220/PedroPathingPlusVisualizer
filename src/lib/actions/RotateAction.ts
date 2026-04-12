@@ -55,7 +55,7 @@ export const RotateAction: ActionDefinition = {
     const { timePrediction, x, y, uiLength, hoveredId, selectedPointId } =
       context;
 
-    if (!timePrediction || !timePrediction.timeline) return [];
+    if (!timePrediction?.timeline) return [];
 
     const elements: any[] = [];
 

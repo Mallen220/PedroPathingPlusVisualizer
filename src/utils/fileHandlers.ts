@@ -156,7 +156,7 @@ export async function loadRecentFile(path: string) {
   await performAutoSaveOnClose();
 
   const electronAPI = getElectronAPI();
-  if (!electronAPI || !electronAPI.readFile) {
+  if (!electronAPI?.readFile) {
     alert("Cannot load files in this environment");
     return;
   }
@@ -279,7 +279,7 @@ async function performSave(
 
     // --- RELATIVIZE MACRO PATHS ---
 
-    if (targetPath && electronAPI && electronAPI.makeRelativePath) {
+    if (targetPath && electronAPI?.makeRelativePath) {
       for (const item of sequenceToSave) {
         if (item.kind === "macro") {
           item.filePath = await electronAPI.makeRelativePath(
@@ -307,7 +307,7 @@ async function performSave(
 
     const jsonString = JSON.stringify(projectData, null, 2);
 
-    if (electronAPI && electronAPI.saveFile) {
+    if (electronAPI?.saveFile) {
       // Use the new saveFile API if available (mocked in tests)
       const result = await electronAPI.saveFile(jsonString, targetPath);
       if (result.success) {
@@ -364,7 +364,7 @@ async function performSave(
         }
         return false;
       }
-    } else if (electronAPI && electronAPI.writeFile) {
+    } else if (electronAPI?.writeFile) {
       if (!targetPath) return false; // Should have been determined above
 
       await electronAPI.writeFile(targetPath, jsonString);
@@ -600,7 +600,7 @@ export async function handleExternalFileOpen(filePath: string) {
   await performAutoSaveOnClose();
 
   const electronAPI = getElectronAPI();
-  if (!electronAPI || !electronAPI.readFile) return;
+  if (!electronAPI?.readFile) return;
 
   try {
     // 1. Load the file content
@@ -780,8 +780,7 @@ export async function handleAutoExport(
   targetPath: string,
 ) {
   const electronAPI = getElectronAPI();
-  if (!settings.autoExportCode || !electronAPI || !electronAPI.resolvePath)
-    return;
+  if (!settings.autoExportCode || !electronAPI?.resolvePath) return;
 
   try {
     const exportDirName = settings.autoExportPath || "GeneratedCode";

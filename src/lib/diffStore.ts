@@ -79,7 +79,7 @@ export async function toggleDiff() {
     }
 
     const api = (window as any).electronAPI;
-    if (!api || !api.gitShow) {
+    if (!api?.gitShow) {
       console.warn("Git integration not available");
       return;
     }

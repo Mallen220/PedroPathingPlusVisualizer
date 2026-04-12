@@ -25,7 +25,7 @@ function getElectronAPI() {
     isVirtual?: boolean;
   };
 
-  if (api && api.isVirtual) {
+  if (api?.isVirtual) {
     return undefined;
   }
 

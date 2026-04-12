@@ -178,10 +178,9 @@ export function registerFileHandlers() {
         const win = BrowserWindow.fromWebContents(event.sender);
         const options = {
           title: "Export .pp File (Legacy)",
-          defaultPath:
-            defaultName?.endsWith(".pp")
-              ? defaultName
-              : `${defaultName}.pp`,
+          defaultPath: defaultName?.endsWith(".pp")
+            ? defaultName
+            : `${defaultName}.pp`,
           filters: [{ name: "Turtle Tracer Path", extensions: ["pp"] }],
         };
         const result = await dialog.showSaveDialog(win, options);

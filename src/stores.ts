@@ -53,7 +53,8 @@ export const updateDataStore = writable<UpdateData | null>(null);
 // expose some stores globally (fallback for bundler issues)
 if (typeof globalThis.window !== globalThis.undefined) {
   // these names are intentionally global to support legacy references in compiled code
-  (globalThis.window as any).showUpdateAvailableDialog = showUpdateAvailableDialog;
+  (globalThis.window as any).showUpdateAvailableDialog =
+    showUpdateAvailableDialog;
 }
 
 // File Manager Stores

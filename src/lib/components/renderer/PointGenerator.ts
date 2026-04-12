@@ -34,7 +34,7 @@ export function generatePointElements(
   _points.push(startPointElem);
 
   lines.forEach((line, idx) => {
-    if (!line || !line.endPoint || line.hidden) return;
+    if (!line?.endPoint || line.hidden) return;
     [line.endPoint, ...line.controlPoints].forEach((point, idx1) => {
       if (idx1 > 0) {
         let pointGroup = new Two.Group();

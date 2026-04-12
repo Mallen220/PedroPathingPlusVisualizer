@@ -20,7 +20,7 @@ export function generatePathElements(
   const { x, y, uiLength, settings, timePrediction, dimmedIds } = ctx;
 
   targetLines.forEach((line, idx) => {
-    if (!line || !line.endPoint || line.hidden) return;
+    if (!line?.endPoint || line.hidden) return;
     let _startPoint =
       idx === 0 ? targetStartPoint : targetLines[idx - 1]?.endPoint || null;
     if (!_startPoint) return;
@@ -37,7 +37,7 @@ export function generatePathElements(
         (e: any) => e.type === "travel" && e.lineIndex === idx,
       );
 
-      if (event && event.velocityProfile && event.velocityProfile.length > 0) {
+      if (event?.velocityProfile && event.velocityProfile.length > 0) {
         const vProfile = event.velocityProfile as number[];
         const maxVel = Math.max(1, settings.maxVelocity);
 

@@ -50,7 +50,7 @@ export function snapSelection(recordChange: (action?: string) => void) {
   const startPoint = get(startPointStore);
   const lines = get(linesStore);
 
-  if (!sel || !sel.startsWith("point-")) return;
+  if (!sel?.startsWith("point-")) return;
 
   const snap = (v: number) => Math.round(v / gridStep) * gridStep;
 
@@ -109,7 +109,7 @@ export function resetStartPoint(recordChange: (action?: string) => void) {
 
 export function panToStart(fieldRenderer: any) {
   const startPoint = get(startPointStore);
-  if (fieldRenderer && fieldRenderer.panToField) {
+  if (fieldRenderer?.panToField) {
     fieldRenderer.panToField(startPoint.x, startPoint.y);
   } else {
     // Fallback
@@ -122,7 +122,7 @@ export function panToEnd(fieldRenderer: any) {
   if (lines.length > 0) {
     const lastLineIdx = lines.length - 1;
     const endPoint = lines[lastLineIdx].endPoint;
-    if (fieldRenderer && fieldRenderer.panToField) {
+    if (fieldRenderer?.panToField) {
       fieldRenderer.panToField(endPoint.x, endPoint.y);
     } else {
       // Fallback

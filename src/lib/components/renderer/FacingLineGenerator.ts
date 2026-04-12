@@ -13,11 +13,11 @@ export function generateFacingLineElements(lines: Line[], ctx: RenderContext) {
 
   // Determine the currently active travel event
   const activeEvent = findActiveEvent(timePrediction, percentStore!);
-  if (!activeEvent || activeEvent.type !== "travel") return [];
+  if (activeEvent?.type !== "travel") return [];
 
   const activeLine: Line | undefined =
     activeEvent.line ?? lines[activeEvent.lineIndex];
-  if (!activeLine || !activeLine.endPoint) return [];
+  if (!activeLine?.endPoint) return [];
 
   const isGlobal = activeEvent.isGlobalOverride;
   const rootLine = activeEvent.rootLine;
@@ -44,7 +44,7 @@ export function generateFacingLineElements(lines: Line[], ctx: RenderContext) {
       }
     }
 
-    if (activeSeg && activeSeg.heading === "facingPoint") {
+    if (activeSeg?.heading === "facingPoint") {
       const targetX = activeSeg.targetX ?? 72;
       const targetY = activeSeg.targetY ?? 72;
       const pathColor = activeLine.color || "#60a5fa";

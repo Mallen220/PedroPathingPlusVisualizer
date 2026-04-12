@@ -208,7 +208,7 @@ export const browserFileSystem = {
               modified: new Date(),
               isDirectory: false,
             });
-          } else if (val && val.type === "dir") {
+          } else if (val?.type === "dir") {
             if (!addedDirs.has(name)) {
               addedDirs.add(name);
               files.push({

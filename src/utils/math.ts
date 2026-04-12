@@ -298,7 +298,7 @@ export function getLineStartHeading(
   totalChainDistance?: number,
   distanceBefore?: number,
 ): number {
-  if (!line || !line.endPoint) return 0;
+  if (!line?.endPoint) return 0;
 
   const { isGlobal, effectiveSource } = getEffectiveHeadingSource(
     line,
@@ -357,7 +357,7 @@ export function getLineEndHeading(
   totalChainDistance?: number,
   distanceAtEnd?: number,
 ): number {
-  if (!line || !line.endPoint) return 0;
+  if (!line?.endPoint) return 0;
 
   const { isGlobal, effectiveSource } = getEffectiveHeadingSource(
     line,

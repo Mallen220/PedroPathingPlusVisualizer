@@ -54,7 +54,7 @@ export const WaitAction: ActionDefinition = {
     const { timePrediction, x, y, uiLength, hoveredId, selectedPointId } =
       context;
 
-    if (!timePrediction || !timePrediction.timeline) return [];
+    if (!timePrediction?.timeline) return [];
 
     const elements: any[] = [];
 

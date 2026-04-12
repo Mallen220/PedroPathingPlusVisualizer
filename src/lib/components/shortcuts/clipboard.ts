@@ -195,12 +195,12 @@ export function copy(activeControlTab: string, controlTabRef: any) {
 
   // Context-aware copy
   if (activeControlTab === "code") {
-    if (controlTabRef && controlTabRef.copyCode) {
+    if (controlTabRef?.copyCode) {
       controlTabRef.copyCode();
       return;
     }
   } else if (activeControlTab === "table") {
-    if (controlTabRef && controlTabRef.copyTable) {
+    if (controlTabRef?.copyTable) {
       controlTabRef.copyTable();
       return;
     }

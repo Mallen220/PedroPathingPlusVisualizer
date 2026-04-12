@@ -265,14 +265,12 @@ export async function generateSequentialCommandCode(
     return result;
   };
 
-  const seq = flattenSequence(
-    sequence && sequence.length ? sequence : defaultSequence,
-  );
+  const seq = flattenSequence(sequence?.length ? sequence : defaultSequence);
 
   seq.forEach((item, idx) => {
     // Registry Check
     const action = actionRegistry.get(item.kind);
-    if (action && action.toSequentialCommand) {
+    if (action?.toSequentialCommand) {
       commands.push(action.toSequentialCommand(item, { isNextFTC }));
       return;
     }

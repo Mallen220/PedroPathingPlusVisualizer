@@ -160,10 +160,7 @@ export function calculateRobotState(
 
         linePercent = tStart + localProgress * (tEnd - tStart);
 
-        if (
-          activeEvent.headingProfile &&
-          activeEvent.headingProfile.length === profile.length
-        ) {
+        if (activeEvent.headingProfile?.length === profile.length) {
           const hStart = activeEvent.headingProfile[i];
           const hEnd = activeEvent.headingProfile[i + 1];
           // Linear interpolation of unwrapped heading

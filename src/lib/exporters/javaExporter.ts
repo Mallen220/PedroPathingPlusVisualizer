@@ -500,7 +500,7 @@ export async function generateJavaCode(
   targetSequence.forEach((item) => {
     // Check Registry
     const action = actionRegistry.get(item.kind);
-    if (action && action.toJavaCode) {
+    if (action?.toJavaCode) {
       const res = action.toJavaCode(item, { stateStep });
       stateMachineCode += res.code;
       stateStep += res.stepsUsed;
