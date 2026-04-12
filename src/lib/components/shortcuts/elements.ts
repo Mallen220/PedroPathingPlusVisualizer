@@ -10,9 +10,11 @@ import { actionRegistry } from "../../actionRegistry";
 import type { Line, SequenceItem } from "../../../types/index";
 import random from "lodash/random";
 import { getRandomColor } from "../../../utils";
-import { getSelectedSequenceIndex } from "./utils";
+import { getSelectedSequenceIndex, isUIElementFocused } from "./utils";
 
 export function addNewLine(recordChange: (action?: string) => void) {
+  if (isUIElementFocused()) return;
+
   const newLine: Line = {
     id: `line-${Math.random().toString(36).slice(2)}`,
     name: "",
@@ -50,6 +52,8 @@ export function addNewLine(recordChange: (action?: string) => void) {
 }
 
 export function addWait(recordChange: (action?: string) => void) {
+  if (isUIElementFocused()) return;
+
   const wait: SequenceItem = {
     kind: "wait",
     id: `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`,
@@ -75,6 +79,8 @@ export function addWait(recordChange: (action?: string) => void) {
 }
 
 export function addRotate(recordChange: (action?: string) => void) {
+  if (isUIElementFocused()) return;
+
   const rotate: SequenceItem = {
     kind: "rotate",
     id: `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`,
@@ -100,6 +106,8 @@ export function addRotate(recordChange: (action?: string) => void) {
 }
 
 export function addEventMarker(recordChange: (action?: string) => void) {
+  if (isUIElementFocused()) return;
+
   const selPoint = get(selectedPointId);
   const sequence = get(sequenceStore);
 
@@ -180,6 +188,8 @@ export function addEventMarker(recordChange: (action?: string) => void) {
 }
 
 export function addControlPoint(recordChange: (action?: string) => void) {
+  if (isUIElementFocused()) return;
+
   const lines = get(linesStore);
   if (lines.length === 0) return;
   const targetId = get(selectedLineId) || lines[lines.length - 1].id;
@@ -205,6 +215,8 @@ export function addControlPoint(recordChange: (action?: string) => void) {
 }
 
 export function removeControlPoint(recordChange: (action?: string) => void) {
+  if (isUIElementFocused()) return;
+
   const lines = get(linesStore);
   if (lines.length > 0) {
     const targetId = get(selectedLineId) || lines[lines.length - 1].id;
