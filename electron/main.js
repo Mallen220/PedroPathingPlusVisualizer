@@ -32,11 +32,11 @@ let sessionCleared = false;
 const waitForServerReady = async (timeoutMs = 5000) => {
   const start = Date.now();
   // Quick shortcut if node server object reports listening
-  if (server && server.listening) return;
+  if (server?.listening) return;
 
   while (Date.now() - start < timeoutMs) {
     // If server object exists and is listening, we're done
-    if (server && server.listening) return;
+    if (server?.listening) return;
 
     // Try a small HTTP GET to be certain the app is serving
     try {

@@ -179,7 +179,7 @@ export function registerFileHandlers() {
         const options = {
           title: "Export .pp File (Legacy)",
           defaultPath:
-            defaultName && defaultName.endsWith(".pp")
+            defaultName?.endsWith(".pp")
               ? defaultName
               : `${defaultName}.pp`,
           filters: [{ name: "Turtle Tracer Path", extensions: ["pp"] }],
