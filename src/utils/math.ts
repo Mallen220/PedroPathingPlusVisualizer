@@ -223,9 +223,7 @@ function evaluatePiecewiseSegment(
       localT = (t - seg.tStart) / (seg.tEnd - seg.tStart);
     }
 
-    const diff = eDeg - sDeg;
-    const normalized = ((diff % 360) + 360) % 360;
-    const shortest = normalized > 180 ? normalized - 360 : normalized;
+    const shortest = getAngularDifference(sDeg, eDeg);
     const longest = shortest > 0 ? shortest - 360 : shortest + 360;
 
     return transformAngle(sDeg + (seg.reverse ? longest : shortest) * localT);
@@ -272,6 +270,27 @@ function evaluatePiecewiseSegment(
   }
 }
 
+function getEffectiveHeadingSource(line: Line, globalOverride?: Line) {
+  const isGlobal =
+    globalOverride?.globalHeading && globalOverride.globalHeading !== "none";
+
+  return {
+    isGlobal,
+    effectiveSource: isGlobal
+      ? {
+          heading: globalOverride!.globalHeading,
+          degrees: globalOverride!.globalDegrees,
+          startDeg: globalOverride!.globalStartDeg,
+          endDeg: globalOverride!.globalEndDeg,
+          targetX: globalOverride!.globalTargetX,
+          targetY: globalOverride!.globalTargetY,
+          reverse: globalOverride!.globalReverse,
+          segments: globalOverride!.globalSegments,
+        }
+      : line.endPoint,
+  };
+}
+
 export function getLineStartHeading(
   line: Line | undefined,
   previousPoint: Point,
@@ -281,21 +300,10 @@ export function getLineStartHeading(
 ): number {
   if (!line || !line.endPoint) return 0;
 
-  const isGlobal =
-    globalOverride?.globalHeading && globalOverride.globalHeading !== "none";
-
-  const effectiveSource = isGlobal
-    ? {
-        heading: globalOverride!.globalHeading,
-        degrees: globalOverride!.globalDegrees,
-        startDeg: globalOverride!.globalStartDeg,
-        endDeg: globalOverride!.globalEndDeg,
-        targetX: globalOverride!.globalTargetX,
-        targetY: globalOverride!.globalTargetY,
-        reverse: globalOverride!.globalReverse,
-        segments: globalOverride!.globalSegments,
-      }
-    : line.endPoint;
+  const { isGlobal, effectiveSource } = getEffectiveHeadingSource(
+    line,
+    globalOverride,
+  );
 
   if (effectiveSource.heading === "linear")
     return (effectiveSource as any).startDeg;
@@ -351,21 +359,10 @@ export function getLineEndHeading(
 ): number {
   if (!line || !line.endPoint) return 0;
 
-  const isGlobal =
-    globalOverride?.globalHeading && globalOverride.globalHeading !== "none";
-
-  const effectiveSource = isGlobal
-    ? {
-        heading: globalOverride!.globalHeading,
-        degrees: globalOverride!.globalDegrees,
-        startDeg: globalOverride!.globalStartDeg,
-        endDeg: globalOverride!.globalEndDeg,
-        targetX: globalOverride!.globalTargetX,
-        targetY: globalOverride!.globalTargetY,
-        reverse: globalOverride!.globalReverse,
-        segments: globalOverride!.globalSegments,
-      }
-    : line.endPoint;
+  const { isGlobal, effectiveSource } = getEffectiveHeadingSource(
+    line,
+    globalOverride,
+  );
 
   if (effectiveSource.heading === "linear")
     return (effectiveSource as any).endDeg;
