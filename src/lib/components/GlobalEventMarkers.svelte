@@ -255,7 +255,18 @@
     const newIndex = map[newMarkerIdx];
 
     // Check if parent changed
-    if (newIndex !== marker.parentIndex) {
+    if (newIndex === marker.parentIndex) {
+      // Parent is same, just update local position
+      if (clampLocal) {
+        if (newLocalPos < 0) newLocalPos = 0;
+        if (newLocalPos > 1) newLocalPos = 1;
+      }
+
+      marker.ref.position = newLocalPos;
+      // Trigger reactivity
+      if (marker.parentType === "path") lines = [...lines];
+      else sequence = [...sequence];
+    } else {
       // Remove from old parent
       removeMarker(marker);
 
@@ -301,17 +312,6 @@
         rotate.eventMarkers = [...rotate.eventMarkers, newMarkerData];
         sequence = [...sequence];
       }
-    } else {
-      // Parent is same, just update local position
-      if (clampLocal) {
-        if (newLocalPos < 0) newLocalPos = 0;
-        if (newLocalPos > 1) newLocalPos = 1;
-      }
-
-      marker.ref.position = newLocalPos;
-      // Trigger reactivity
-      if (marker.parentType === "path") lines = [...lines];
-      else sequence = [...sequence];
     }
   }
 

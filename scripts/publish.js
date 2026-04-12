@@ -138,7 +138,9 @@ async function main() {
       .then(() => true)
       .catch(() => false);
 
-    if (!tagExists) {
+    if (tagExists) {
+      console.log(`Tag v${version} already exists`);
+    } else {
       const createTag = await ask(`Create git tag v${version}? (y/N): `);
       if (!createTag.toLowerCase().startsWith("y")) {
         console.log("Tag creation skipped");
@@ -150,8 +152,6 @@ async function main() {
         "Creating git tag",
       );
       await runCommand(`git push origin v${version}`, "Pushing git tag");
-    } else {
-      console.log(`Tag v${version} already exists`);
     }
 
     const createRelease = await ask(

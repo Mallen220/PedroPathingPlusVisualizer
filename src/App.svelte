@@ -785,11 +785,11 @@
 
   function handleSaveProject() {
     const path = get(currentFilePath);
-    if (!path) {
+    if (path) {
+      saveProject();
+    } else {
       showFileManager.set(true);
       fileManagerNewFileMode.set(true);
-    } else {
-      saveProject();
     }
   }
 
@@ -1484,26 +1484,26 @@
     }
   });
   run(() => {
-    if (!isLargeScreen) {
-      // On small screens, when sidebar is closed, wait for animation then hide
-      if (!effectiveShowSidebar) {
-        if (hideControlTabTimeout) clearTimeout(hideControlTabTimeout);
-        hideControlTabTimeout = setTimeout(() => {
-          controlTabHidden = true;
-        }, 320); // slightly longer than the 300ms transition
-      } else {
-        if (hideControlTabTimeout) {
-          clearTimeout(hideControlTabTimeout);
-          hideControlTabTimeout = null;
-        }
-        controlTabHidden = false;
-      }
-    } else {
+    if (isLargeScreen) {
       // Ensure visible on large screens
       controlTabHidden = false;
       if (hideControlTabTimeout) {
         clearTimeout(hideControlTabTimeout);
         hideControlTabTimeout = null;
+      }
+    } else {
+      // On small screens, when sidebar is closed, wait for animation then hide
+      if (effectiveShowSidebar) {
+        if (hideControlTabTimeout) {
+          clearTimeout(hideControlTabTimeout);
+          hideControlTabTimeout = null;
+        }
+        controlTabHidden = false;
+      } else {
+        if (hideControlTabTimeout) clearTimeout(hideControlTabTimeout);
+        hideControlTabTimeout = setTimeout(() => {
+          controlTabHidden = true;
+        }, 320); // slightly longer than the 300ms transition
       }
     }
   });
@@ -1896,7 +1896,7 @@
         style={`
         width: ${isLargeScreen && effectiveShowSidebar ? leftPaneWidth + "px" : "100%"};
         height: ${isLargeScreen ? "100%" : fieldContainerTargetHeight};
-        min-height: ${!isLargeScreen ? (userFieldHeightLimit ? "0" : "60vh") : "0"};
+        min-height: ${isLargeScreen ? "0" : userFieldHeightLimit ? "0" : "60vh"};
       `}
       >
         <div

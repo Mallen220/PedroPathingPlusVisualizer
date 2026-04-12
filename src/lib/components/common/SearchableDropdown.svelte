@@ -73,23 +73,23 @@
 
     if (e.key === "ArrowDown") {
       e.preventDefault();
-      if (!isOpen) {
-        isOpen = true;
-        highlightedIndex = 0;
-      } else {
+      if (isOpen) {
         highlightedIndex = (highlightedIndex + 1) % filteredOptions.length;
         scrollToHighlighted();
+      } else {
+        isOpen = true;
+        highlightedIndex = 0;
       }
     } else if (e.key === "ArrowUp") {
       e.preventDefault();
-      if (!isOpen) {
-        isOpen = true;
-        highlightedIndex = filteredOptions.length - 1;
-      } else {
+      if (isOpen) {
         highlightedIndex =
           (highlightedIndex - 1 + filteredOptions.length) %
           filteredOptions.length;
         scrollToHighlighted();
+      } else {
+        isOpen = true;
+        highlightedIndex = filteredOptions.length - 1;
       }
     } else if (e.key === "Enter") {
       if (

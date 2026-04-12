@@ -225,7 +225,7 @@
   });
 
   function handleGlobalChange() {
-    const targetIdx = chainRootIndex !== -1 ? chainRootIndex : idx;
+    const targetIdx = chainRootIndex === -1 ? idx : chainRootIndex;
     const targetLine = lines[targetIdx];
 
     targetLine.globalHeading = pseudoGlobalEndPoint.heading as any;
@@ -614,7 +614,7 @@
                 checked={hasGlobalHeadingDef}
                 onchange={(e) => {
                   const targetIdx =
-                    chainRootIndex !== -1 ? chainRootIndex : idx;
+                    chainRootIndex === -1 ? idx : chainRootIndex;
                   const targetLine = lines[targetIdx];
                   if (e.currentTarget.checked) {
                     targetLine.globalHeading = line.endPoint.heading;

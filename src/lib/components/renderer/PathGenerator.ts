@@ -91,7 +91,20 @@ export function generatePathElements(
           const hue = 120 - ratio * 120;
           const color = `hsl(${hue}, 100%, 40%)`;
 
-          if (color !== currentColor) {
+          if (color === currentColor) {
+            // Extend current path
+            currentAnchors.push(
+              new Two.Anchor(
+                x(currPt.x),
+                y(currPt.y),
+                0,
+                0,
+                0,
+                0,
+                Two.Commands.line,
+              ),
+            );
+          } else {
             if (currentAnchors.length > 0) {
               heatmapSegments.push(
                 createHeatmapSegment(
@@ -124,19 +137,6 @@ export function generatePathElements(
               ),
             ];
             currentColor = color;
-          } else {
-            // Extend current path
-            currentAnchors.push(
-              new Two.Anchor(
-                x(currPt.x),
-                y(currPt.y),
-                0,
-                0,
-                0,
-                0,
-                Two.Commands.line,
-              ),
-            );
           }
 
           prevPt = currPt;

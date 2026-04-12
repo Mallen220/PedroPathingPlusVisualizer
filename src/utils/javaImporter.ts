@@ -230,7 +230,7 @@ export function importJavaProject(javaCode: string): TurtleData {
         tokens.includes("build")
       ) {
         const eqIdx = tokens.indexOf("=");
-        const pathName = eqIdx !== -1 ? tokens[0] : `Path ${lines.length + 1}`;
+        const pathName = eqIdx === -1 ? `Path ${lines.length + 1}` : tokens[0];
 
         // Find all addPath occurrences in this builder chain
         const addPathIndices: number[] = [];
@@ -462,7 +462,7 @@ export function importJavaProject(javaCode: string): TurtleData {
                   (line.endPoint as any).degrees = extracted.x;
                 } else {
                   const ext = resolveHeading(extracted, points);
-                  (line.endPoint as any).degrees = ext !== null ? ext : 0;
+                  (line.endPoint as any).degrees = ext === null ? 0 : ext;
                 }
               } else if (
                 pathTokens.includes("facingPoint") ||

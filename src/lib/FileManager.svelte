@@ -1134,11 +1134,11 @@
   });
   // Update filtered files whenever files or searchQuery changes
   run(() => {
-    if (!searchQuery) {
-      filteredFiles = [...files];
-    } else {
+    if (searchQuery) {
       const q = searchQuery.toLowerCase();
       filteredFiles = files.filter((f) => f.name.toLowerCase().includes(q));
+    } else {
+      filteredFiles = [...files];
     }
   });
   run(() => {
@@ -1510,9 +1510,9 @@
           <ArrowCircleIcon className="size-4" />
         </button>
         <span
-          >{filteredFiles.length} file{filteredFiles.length !== 1
-            ? "s"
-            : ""}</span
+          >{filteredFiles.length} file{filteredFiles.length === 1
+            ? ""
+            : "s"}</span
         >
       </div>
       {#if selectedFile}

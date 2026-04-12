@@ -101,9 +101,7 @@ if (process.windowsStore) {
 
 const gotTheLock = app.requestSingleInstanceLock();
 
-if (!gotTheLock) {
-  app.quit();
-} else {
+if (gotTheLock) {
   app.on("second-instance", (event, commandLine, workingDirectory) => {
     // Someone tried to run a second instance. Prefer focusing an existing window
     // to avoid racing with the local server or creating orphan windows.
@@ -166,6 +164,8 @@ if (!gotTheLock) {
       }
     }, 3000);
   });
+} else {
+  app.quit();
 }
 
 /**

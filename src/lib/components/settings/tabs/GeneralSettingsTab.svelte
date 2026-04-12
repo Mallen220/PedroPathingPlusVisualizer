@@ -30,7 +30,7 @@
 
   let isCheckingForUpdates = $state(false);
   let isOnline = $state(
-    typeof navigator !== "undefined" ? navigator.onLine : true,
+    typeof navigator === "undefined" ? true : navigator.onLine,
   );
 
   async function handleCheckForUpdates() {

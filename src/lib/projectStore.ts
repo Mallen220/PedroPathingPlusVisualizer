@@ -48,8 +48,8 @@ export function normalizeLines(input: Line[]): Line[] {
 function getElectronAPI() {
   const globalAny = globalThis as any;
   if (globalAny.electronAPI) return globalAny.electronAPI;
-  if (typeof window !== "undefined" && (window as any).electronAPI)
-    return (window as any).electronAPI;
+  if (typeof globalThis !== "undefined" && (globalThis as any).electronAPI)
+    return (globalThis as any).electronAPI;
   return undefined;
 }
 

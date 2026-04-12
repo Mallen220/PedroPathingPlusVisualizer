@@ -409,7 +409,7 @@
     activeTab = $bindable("path"),
   }: Props = $props();
   let isOnline = $state(
-    typeof navigator !== "undefined" ? navigator.onLine : true,
+    typeof navigator === "undefined" ? true : navigator.onLine,
   );
   // If code tab is active but setting is disabled, switch to path
   run(() => {

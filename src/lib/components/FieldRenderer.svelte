@@ -671,32 +671,7 @@
                 const targetLine = lines[rootIdx];
 
                 // If this chain has global heading def, update global values on the root line
-                if (targetLine.globalHeading !== undefined) {
-                  if (isPiecewise) {
-                    const segments = targetLine.globalSegments || [];
-                    const seg = segments[segIdx];
-                    if (seg && seg.heading === "facingPoint") {
-                      const newSegs = [...segments] as any[];
-                      newSegs[segIdx] = {
-                        ...seg,
-                        targetX: inchX,
-                        targetY: inchY,
-                      };
-                      lines[rootIdx] = {
-                        ...targetLine,
-                        globalSegments: newSegs,
-                      };
-                      linesChanged = true;
-                    }
-                  } else {
-                    lines[rootIdx] = {
-                      ...targetLine,
-                      globalTargetX: inchX,
-                      globalTargetY: inchY,
-                    };
-                    linesChanged = true;
-                  }
-                } else {
+                if (targetLine.globalHeading === undefined) {
                   // Fallback to local endpoint if no global heading def anywhere in the chain
                   if (isPiecewise) {
                     const segments = line.endPoint.segments || [];
@@ -728,6 +703,29 @@
                     };
                     linesChanged = true;
                   }
+                } else if (isPiecewise) {
+                  const segments = targetLine.globalSegments || [];
+                  const seg = segments[segIdx];
+                  if (seg && seg.heading === "facingPoint") {
+                    const newSegs = [...segments] as any[];
+                    newSegs[segIdx] = {
+                      ...seg,
+                      targetX: inchX,
+                      targetY: inchY,
+                    };
+                    lines[rootIdx] = {
+                      ...targetLine,
+                      globalSegments: newSegs,
+                    };
+                    linesChanged = true;
+                  }
+                } else {
+                  lines[rootIdx] = {
+                    ...targetLine,
+                    globalTargetX: inchX,
+                    globalTargetY: inchY,
+                  };
+                  linesChanged = true;
                 }
               }
             } else {

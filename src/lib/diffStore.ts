@@ -242,15 +242,7 @@ function computeDiff(current: ProjectData, old: ProjectData): DiffResult {
   // Added & Changed
   currentMarkers.forEach((m, id) => {
     const oldM = oldMarkers.get(id);
-    if (!oldM) {
-      result.eventDiff.push({
-        id,
-        name: m.name,
-        parentName: m.parentName,
-        changeType: "added",
-        description: `Added "${m.name}" to ${m.parentName} at ${(m.position * 100).toFixed(0)}%`,
-      });
-    } else {
+    if (oldM) {
       const changes: string[] = [];
       const details: EventChangeDetail[] = [];
 
@@ -290,6 +282,14 @@ function computeDiff(current: ProjectData, old: ProjectData): DiffResult {
           details,
         });
       }
+    } else {
+      result.eventDiff.push({
+        id,
+        name: m.name,
+        parentName: m.parentName,
+        changeType: "added",
+        description: `Added "${m.name}" to ${m.parentName} at ${(m.position * 100).toFixed(0)}%`,
+      });
     }
   });
 

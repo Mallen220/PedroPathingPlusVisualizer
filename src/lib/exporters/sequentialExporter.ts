@@ -81,9 +81,9 @@ export async function generateSequentialCommandCode(
         // Use exact values
         // Use overrideDegrees if provided, otherwise default to 0
         const degrees =
-          overrideDegrees !== undefined
-            ? overrideDegrees
-            : (point as any).degrees || 0;
+          overrideDegrees === undefined
+            ? (point as any).degrees || 0
+            : overrideDegrees;
 
         if (coordinateSystem === "FTC") {
           const userPt = toUser(point, "FTC");
@@ -561,7 +561,11 @@ export async function generateSequentialCommandCode(
       headingMethodCode = constructHeadingMethod(line.endPoint);
     }
 
-    if (!line.isChain) {
+    if (line.isChain) {
+      currentBuilderStr += `
+            .addPath(new ${curveType}(${actualStartPose}, ${controlPointsStr}${endPoseVar}))
+            ${headingMethodCode}`;
+    } else {
       if (currentBuilderStr !== "") {
         currentBuilderStr += "\n            .build();";
         pathBuildersArr.push(currentBuilderStr);
@@ -569,10 +573,6 @@ export async function generateSequentialCommandCode(
       currentBuilderStr = `        ${pathName} = follower.pathBuilder()
             .addPath(new ${curveType}(${actualStartPose}, ${controlPointsStr}${endPoseVar}))
             ${headingMethodCode}${globalHeadingCode}`;
-    } else {
-      currentBuilderStr += `
-            .addPath(new ${curveType}(${actualStartPose}, ${controlPointsStr}${endPoseVar}))
-            ${headingMethodCode}`;
     }
   });
 

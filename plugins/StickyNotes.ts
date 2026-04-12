@@ -147,10 +147,10 @@ interface StickyNote {
       const existing = document.getElementById(CONTAINER_ID);
       if (existing) {
         // Check if it's still attached to DOM
-        if (!document.contains(existing)) {
-          existing.remove(); // Remove detached node
-        } else {
+        if (document.contains(existing)) {
           return; // Already mounted correctly
+        } else {
+          existing.remove(); // Remove detached node
         }
       }
 

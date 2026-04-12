@@ -168,16 +168,7 @@
       if (format === "custom") codeLanguage = "plaintext";
 
       // If first run, just set it
-      if (!code) {
-        code = newCode;
-        previousCode = newCode;
-        const hlLines = highlightAndSplit(newCode, codeLanguage);
-        displayLines = hlLines.map((content, i) => ({
-          content,
-          type: "unchanged",
-          id: `initial-${i}`,
-        }));
-      } else {
+      if (code) {
         // Highlight old and new code using context-aware highlighter
         const oldLinesHL = highlightAndSplit(previousCode, codeLanguage);
         const newLinesHL = highlightAndSplit(newCode, codeLanguage);
@@ -242,6 +233,15 @@
         displayLines = newDisplayLines;
         previousCode = newCode;
         code = newCode;
+      } else {
+        code = newCode;
+        previousCode = newCode;
+        const hlLines = highlightAndSplit(newCode, codeLanguage);
+        displayLines = hlLines.map((content, i) => ({
+          content,
+          type: "unchanged",
+          id: `initial-${i}`,
+        }));
       }
     } catch (err) {
       console.error("Error generating code:", err);

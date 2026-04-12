@@ -170,18 +170,18 @@ export function duplicate(recordChange: (action?: string) => void) {
         actionRegistry.get(s.kind)?.isPath &&
         (s as any).lineId === originalLine.id,
     );
-    if (seqIdx !== -1) {
-      sequenceStore.update((s) => {
-        const s2 = [...s];
-        s2.splice(seqIdx + 1, 0, { kind: "path", lineId: newLine.id! });
-        return s2;
-      });
-    } else {
+    if (seqIdx === -1) {
       // Fallback: append
       sequenceStore.update((s) => [
         ...s,
         { kind: "path", lineId: newLine.id! },
       ]);
+    } else {
+      sequenceStore.update((s) => {
+        const s2 = [...s];
+        s2.splice(seqIdx + 1, 0, { kind: "path", lineId: newLine.id! });
+        return s2;
+      });
     }
 
     selectedLineId.set(newLine.id!);
@@ -301,8 +301,11 @@ export function paste(recordChange: (action?: string) => void) {
     const insertIdx = getSelectedSequenceIndex();
     sequenceStore.update((s) => {
       const s2 = [...s];
-      if (insertIdx !== null) s2.splice(insertIdx + 1, 0, newItem);
-      else s2.push(newItem);
+      if (insertIdx === null) {
+        s2.push(newItem);
+      } else {
+        s2.splice(insertIdx + 1, 0, newItem);
+      }
       return s2;
     });
 
@@ -356,7 +359,14 @@ export function paste(recordChange: (action?: string) => void) {
     }
 
     // Insert
-    if (insertIdx !== null) {
+    if (insertIdx === null) {
+      // Append
+      linesStore.update((l) => renumberDefaultPathNames([...l, newLine]));
+      sequenceStore.update((s) => [
+        ...s,
+        { kind: "path", lineId: newLine.id! },
+      ]);
+    } else {
       // Find the last path item in sequence up to insertIdx.
 
       let insertionLineIndex = -1;
@@ -389,13 +399,6 @@ export function paste(recordChange: (action?: string) => void) {
         s2.splice(insertIdx + 1, 0, { kind: "path", lineId: newLine.id! });
         return s2;
       });
-    } else {
-      // Append
-      linesStore.update((l) => renumberDefaultPathNames([...l, newLine]));
-      sequenceStore.update((s) => [
-        ...s,
-        { kind: "path", lineId: newLine.id! },
-      ]);
     }
 
     selectedLineId.set(newLine.id!);

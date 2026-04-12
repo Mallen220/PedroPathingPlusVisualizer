@@ -27,6 +27,7 @@ module.exports = {
     "unicorn/prefer-string-starts-ends-with": "error",
     "unicorn/prefer-string-slice": "error",
     "unicorn/prefer-modern-dom-apis": "error",
+    "unicorn/no-negated-condition": "error",
   },
   overrides: [
     {

@@ -556,10 +556,10 @@ function calculateMotionProfileDetailed(
     const dt = Math.max(dtLinear, dtRotation);
 
     // Guard against NaN integration
-    if (!Number.isFinite(dt)) {
-      totalTime += 0;
-    } else {
+    if (Number.isFinite(dt)) {
       totalTime += dt;
+    } else {
+      totalTime += 0;
     }
     profile.push(totalTime);
   }

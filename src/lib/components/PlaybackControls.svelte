@@ -139,9 +139,9 @@
   }
 
   let currentTime = $derived(
-    (draggingMarkerIndex !== null
-      ? draggingMarkerPercent / 100
-      : percent / 100) * totalSeconds,
+    (draggingMarkerIndex === null
+      ? percent / 100
+      : draggingMarkerPercent / 100) * totalSeconds,
   );
 
   function toggleSpeedMenu() {
@@ -495,7 +495,7 @@
       step="0.000001"
       aria-label="Animation progress"
       class="w-full appearance-none slider focus:outline-none focus-visible:ring-2 focus-visible:ring-green-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-neutral-900 rounded-full bg-transparent dark:bg-transparent relative z-10 timeline-slider"
-      style={draggingMarkerIndex !== null ? "pointer-events: none;" : ""}
+      style={draggingMarkerIndex === null ? "" : "pointer-events: none;"}
       oninput={handleSeekInput}
       onkeydown={handleSliderKeydown}
     />

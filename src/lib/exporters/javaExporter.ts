@@ -422,7 +422,9 @@ export async function generateJavaCode(
         for (let i = 0; i < pathData.length; i++) {
           const pd = pathData[i];
 
-          if (!pd.line.isChain) {
+          if (pd.line.isChain) {
+            currentBlock += `\n        .addPath(\n          ${pd.curveType}(\n            ${pd.startCode},\n            ${pd.controlPointsCode}\n            ${pd.endCode}\n          )\n        )${pd.headingMethodCode}${pd.eventMarkerCode}`;
+          } else {
             if (currentBlock) {
               currentBlock += currentGlobalHeadingCode;
               currentBlock += "\n        .build();";
@@ -430,8 +432,6 @@ export async function generateJavaCode(
             }
             currentGlobalHeadingCode = pd.globalHeadingCode;
             currentBlock = `${pd.variableName} = follower.pathBuilder()\n        .addPath(\n          ${pd.curveType}(\n            ${pd.startCode},\n            ${pd.controlPointsCode}\n            ${pd.endCode}\n          )\n        )${pd.headingMethodCode}${pd.eventMarkerCode}`;
-          } else {
-            currentBlock += `\n        .addPath(\n          ${pd.curveType}(\n            ${pd.startCode},\n            ${pd.controlPointsCode}\n            ${pd.endCode}\n          )\n        )${pd.headingMethodCode}${pd.eventMarkerCode}`;
           }
         }
 
@@ -511,9 +511,13 @@ export async function generateJavaCode(
           (l.id || `line-${lines.indexOf(l) + 1}`) === (item as any).lineId,
       );
 
-      const idx = lineIndex !== -1 ? lineIndex : -1;
+      const idx = lineIndex === -1 ? -1 : lineIndex;
 
-      if (idx !== -1) {
+      if (idx === -1) {
+        stateMachineCode += `\n          setPathState(${stateStep + 1});`;
+        stateMachineCode += `\n          break;`;
+        stateStep += 1;
+      } else {
         const line = lines[idx];
         if (line.isChain) {
           // Chained paths don't get their own followPath command in the state machine,
@@ -534,10 +538,6 @@ export async function generateJavaCode(
           stateMachineCode += `\n          break;`;
           stateStep += 2;
         }
-      } else {
-        stateMachineCode += `\n          setPathState(${stateStep + 1});`;
-        stateMachineCode += `\n          break;`;
-        stateStep += 1;
       }
     }
   });
@@ -548,10 +548,7 @@ export async function generateJavaCode(
   stateMachineCode += `\n          break;`;
 
   let file = "";
-  if (!exportFullCode) {
-    file =
-      AUTO_GENERATED_FILE_WARNING_MESSAGE + pathsClass + namedCommandsSection;
-  } else {
+  if (exportFullCode) {
     // Determine imports based on telemetry implementation
     let extraImports = "";
     if (telemetryImpl === "Panels") {
@@ -744,6 +741,9 @@ export async function generateJavaCode(
       ${namedCommandsSection}
     }
     `;
+  } else {
+    file =
+      AUTO_GENERATED_FILE_WARNING_MESSAGE + pathsClass + namedCommandsSection;
   }
 
   try {
