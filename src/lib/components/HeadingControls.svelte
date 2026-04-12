@@ -1,6 +1,6 @@
 <!-- Copyright 2026 Matthew Allen. Licensed under the Modified Apache License, Version 2.0. -->
 <script lang="ts">
-  import { createEventDispatcher } from "svelte";
+
   import { transformAngle } from "../../utils/math";
   import HeadingIndicator from "./common/HeadingIndicator.svelte";
   import {
@@ -18,13 +18,15 @@
     getClosestTarget,
     type DragPosition,
   } from "../../utils/dragDrop";
-  import { stopPropagation } from "svelte/legacy";
+
 
   interface Props {
     endPoint: any;
     locked?: boolean;
     tabindex?: number | undefined;
     nested?: boolean;
+    onchange?: () => void;
+    oncommit?: () => void;
   }
 
   let {
@@ -32,8 +34,9 @@
     locked = false,
     tabindex = undefined,
     nested = false,
+    onchange,
+    oncommit,
   }: Props = $props();
-  const dispatch = createEventDispatcher();
 
   // Helper to handle constant heading input safely
   function handleConstantInput(e: Event) {
@@ -42,7 +45,7 @@
     if (!Number.isNaN(value)) {
       endPoint.degrees = value;
     }
-    dispatch("change");
+    onchange?.();
   }
 
   function handleConstantBlur(e: Event) {
@@ -51,7 +54,7 @@
       endPoint.degrees = 0;
       target.value = "0";
     }
-    dispatch("commit");
+    oncommit?.();
   }
 
   let constantInput: HTMLInputElement | undefined = $state();
@@ -81,20 +84,20 @@
 
   function normalizeStart() {
     endPoint.startDeg = transformAngle(endPoint.startDeg);
-    dispatch("change");
-    dispatch("commit");
+    onchange?.();
+    oncommit?.();
   }
 
   function normalizeEnd() {
     endPoint.endDeg = transformAngle(endPoint.endDeg);
-    dispatch("change");
-    dispatch("commit");
+    onchange?.();
+    oncommit?.();
   }
 
   function normalizeConstant() {
     endPoint.degrees = transformAngle(endPoint.degrees);
-    dispatch("change");
-    dispatch("commit");
+    onchange?.();
+    oncommit?.();
   }
 
   function updateTransition(i: number, valStr: string) {
@@ -102,15 +105,15 @@
     if (!Number.isNaN(val)) {
       endPoint.segments[i].tStart = val;
       endPoint.segments[i - 1].tEnd = val;
-      dispatch("change");
+      onchange?.();
     }
   }
 
   function removeTransition(i: number) {
     endPoint.segments[i - 1].tEnd = endPoint.segments[i].tEnd;
     endPoint.segments.splice(i, 1);
-    dispatch("change");
-    dispatch("commit");
+    onchange?.();
+    oncommit?.();
   }
 
   function addSegment() {
@@ -125,8 +128,8 @@
       tEnd: originalEnd,
     });
     endPoint.segments = [...endPoint.segments];
-    dispatch("change");
-    dispatch("commit");
+    onchange?.();
+    oncommit?.();
   }
 
   let collapsedSegments: boolean[] = $state([]);
@@ -200,8 +203,8 @@
       seg.tEnd = oldBounds[i].tEnd;
     });
 
-    dispatch("change");
-    dispatch("commit");
+    onchange?.();
+    oncommit?.();
     handleDragEnd();
   }
 
@@ -231,8 +234,8 @@
     });
 
     endPoint.segments = newSegments;
-    dispatch("change");
-    dispatch("commit");
+    onchange?.();
+    oncommit?.();
   }
 </script>
 
@@ -277,8 +280,8 @@
         }
       }
 
-      dispatch("change");
-      dispatch("commit");
+      onchange?.();
+      oncommit?.();
     }}
     class="w-full pl-3 pr-8 py-1.5 text-sm bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-lg focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 outline-none transition-all flex-1"
     title="The heading style of the robot.
@@ -310,8 +313,8 @@
       checked={endPoint.reverse}
       onchange={(e) => {
         endPoint.reverse = e.currentTarget.checked;
-        dispatch("change");
-        dispatch("commit");
+        onchange?.();
+        oncommit?.();
       }}
       disabled={locked}
       {tabindex}
@@ -348,9 +351,9 @@
           oninput={(e) => {
             const val = Number.parseFloat(e.currentTarget.value);
             if (!Number.isNaN(val)) endPoint.startDeg = val;
-            dispatch("change");
+            onchange?.();
           }}
-          onblur={() => dispatch("commit")}
+          onblur={() => oncommit?.()}
           title="The heading the robot starts this line at (in degrees)"
           aria-label="Start Heading"
           disabled={locked}
@@ -390,9 +393,9 @@
           oninput={(e) => {
             const val = Number.parseFloat(e.currentTarget.value);
             if (!Number.isNaN(val)) endPoint.endDeg = val;
-            dispatch("change");
+            onchange?.();
           }}
-          onblur={() => dispatch("commit")}
+          onblur={() => oncommit?.()}
           title="The heading the robot ends this line at (in degrees)"
           aria-label="End Heading"
           disabled={locked}
@@ -480,9 +483,9 @@
           oninput={(e) => {
             const val = Number.parseFloat(e.currentTarget.value);
             if (!Number.isNaN(val)) endPoint.targetX = val;
-            dispatch("change");
+            onchange?.();
           }}
-          onblur={() => dispatch("commit")}
+          onblur={() => oncommit?.()}
           title="The X coordinate of the point to face"
           aria-label="Target X"
           disabled={locked}
@@ -502,9 +505,9 @@
           oninput={(e) => {
             const val = Number.parseFloat(e.currentTarget.value);
             if (!Number.isNaN(val)) endPoint.targetY = val;
-            dispatch("change");
+            onchange?.();
           }}
-          onblur={() => dispatch("commit")}
+          onblur={() => oncommit?.()}
           title="The Y coordinate of the point to face"
           aria-label="Target Y"
           disabled={locked}
@@ -560,7 +563,7 @@
                 max="1"
                 value={segment.tStart}
                 oninput={(e) => updateTransition(i, e.currentTarget.value)}
-                onblur={() => dispatch("commit")}
+                onblur={() => oncommit?.()}
                 disabled={locked}
                 class="w-14 px-1 py-0.5 text-xs bg-white dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-600 rounded focus:ring-1 focus:ring-purple-500 outline-none"
               />
@@ -608,7 +611,7 @@
             >
               <button
                 title={locked ? "Locked" : "Move up"}
-                onclick={stopPropagation(() => moveSegment(i, -1))}
+                onclick={(e) => { e.stopPropagation(); moveSegment(i, -1); }}
                 class="p-0.5 hover:bg-neutral-50 dark:hover:bg-neutral-700 text-neutral-500 dark:text-neutral-400 disabled:opacity-30 rounded-t focus:outline-none focus:ring-2 focus:ring-purple-500"
                 disabled={i === 0 || locked}
               >
@@ -620,7 +623,7 @@
               ></div>
               <button
                 title={locked ? "Locked" : "Move down"}
-                onclick={stopPropagation(() => moveSegment(i, 1))}
+                onclick={(e) => { e.stopPropagation(); moveSegment(i, 1); }}
                 class="p-0.5 hover:bg-neutral-50 dark:hover:bg-neutral-700 text-neutral-500 dark:text-neutral-400 disabled:opacity-30 rounded-b focus:outline-none focus:ring-2 focus:ring-purple-500"
                 disabled={i === endPoint.segments.length - 1 || locked}
               >
@@ -634,8 +637,8 @@
                 bind:endPoint={endPoint.segments[i]}
                 {locked}
                 nested={true}
-                on:change={() => dispatch("change")}
-                on:commit={() => dispatch("commit")}
+                onchange={() => onchange?.()}
+                oncommit={() => oncommit?.()}
               />
             </div>
           </div>

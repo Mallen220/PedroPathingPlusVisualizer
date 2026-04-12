@@ -185,8 +185,8 @@
         bind:this={headingControls}
         endPoint={startPoint}
         locked={startPoint.locked}
-        on:change={() => (startPoint = { ...startPoint })}
-        on:commit={() => (startPoint = { ...startPoint })}
+        onchange={() => (startPoint = { ...startPoint })}
+        oncommit={() => (startPoint = { ...startPoint })}
       />
     </div>
   {/if}
