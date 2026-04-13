@@ -49,7 +49,7 @@ async function initCache(): Promise<void> {
         cacheInitialized = true;
         resolve();
       };
-      tx.onerror = () => reject(tx.error);
+      tx.onerror = () => reject(new Error(tx.error?.name));
     });
   })();
 
@@ -103,7 +103,7 @@ async function setMultiple(
     const store = tx.objectStore(STORE_NAME);
     entries.forEach((e) => store.put(e.value, e.key));
     tx.oncomplete = () => resolve();
-    tx.onerror = () => reject(tx.error);
+    tx.onerror = () => reject(new Error(tx.error?.message));
   });
 }
 
@@ -122,7 +122,7 @@ async function renameInDB(
     store.put(value, newPath);
     store.delete(oldPath);
     tx.oncomplete = () => resolve();
-    tx.onerror = () => reject(tx.error);
+    tx.onerror = () => reject(new Error(tx.error?.message));
   });
 }
 
