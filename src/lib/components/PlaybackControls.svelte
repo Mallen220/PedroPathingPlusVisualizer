@@ -570,7 +570,10 @@
         aria-label={`Playback speed options, current speed ${(playbackSpeed ?? 1).toFixed(2)}x`}
         aria-haspopup="menu"
         aria-expanded={showSpeedMenu}
-        onclick={(e) => { e.stopPropagation(); toggleSpeedMenu(); }}
+        onclick={(e) => {
+          e.stopPropagation();
+          toggleSpeedMenu();
+        }}
         class="flex items-center gap-2 px-3 py-1 rounded-md bg-neutral-100 dark:bg-neutral-800 text-sm text-neutral-800 dark:text-neutral-200 hover:bg-neutral-200 dark:hover:bg-neutral-700 focus:outline-none focus:ring-2 focus:ring-amber-500 transition-colors"
         tabindex="0"
       >

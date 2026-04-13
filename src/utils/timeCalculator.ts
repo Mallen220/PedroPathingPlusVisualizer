@@ -637,7 +637,6 @@ export function calculateGlobalChainMeta(
   return meta;
 }
 
-
 function calculateSegmentVelocities(
   idx: number,
   seq: SequenceItem[],
@@ -650,7 +649,7 @@ function calculateSegmentVelocities(
   line: Line,
   maxVelGlobal: number,
   isChained: boolean,
-  isChainedToNext: boolean
+  isChainedToNext: boolean,
 ): { entryVelocity: number; exitVelocity: number } {
   let entryVelocity = 0;
   let exitVelocity = 0;
@@ -710,8 +709,13 @@ function calculateEndHeadingAndRotation(
   currentHeading: number,
   length: number,
   isChained: boolean,
-  analysis: PathAnalysis
-): { endHeading: number; rotationRequired: number; effectiveHeading: string; endHeadingRaw: number } {
+  analysis: PathAnalysis,
+): {
+  endHeading: number;
+  rotationRequired: number;
+  effectiveHeading: string;
+  endHeadingRaw: number;
+} {
   let rotationRequired = 0;
   let endHeadingRaw = getLineEndHeading(
     line,
@@ -824,9 +828,7 @@ function calculateEndHeadingAndRotation(
           const shortDiff = eDeg - sDeg;
           const normalizedShort = ((shortDiff % 360) + 360) % 360;
           const longDiff =
-            normalizedShort <= 180
-              ? normalizedShort - 360
-              : normalizedShort;
+            normalizedShort <= 180 ? normalizedShort - 360 : normalizedShort;
           const startUnwound = unwrapAngle(sDeg, currentHeading);
           targetHeading = startUnwound + longDiff;
         } else {
@@ -865,7 +867,7 @@ function buildHeadingProfile(
   safeSettings: Settings,
   length: number,
   isChained: boolean,
-  isGlobalOverride: boolean
+  isGlobalOverride: boolean,
 ): number[] {
   const headingProfile: number[] = [currentHeading];
   const samples = analysis.steps.length;
@@ -922,13 +924,8 @@ function buildHeadingProfile(
     const isReverse = isGlobalOverride
       ? rootLine!.globalReverse
       : (line.endPoint as any).reverse;
-    const finalTargetDeg = isReverse
-      ? targetConstDeg + 180
-      : targetConstDeg;
-    const targetConstHeading = unwrapAngle(
-      finalTargetDeg,
-      currentHeading,
-    );
+    const finalTargetDeg = isReverse ? targetConstDeg + 180 : targetConstDeg;
+    const targetConstHeading = unwrapAngle(finalTargetDeg, currentHeading);
 
     if (isChained) {
       for (let i = 1; i <= samples; i++) {
@@ -982,8 +979,7 @@ function buildHeadingProfile(
           );
         } else {
           const ratio = i / samples;
-          const interpolatedHeading =
-            targetStartHeading + longDiff * ratio;
+          const interpolatedHeading = targetStartHeading + longDiff * ratio;
           headingProfile.push(interpolatedHeading);
         }
       }
@@ -996,9 +992,7 @@ function buildHeadingProfile(
             cTotalLen > 0
               ? (cDistBefore + (i / samples) * length) / cTotalLen
               : i / samples;
-          headingProfile.push(
-            startUnwound + (unwrappedEnd - startUnwound) * t,
-          );
+          headingProfile.push(startUnwound + (unwrappedEnd - startUnwound) * t);
         } else if (isChained) {
           const stepTime = motionProfile[i];
           const ratio =
@@ -1091,8 +1085,7 @@ function buildHeadingProfile(
         let eDeg = activeSeg.endDeg ?? 0;
         let localT = 0;
         if (activeSeg.tEnd > activeSeg.tStart) {
-          localT =
-            (t - activeSeg.tStart) / (activeSeg.tEnd - activeSeg.tStart);
+          localT = (t - activeSeg.tStart) / (activeSeg.tEnd - activeSeg.tStart);
         }
         if (localT < 0) localT = 0;
         if (localT > 1) localT = 1;
@@ -1102,9 +1095,7 @@ function buildHeadingProfile(
           const shortDiff = eDeg - sDeg;
           const normalizedShort = ((shortDiff % 360) + 360) % 360;
           const longDiff =
-            normalizedShort <= 180
-              ? normalizedShort - 360
-              : normalizedShort;
+            normalizedShort <= 180 ? normalizedShort - 360 : normalizedShort;
           targetHeading = startUnwound + longDiff * localT;
         } else {
           const totalDiff = eDeg - sDeg;
@@ -1137,8 +1128,7 @@ function buildHeadingProfile(
         if (stepPhysicalTime > 0 && dt < stepPhysicalTime) {
           const ratio = dt / stepPhysicalTime;
           nextHeading =
-            simHeading +
-            (targetHeading - simHeading) * Math.min(1, ratio);
+            simHeading + (targetHeading - simHeading) * Math.min(1, ratio);
         } else {
           nextHeading = targetHeading;
         }
@@ -1160,7 +1150,6 @@ function buildHeadingProfile(
 
   return headingProfile;
 }
-
 
 export function calculatePathTime(
   startPoint: Point,
@@ -1426,8 +1415,18 @@ export function calculatePathTime(
         const maxVelGlobal = safeSettings.maxVelocity || 100;
 
         const velocities = calculateSegmentVelocities(
-          idx, seq, lineById, globalChainMeta, currentHeading,
-          prevPoint, rootLine, chainMeta, line, maxVelGlobal, isChained, isChainedToNext
+          idx,
+          seq,
+          lineById,
+          globalChainMeta,
+          currentHeading,
+          prevPoint,
+          rootLine,
+          chainMeta,
+          line,
+          maxVelGlobal,
+          isChained,
+          isChainedToNext,
         );
         entryVelocity = velocities.entryVelocity;
         exitVelocity = velocities.exitVelocity;
@@ -1449,7 +1448,14 @@ export function calculatePathTime(
 
       // Calculate Rotation Time (for non-profile logic)
       const rotationAnalysis = calculateEndHeadingAndRotation(
-        line, prevPoint, rootLine, chainMeta, currentHeading, length, isChained, analysis
+        line,
+        prevPoint,
+        rootLine,
+        chainMeta,
+        currentHeading,
+        length,
+        isChained,
+        analysis,
       );
       let endHeading = rotationAnalysis.endHeading;
       let rotationRequired = rotationAnalysis.rotationRequired;
@@ -1483,7 +1489,20 @@ export function calculatePathTime(
       // Build heading profile AFTER motion profile is scaled/finalized so we have accurate times
       if (useMotionProfile && motionProfile) {
         headingProfile = buildHeadingProfile(
-          line, prevPoint, rootLine, chainMeta, currentHeading, endHeading, endHeadingRaw, physicalRotationTime, analysis, motionProfile, safeSettings, length, isChained, isGlobalOverride
+          line,
+          prevPoint,
+          rootLine,
+          chainMeta,
+          currentHeading,
+          endHeading,
+          endHeadingRaw,
+          physicalRotationTime,
+          analysis,
+          motionProfile,
+          safeSettings,
+          length,
+          isChained,
+          isGlobalOverride,
         );
       }
 

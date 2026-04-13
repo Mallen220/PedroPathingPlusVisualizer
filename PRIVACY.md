@@ -20,7 +20,7 @@ Any data you create, import, or save within the Application (such as path files,
 
 We use Google Analytics to collect information about how users interact with the Application. This helps us understand usage patterns, identify bugs, and improve performance.
 
-- **Data Collected:** This may include anonymized usage data such as page views, button clicks, features used, session duration, and general technical information (e.g., browser type, operating system, and approximate geographic location derived from IP address). 
+- **Data Collected:** This may include anonymized usage data such as page views, button clicks, features used, session duration, and general technical information (e.g., browser type, operating system, and approximate geographic location derived from IP address).
 - **Anonymization:** We have configured Google Analytics to ensure that your data is anonymized. We do not collect personally identifiable information (PII) such as names, email addresses, or specific street addresses through Google Analytics.
 - **Cookies & Local Storage:** Google Analytics may use cookies or browser local storage to track user interactions. You can manage or disable these through your browser settings.
 - **Privacy Policy:** For more information on how Google handles your data, please visit the [Google Privacy & Terms page](https://policies.google.com/privacy).
@@ -37,7 +37,7 @@ The desktop version of the Application uses GitHub Releases to check for and dow
 
 ## General Disclaimer & Catch-all
 
-We strive to implement all reasonable measures to protect your privacy. However, please be aware that no method of transmission over the Internet or method of electronic storage is 100% secure. 
+We strive to implement all reasonable measures to protect your privacy. However, please be aware that no method of transmission over the Internet or method of electronic storage is 100% secure.
 
 This Privacy Policy applies to all current and future versions of Turtle Tracer. We reserve the right to collect additional non-personal technical data as necessary for the operation, security, and maintenance of the Application. If any part of this policy is found to be unenforceable, the remainder of the policy shall remain in full force and effect.
 

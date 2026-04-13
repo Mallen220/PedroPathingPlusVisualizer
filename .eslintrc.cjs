@@ -46,6 +46,7 @@ module.exports = {
       extends: ["plugin:prettier/recommended"],
       rules: {
         "@typescript-eslint/prefer-optional-chain": "error",
+        "@typescript-eslint/prefer-promise-reject-errors": "error",
       },
     },
     {

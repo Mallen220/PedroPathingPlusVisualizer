@@ -14,10 +14,9 @@ let cacheInitialized = false;
 let initPromise: Promise<void> | null = null;
 
 function getDB(): Promise<IDBDatabase> {
-  if (!dbPromise) {
-    dbPromise = new Promise((resolve, reject) => {
+  dbPromise ??= new Promise((resolve, reject) => {
       const request = indexedDB.open(DB_NAME, DB_VERSION);
-      request.onerror = () => reject(request.error);
+      request.onerror = () => reject(new Error(request.error?.message));
       request.onsuccess = () => resolve(request.result);
       request.onupgradeneeded = (event: IDBVersionChangeEvent) => {
         const db = (event.target as IDBOpenDBRequest).result;
@@ -26,7 +25,6 @@ function getDB(): Promise<IDBDatabase> {
         }
       };
     });
-  }
   return dbPromise;
 }
 
