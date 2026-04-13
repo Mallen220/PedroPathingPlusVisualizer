@@ -27,7 +27,7 @@ export function calculateFieldCentricMecanum(
   // Normalize speeds
   const denominator = Math.max(
     Math.abs(rotForward) + Math.abs(adjustedRotStrafe) + Math.abs(rotate),
-    1.0,
+    1,
   );
 
   return {

@@ -398,7 +398,7 @@
     settings = $bindable(),
     handleSeek,
     loopAnimation = $bindable(),
-    playbackSpeed = 1.0,
+    playbackSpeed = 1,
     splitPath = () => {},
     setPlaybackSpeed,
     totalSeconds = 0,
@@ -487,7 +487,7 @@
           }
           if (
             !isRotate &&
-            Math.abs((ev.startHeading || 0) - (ev.targetHeading || 0)) > 1.0
+            Math.abs((ev.startHeading || 0) - (ev.targetHeading || 0)) > 1
           ) {
             isRotate = true;
             explicit = false;

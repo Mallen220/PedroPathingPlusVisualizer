@@ -249,7 +249,7 @@
 
     if (newMarkerIdx >= count) {
       newMarkerIdx = count - 1;
-      newLocalPos = 1.0;
+      newLocalPos = 1;
     }
 
     const newIndex = map[newMarkerIdx];

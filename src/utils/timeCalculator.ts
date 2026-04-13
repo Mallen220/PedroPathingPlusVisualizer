@@ -1056,7 +1056,7 @@ export function calculatePathTime(
         const globalT =
           isGlobalOverride && cTotalLen > 0
             ? (cDistBefore + length) / cTotalLen
-            : 1.0;
+            : 1;
         let activeSeg = null;
         for (const seg of segments) {
           if (globalT >= seg.tStart && globalT <= seg.tEnd) {
@@ -1203,8 +1203,8 @@ export function calculatePathTime(
               const stepTime = motionProfile[i];
               const ratio =
                 physicalRotationTime > 0
-                  ? Math.min(1.0, stepTime / physicalRotationTime)
-                  : 1.0;
+                  ? Math.min(1, stepTime / physicalRotationTime)
+                  : 1;
               headingProfile.push(
                 currentHeading + (endHeading - currentHeading) * ratio,
               );
@@ -1243,8 +1243,8 @@ export function calculatePathTime(
                 const stepTime = motionProfile[i];
                 const ratio =
                   physicalRotationTime > 0
-                    ? Math.min(1.0, stepTime / physicalRotationTime)
-                    : 1.0;
+                    ? Math.min(1, stepTime / physicalRotationTime)
+                    : 1;
                 headingProfile!.push(
                   currentHeading + (endHeading - currentHeading) * ratio,
                 );
@@ -1271,8 +1271,8 @@ export function calculatePathTime(
                 const stepTime = motionProfile[i];
                 const ratio =
                   physicalRotationTime > 0
-                    ? Math.min(1.0, stepTime / physicalRotationTime)
-                    : 1.0;
+                    ? Math.min(1, stepTime / physicalRotationTime)
+                    : 1;
                 headingProfile!.push(
                   currentHeading + (endHeading - currentHeading) * ratio,
                 );
@@ -1411,7 +1411,7 @@ export function calculatePathTime(
                 const ratio = dt / stepPhysicalTime;
                 nextHeading =
                   simHeading +
-                  (targetHeading - simHeading) * Math.min(1.0, ratio);
+                  (targetHeading - simHeading) * Math.min(1, ratio);
               } else {
                 nextHeading = targetHeading;
               }
@@ -1502,7 +1502,7 @@ export function formatTime(totalSeconds: number): string {
 
 export function getAnimationDuration(
   totalTime: number,
-  speedFactor: number = 1.0,
+  speedFactor: number = 1,
 ): number {
   return (totalTime * 1000) / speedFactor;
 }

@@ -154,7 +154,7 @@ export const WaitAction: ActionDefinition = {
       : "SequentialCommandGroup";
 
     const getWaitValue = (ms: number) =>
-      isNextFTC ? (ms / 1000.0).toFixed(3) : ms.toFixed(0);
+      isNextFTC ? (ms / 1000).toFixed(3) : ms.toFixed(0);
 
     const markers: any[] = Array.isArray(waitItem.eventMarkers)
       ? [...waitItem.eventMarkers]

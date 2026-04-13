@@ -359,7 +359,7 @@
               <option value={0.25}>25% (Smallest)</option>
               <option value={0.5}>50% (Recommended)</option>
               <option value={0.75}>75%</option>
-              <option value={1.0}>100% (Original)</option>
+              <option value={1}>100% (Original)</option>
               <option value={1.5}>150% (High Res)</option>
             </select>
           </div>

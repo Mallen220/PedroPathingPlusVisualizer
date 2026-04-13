@@ -48,8 +48,7 @@ export function normalizeLines(input: Line[]): Line[] {
 function getElectronAPI() {
   const globalAny = globalThis as any;
   if (globalAny.electronAPI) return globalAny.electronAPI;
-  if (typeof globalThis !== "undefined" && (globalThis as any).electronAPI)
-    return (globalThis as any).electronAPI;
+  if (globalAny.window?.electronAPI) return globalAny.window.electronAPI;
   return undefined;
 }
 
@@ -137,7 +136,7 @@ const loadingMacros = new Set<string>();
 // Animation state
 export const percentStore = writable(0);
 export const playingStore = writable(false);
-export const playbackSpeedStore = writable(1.0);
+export const playbackSpeedStore = writable(1);
 export const loopAnimationStore = writable(true);
 export const loopRangeActiveStore = writable(true);
 export const loopRangeStore = writable<[number, number]>([0, 100]);

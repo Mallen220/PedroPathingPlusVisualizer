@@ -93,7 +93,7 @@ export class PathOptimizer {
     this.generations = settings.optimizationIterations ?? 100;
     this.populationSize = settings.optimizationPopulationSize ?? 50;
     this.mutationRate = settings.optimizationMutationRate ?? 0.4;
-    this.mutationStrength = settings.optimizationMutationStrength ?? 6.0;
+    this.mutationStrength = settings.optimizationMutationStrength ?? 6;
 
     // Cancellation flag
     this.stopRequested = false;

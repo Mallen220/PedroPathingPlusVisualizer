@@ -1473,7 +1473,7 @@
           {/if}
 
           {#each lines.filter((l) => l.id === item.lineId) as line (line.id)}
-            {@const lineIdx = lines.findIndex((l) => l === line)}
+            {@const lineIdx = lines.indexOf(line)}
             <!-- End Point -->
             {@html debugPointRow(line, undefined)}
             {@const endPointId = `point-${lineIdx + 1}-0`}
@@ -1711,10 +1711,9 @@
             <!-- Control Points -->
             {#each line.controlPoints as cp, j}
               {@html debugPointRow(line, cp, j)}
-              {@const cpIndex = [
-                line.endPoint,
-                ...line.controlPoints,
-              ].findIndex((p) => p === cp)}
+              {@const cpIndex = [line.endPoint, ...line.controlPoints].indexOf(
+                cp,
+              )}
               {@const pointId = `point-${lineIdx + 1}-${cpIndex}`}
               <tr
                 class={`hover:bg-neutral-50 dark:hover:bg-neutral-800/50 ${$selectedLineId === line.id ? "bg-green-50 dark:bg-green-900/20" : ""} ${$multiSelectedPointIdsSet.size > 1 && $multiSelectedPointIdsSet.has(pointId) ? "bg-green-100 dark:bg-green-800/40" : ""}`}

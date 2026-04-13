@@ -667,7 +667,7 @@ export async function exportPathToApng(
       delays,
     );
 
-    if (onProgress) onProgress(1.0);
+    if (onProgress) onProgress(1);
 
     return new Blob([apngBuffer], { type: "image/png" });
   } finally {

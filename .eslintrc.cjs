@@ -28,6 +28,11 @@ module.exports = {
     "unicorn/prefer-string-slice": "error",
     "unicorn/prefer-modern-dom-apis": "error",
     "unicorn/no-negated-condition": "error",
+    "unicorn/prefer-array-index-of": "error",
+    "unicorn/prefer-top-level-await": "error",
+    "unicorn/prefer-node-protocol": "error",
+    "unicorn/prefer-export-from": "error",
+    "unicorn/no-zero-fractions": "error",
   },
   overrides: [
     {

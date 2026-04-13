@@ -230,7 +230,7 @@ function perpendicularDistance(
   const dy = lineEnd.y - lineStart.y;
 
   const magSq = dx * dx + dy * dy;
-  if (magSq > 0.0) {
+  if (magSq > 0) {
     // Numerator is the absolute value of the cross product of the vector from lineStart to lineEnd
     // and the vector from lineStart to pt. This gives the area of the parallelogram formed by the two vectors.
     // Dividing by the magnitude of the line segment gives the height of the parallelogram,
@@ -414,7 +414,7 @@ export function generateLinesFromDrawing(
       if (dev > maxDev) maxDev = dev;
     }
 
-    const isStraight = maxDev < 1.0; // Less than 1 inch deviation is considered straight
+    const isStraight = maxDev < 1; // Less than 1 inch deviation is considered straight
 
     // Default tension factor for control points.
     // Set to 0.38 for a balanced curve that accurately tracks points without overshooting.

@@ -34,7 +34,7 @@ export function generateFacingLineElements(lines: Line[], ctx: RenderContext) {
       activeEvent.endTime > activeEvent.startTime
         ? (currentSeconds - activeEvent.startTime) /
           (activeEvent.endTime - activeEvent.startTime)
-        : 1.0;
+        : 1;
 
     let activeSeg = null;
     for (const seg of segments) {

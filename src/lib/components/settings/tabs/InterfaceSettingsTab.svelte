@@ -52,7 +52,7 @@
   }
 
   function resetFieldViewToDefault() {
-    fieldZoom.set(1.0);
+    fieldZoom.set(1);
     fieldPan.set({ x: 0, y: 0 });
   }
 

@@ -59,7 +59,7 @@
     handleSeek,
     loopAnimation = $bindable(),
     timelineItems = [],
-    playbackSpeed = 1.0,
+    playbackSpeed = 1,
     setPlaybackSpeed,
     totalSeconds = 0,
     settings,
@@ -70,7 +70,7 @@
 
   // Speed dropdown state & helpers
   let showSpeedMenu = $state(false);
-  const speedOptions = [0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 2.0, 3.0];
+  const speedOptions = [0.25, 0.5, 0.75, 1, 1.25, 1.5, 2, 3];
 
   // Drag State
   let draggingMarkerIndex: number | null = $state(null);
@@ -173,7 +173,7 @@
     // Snap to markers/events if Shift is NOT held
     if (!shiftHeld) {
       let nearest: number | null = null;
-      let minDist = 1.0; // 1% threshold
+      let minDist = 1; // 1% threshold
 
       // Snap to 0 and 100
       if (Math.abs(val - 0) < minDist) {

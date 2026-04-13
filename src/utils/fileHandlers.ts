@@ -34,8 +34,6 @@ import {
 } from "./fileExtensions";
 import pkg from "../../package.json";
 
-export { loadProjectData };
-
 interface ExtendedElectronAPI {
   writeFile: (filePath: string, content: string) => Promise<boolean>;
   writeFileBase64?: (
@@ -849,3 +847,5 @@ export async function handleAutoExport(
     });
   }
 }
+
+export { loadProjectData } from "../lib/projectStore";

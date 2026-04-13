@@ -372,7 +372,7 @@ export function getLineEndHeading(
     const t =
       isGlobal && totalChainDistance && totalChainDistance > 0
         ? (distanceAtEnd || 0) / totalChainDistance
-        : 1.0;
+        : 1;
 
     let lastSeg = null;
     for (const seg of segments) {

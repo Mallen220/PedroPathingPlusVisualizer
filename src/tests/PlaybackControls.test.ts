@@ -72,7 +72,7 @@ describe("PlaybackControls", () => {
     const speedOption = screen.getByText("2.00x");
     await fireEvent.click(speedOption);
 
-    expect(setPlaybackSpeed).toHaveBeenCalledWith(2.0, true);
+    expect(setPlaybackSpeed).toHaveBeenCalledWith(2, true);
   });
 
   it("seeks when slider changes", async () => {

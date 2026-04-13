@@ -58,7 +58,7 @@ export function generateShapeElements(shapes: Shape[], ctx: RenderContext) {
         shapeElement.stroke = shape.color;
         shapeElement.fill = shape.color;
         shapeElement.opacity = 0.1; // Low occupancy fill 10%
-        shapeElement.linewidth = uiLength(1.0);
+        shapeElement.linewidth = uiLength(1);
         shapeElement.dashes = [uiLength(4), uiLength(4)]; // Dashed lines
       } else {
         // Standard Obstacle

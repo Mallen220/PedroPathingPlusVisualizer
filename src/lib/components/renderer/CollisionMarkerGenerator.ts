@@ -117,7 +117,7 @@ export function generateCollisionElements(
               const path = new Two.Path(points, false, false);
               path.noFill();
               path.stroke = strokeColor;
-              path.linewidth = uiLength(2.0);
+              path.linewidth = uiLength(2);
               path.cap = "round";
               path.join = "round";
               group.add(path);
@@ -126,7 +126,7 @@ export function generateCollisionElements(
               const glowPath = new Two.Path(points, false, false);
               glowPath.noFill();
               glowPath.stroke = glowStroke;
-              glowPath.linewidth = uiLength(6.0);
+              glowPath.linewidth = uiLength(6);
               glowPath.opacity = 0.5;
               glowPath.cap = "round";
               glowPath.join = "round";

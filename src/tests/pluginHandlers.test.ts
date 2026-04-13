@@ -76,7 +76,7 @@ describe("Plugin IPC security handlers", () => {
     const getPluginsDirSpy = vi
       .spyOn(utils, "getPluginsDirectory")
       .mockReturnValue("/escaped/outside");
-    const fsPromises = await import("fs/promises");
+    const fsPromises = await import("node:fs/promises");
     const mkdirSpy = vi
       .spyOn(fsPromises.default, "mkdir")
       .mockRejectedValue(new Error("Invalid path"));

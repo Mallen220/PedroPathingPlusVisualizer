@@ -5,8 +5,8 @@ Exit code != 0 on failure so CI can catch missing/default tile assets.
 Run with: npm run check:tiles
 */
 
-const fs = require("fs");
-const path = require("path");
+const fs = require("node:fs");
+const path = require("node:path");
 
 async function main() {
   const useSharp = (() => {

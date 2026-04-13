@@ -245,7 +245,7 @@
       const deltaSign = e.deltaY < 0 ? 1 : -1; // wheel up -> zoom in
       const step = computeZoomStep(zoom, deltaSign);
       const newZoom = Math.min(
-        5.0,
+        5,
         Math.max(0.1, Number((zoom + deltaSign * step).toFixed(2))),
       );
       zoomTo(newZoom, { x: lx, y: ly });
@@ -444,7 +444,7 @@
           const dist = Math.sqrt(dx * dx + dy * dy);
 
           // Add a new point if it moved at least 2 inches
-          if (dist >= 2.0) {
+          if (dist >= 2) {
             drawPoints.push({ x: inchX, y: inchY });
 
             // Re-render path preview
@@ -495,7 +495,7 @@
             }
 
             // Smart Object Snapping
-            const SNAP_THRESHOLD = 1.0; // inches
+            const SNAP_THRESHOLD = 1; // inches
             const isSnappingEnabled = settings.smartSnapping !== false; // Enabled by default
             const shouldSnap = evt.altKey
               ? !isSnappingEnabled
@@ -2458,7 +2458,7 @@
             onclick={() => {
               followRobotStore.set(false);
               const step = computeZoomStep(zoom, 1);
-              const newZoom = Math.min(5.0, Number((zoom + step).toFixed(2)));
+              const newZoom = Math.min(5, Number((zoom + step).toFixed(2)));
               const focus = isMouseOverField
                 ? { x: x(currentMouseX), y: y(currentMouseY) }
                 : { x: width / 2, y: height / 2 };
@@ -2489,7 +2489,7 @@
             class="w-7 h-7 flex items-center justify-center rounded hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-200 transition-colors"
             onclick={() => {
               followRobotStore.set(false);
-              fieldZoom.set(1.0);
+              fieldZoom.set(1);
               fieldPan.set({ x: 0, y: 0 });
             }}
             aria-label="Reset zoom"
@@ -2516,7 +2516,7 @@
             onclick={() => {
               followRobotStore.set(false);
               const step = computeZoomStep(zoom, 1);
-              const newZoom = Math.min(5.0, Number((zoom + step).toFixed(2)));
+              const newZoom = Math.min(5, Number((zoom + step).toFixed(2)));
               const focus = isMouseOverField
                 ? { x: x(currentMouseX), y: y(currentMouseY) }
                 : { x: width / 2, y: height / 2 };
@@ -2547,7 +2547,7 @@
             class="w-8 h-8 flex items-center justify-center rounded hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-200 transition-colors"
             onclick={() => {
               followRobotStore.set(false);
-              fieldZoom.set(1.0);
+              fieldZoom.set(1);
               fieldPan.set({ x: 0, y: 0 });
             }}
             aria-label="Reset zoom"

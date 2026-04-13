@@ -34,13 +34,13 @@ export function modifyZoom(delta: number) {
     // Use adaptive step: when zooming in past 1x, speed up
     const step = computeZoomStep(z, Math.sign(delta));
     const change = Math.sign(delta) * step;
-    return Math.max(0.1, Math.min(5.0, Number((z + change).toFixed(2))));
+    return Math.max(0.1, Math.min(5, Number((z + change).toFixed(2))));
   });
 }
 
 export function resetZoom() {
   if (isUIElementFocused() || get(settingsStore).lockFieldView) return;
-  fieldZoom.set(1.0);
+  fieldZoom.set(1);
   fieldPan.set({ x: 0, y: 0 });
 }
 

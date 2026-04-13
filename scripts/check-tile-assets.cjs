@@ -3,8 +3,8 @@ CommonJS validation for tile assets under `build/win/`.
 Run with: npm run check:tiles
 */
 
-const fs = require("fs");
-const path = require("path");
+const fs = require("node:fs");
+const path = require("node:path");
 
 function hasPackage(name) {
   try {

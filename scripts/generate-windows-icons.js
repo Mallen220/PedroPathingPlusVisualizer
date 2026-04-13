@@ -6,8 +6,8 @@ Outputs PNGs into `build/win/` with common UWP tile names and 100% + 200% varian
 Run with: npm run generate:icons
 */
 
-const fs = require("fs");
-const path = require("path");
+const fs = require("node:fs");
+const path = require("node:path");
 
 function hasPackage(name) {
   try {
