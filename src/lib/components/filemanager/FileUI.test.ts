@@ -31,7 +31,7 @@ describe("FileUI Components", () => {
 
   const createMockFile = (overrides: Partial<FileInfo> = {}): FileInfo => ({
     name: "test.json", path: "/path/to/test.json", isDirectory: false,
-    modified: new Date().getTime(), size: 1024, ...overrides,
+    modified: new Date(), size: 1024, ...overrides,
   });
 
   // Run the same core UI tests for both FileGrid and FileList to reduce code duplication
@@ -48,9 +48,9 @@ describe("FileUI Components", () => {
       const td = new Date(); const yd = new Date(td); yd.setDate(yd.getDate() - 1); const od = new Date(td); od.setDate(od.getDate() - 5);
       const files = [
         createMockFile({ name: "dir", path: "/dir", isDirectory: true }),
-        createMockFile({ name: "today.json", path: "/today", modified: td.getTime() }),
-        createMockFile({ name: "yesterday.json", path: "/yesterday", modified: yd.getTime() }),
-        createMockFile({ name: "older.json", path: "/older", modified: od.getTime() }),
+        createMockFile({ name: "today.json", path: "/today", modified: td }),
+        createMockFile({ name: "yesterday.json", path: "/yesterday", modified: yd }),
+        createMockFile({ name: "older.json", path: "/older", modified: od }),
       ];
       render(Component, { props: { files, sortMode: "date" } });
       expect(screen.getByText("Folders")).toBeInTheDocument();
