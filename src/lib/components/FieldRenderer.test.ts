@@ -75,8 +75,9 @@ describe('FieldRenderer', () => {
         expect(elements.length).toBe(4);
 
         // Asserting boundary orange color
-        expect(elements[0].children[0].fill).toBe('rgba(249, 115, 22, 0.3)');
-        expect(elements[0].children[1].fill).toBe('rgba(249, 115, 22, 0.5)');
+        const [glow, circle] = elements[0].children as any[];
+        expect(glow.fill).toBe('rgba(249, 115, 22, 0.3)');
+        expect(circle.fill).toBe('rgba(249, 115, 22, 0.5)');
     });
 
     it('validates coordinate mapping from d3 integration as used in FieldRenderer', () => {
