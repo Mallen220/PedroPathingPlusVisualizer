@@ -11,9 +11,6 @@ permissions:
   actions: read
   packages: read
 
-env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-
 jobs:
   test-boot:
     name: Test Boot on ${{ matrix.os }}
