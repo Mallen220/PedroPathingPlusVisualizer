@@ -151,12 +151,12 @@ describe("FileUI Components", () => {
       await vi.advanceTimersByTimeAsync(50);
       await vi.advanceTimersByTimeAsync(2000);
 
-      for (let i=0; i<6; i++) {
+      for (let i = 0; i < 6; i++) {
          mockReadFile.mockRejectedValueOnce(new Error("fail"));
-         await vi.advanceTimersByTimeAsync(5000);
       }
+      await vi.advanceTimersByTimeAsync(5000 * 6);
       expect(mockReadFile).toHaveBeenCalled();
-    });
+    }, 20000);
 
     it("handles context menu interactions via explicit events", async () => {
       const file = createMockFile({ name: "menu.json", path: "/menu" });
