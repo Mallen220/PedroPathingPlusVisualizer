@@ -29,8 +29,8 @@ describe("Generator Utilities", () => {
       multiSelectedPointIds: [],
     } as any;
 
-    const startPoint: Point = { x: 0, y: 0 };
-    const endPoint: Point = { x: 10, y: 10 };
+    const startPoint: Point = { x: 0, y: 0 } as Point;
+    const endPoint: Point = { x: 10, y: 10 } as Point;
 
     it("should handle 0 control points (straight line)", () => {
       const line: Line = {
@@ -148,15 +148,15 @@ describe("Generator Utilities", () => {
       multiSelectedPointIds: [],
     } as any;
 
-    const startPoint: Point = { x: 0, y: 0 };
-    const endPoint: Point = { x: 10, y: 10 };
+    const startPoint: Point = { x: 0, y: 0 } as Point;
+    const endPoint: Point = { x: 10, y: 10 } as Point;
 
     it("should render standard line and handle states", () => {
       const lines: Line[] = [
         { id: "line-normal", endPoint, controlPoints: [], color: "#ff0000" },
-        { id: "line-dimmed", endPoint: { x: 20, y: 20 }, controlPoints: [], color: "#00ff00" },
-        { id: "line-locked", endPoint: { x: 30, y: 30 }, controlPoints: [], color: "#0000ff", locked: true },
-        { id: "line-hidden", endPoint: { x: 40, y: 40 }, controlPoints: [], color: "#ffff00", hidden: true },
+        { id: "line-dimmed", endPoint: { x: 20, y: 20 } as Point, controlPoints: [], color: "#00ff00" },
+        { id: "line-locked", endPoint: { x: 30, y: 30 } as Point, controlPoints: [], color: "#0000ff", locked: true },
+        { id: "line-hidden", endPoint: { x: 40, y: 40 } as Point, controlPoints: [], color: "#ffff00", hidden: true },
       ];
 
       // Use a context without heatmap enabled for this test
@@ -229,20 +229,20 @@ describe("Generator Utilities", () => {
       settings: {},
     } as any;
 
-    const startPoint: Point = { x: 0, y: 0 };
+    const startPoint: Point = { x: 0, y: 0 } as Point;
 
     it("should render preview paths correctly", () => {
       const lines: Line[] = [
-        { endPoint: { x: 10, y: 10 }, controlPoints: [], color: "#ff0000" }, // standard
+        { endPoint: { x: 10, y: 10 } as Point, controlPoints: [], color: "#ff0000" }, // standard
         { endPoint: null as unknown as Point, controlPoints: [], color: "#00ff00" }, // missing endpoint
-        { endPoint: { x: 30, y: 30 }, controlPoints: [], color: "#0000ff" }, // standard, should skip prior missing
+        { endPoint: { x: 30, y: 30 } as Point, controlPoints: [], color: "#0000ff" }, // standard, should skip prior missing
       ];
 
       // For preview paths, it uses the previous valid line's endpoint. If previous is invalid, it skips.
       // Let's make them sequential properly to test.
       const sequentialLines: Line[] = [
-        { endPoint: { x: 10, y: 10 }, controlPoints: [], color: "#ff0000" },
-        { endPoint: { x: 20, y: 20 }, controlPoints: [], color: "#00ff00" },
+        { endPoint: { x: 10, y: 10 } as Point, controlPoints: [], color: "#ff0000" },
+        { endPoint: { x: 20, y: 20 } as Point, controlPoints: [], color: "#00ff00" },
       ];
 
       const elements = generatePreviewPathElements(sequentialLines, startPoint, mockCtx);
