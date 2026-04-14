@@ -30,6 +30,7 @@
     <img src="https://sonarcloud.io/api/project_badges/measure?project=Mallen220_TurtleTracer&metric=bugs"/>
 </p>
 <p>
+  
   <!-- COVERAGE_BADGE_START -->
   <a href="coverage/index.html">
     <img src="README_Content/coverage-badge.svg" alt="Function Coverage: 50.68%" height="20">

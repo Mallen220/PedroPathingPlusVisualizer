@@ -55,15 +55,21 @@ async function main() {
 
   const readme = await fs.readFile(readmePath, "utf8");
 
-  const pattern =
-    /\s*<!-- COVERAGE_BADGE_START -->[\s\S]*?<!-- COVERAGE_BADGE_END -->/;
-  if (!pattern.test(readme)) {
+  const startMarker = "<!-- COVERAGE_BADGE_START -->";
+  const endMarker = "<!-- COVERAGE_BADGE_END -->";
+  const startIndex = readme.indexOf(startMarker);
+  const endIndex = readme.indexOf(endMarker, startIndex + startMarker.length);
+
+  if (startIndex === -1 || endIndex === -1) {
     throw new Error(
       "Could not find COVERAGE_BADGE markers in README.md. Add COVERAGE_BADGE_START and COVERAGE_BADGE_END markers first.",
     );
   }
 
-  const nextReadme = readme.replace(pattern, `\n${replacement}`);
+  const nextReadme =
+    readme.slice(0, startIndex) +
+    `\n${replacement}` +
+    readme.slice(endIndex + endMarker.length);
   await fs.writeFile(readmePath, nextReadme, "utf8");
 
   console.log(`Updated README with coverage badge: ${pct}%`);
