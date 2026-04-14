@@ -25,6 +25,7 @@ import {
   shapesStore,
   settingsStore,
 } from "./projectStore";
+import { DEFAULT_SETTINGS } from "../config/defaults";
 
 describe("diffStore", () => {
   let gitShowMock: any;
@@ -48,12 +49,13 @@ describe("diffStore", () => {
     sequenceStore.set([]);
     shapesStore.set([]);
     settingsStore.set({
-      robotWidth: 18,
-      robotLength: 18,
+      ...DEFAULT_SETTINGS,
+      rWidth: 18,
+      rLength: 18,
       maxVelocity: 50,
       maxAcceleration: 50,
       theme: "dark",
-      autoSave: false,
+      autosaveMode: "never",
     });
   });
 
@@ -148,7 +150,7 @@ describe("telemetryStore", () => {
     // Check live telemetry history
     const history = get(liveTelemetryData);
     expect(history).not.toBeNull();
-    expect(history![0]).toMatchObject({ x: 10, y: 20, heading: 180 }); // Math.PI rads = 180 deg
+    expect(history?.[0]).toMatchObject({ x: 10, y: 20, heading: 180 }); // Math.PI rads = 180 deg
   });
 
   it("should process TurtleTracerLiveView flat format correctly", () => {
