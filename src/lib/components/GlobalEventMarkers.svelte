@@ -459,7 +459,7 @@
                 min="0"
                 max={nonMacroCount}
                 step="0.01"
-                value={parseFloat(marker.globalPosition.toFixed(2))}
+                value={Number.parseFloat(marker.globalPosition.toFixed(2))}
                 class="w-16 px-1 py-0.5 text-xs rounded bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 text-center"
                 onchange={(e) =>
                   handleGlobalPositionCommit(

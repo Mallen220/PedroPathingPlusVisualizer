@@ -86,7 +86,7 @@ vi.mock("../../exporters", async () => {
 
 // Mock nameGenerator
 vi.mock("../../../utils/nameGenerator", () => ({
-  makeId: vi.fn(() => "mock-id-" + Math.random().toString(36).substr(2, 9)),
+  makeId: vi.fn(() => "mock-id-" + Math.random().toString(36).slice(2, 11)),
   renumberDefaultPathNames: vi.fn(),
 }));
 

@@ -33,6 +33,7 @@ module.exports = {
     "unicorn/prefer-node-protocol": "error",
     "unicorn/prefer-export-from": "error",
     "unicorn/no-zero-fractions": "error",
+    "unicorn/prefer-number-properties": "error",
   },
   overrides: [
     {

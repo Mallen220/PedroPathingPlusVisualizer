@@ -50,7 +50,7 @@ describe("formatTime", () => {
     expect(formatTime(0)).toBe("0.000s");
     expect(formatTime(-5)).toBe("0.000s");
     expect(formatTime(Infinity)).toBe("Infinite");
-    expect(formatTime(NaN)).toBe("Infinite");
+    expect(formatTime(Number.NaN)).toBe("Infinite");
   });
 });
 
@@ -187,7 +187,7 @@ describe("calculateRotationTime", () => {
     // accDist needed for max vel = 0.375, so total distance 0.75 rad to reach max
     // 0.52 < 0.75, so it's a triangle
     const time = calculateRotationTime(30, defaultSettings);
-    expect(time).toBeLessThan(1.0); // 2 * sqrt(0.52 / 3) approx 2 * 0.41 = 0.82
+    expect(time).toBeLessThan(1); // 2 * sqrt(0.52 / 3) approx 2 * 0.41 = 0.82
     expect(time).toBeGreaterThan(0);
   });
 
