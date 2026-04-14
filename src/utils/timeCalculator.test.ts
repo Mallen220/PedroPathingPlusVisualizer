@@ -148,6 +148,12 @@ describe("analyzePathSegment", () => {
   });
 });
 
+
+  function assertRotationTime(diff: number, overrides: any = {}, assertCallback: (time: number) => void) {
+    const time = calculateRotationTime(diff, { ...defaultSettings, ...overrides });
+    assertCallback(time);
+  }
+
 describe("calculateRotationTime", () => {
   test("returns 0 for tiny angle diffs", () => {
     expect(calculateRotationTime(0, defaultSettings)).toBe(0);
@@ -179,28 +185,15 @@ describe("calculateRotationTime", () => {
   });
 
   test("calculates using fallback maxAngularAcceleration when missing or zero", () => {
-    const settingsNoAngAccel = {
-      ...defaultSettings,
-      maxAngularAcceleration: 0,
-    };
-
-    // Fallback logic: leverArm = max(rWidth/2, 1) = 5
-    // maxAngAccel = maxAcceleration / leverArm = 30 / 5 = 6 rad/s^2
-    const time = calculateRotationTime(90, settingsNoAngAccel);
-    expect(time).toBeGreaterThan(0);
+    assertRotationTime(90, { maxAngularAcceleration: 0 }, (time) => {
+      expect(time).toBeGreaterThan(0);
+    });
   });
 
   test("protects against division by zero in fallback logic", () => {
-    const settingsZeroWidth = {
-      ...defaultSettings,
-      maxAngularAcceleration: undefined,
-      rWidth: 0,
-      maxAcceleration: 30,
-    };
-
-    // leverArm will be clamped to 1, maxAngAccel = 30 / 1 = 30 rad/s^2
-    const time = calculateRotationTime(90, settingsZeroWidth);
-    expect(time).toBeGreaterThan(0);
+    assertRotationTime(90, { maxAngularAcceleration: undefined, rWidth: 0, maxAcceleration: 30 }, (time) => {
+      expect(time).toBeGreaterThan(0);
+    });
   });
 });
 
@@ -247,7 +240,7 @@ describe("calculateGlobalChainMeta", () => {
       "simple",
     );
 
-    const metaMap = calculateGlobalChainMeta(seq, lines, startPoint);
+    const metaMap = calculateGlobalChainMeta(seq!, lines, startPoint);
     const meta = metaMap.get("l1");
 
     expect(meta).toBeDefined();
@@ -287,7 +280,7 @@ describe("calculateGlobalChainMeta", () => {
       ],
     );
 
-    const metaMap = calculateGlobalChainMeta(seq, lines, startPoint);
+    const metaMap = calculateGlobalChainMeta(seq!, lines, startPoint);
 
     const meta1 = metaMap.get("l1");
     expect(meta1?.rootLine.id).toBe("l1");
@@ -316,7 +309,7 @@ describe("calculateGlobalChainMeta", () => {
       ],
     );
 
-    const metaMap = calculateGlobalChainMeta(seq, lines, startPoint);
+    const metaMap = calculateGlobalChainMeta(seq!, lines, startPoint);
     expect(metaMap.size).toBe(0);
   });
 });
