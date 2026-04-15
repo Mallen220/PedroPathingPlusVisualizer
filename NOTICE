@@ -482,3 +482,4 @@ electron/updater.test.js
 electron/utils.test.js
 README_Content/coverage-badge.svg
 vitest.config.ts
+src/tests/SimpleChart.test.ts
