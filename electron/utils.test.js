@@ -111,10 +111,12 @@ describe('utils.js', () => {
     });
 
     it('returns false on error', async () => {
+      const cSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
       fs.writeFile.mockRejectedValueOnce(new Error('Write failed'));
 
       const result = await saveDirectorySettings({ test: 'data' });
       expect(result).toBe(false);
+      cSpy.mockRestore();
     });
   });
 

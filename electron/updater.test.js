@@ -1,7 +1,6 @@
-import { shell } from "electron";
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import AppUpdater from './updater.js';
-
+import { app, shell } from 'electron';
 import fs from 'node:fs';
 
 vi.mock('electron', () => ({
@@ -14,20 +13,6 @@ vi.mock('electron', () => ({
   }
 }));
 
-vi.mock('node:fs', () => {
-  const actual = {
-    existsSync: vi.fn(),
-    readFileSync: vi.fn(),
-    writeFileSync: vi.fn(),
-    accessSync: vi.fn(),
-    constants: { X_OK: 1 }
-  };
-  return {
-    ...actual,
-    default: actual
-  };
-});
-
 const mockSpawn = vi.fn(() => ({ unref: vi.fn() }));
 vi.mock('node:child_process', () => {
   return {
@@ -38,7 +23,20 @@ vi.mock('node:child_process', () => {
   };
 });
 
-// Mock fetch globally
+vi.mock('node:fs', () => {
+  const mockFs = {
+    existsSync: vi.fn(),
+    readFileSync: vi.fn(),
+    writeFileSync: vi.fn(),
+    accessSync: vi.fn(),
+    constants: { X_OK: 1 }
+  };
+  return {
+    ...mockFs,
+    default: mockFs
+  };
+});
+
 global.fetch = vi.fn();
 
 describe('updater.js', () => {
@@ -76,7 +74,7 @@ describe('updater.js', () => {
       const result = await updater.checkForUpdates();
       expect(result.updateAvailable).toBe(false);
       expect(result.reason).toBe('store');
-      delete process.windowsStore; // cleanup
+      delete process.windowsStore;
     });
 
     it('handles failed fetch', async () => {
@@ -107,7 +105,7 @@ describe('updater.js', () => {
         ok: true,
         json: async () => ({ tag_name: 'v1.1.0', body: 'Notes', html_url: 'url' })
       });
-      fs.existsSync.mockReturnValue(false); // No skipped versions
+      fs.existsSync.mockReturnValue(false);
 
       const result = await updater.checkForUpdates(true);
       expect(result.updateAvailable).toBe(true);
@@ -127,8 +125,8 @@ describe('updater.js', () => {
         ok: true,
         json: async () => ({ tag_name: 'v1.1.0', body: 'Notes', html_url: 'url' })
       });
-      fs.existsSync.mockReturnValue(true);
-      fs.readFileSync.mockReturnValue(JSON.stringify({ skippedVersions: ['1.1.0'] }));
+
+      updater.loadSkippedVersions = vi.fn().mockReturnValue(['1.1.0']);
 
       const result = await updater.checkForUpdates(false);
       expect(result.updateAvailable).toBe(false);
@@ -148,42 +146,42 @@ describe('updater.js', () => {
 
   describe('skipVersion', () => {
     it('adds version to skipped versions', () => {
-      fs.existsSync.mockReturnValue(false); // empty list
+      updater.loadSkippedVersions = vi.fn().mockReturnValue([]);
+      updater.saveSkippedVersions = vi.fn();
 
       updater.skipVersion('1.2.0');
 
-      expect(fs.writeFileSync).toHaveBeenCalled();
-      const writtenData = JSON.parse(fs.writeFileSync.mock.calls[0][1]);
-      expect(writtenData.skippedVersions).toContain('1.2.0');
+      expect(updater.saveSkippedVersions).toHaveBeenCalledWith(['1.2.0']);
     });
   });
 
-  describe('fs access tests', () => {
-    it('saves skipped versions', () => {
-        updater.saveSkippedVersions(['1.1.0']);
-        expect(fs.writeFileSync).toHaveBeenCalled();
-        const writtenData = JSON.parse(fs.writeFileSync.mock.calls[0][1]);
-        expect(writtenData.skippedVersions).toContain('1.1.0');
-    });
+  describe('fs methods coverage', () => {
+      it('loads skipped versions properly', () => {
+          fs.existsSync.mockReturnValue(true);
+          fs.readFileSync.mockReturnValue(JSON.stringify({ skippedVersions: ['1.1.0'] }));
+          const versions = updater.loadSkippedVersions();
+          expect(versions).toContain('1.1.0');
+      });
 
-    it('loads skipped versions', () => {
-        fs.existsSync.mockReturnValue(true);
-        fs.readFileSync.mockReturnValue(JSON.stringify({ skippedVersions: ['1.1.0'] }));
-        const versions = updater.loadSkippedVersions();
-        expect(versions).toContain('1.1.0');
-    });
+      it('loads skipped versions failure', () => {
+          fs.existsSync.mockReturnValue(true);
+          fs.readFileSync.mockImplementationOnce(() => { throw new Error('fail'); });
+          const versions = updater.loadSkippedVersions();
+          expect(versions).toEqual([]);
+      });
 
-    it('handles write failure', () => {
-      fs.writeFileSync.mockImplementationOnce(() => { throw new Error('Write failed'); });
-      updater.saveSkippedVersions(['1.2.0']); // should not throw
-    });
+      it('saves skipped versions properly', () => {
+          fs.writeFileSync.mockImplementation(() => {});
+          updater.saveSkippedVersions(['1.1.0']);
+          expect(fs.writeFileSync).toHaveBeenCalled();
+          const writtenData = JSON.parse(fs.writeFileSync.mock.calls[0][1]);
+          expect(writtenData.skippedVersions).toContain('1.1.0');
+      });
 
-    it('handles read failure', () => {
-      fs.existsSync.mockReturnValue(true);
-      fs.readFileSync.mockImplementationOnce(() => { throw new Error('Read failed'); });
-      const res = updater.loadSkippedVersions(); // should not throw
-      expect(res).toEqual([]);
-    });
+      it('saves skipped versions failure', () => {
+          fs.writeFileSync.mockImplementationOnce(() => { throw new Error('fail'); });
+          updater.saveSkippedVersions(['1.1.0']);
+      });
   });
 
   describe('handleDownloadAndInstall', () => {
@@ -238,14 +236,13 @@ describe('updater.js', () => {
       shell.openExternal.mockImplementationOnce(() => { throw new Error('err'); });
 
       updater.handleDownloadAndInstall('1.0.0', 'fallback_url');
-      // Throws error but caught, then calls fallback
       expect(shell.openExternal).toHaveBeenCalledWith('fallback_url');
     });
   });
 
   describe('trySpawnLinux', () => {
     it('returns true on success', () => {
-       fs.accessSync.mockReturnValue(true);
+       fs.accessSync.mockReturnValue();
        const res = updater.trySpawnLinux('/usr/bin/term', ['arg']);
        expect(res).toBe(true);
        expect(mockSpawn).toHaveBeenCalled();
