@@ -320,7 +320,7 @@ export const DEFAULT_KEY_BINDINGS: KeyBinding[] = [
   },
   {
     id: "toggle-section-loop",
-    key: "alt+l",
+    key: "cmd+shift+l, ctrl+shift+l",
     description: "Toggle Section Looping",
     action: "toggleSectionLoop",
     category: "Playback",
