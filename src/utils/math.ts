@@ -22,19 +22,7 @@ export function easeInOutQuad(x: number): number {
   return x < 0.5 ? 2 * x * x : 1 - Math.pow(-2 * x + 2, 2) / 2;
 }
 
-export function getMousePos(evt: MouseEvent, canvas: SVGSVGElement) {
-  const rect = canvas.getBoundingClientRect();
-  return {
-    x:
-      ((evt.clientX - rect.left) / (rect.right - rect.left)) *
-      canvas.width.baseVal.value,
-    y:
-      ((evt.clientY - rect.top) / (rect.bottom - rect.top)) *
-      canvas.height.baseVal.value,
-  };
-}
-
-export function normalizeAngle(angle: number): number {
+function normalizeAngle(angle: number): number {
   return ((angle % 360) + 360) % 360;
 }
 
@@ -407,22 +395,3 @@ export function getLineEndHeading(
   );
 }
 
-function getViewportDimension(
-  percent: number,
-  clientProp: "clientHeight" | "clientWidth",
-  innerProp: "innerHeight" | "innerWidth",
-) {
-  const val = Math.max(
-    document.documentElement[clientProp],
-    window[innerProp] || 0,
-  );
-  return (percent * val) / 100;
-}
-
-export function vh(percent: number) {
-  return getViewportDimension(percent, "clientHeight", "innerHeight");
-}
-
-export function vw(percent: number) {
-  return getViewportDimension(percent, "clientWidth", "innerWidth");
-}
