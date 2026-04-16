@@ -1,6 +1,6 @@
 <!-- Copyright 2026 Matthew Allen. Licensed under the Modified Apache License, Version 2.0. -->
 <script lang="ts">
-  import { run } from "svelte/legacy";
+
 
   import type {
     Point,
@@ -859,7 +859,7 @@
       ? lines.map((l) => l.id).filter((id): id is string => id != null)
       : [],
   );
-  run(() => {
+  $effect(() => {
     if (lines && sequence && !repairedSequenceOnce) {
       ensureSequenceConsistency();
       repairedSequenceOnce = true;
@@ -879,7 +879,7 @@
     debugSequenceIds.filter((id) => !debugLinesIds.includes(id)) as string[],
   );
   // Reactive statements to update UI state when lines change
-  run(() => {
+  $effect(() => {
     if (lines.length !== collapsedSections.lines.length) {
       collapsedEventMarkers = lines.map(() => false);
       const wasAllCollapsed =
@@ -894,7 +894,7 @@
       };
     }
   });
-  run(() => {
+  $effect(() => {
     if ($toggleCollapseAllTrigger !== _lastToggleCollapse) {
       _lastToggleCollapse = $toggleCollapseAllTrigger;
       toggleCollapseAll();

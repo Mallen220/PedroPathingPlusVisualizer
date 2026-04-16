@@ -1,6 +1,6 @@
 <!-- Copyright 2026 Matthew Allen. Licensed under the Modified Apache License, Version 2.0. -->
 <script lang="ts">
-  import { run } from "svelte/legacy";
+
 
   import type {
     Point,
@@ -58,7 +58,7 @@
     optimizerSection: false,
   });
 
-  run(() => {
+  $effect(() => {
     if (shapes.length !== collapsedSections.obstacles.length) {
       collapsedSections.obstacles = shapes.map(() => true);
     }

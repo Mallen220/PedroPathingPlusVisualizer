@@ -1,6 +1,6 @@
 <!-- Copyright 2026 Matthew Allen. Licensed under the Modified Apache License, Version 2.0. -->
 <script lang="ts">
-  import { run } from "svelte/legacy";
+
 
   import type {
     Point,
@@ -88,7 +88,7 @@
   let targetLibrary: "SolversLib" | "NextFTC" = $state("SolversLib");
 
   // Sync state with settings
-  run(() => {
+  $effect(() => {
     if (settings) {
       if (settings.autoExportFormat) {
         format = settings.autoExportFormat;
@@ -253,7 +253,7 @@
 
   // Trigger update when dependencies change
   // Trigger update when dependencies change
-  run(() => {
+  $effect(() => {
     // Deeply track dependencies in Svelte 5
     $state.snapshot(startPoint);
     $state.snapshot(lines);
