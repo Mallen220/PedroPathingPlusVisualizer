@@ -394,6 +394,7 @@ interface TimelineEvent {
 }
 
 interface TimePrediction {
+  continuousTimeline?: ContinuousTimeline;
   totalTime: number;
   segmentTimes: number[];
   totalDistance: number;
@@ -857,6 +858,20 @@ interface UpdateData {
   version: string;
   releaseNotes: string;
   url: string;
+}
+
+interface KinematicState {
+  time: number;
+  position: Point;
+  velocity: number;
+  acceleration: number;
+  heading: number;
+  angularVelocity: number;
+}
+
+interface ContinuousTimeline {
+  states: KinematicState[];
+  events: TimelineEvent[];
 }
 
 export {};

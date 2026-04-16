@@ -1360,7 +1360,7 @@
         $sequenceStore,
         $shapesStore,
         true, // silent
-        timePrediction.timeline,
+        timePrediction.continuousTimeline,
       );
     } else if (
       $settingsStore?.validationDisabled &&
@@ -1439,7 +1439,7 @@
       // Pass identity scales to get inches
       const state = calculateRobotState(
         currentPercent,
-        timePrediction.timeline,
+        timePrediction.continuousTimeline,
         lines,
         startPoint,
         IDENTITY_SCALE,
@@ -1458,7 +1458,7 @@
 
         const commState = calculateRobotState(
           committedPercent,
-          committedTimePrediction.timeline,
+          committedTimePrediction.continuousTimeline,
           committed.lines,
           committed.startPoint,
           IDENTITY_SCALE,
@@ -1703,7 +1703,7 @@
     robotLengthPx={x(robotLength)}
     robotWidthPx={x(robotWidth)}
     robotStateFunction={(p) =>
-      calculateRobotState(p, timePrediction.timeline, lines, startPoint, x, y)}
+      calculateRobotState(p, timePrediction.continuousTimeline, lines, startPoint, x, y)}
     {electronAPI}
     on:close={() => showExportGif.set(false)}
   />
@@ -1723,7 +1723,7 @@
       y: $startPointStore.y,
       heading: calculateRobotState(
         0,
-        timePrediction.timeline,
+        timePrediction.continuousTimeline,
         lines,
         startPoint,
         IDENTITY_SCALE,

@@ -31,6 +31,8 @@ function getOutputDirPath() {
 }
 
 function getArgValue(flagNames) {
+
+   {
   for (let i = 0; i < process.argv.length; i += 1) {
     if (flagNames.includes(process.argv[i])) {
       return process.argv[i + 1];
@@ -40,6 +42,8 @@ function getArgValue(flagNames) {
 }
 
 function runLighthouseBadges(url) {
+
+   {
   const npxCommand = process.platform === "win32" ? "npx.cmd" : "npx";
   const repoRootPath = getRepoRootPath();
   const outputDirPath = getOutputDirPath();
@@ -61,7 +65,7 @@ function runLighthouseBadges(url) {
 
     child.on("close", (code) => {
       if (code === 0) {
-        resolve();
+        resolve(undefined);
       } else {
         reject(new Error(`lighthouse-badges exited with code ${code}`));
       }
@@ -72,6 +76,8 @@ function runLighthouseBadges(url) {
 }
 
 function buildReadmeBadgeBlock(version) {
+
+   {
   const lighthouseLink = "https://github.com/GoogleChrome/lighthouse";
 
   return [
@@ -97,6 +103,8 @@ function buildReadmeBadgeBlock(version) {
 }
 
 export function replaceBetweenMarkers(content, replacement) {
+
+   {
   const pattern =
     /\s*<!-- LIGHTHOUSE_BADGES_START -->[\s\S]*?<!-- LIGHTHOUSE_BADGES_END -->/;
 

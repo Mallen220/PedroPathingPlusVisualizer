@@ -31,246 +31,62 @@ type AnimationState = {
 /**
  * Calculate the robot position and heading based on the Timeline
  */
+
+/**
+ * Calculate the robot position and heading using a strict absolute elapsed time binary search
+ * against the high-resolution pre-calculated ContinuousTimeline.
+ */
 export function calculateRobotState(
   percent: number,
-  timeline: TimelineEvent[],
+  timeline: any, // Now takes ContinuousTimeline natively if possible, or fallback
   lines: Line[],
   startPoint: Point,
   xScale: ScaleLinear<number, number>,
   yScale: ScaleLinear<number, number>,
 ): RobotState {
-  if (!timeline || timeline.length === 0) {
+  // Graceful fallback if still using old types or timeline missing
+  const states = timeline && timeline.states ? timeline.states : timeline;
+
+  if (!states || states.length === 0 || !states[0].position) {
     return { x: xScale(startPoint.x), y: yScale(startPoint.y), heading: 0 };
   }
 
   // Calculate current time in seconds based on percent (0-100)
-  const totalDuration = timeline[timeline.length - 1].endTime;
+  const totalDuration = states[states.length - 1].time;
   const currentSeconds = (percent / 100) * totalDuration;
 
-  // Find the active event for this time using binary search
+  // Strict binary search exclusively against the new ContinuousTimeline's fixed-interval array
   let left = 0;
-  let right = timeline.length - 1;
-  let activeEvent = timeline[timeline.length - 1];
+  let right = states.length - 1;
+  let matched = states[right];
 
   while (left <= right) {
     const mid = (left + right) >> 1;
-    const e = timeline[mid];
-    if (currentSeconds >= e.startTime && currentSeconds <= e.endTime) {
-      activeEvent = e;
+    const st = states[mid];
+
+    if (Math.abs(st.time - currentSeconds) < 0.01) {
+      matched = st;
       break;
-    } else if (currentSeconds < e.startTime) {
+    } else if (currentSeconds < st.time) {
       right = mid - 1;
     } else {
       left = mid + 1;
     }
   }
 
-  // If the binary search landed on a macro wrapper event (type "macro"), it lacks the
-  // line/prevPoint needed to render position. Scan linearly for the actual travel/wait
-  // event covering this timestamp — those are pushed before the wrapper in the timeline.
-  if (activeEvent.type !== "travel" && activeEvent.type !== "wait") {
-    for (let i = 0; i < timeline.length; i++) {
-      const e = timeline[i];
-      if (
-        (e.type === "travel" || e.type === "wait") &&
-        currentSeconds >= e.startTime &&
-        currentSeconds <= e.endTime
-      ) {
-        activeEvent = e;
-        break;
-      }
-    }
-    // If still no travel/wait event found, return startPoint as a safe fallback
-    if (activeEvent.type !== "travel" && activeEvent.type !== "wait") {
-      return { x: xScale(startPoint.x), y: yScale(startPoint.y), heading: 0 };
-    }
+  // If exact match not found, we fallback to nearest left index
+  if (left > right && right >= 0 && right < states.length) {
+    matched = states[right];
   }
 
-  if (activeEvent.type === "wait") {
-    // --- STATIONARY ROTATION ---
-    const point = activeEvent.atPoint!;
-
-    // Calculate progress (0.0 to 1.0) within this specific wait event
-    const eventProgress =
-      (currentSeconds - activeEvent.startTime) / activeEvent.duration;
-    const clampedProgress = Math.max(0, Math.min(1, eventProgress));
-
-    // Interpolate heading smoothly
-    const currentHeading = shortestRotation(
-      activeEvent.startHeading!,
-      activeEvent.targetHeading!,
-      clampedProgress,
-    );
-
-    return {
-      x: xScale(point.x),
-      y: yScale(point.y),
-      heading: -currentHeading,
-    };
-  } else {
-    // --- MOVEMENT TRAVEL ---
-    let currentLine: Line;
-    let prevPoint: Point;
-
-    if (activeEvent.line && activeEvent.prevPoint) {
-      currentLine = activeEvent.line;
-      prevPoint = activeEvent.prevPoint;
-    } else {
-      const lineIdx = activeEvent.lineIndex!;
-      currentLine = lines[lineIdx];
-      prevPoint = lineIdx === 0 ? startPoint : lines[lineIdx - 1].endPoint;
-    }
-
-    let linePercent = 0;
-    let interpolatedHeading: number | null = null;
-
-    // Use detailed motion profile if available
-    if (activeEvent.motionProfile && activeEvent.motionProfile.length > 0) {
-      const profile = activeEvent.motionProfile;
-      const relativeTime = Math.max(0, currentSeconds - activeEvent.startTime);
-      const profileEndTime = profile[profile.length - 1];
-
-      if (relativeTime >= profileEndTime) {
-        linePercent = 1;
-        if (
-          activeEvent.headingProfile &&
-          activeEvent.headingProfile.length > 0
-        ) {
-          interpolatedHeading =
-            activeEvent.headingProfile[activeEvent.headingProfile.length - 1];
-        }
-      } else {
-        // Find the segment in the profile
-        // Ensure i stops at length - 2 so i+1 is valid
-        let i = 0;
-        while (i < profile.length - 2 && relativeTime > profile[i + 1]) {
-          i++;
-        }
-
-        // Interpolate t
-        const tStart = i / (profile.length - 1);
-        const tEnd = (i + 1) / (profile.length - 1);
-        const timeStart = profile[i];
-        const timeEnd = profile[i + 1];
-
-        let localProgress = 0;
-        if (timeEnd > timeStart) {
-          localProgress = (relativeTime - timeStart) / (timeEnd - timeStart);
-        }
-
-        linePercent = tStart + localProgress * (tEnd - tStart);
-
-        if (activeEvent.headingProfile?.length === profile.length) {
-          const hStart = activeEvent.headingProfile[i];
-          const hEnd = activeEvent.headingProfile[i + 1];
-          // Linear interpolation of unwrapped heading
-          if (Number.isFinite(hStart) && Number.isFinite(hEnd)) {
-            interpolatedHeading = hStart + (hEnd - hStart) * localProgress;
-          }
-        }
-      }
-    } else {
-      // Fallback to linear time interpolation
-      const timeProgress =
-        (currentSeconds - activeEvent.startTime) / activeEvent.duration;
-      linePercent = easeInOutQuad(Math.max(0, Math.min(1, timeProgress)));
-    }
-
-    linePercent = Math.max(0, Math.min(1, linePercent));
-
-    // Calculate Position
-    const robotInchesXY = getCurvePoint(linePercent, [
-      prevPoint,
-      ...currentLine.controlPoints,
-      currentLine.endPoint,
-    ]);
-
-    const robotXY = { x: xScale(robotInchesXY.x), y: yScale(robotInchesXY.y) };
-    let robotHeading = 0;
-
-    if (interpolatedHeading !== null && Number.isFinite(interpolatedHeading)) {
-      robotHeading = -interpolatedHeading;
-    } else {
-      // Fallback Heading Calculation
-      switch (currentLine.endPoint.heading) {
-        case "linear": {
-          const startDeg = currentLine.endPoint.startDeg;
-          const endDeg = currentLine.endPoint.endDeg;
-          if (currentLine.endPoint.reverse) {
-            // Go the long way around: invert the rotation direction
-            const shortDiff = endDeg - startDeg;
-            const normalizedShort = ((shortDiff % 360) + 360) % 360;
-            // shortArc is in [0,360). If > 180, that's already the long arc, so go short instead.
-            const longDiff =
-              normalizedShort <= 180 ? normalizedShort - 360 : normalizedShort;
-            robotHeading = -(startDeg + longDiff * linePercent);
-          } else {
-            robotHeading = -shortestRotation(startDeg, endDeg, linePercent);
-          }
-          break;
-        }
-        case "constant": {
-          const deg = currentLine.endPoint.reverse
-            ? currentLine.endPoint.degrees + 180
-            : currentLine.endPoint.degrees;
-          robotHeading = -deg;
-          break;
-        }
-        case "tangential": {
-          const nextPointInches = getCurvePoint(
-            linePercent + (currentLine.endPoint.reverse ? -0.01 : 0.01),
-            [prevPoint, ...currentLine.controlPoints, currentLine.endPoint],
-          );
-          const nextPoint = {
-            x: xScale(nextPointInches.x),
-            y: yScale(nextPointInches.y),
-          };
-          const dx = nextPoint.x - robotXY.x;
-          const dy = nextPoint.y - robotXY.y;
-
-          if (dx !== 0 || dy !== 0) {
-            const angle = Math.atan2(dy, dx);
-            robotHeading = radiansToDegrees(angle);
-          }
-          break;
-        }
-        case "facingPoint": {
-          const targetX = (currentLine.endPoint as any).targetX || 0;
-          const targetY = (currentLine.endPoint as any).targetY || 0;
-          // Compute position on curve at linePercent in field-space (inches)
-          const curvePos = getCurvePoint(linePercent, [
-            prevPoint,
-            ...currentLine.controlPoints,
-            currentLine.endPoint,
-          ]);
-          // Use field-space (inches) to compute angle, then apply scales just for sign
-          const dx = targetX - curvePos.x;
-          const dy = targetY - curvePos.y;
-          if (dx !== 0 || dy !== 0) {
-            // xScale and yScale are linear; yScale may be inverted (screen y is flipped)
-
-            const sdx = xScale(targetX) - xScale(curvePos.x);
-            const sdy = yScale(targetY) - yScale(curvePos.y);
-            let angle = Math.atan2(sdy, sdx);
-            if ((currentLine.endPoint as any).reverse) angle += Math.PI;
-            robotHeading = radiansToDegrees(angle);
-          }
-          break;
-        }
-      }
-    }
-
-    return {
-      x: robotXY.x,
-      y: robotXY.y,
-      heading: robotHeading,
-    };
-  }
+  return {
+    x: xScale(matched.position.x),
+    y: yScale(matched.position.y),
+    // Scale heading mathematically; continuous timeline natively emits forward facing math
+    heading: matched.heading,
+  };
 }
 
-/**
- * Create an animation controller for the robot simulation
- */
 export function createAnimationController(
   totalDuration: number,
   onPercentChange: (percent: number) => void,

@@ -17,12 +17,12 @@ export function calculateDrivetrainSpeeds(
 ): WheelSpeeds | null {
   if (!showRobot || settings.robotImage !== "none") return null;
 
-  if (!timePrediction?.timeline || timePrediction.timeline.length === 0) {
+  if (!timePrediction?.timeline || !timePrediction?.continuousTimeline || timePrediction.continuousTimeline.states?.length === 0) {
     return { frontLeft: 0, backLeft: 0, frontRight: 0, backRight: 0 };
   }
 
   const totalDuration =
-    timePrediction.timeline[timePrediction.timeline.length - 1].endTime;
+    timePrediction.continuousTimeline[timePrediction.continuousTimeline.length - 1].endTime;
   const currentSeconds = (percentStore / 100) * totalDuration;
 
   // Time delta for velocity calc
@@ -34,7 +34,7 @@ export function calculateDrivetrainSpeeds(
 
   const state1 = calculateRobotState(
     percentStore,
-    timePrediction.timeline,
+    timePrediction.continuousTimeline,
     lines,
     startPoint,
     scale,
@@ -42,7 +42,7 @@ export function calculateDrivetrainSpeeds(
   );
   const state2 = calculateRobotState(
     futurePercent,
-    timePrediction.timeline,
+    timePrediction.continuousTimeline,
     lines,
     startPoint,
     scale,

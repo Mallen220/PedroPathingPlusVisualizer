@@ -64,6 +64,7 @@ export interface TimelineEvent {
 }
 
 interface TimePrediction {
+  continuousTimeline?: ContinuousTimeline;
   totalTime: number;
   segmentTimes: number[];
   totalDistance: number;
