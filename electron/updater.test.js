@@ -38,7 +38,7 @@ vi.mock("node:fs", () => {
   };
 });
 
-global.fetch = vi.fn();
+globalThis.fetch = vi.fn();
 
 describe("updater.js", () => {
   let updater;
@@ -81,19 +81,19 @@ describe("updater.js", () => {
     });
 
     it("handles failed fetch", async () => {
-      global.fetch.mockResolvedValueOnce({ ok: false, status: 404 });
+      globalThis.fetch.mockResolvedValueOnce({ ok: false, status: 404 });
       const result = await updater.checkForUpdates();
       expect(result.updateAvailable).toBe(false);
       expect(result.error).toContain("404");
     });
 
     it("throws on manual failed fetch", async () => {
-      global.fetch.mockResolvedValueOnce({ ok: false, status: 500 });
+      globalThis.fetch.mockResolvedValueOnce({ ok: false, status: 500 });
       await expect(updater.checkForUpdates(true)).rejects.toThrow("500");
     });
 
     it("returns latest if no newer version", async () => {
-      global.fetch.mockResolvedValueOnce({
+      globalThis.fetch.mockResolvedValueOnce({
         ok: true,
         json: async () => ({
           tag_name: "v1.0.0",
@@ -108,7 +108,7 @@ describe("updater.js", () => {
 
     it("detects newer version and sends dialog", async () => {
       vi.useFakeTimers();
-      global.fetch.mockResolvedValueOnce({
+      globalThis.fetch.mockResolvedValueOnce({
         ok: true,
         json: async () => ({
           tag_name: "v1.1.0",
@@ -135,7 +135,7 @@ describe("updater.js", () => {
     });
 
     it("skips version if in skipped versions", async () => {
-      global.fetch.mockResolvedValueOnce({
+      globalThis.fetch.mockResolvedValueOnce({
         ok: true,
         json: async () => ({
           tag_name: "v1.1.0",

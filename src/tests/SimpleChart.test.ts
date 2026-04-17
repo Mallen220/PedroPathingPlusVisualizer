@@ -73,7 +73,7 @@ describe("SimpleChart tooltip behavior", () => {
 
     expect(tooltip.style.opacity).toBe("1");
 
-    window.dispatchEvent(new Event("scroll"));
+    globalThis.dispatchEvent(new Event("scroll"));
 
     expect(tooltip.style.opacity).toBe("0");
   });
