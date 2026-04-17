@@ -1,4 +1,9 @@
-import type { Line, Point, EventMarker } from "../../types";
+const fs = require('fs');
+
+function fixSpatialAggregator() {
+  const p = 'src/utils/engine/SpatialAggregator.ts';
+  let s = fs.readFileSync(p, 'utf8');
+  s = `import type { Line, Point, EventMarker } from "../../types";
 import { analyzePathSegment } from "../timeCalculator";
 import { getCurvePoint } from "../math";
 import type { PreprocessedItem } from "./SequencePreprocessor";
@@ -87,3 +92,8 @@ export class SpatialAggregator {
     return { clusters, waitRotateItems };
   }
 }
+`;
+  fs.writeFileSync(p, s);
+}
+
+fixSpatialAggregator();
