@@ -20,9 +20,11 @@ vi.mock("$lib/components/SectionHeader.svelte", () => ({
 vi.mock("../../../utils/optimization/GeneticOptimizer", () => ({
   GeneticOptimizer: class MockOptimizer {
     constructor() {}
-    start(lines) { return { time: 5, path: [] }; }
+    start(lines) {
+      return { time: 5, path: [] };
+    }
     stop() {}
-  }
+  },
 }));
 
 describe("OptimizationDialog", () => {
@@ -45,7 +47,7 @@ describe("OptimizationDialog", () => {
       isOpen: true,
       lines: [
         { id: "l1", name: "Path 1", points: [] },
-        { id: "l2", name: "Path 2", points: [] }
+        { id: "l2", name: "Path 2", points: [] },
       ],
       robotConfig: {},
       obstacles: [],

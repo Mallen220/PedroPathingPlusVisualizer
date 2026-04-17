@@ -3,13 +3,24 @@ import { render, fireEvent } from "@testing-library/svelte";
 import FeedbackDialog from "./FeedbackDialog.svelte";
 
 vi.mock("../../../stores", () => ({
-  showFeedbackDialog: { subscribe: vi.fn(fn => { fn(true); return () => {}; }), set: vi.fn() },
+  showFeedbackDialog: {
+    subscribe: vi.fn((fn) => {
+      fn(true);
+      return () => {};
+    }),
+    set: vi.fn(),
+  },
   showRatingDialog: { set: vi.fn() },
-  ratingDialogAutoOpened: { set: vi.fn() }
+  ratingDialogAutoOpened: { set: vi.fn() },
 }));
 
 vi.mock("../../projectStore", () => ({
-  settingsStore: { subscribe: vi.fn(fn => { fn({}); return () => {}; }) }
+  settingsStore: {
+    subscribe: vi.fn((fn) => {
+      fn({});
+      return () => {};
+    }),
+  },
 }));
 
 describe("FeedbackDialog", () => {

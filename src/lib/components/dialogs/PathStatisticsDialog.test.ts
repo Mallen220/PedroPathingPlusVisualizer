@@ -16,15 +16,15 @@ describe("PathStatisticsDialog", () => {
       sequence: [],
       settings: {
         robot: {
-            maxVelocity: 1,
-            maxAcceleration: 1,
-            maxAngularVelocity: 1,
-            maxAngularAcceleration: 1,
-            trackWidth: 1
+          maxVelocity: 1,
+          maxAcceleration: 1,
+          maxAngularVelocity: 1,
+          maxAngularAcceleration: 1,
+          trackWidth: 1,
         },
-        export: { format: "" }
+        export: { format: "" },
       },
-      onClose: vi.fn()
+      onClose: vi.fn(),
     });
 
     expect(getByText("Path Statistics")).toBeInTheDocument();
@@ -39,15 +39,15 @@ describe("PathStatisticsDialog", () => {
       sequence: [],
       settings: {
         robot: {
-            maxVelocity: 1,
-            maxAcceleration: 1,
-            maxAngularVelocity: 1,
-            maxAngularAcceleration: 1,
-            trackWidth: 1
+          maxVelocity: 1,
+          maxAcceleration: 1,
+          maxAngularVelocity: 1,
+          maxAngularAcceleration: 1,
+          trackWidth: 1,
         },
-        export: { format: "" }
+        export: { format: "" },
       },
-      onClose
+      onClose,
     });
 
     const closeBtn = getByRole("button", { name: "Close" });

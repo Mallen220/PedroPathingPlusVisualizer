@@ -11,7 +11,7 @@ vi.mock("../../../stores", async () => {
   const svelteStore = await import("svelte/store");
   return {
     notification: { show: vi.fn() },
-    currentFilePath: svelteStore.writable(null)
+    currentFilePath: svelteStore.writable(null),
   };
 });
 
@@ -19,7 +19,7 @@ vi.mock("../../projectStore", async () => {
   const svelteStore = await import("svelte/store");
   const defaults = await import("../../../config/defaults");
   return {
-    settingsStore: svelteStore.writable(defaults.DEFAULT_SETTINGS)
+    settingsStore: svelteStore.writable(defaults.DEFAULT_SETTINGS),
   };
 });
 
@@ -29,7 +29,7 @@ describe("ExportCodeDialog", () => {
       isOpen: true,
       project: { lines: [], sequence: [] },
       settings: DEFAULT_SETTINGS,
-      electronAPI: {}
+      electronAPI: {},
     });
 
     expect(getByRole("dialog")).toBeInTheDocument();

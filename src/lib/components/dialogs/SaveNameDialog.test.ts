@@ -14,7 +14,9 @@ describe("SaveNameDialog", () => {
     });
 
     expect(screen.getByText("Save New File")).toBeInTheDocument();
-    expect(screen.getByText("Enter a name for your new file:")).toBeInTheDocument();
+    expect(
+      screen.getByText("Enter a name for your new file:"),
+    ).toBeInTheDocument();
     expect(screen.getByRole("textbox")).toHaveValue("New Path");
   });
 
@@ -110,7 +112,8 @@ describe("SaveNameDialog", () => {
     });
 
     // Escape on document body or window or input? The code has `onkeydown={handleKeydown}` on the input.
-    const input2 = screen.getAllByRole("textbox")[1] || screen.getAllByRole("textbox")[0];
+    const input2 =
+      screen.getAllByRole("textbox")[1] || screen.getAllByRole("textbox")[0];
     await fireEvent.keyDown(input2, { key: "Escape" });
     expect(onCancel).toHaveBeenCalled();
   });
@@ -132,23 +135,33 @@ describe("SaveNameDialog", () => {
     let stopImmediatePropagationCalled = false;
 
     // Custom wrapper to intercept
-    input.addEventListener('keydown', (e) => {
+    input.addEventListener(
+      "keydown",
+      (e) => {
         const origStop = e.stopPropagation;
         const origStopImm = e.stopImmediatePropagation;
-        e.stopPropagation = () => { stopPropagationCalled = true; origStop.call(e); };
-        e.stopImmediatePropagation = () => { stopImmediatePropagationCalled = true; origStopImm.call(e); };
-    }, { capture: true }); // Use capture so we get it before Svelte handler
+        e.stopPropagation = () => {
+          stopPropagationCalled = true;
+          origStop.call(e);
+        };
+        e.stopImmediatePropagation = () => {
+          stopImmediatePropagationCalled = true;
+          origStopImm.call(e);
+        };
+      },
+      { capture: true },
+    ); // Use capture so we get it before Svelte handler
 
-    await fireEvent.keyDown(input, { key: 'a' });
+    await fireEvent.keyDown(input, { key: "a" });
 
     // Svelte handles it in bubble phase, wait for event processing
-    await new Promise(r => setTimeout(r, 0));
+    await new Promise((r) => setTimeout(r, 0));
 
     // The spy didn't work before because the event was dispatched and the handler called its own methods on it.
     // An easier way is just testing if the event escapes the input.
     let bubbled = false;
-    document.addEventListener('keydown', () => bubbled = true);
-    await fireEvent.keyDown(input, { key: 'b' });
+    document.addEventListener("keydown", () => (bubbled = true));
+    await fireEvent.keyDown(input, { key: "b" });
     expect(bubbled).toBe(false);
   });
 });

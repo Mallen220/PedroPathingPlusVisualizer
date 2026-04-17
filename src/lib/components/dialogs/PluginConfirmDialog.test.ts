@@ -11,11 +11,13 @@ describe("PluginConfirmDialog", () => {
       confirmText: "Yes",
       cancelText: "No",
       onConfirm: vi.fn(),
-      onCancel: vi.fn()
+      onCancel: vi.fn(),
     });
 
     expect(getByText("Test Confirm")).toBeInTheDocument();
-    expect(getByText("Are you sure you want to test this?")).toBeInTheDocument();
+    expect(
+      getByText("Are you sure you want to test this?"),
+    ).toBeInTheDocument();
     expect(getByText("Yes")).toBeInTheDocument();
     expect(getByText("No")).toBeInTheDocument();
   });
@@ -28,7 +30,7 @@ describe("PluginConfirmDialog", () => {
       title: "Test Confirm",
       message: "Message",
       onConfirm,
-      onCancel
+      onCancel,
     });
 
     const confirmBtn = getByText("OK"); // default confirmText
@@ -44,7 +46,7 @@ describe("PluginConfirmDialog", () => {
       title: "Test Confirm",
       message: "Message",
       onConfirm,
-      onCancel
+      onCancel,
     });
 
     const cancelBtn = getByText("Cancel"); // default cancelText

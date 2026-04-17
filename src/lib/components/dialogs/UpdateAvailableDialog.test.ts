@@ -14,7 +14,11 @@ vi.mock("../../../stores", () => {
     },
     updateDataStore: {
       subscribe: vi.fn((fn) => {
-        fn({ version: "1.2.3", releaseNotes: "Some cool updates", url: "http://example.com" });
+        fn({
+          version: "1.2.3",
+          releaseNotes: "Some cool updates",
+          url: "http://example.com",
+        });
         return () => {};
       }),
     },
@@ -26,7 +30,7 @@ import UpdateAvailableDialog from "./UpdateAvailableDialog.svelte";
 describe("UpdateAvailableDialog", () => {
   it("renders when open is true", async () => {
     const { getByText } = render(UpdateAvailableDialog, {
-      show: true
+      show: true,
     });
 
     // Test the text according to the component

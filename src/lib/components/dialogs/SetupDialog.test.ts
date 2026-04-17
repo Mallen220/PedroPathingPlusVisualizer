@@ -16,7 +16,7 @@ describe("SetupDialog", () => {
 
   it("renders when show is true", () => {
     const { getByRole } = render(SetupDialog, {
-      show: true
+      show: true,
     });
 
     expect(getByRole("dialog")).toBeInTheDocument();
@@ -25,11 +25,11 @@ describe("SetupDialog", () => {
   it("calls electron API when select directory button clicked", async () => {
     const mockSetDirectory = vi.fn().mockResolvedValue("some-path");
     globalThis.electronAPI = {
-      setDirectory: mockSetDirectory
+      setDirectory: mockSetDirectory,
     } as any;
 
     const { getByText } = render(SetupDialog, {
-      show: true
+      show: true,
     });
 
     const button = getByText(/Select Directory/i);

@@ -10,7 +10,7 @@ describe("PluginPromptDialog", () => {
       message: "Please enter your name",
       defaultText: "John Doe",
       onConfirm: vi.fn(),
-      onCancel: vi.fn()
+      onCancel: vi.fn(),
     });
 
     expect(getByText("Test Prompt")).toBeInTheDocument();
@@ -25,7 +25,7 @@ describe("PluginPromptDialog", () => {
       title: "Test",
       message: "Message",
       onConfirm,
-      onCancel: vi.fn()
+      onCancel: vi.fn(),
     });
 
     const input = getByRole("textbox");
@@ -44,7 +44,7 @@ describe("PluginPromptDialog", () => {
       title: "Test",
       message: "Message",
       onConfirm: vi.fn(),
-      onCancel
+      onCancel,
     });
 
     const cancelBtn = getByText("Cancel");
@@ -59,7 +59,7 @@ describe("PluginPromptDialog", () => {
       title: "Test",
       defaultText: "Test Value",
       onConfirm,
-      onCancel: vi.fn()
+      onCancel: vi.fn(),
     });
 
     const input = getByRole("textbox");
@@ -73,7 +73,7 @@ describe("PluginPromptDialog", () => {
       show: true,
       title: "Test",
       onConfirm: vi.fn(),
-      onCancel
+      onCancel,
     });
 
     const input = getByRole("textbox");

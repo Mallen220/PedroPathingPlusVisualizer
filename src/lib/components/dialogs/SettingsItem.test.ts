@@ -6,7 +6,7 @@ describe("SettingsItem", () => {
   it("renders basic properties", () => {
     const { getByText } = render(SettingsItem, {
       label: "My Setting",
-      description: "Setting description"
+      description: "Setting description",
     });
 
     expect(getByText("My Setting")).toBeInTheDocument();
@@ -19,22 +19,22 @@ describe("SettingsItem", () => {
     const { getByText, container } = render(SettingsItem, {
       label: "My Setting",
       description: "Setting description",
-      searchQuery: "xyz"
+      searchQuery: "xyz",
     });
 
-    const div = container.querySelector('div.transition-all');
-    expect(div).toHaveClass('hidden');
+    const div = container.querySelector("div.transition-all");
+    expect(div).toHaveClass("hidden");
   });
 
   it("shows when search query matches label", () => {
     const { getByText, container } = render(SettingsItem, {
       label: "My Setting",
       description: "Setting description",
-      searchQuery: "my"
+      searchQuery: "my",
     });
 
-    const div = container.querySelector('div.transition-all');
-    expect(div).not.toHaveClass('hidden');
+    const div = container.querySelector("div.transition-all");
+    expect(div).not.toHaveClass("hidden");
     expect(getByText("My Setting")).toBeInTheDocument();
   });
 
@@ -43,7 +43,7 @@ describe("SettingsItem", () => {
     const { getByRole } = render(SettingsItem, {
       label: "My Setting",
       onReset,
-      isModified: true
+      isModified: true,
     });
 
     const resetBtn = getByRole("button", { name: "Reset My Setting" });

@@ -9,14 +9,14 @@ vi.mock("../../../stores", () => ({
       fn("general");
       return () => {};
     }),
-    set: vi.fn()
+    set: vi.fn(),
   },
   theme: {
     subscribe: vi.fn((fn) => {
       fn("light");
       return () => {};
     }),
-  }
+  },
 }));
 
 describe("SettingsDialog", () => {
@@ -24,7 +24,7 @@ describe("SettingsDialog", () => {
     const { getByText } = render(SettingsDialog, {
       isOpen: true,
       settings: DEFAULT_SETTINGS,
-      onUpdate: vi.fn()
+      onUpdate: vi.fn(),
     });
 
     expect(getByText("Settings", { selector: "h2" })).toBeInTheDocument();
@@ -34,7 +34,7 @@ describe("SettingsDialog", () => {
     const { queryByText } = render(SettingsDialog, {
       isOpen: false,
       settings: DEFAULT_SETTINGS,
-      onUpdate: vi.fn()
+      onUpdate: vi.fn(),
     });
 
     expect(queryByText("Settings", { selector: "h2" })).not.toBeInTheDocument();
@@ -44,7 +44,7 @@ describe("SettingsDialog", () => {
     const { getByLabelText } = render(SettingsDialog, {
       isOpen: true,
       settings: DEFAULT_SETTINGS,
-      onUpdate: vi.fn()
+      onUpdate: vi.fn(),
     });
 
     const closeBtn = getByLabelText("Close settings");
@@ -60,7 +60,7 @@ describe("SettingsDialog", () => {
     const { getByText } = render(SettingsDialog, {
       isOpen: true,
       settings: DEFAULT_SETTINGS,
-      onUpdate: vi.fn()
+      onUpdate: vi.fn(),
     });
 
     const saveBtn = getByText("Save");

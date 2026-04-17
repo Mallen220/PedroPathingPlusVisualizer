@@ -11,19 +11,24 @@ vi.mock("../../pluginManager", () => ({
       enablePlugin: vi.fn(),
       disablePlugin: vi.fn(),
       removePlugin: vi.fn(),
-      installFromUrl: vi.fn()
-    })
-  }
+      installFromUrl: vi.fn(),
+    }),
+  },
 }));
 
 vi.mock("../../pluginsStore", () => ({
-  pluginsStore: { subscribe: vi.fn(fn => { fn([]); return () => {}; }) }
+  pluginsStore: {
+    subscribe: vi.fn((fn) => {
+      fn([]);
+      return () => {};
+    }),
+  },
 }));
 
 describe("PluginManagerDialog", () => {
   it("renders when isOpen is true", () => {
     const { getByText } = render(PluginManagerDialog, {
-      isOpen: true
+      isOpen: true,
     });
 
     expect(getByText("Plugin Manager", { selector: "h2" })).toBeInTheDocument();

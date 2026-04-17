@@ -3,13 +3,29 @@ import { render, fireEvent } from "@testing-library/svelte";
 import RatingDialog from "./RatingDialog.svelte";
 
 vi.mock("../../../stores", () => ({
-  showRatingDialog: { subscribe: vi.fn(fn => { fn(true); return () => {}; }), set: vi.fn() },
+  showRatingDialog: {
+    subscribe: vi.fn((fn) => {
+      fn(true);
+      return () => {};
+    }),
+    set: vi.fn(),
+  },
   showFeedbackDialog: { set: vi.fn() },
-  ratingDialogAutoOpened: { subscribe: vi.fn(fn => { fn(false); return () => {}; }) }
+  ratingDialogAutoOpened: {
+    subscribe: vi.fn((fn) => {
+      fn(false);
+      return () => {};
+    }),
+  },
 }));
 
 vi.mock("../../projectStore", () => ({
-  settingsStore: { subscribe: vi.fn(fn => { fn({}); return () => {}; }) }
+  settingsStore: {
+    subscribe: vi.fn((fn) => {
+      fn({});
+      return () => {};
+    }),
+  },
 }));
 
 describe("RatingDialog", () => {
