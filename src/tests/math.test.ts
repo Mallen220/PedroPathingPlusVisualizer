@@ -13,6 +13,7 @@ import {
   getTangentAngle,
   getLineStartHeading,
   getLineEndHeading,
+  getInitialTangentialHeading,
   splitBezier,
 } from "../utils/math";
 import type { Line, Point } from "../types";
@@ -335,6 +336,40 @@ describe("Math Utils", () => {
       expect(right[0]).toEqual({ x: 10, y: 5 });
       expect(right[1]).toEqual({ x: 15, y: 5 });
       expect(right[2]).toEqual({ x: 20, y: 0 });
+    });
+  });
+
+  describe("getInitialTangentialHeading", () => {
+    it("calculates basic angle between two points", () => {
+      const startPoint = { x: 0, y: 0 } as Point;
+      const nextPoint = { x: 1, y: 1 };
+      expect(getInitialTangentialHeading(startPoint, nextPoint)).toBe(45);
+    });
+
+    it("adds 180 degrees if startPoint is reversed", () => {
+      const startPoint = { x: 0, y: 0, reverse: true } as Point;
+      const nextPoint = { x: 1, y: 1 };
+      // 45 + 180 = 225
+      expect(getInitialTangentialHeading(startPoint, nextPoint)).toBe(225);
+    });
+
+    it("handles vertical lines", () => {
+      const startPoint = { x: 0, y: 0 } as Point;
+      const nextPoint = { x: 0, y: 1 };
+      expect(getInitialTangentialHeading(startPoint, nextPoint)).toBe(90);
+    });
+
+    it("handles vertical lines when reversed", () => {
+      const startPoint = { x: 0, y: 0, reverse: true } as Point;
+      const nextPoint = { x: 0, y: 1 };
+      // 90 + 180 = 270
+      expect(getInitialTangentialHeading(startPoint, nextPoint)).toBe(270);
+    });
+
+    it("handles horizontal lines", () => {
+      const startPoint = { x: 0, y: 0 } as Point;
+      const nextPoint = { x: 1, y: 0 };
+      expect(getInitialTangentialHeading(startPoint, nextPoint)).toBe(0);
     });
   });
 
