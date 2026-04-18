@@ -5,6 +5,7 @@ import type { Point, Line, SequenceItem, TurtleData } from "../../types";
 import { getLineStartHeading } from "../../utils/math";
 import pkg from "../../../package.json";
 import { actionRegistry } from "../../lib/actionRegistry";
+import { generateEventMarkerCode } from "./eventMarkerUtils";
 import {
   toUser,
   toUserHeading,
@@ -358,26 +359,10 @@ export async function generateJavaCode(
           }
 
           // Add event markers to the path builder
-          let eventMarkerCode = "";
-          if (line.eventMarkers && line.eventMarkers.length > 0) {
-            line.eventMarkers.forEach((event) => {
-              const type = event.type || "parametric";
-              if (type === "parametric") {
-                eventMarkerCode += `\n        .addParametricCallback(${event.position.toFixed(3)}, () -> NamedCommands.getCommand("${event.name}").run())`;
-              } else if (type === "temporal") {
-                eventMarkerCode += `\n        .addTemporalCallback(${event.time ?? 500}, () -> NamedCommands.getCommand("${event.name}").run())`;
-              } else if (type === "pose") {
-                const px = (event.poseX ?? 0).toFixed(3);
-                const py = (event.poseY ?? 0).toFixed(3);
-                const ph = (event.poseHeading ?? 0).toFixed(3);
-                const pg = (event.poseGuess ?? 0.5).toFixed(3);
-                // Assume coordinates are already in FTC units (inches) as user enters them based on background
-                // We'll format the Pose accordingly
-                const poseArg = `new Pose(${px}, ${py}, Math.toRadians(${ph}))`;
-                eventMarkerCode += `\n        .addPoseCallback(${poseArg}, () -> NamedCommands.getCommand("${event.name}").run(), ${pg})`;
-              }
-            });
-          }
+          const eventMarkerCode = generateEventMarkerCode(
+            line.eventMarkers,
+            "        ",
+          );
 
           return {
             line,
