@@ -433,41 +433,53 @@
               <span>Global: {marker.globalPosition.toFixed(2)}</span>
             </div>
 
-            <div class="flex items-center gap-2">
-              <input
-                type="range"
-                aria-label="Position for {marker.ref.name}"
-                min="0"
-                max={nonMacroCount}
-                step="0.01"
-                value={marker.globalPosition}
-                class="flex-1 slider accent-purple-500"
-                oninput={(e) =>
-                  handleGlobalPositionInput(
-                    marker,
-                    Number.parseFloat(e.currentTarget.value),
-                  )}
-                onchange={(e) =>
-                  handleGlobalPositionCommit(
-                    marker,
-                    Number.parseFloat(e.currentTarget.value),
-                  )}
-              />
-              <input
-                type="number"
-                aria-label="Position value for {marker.ref.name}"
-                min="0"
-                max={nonMacroCount}
-                step="0.01"
-                value={Number.parseFloat(marker.globalPosition.toFixed(2))}
-                class="w-16 px-1 py-0.5 text-xs rounded bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 text-center"
-                onchange={(e) =>
-                  handleGlobalPositionCommit(
-                    marker,
-                    Number.parseFloat(e.currentTarget.value),
-                  )}
-              />
-            </div>
+            {#if !marker.ref.type || marker.ref.type === "parametric"}
+              <div class="flex items-center gap-2">
+                <input
+                  type="range"
+                  aria-label="Position for {marker.ref.name}"
+                  min="0"
+                  max={nonMacroCount}
+                  step="0.01"
+                  value={marker.globalPosition}
+                  class="flex-1 slider accent-purple-500"
+                  oninput={(e) =>
+                    handleGlobalPositionInput(
+                      marker,
+                      Number.parseFloat(e.currentTarget.value),
+                    )}
+                  onchange={(e) =>
+                    handleGlobalPositionCommit(
+                      marker,
+                      Number.parseFloat(e.currentTarget.value),
+                    )}
+                />
+                <input
+                  type="number"
+                  aria-label="Position value for {marker.ref.name}"
+                  min="0"
+                  max={nonMacroCount}
+                  step="0.01"
+                  value={Number.parseFloat(marker.globalPosition.toFixed(2))}
+                  class="w-16 px-1 py-0.5 text-xs rounded bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 text-center"
+                  onchange={(e) =>
+                    handleGlobalPositionCommit(
+                      marker,
+                      Number.parseFloat(e.currentTarget.value),
+                    )}
+                />
+              </div>
+            {:else if marker.ref.type === "temporal"}
+              <div class="text-xs text-neutral-500 flex justify-between">
+                <span>Type: Temporal</span>
+                <span>Time: {marker.ref.time ?? 500}ms</span>
+              </div>
+            {:else if marker.ref.type === "pose"}
+              <div class="text-xs text-neutral-500 flex justify-between">
+                <span>Type: Pose</span>
+                <span>X: {marker.ref.poseX}, Y: {marker.ref.poseY}, H: {marker.ref.poseHeading}</span>
+              </div>
+            {/if}
           </div>
         {/each}
       {/if}

@@ -222,18 +222,13 @@ export async function generateSequentialCommandCode(
     .filter(Boolean)
     .join("\n");
 
-  // Generate ProgressTracker field
-  const progressTrackerField = `    private final ProgressTracker progressTracker;`;
-
   // Define library-specific names
   const isNextFTC = targetLibrary === "NextFTC";
   const SequentialGroupClass = isNextFTC
     ? "SequentialGroup"
     : "SequentialCommandGroup";
-  const ParallelRaceClass = "ParallelRaceGroup"; // Same for NextFTC and SolversLib
   const WaitCmdClass = isNextFTC ? "Delay" : "WaitCommand";
   const InstantCmdClass = "InstantCommand";
-  const WaitUntilCmdClass = isNextFTC ? "WaitUntil" : "WaitUntilCommand"; // NextFTC has similar or user maps it
   const FollowPathCmdClass = isNextFTC ? "FollowPath" : "FollowPathCommand";
 
   // Generate addCommands calls with event handling; iterate sequence if provided
@@ -286,73 +281,14 @@ export async function generateSequentialCommandCode(
     const pathName = pathChainVariables[lineIdx];
     const pathDisplayName = pathName;
 
-    // Gather all event markers for the entire chain starting at this root line
-    let allEventMarkers = [...(line.eventMarkers || [])];
-    let nextIdx = lineIdx + 1;
-    while (nextIdx < lines.length && lines[nextIdx].isChain) {
-      const nextMarkers = lines[nextIdx].eventMarkers;
-      if (nextMarkers && nextMarkers.length > 0) {
-        allEventMarkers.push(...nextMarkers);
-      }
-      nextIdx++;
-    }
-
     // Construct FollowPath instantiation
     const followPathInstance = isNextFTC
       ? `new ${FollowPathCmdClass}(${pathName})`
       : `new ${FollowPathCmdClass}(follower, ${pathName})`;
 
-    if (isNextFTC) {
-      commands.push(followPathInstance);
-    } else if (allEventMarkers && allEventMarkers.length > 0) {
-      // Path has event markers
-
-      // First: InstantCommand to set up tracker
-      commands.push(
-        `                new ${InstantCmdClass}(
-                    () -> {
-                        progressTracker.setCurrentChain(${pathName});
-                        progressTracker.setCurrentPathName("${pathDisplayName}");`,
-      );
-
-      // Add event registrations
-      allEventMarkers.forEach((event) => {
-        commands[commands.length - 1] += `
-                        progressTracker.registerEvent("${event.name}", ${event.position.toFixed(3)});`;
-      });
-
-      commands[commands.length - 1] += `
-                    })`;
-
-      // Second: ParallelRaceGroup for following path with event handling
-      commands.push(`                new ${ParallelRaceClass}(
-                    ${followPathInstance},
-                    new ${SequentialGroupClass}(`);
-
-      // Add WaitUntilCommand for each event
-      allEventMarkers.forEach((event, eventIdx) => {
-        if (eventIdx > 0) commands[commands.length - 1] += ",";
-        commands[commands.length - 1] += `
-                        new ${WaitUntilCmdClass}(() -> progressTracker.shouldTriggerEvent("${event.name}")),
-                        new ${InstantCmdClass}(
-                            () -> {
-                                progressTracker.executeEvent("${event.name}");
-                            })`;
-      });
-
-      commands[commands.length - 1] += `
-                    ))`;
-    } else {
-      // No event markers - simple InstantCommand + FollowPathCommand
-      commands.push(
-        `                new ${InstantCmdClass}(
-                    () -> {
-                        progressTracker.setCurrentChain(${pathName});
-                        progressTracker.setCurrentPathName("${pathDisplayName}");
-                    }),
-                ${followPathInstance}`,
-      );
-    }
+    commands.push(
+      `                ${followPathInstance}`,
+    );
   });
 
   // Generate path building
@@ -554,10 +490,30 @@ export async function generateSequentialCommandCode(
       headingMethodCode = constructHeadingMethod(line.endPoint);
     }
 
+    // Add event markers to the path builder
+    let eventMarkerCode = "";
+    if (line.eventMarkers && line.eventMarkers.length > 0) {
+      line.eventMarkers.forEach((event) => {
+        const type = event.type || "parametric";
+        if (type === "parametric") {
+          eventMarkerCode += `\n            .addParametricCallback(${event.position.toFixed(3)}, () -> NamedCommands.getCommand("${event.name}").run())`;
+        } else if (type === "temporal") {
+          eventMarkerCode += `\n            .addTemporalCallback(${event.time ?? 500}, () -> NamedCommands.getCommand("${event.name}").run())`;
+        } else if (type === "pose") {
+          const px = (event.poseX ?? 0).toFixed(3);
+          const py = (event.poseY ?? 0).toFixed(3);
+          const ph = (event.poseHeading ?? 0).toFixed(3);
+          const pg = (event.poseGuess ?? 0.5).toFixed(3);
+          const poseArg = `new Pose(${px}, ${py}, Math.toRadians(${ph}))`;
+          eventMarkerCode += `\n            .addPoseCallback(${poseArg}, () -> NamedCommands.getCommand("${event.name}").run(), ${pg})`;
+        }
+      });
+    }
+
     if (line.isChain) {
       currentBuilderStr += `
             .addPath(new ${curveType}(${actualStartPose}, ${controlPointsStr}${endPoseVar}))
-            ${headingMethodCode}`;
+            ${headingMethodCode}${eventMarkerCode}`;
     } else {
       if (currentBuilderStr !== "") {
         currentBuilderStr += "\n            .build();";
@@ -565,7 +521,7 @@ export async function generateSequentialCommandCode(
       }
       currentBuilderStr = `        ${pathName} = follower.pathBuilder()
             .addPath(new ${curveType}(${actualStartPose}, ${controlPointsStr}${endPoseVar}))
-            ${headingMethodCode}${globalHeadingCode}`;
+            ${headingMethodCode}${eventMarkerCode}${globalHeadingCode}`;
     }
   });
 
@@ -582,17 +538,13 @@ export async function generateSequentialCommandCode(
     imports = `
 import dev.nextftc.core.commands.Command;
 import dev.nextftc.core.commands.groups.SequentialGroup;
-import dev.nextftc.core.commands.groups.ParallelRaceGroup;
 import dev.nextftc.core.commands.delays.Delay;
 import dev.nextftc.core.commands.utility.InstantCommand;
-import dev.nextftc.core.commands.delays.WaitUntil;
 import org.firstinspires.ftc.teamcode.pedroPathing.FollowPath;
 `;
   } else {
     imports = `
 import com.seattlesolvers.solverslib.command.SequentialCommandGroup;
-import com.seattlesolvers.solverslib.command.ParallelRaceGroup;
-import com.seattlesolvers.solverslib.command.WaitUntilCommand;
 import com.seattlesolvers.solverslib.command.WaitCommand;
 import com.seattlesolvers.solverslib.command.InstantCommand;
 import com.seattlesolvers.solverslib.pedroCommand.FollowPathCommand;
@@ -703,7 +655,6 @@ import com.pedropathing.ftc.PoseConverter;
 ${imports}
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 ${ppReaderImport}
-import com.turtletracerlib.pathing.ProgressTracker;
 import com.turtletracerlib.pathing.NamedCommands;
 import java.io.IOException;
 import ${packageName.split(".").slice(0, 4).join(".")}.Subsystems.Drivetrain;
@@ -711,7 +662,6 @@ import ${packageName.split(".").slice(0, 4).join(".")}.Subsystems.Drivetrain;
 public class ${className} extends ${SequentialGroupClass} {
 
     private final Follower follower;
-${progressTrackerField}
 
     // Poses
 ${allPoseDeclarations.join("\n")}
@@ -721,7 +671,6 @@ ${pathChainDeclarations}
 
     public ${className}(final Drivetrain drive, HardwareMap hw, Telemetry telemetry) throws IOException {
         this.follower = drive.getFollower();
-        this.progressTracker = new ProgressTracker(follower, telemetry);
 
         ${ppReaderInit}
 

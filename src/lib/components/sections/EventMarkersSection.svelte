@@ -35,7 +35,13 @@
     line.eventMarkers.push({
       id: `event-${Date.now()}-${Math.random().toString(36).slice(2, 11)}`,
       name: `Event_${lineIdx + 1}_${line.eventMarkers.length + 1}`,
+      type: "parametric",
       position: 0.5,
+      time: 500,
+      poseX: 0,
+      poseY: 0,
+      poseHeading: 0,
+      poseGuess: 0.5,
       lineIndex: lineIdx,
     });
     line = { ...line }; // Force reactivity
@@ -84,6 +90,21 @@
       event.position = value;
       line.eventMarkers = [...line.eventMarkers!];
       target.blur(); // Trigger blur to update
+    }
+  }
+
+  function handleTypeChange(e: Event, event: any) {
+    const target = e.target as HTMLSelectElement;
+    event.type = target.value;
+    line.eventMarkers = [...line.eventMarkers!];
+  }
+
+  function handleNumberInput(e: Event, event: any, field: string) {
+    const target = e.target as HTMLInputElement;
+    const value = Number.parseFloat(target.value);
+    if (!Number.isNaN(value)) {
+      event[field] = value;
+      line.eventMarkers = [...line.eventMarkers!];
     }
   }
 </script>
@@ -138,6 +159,18 @@
                 }}
               />
             </div>
+
+            <select
+              class="rounded-md bg-white dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-600 focus:outline-none focus:ring-1 focus:ring-purple-500 text-xs py-1 px-2"
+              value={event.type || "parametric"}
+              onchange={(e) => handleTypeChange(e, event)}
+              disabled={line.locked}
+            >
+              <option value="parametric">Parametric</option>
+              <option value="temporal">Temporal</option>
+              <option value="pose">Pose</option>
+            </select>
+
             <!-- Event delete Button -->
 
             <button
@@ -151,49 +184,116 @@
             </button>
           </div>
 
-          <!-- Position Slider and text -->
-          <div class="flex items-center gap-2 flex-wrap w-full">
-            <span class="text-xs text-neutral-600 dark:text-neutral-400"
-              >Position:</span
-            >
-            <div class="flex flex-1 items-center gap-2 min-w-[200px]">
-              <input
-                type="range"
-                min="0"
-                max="1"
-                step="0.01"
-                value={event.position}
-                class="flex-1 slider"
-                aria-label="Event position"
-                data-event-marker-slider
-                disabled={line.locked}
-                ondragstart={stopPropagation(
-                  preventDefault(bubble("dragstart")),
-                )}
-                oninput={(e) => handleInput(e, event)}
-              />
+          <!-- Type-specific Configuration -->
+          {#if !event.type || event.type === 'parametric'}
+            <div class="flex items-center gap-2 flex-wrap w-full">
+              <span class="text-xs text-neutral-600 dark:text-neutral-400"
+                >Position:</span
+              >
+              <div class="flex flex-1 items-center gap-2 min-w-[200px]">
+                <input
+                  type="range"
+                  min="0"
+                  max="1"
+                  step="0.01"
+                  value={event.position}
+                  class="flex-1 slider"
+                  aria-label="Event position"
+                  data-event-marker-slider
+                  disabled={line.locked}
+                  ondragstart={stopPropagation(
+                    preventDefault(bubble("dragstart")),
+                  )}
+                  oninput={(e) => handleInput(e, event)}
+                />
+                <input
+                  type="number"
+                  value={event.position}
+                  aria-label="Event position value"
+                  disabled={line.locked}
+                  min="0"
+                  max="1"
+                  step="0.01"
+                  class="w-16 px-2 py-1 text-xs rounded-md bg-white dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-600 focus:outline-none focus:ring-1 focus:ring-purple-500"
+                  oninput={(e) => {}}
+                  onblur={(e) => handleBlur(e, event)}
+                  onkeydown={(e) => handleKeydown(e, event)}
+                />
+              </div>
+            </div>
+            <div class="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
+              Line {lineIdx + 1}, Position: {event.position.toFixed(2)}
+            </div>
+          {:else if event.type === 'temporal'}
+            <div class="flex items-center gap-2 flex-wrap w-full mt-1">
+              <span class="text-xs text-neutral-600 dark:text-neutral-400 min-w-[40px]"
+                >Time (ms):</span
+              >
               <input
                 type="number"
-                value={event.position}
-                aria-label="Event position value"
+                value={event.time ?? 500}
+                aria-label="Event time in milliseconds"
                 disabled={line.locked}
                 min="0"
-                max="1"
-                step="0.01"
-                class="w-16 px-2 py-1 text-xs rounded-md bg-white dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-600 focus:outline-none focus:ring-1 focus:ring-purple-500"
-                oninput={(e) => {
-                  // Don't update immediately, just show the typed value
-                  // We'll validate on blur or Enter
-                }}
-                onblur={(e) => handleBlur(e, event)}
-                onkeydown={(e) => handleKeydown(e, event)}
+                step="1"
+                class="flex-1 px-2 py-1 text-xs rounded-md bg-white dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-600 focus:outline-none focus:ring-1 focus:ring-purple-500"
+                onchange={(e) => handleNumberInput(e, event, "time")}
               />
             </div>
-          </div>
-
-          <div class="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
-            Line {lineIdx + 1}, Position: {event.position.toFixed(2)}
-          </div>
+          {:else if event.type === 'pose'}
+            <div class="grid grid-cols-2 gap-2 w-full mt-1">
+              <div class="flex items-center gap-2">
+                <span class="text-xs text-neutral-600 dark:text-neutral-400 w-4">X:</span>
+                <input
+                  type="number"
+                  value={event.poseX ?? 0}
+                  aria-label="Event Pose X"
+                  disabled={line.locked}
+                  step="0.1"
+                  class="w-full px-2 py-1 text-xs rounded-md bg-white dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-600 focus:outline-none focus:ring-1 focus:ring-purple-500"
+                  onchange={(e) => handleNumberInput(e, event, "poseX")}
+                />
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="text-xs text-neutral-600 dark:text-neutral-400 w-4">Y:</span>
+                <input
+                  type="number"
+                  value={event.poseY ?? 0}
+                  aria-label="Event Pose Y"
+                  disabled={line.locked}
+                  step="0.1"
+                  class="w-full px-2 py-1 text-xs rounded-md bg-white dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-600 focus:outline-none focus:ring-1 focus:ring-purple-500"
+                  onchange={(e) => handleNumberInput(e, event, "poseY")}
+                />
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="text-xs text-neutral-600 dark:text-neutral-400 w-4" title="Heading (deg)">H:</span>
+                <input
+                  type="number"
+                  value={event.poseHeading ?? 0}
+                  aria-label="Event Pose Heading"
+                  disabled={line.locked}
+                  step="1"
+                  class="w-full px-2 py-1 text-xs rounded-md bg-white dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-600 focus:outline-none focus:ring-1 focus:ring-purple-500"
+                  onchange={(e) => handleNumberInput(e, event, "poseHeading")}
+                />
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="text-xs text-neutral-600 dark:text-neutral-400 w-4" title="Guess (0-1)">G:</span>
+                <input
+                  type="number"
+                  value={event.poseGuess ?? 0.5}
+                  aria-label="Event Pose Guess"
+                  disabled={line.locked}
+                  min="0"
+                  max="1"
+                  step="0.01"
+                  class="w-full px-2 py-1 text-xs rounded-md bg-white dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-600 focus:outline-none focus:ring-1 focus:ring-purple-500"
+                  onchange={(e) => handleNumberInput(e, event, "poseGuess")}
+                />
+              </div>
+            </div>
+          {/if}
         </div>
       {/each}
     </div>

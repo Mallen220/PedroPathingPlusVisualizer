@@ -124,13 +124,13 @@
         <div
           class="flex flex-col p-2 border border-purple-300 dark:border-purple-700 rounded-md bg-purple-50 dark:bg-purple-900/20"
         >
-          <div class="flex items-center justify-between mb-2">
-            <div class="flex items-center gap-2">
-              <div class="w-3 h-3 rounded-full bg-purple-500"></div>
+          <div class="flex items-center justify-between mb-2 flex-wrap gap-2">
+            <div class="flex items-center gap-2 flex-1 min-w-[120px]">
+              <div class="w-3 h-3 rounded-full bg-purple-500 shrink-0"></div>
               <input
                 tabindex="-1"
                 bind:value={event.name}
-                class="pl-1.5 rounded-md bg-white dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-600 focus:outline-none focus:ring-1 focus:ring-purple-500 text-sm w-36"
+                class="pl-1.5 rounded-md bg-white dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-600 focus:outline-none focus:ring-1 focus:ring-purple-500 text-sm w-full min-w-[100px]"
                 placeholder="Event name"
                 aria-label="Event name"
                 disabled={wait.locked}
