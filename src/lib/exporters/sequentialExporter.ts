@@ -279,16 +279,13 @@ export async function generateSequentialCommandCode(
 
     // The name of the entire PathChain is the pathName of the root path
     const pathName = pathChainVariables[lineIdx];
-    const pathDisplayName = pathName;
 
     // Construct FollowPath instantiation
     const followPathInstance = isNextFTC
       ? `new ${FollowPathCmdClass}(${pathName})`
       : `new ${FollowPathCmdClass}(follower, ${pathName})`;
 
-    commands.push(
-      `                ${followPathInstance}`,
-    );
+    commands.push(`                ${followPathInstance}`);
   });
 
   // Generate path building

@@ -477,7 +477,10 @@
             {:else if marker.ref.type === "pose"}
               <div class="text-xs text-neutral-500 flex justify-between">
                 <span>Type: Pose</span>
-                <span>X: {marker.ref.poseX}, Y: {marker.ref.poseY}, H: {marker.ref.poseHeading}</span>
+                <span
+                  >X: {marker.ref.poseX}, Y: {marker.ref.poseY}, H: {marker.ref
+                    .poseHeading}</span
+                >
               </div>
             {/if}
           </div>

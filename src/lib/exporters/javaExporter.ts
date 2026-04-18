@@ -12,13 +12,10 @@ import {
 } from "../../utils/coordinates";
 
 import { exporterRegistry } from "./index";
-import { notification } from "../../stores";
 
 /**
  * Generate Java code from path data
  */
-
-let hasWarnedAboutEventMarkers = false;
 
 const AUTO_GENERATED_FILE_WARNING_MESSAGE: string = `
 /* ============================================================= *
@@ -47,13 +44,6 @@ export async function generateJavaCode(
     tangential: "setTangentHeadingInterpolation",
   };
 
-  // Collect all unique event marker names
-  const eventMarkerNames = new Set<string>();
-  lines.forEach((line) => {
-    line.eventMarkers?.forEach((event) => {
-      eventMarkerNames.add(event.name);
-    });
-  });
   const flattenSequence = (seq: SequenceItem[]): SequenceItem[] => {
     const result: SequenceItem[] = [];
     seq.forEach((item) => {
@@ -67,18 +57,6 @@ export async function generateJavaCode(
     });
     return result;
   };
-
-  if (sequence) {
-    const flatSeq = flattenSequence(sequence);
-    flatSeq.forEach((item) => {
-      if ((item as any).kind === "wait" && (item as any).eventMarkers) {
-        (item as any).eventMarkers.forEach((event: any) => {
-          eventMarkerNames.add(event.name);
-        });
-      }
-    });
-  }
-
 
   const pathChainNames: string[] = [];
   const usedPathNames = new Map<string, number>();

@@ -185,7 +185,7 @@
           </div>
 
           <!-- Type-specific Configuration -->
-          {#if !event.type || event.type === 'parametric'}
+          {#if !event.type || event.type === "parametric"}
             <div class="flex items-center gap-2 flex-wrap w-full">
               <span class="text-xs text-neutral-600 dark:text-neutral-400"
                 >Position:</span
@@ -224,9 +224,10 @@
             <div class="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
               Line {lineIdx + 1}, Position: {event.position.toFixed(2)}
             </div>
-          {:else if event.type === 'temporal'}
+          {:else if event.type === "temporal"}
             <div class="flex items-center gap-2 flex-wrap w-full mt-1">
-              <span class="text-xs text-neutral-600 dark:text-neutral-400 min-w-[40px]"
+              <span
+                class="text-xs text-neutral-600 dark:text-neutral-400 min-w-[40px]"
                 >Time (ms):</span
               >
               <input
@@ -240,10 +241,12 @@
                 onchange={(e) => handleNumberInput(e, event, "time")}
               />
             </div>
-          {:else if event.type === 'pose'}
+          {:else if event.type === "pose"}
             <div class="grid grid-cols-2 gap-2 w-full mt-1">
               <div class="flex items-center gap-2">
-                <span class="text-xs text-neutral-600 dark:text-neutral-400 w-4">X:</span>
+                <span class="text-xs text-neutral-600 dark:text-neutral-400 w-4"
+                  >X:</span
+                >
                 <input
                   type="number"
                   value={event.poseX ?? 0}
@@ -255,7 +258,9 @@
                 />
               </div>
               <div class="flex items-center gap-2">
-                <span class="text-xs text-neutral-600 dark:text-neutral-400 w-4">Y:</span>
+                <span class="text-xs text-neutral-600 dark:text-neutral-400 w-4"
+                  >Y:</span
+                >
                 <input
                   type="number"
                   value={event.poseY ?? 0}
@@ -267,7 +272,10 @@
                 />
               </div>
               <div class="flex items-center gap-2">
-                <span class="text-xs text-neutral-600 dark:text-neutral-400 w-4" title="Heading (deg)">H:</span>
+                <span
+                  class="text-xs text-neutral-600 dark:text-neutral-400 w-4"
+                  title="Heading (deg)">H:</span
+                >
                 <input
                   type="number"
                   value={event.poseHeading ?? 0}
@@ -279,7 +287,10 @@
                 />
               </div>
               <div class="flex items-center gap-2">
-                <span class="text-xs text-neutral-600 dark:text-neutral-400 w-4" title="Guess (0-1)">G:</span>
+                <span
+                  class="text-xs text-neutral-600 dark:text-neutral-400 w-4"
+                  title="Guess (0-1)">G:</span
+                >
                 <input
                   type="number"
                   value={event.poseGuess ?? 0.5}

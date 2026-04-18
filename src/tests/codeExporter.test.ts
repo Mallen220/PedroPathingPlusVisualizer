@@ -167,7 +167,9 @@ describe("codeExporter", () => {
       const lines = [line3];
       const code = await generateJavaCode(startPoint, lines, false);
 
-      expect(code).toContain('.addParametricCallback(0.500, () -> NamedCommands.getCommand("marker1").run())');
+      expect(code).toContain(
+        '.addParametricCallback(0.500, () -> NamedCommands.getCommand("marker1").run())',
+      );
     });
 
     it("should generate full OpMode code when exportFullCode is true", async () => {
