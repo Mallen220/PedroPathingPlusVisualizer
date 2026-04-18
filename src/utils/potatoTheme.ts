@@ -1,5 +1,5 @@
 // Copyright 2026 Matthew Allen. Licensed under the Modified Apache License, Version 2.0.
-export const POTATO_THEME_CSS = `
+export const POTATO_THEME_CSS = String.raw`
 :root {
   --potato-flesh: #F9F3D8;
   --potato-skin: #D4B483;
@@ -14,9 +14,9 @@ body,
 .bg-white,
 .bg-neutral-50,
 .bg-neutral-100,
-.dark\\:bg-neutral-900,
-.dark\\:bg-neutral-800,
-.dark\\:bg-black {
+.dark\:bg-neutral-900,
+.dark\:bg-neutral-800,
+.dark\:bg-black {
   background-color: var(--potato-flesh) !important;
   color: var(--potato-text-dark) !important;
   border-color: var(--potato-skin) !important;
@@ -29,8 +29,8 @@ img {
 
 /* Headers, sidebars, darker sections */
 .bg-neutral-200,
-.dark\\:bg-neutral-700,
-.dark\\:bg-neutral-800\\/50,
+.dark\:bg-neutral-700,
+.dark\:bg-neutral-800\/50,
 header,
 nav {
   background-color: var(--potato-skin) !important;
@@ -71,14 +71,14 @@ button:not(.bg-transparent) svg {
 .text-neutral-900,
 .text-neutral-700,
 .text-neutral-600,
-.dark\\:text-white,
-.dark\\:text-neutral-100,
-.dark\\:text-neutral-300,
-.dark\\:text-neutral-400 {
+.dark\:text-white,
+.dark\:text-neutral-100,
+.dark\:text-neutral-300,
+.dark\:text-neutral-400 {
   color: var(--potato-text-dark) !important;
 }
 
-.text-blue-600, .dark\\:text-blue-400 {
+.text-blue-600, .dark\:text-blue-400 {
   color: #A0522D !important;
 }
 
@@ -99,7 +99,6 @@ button:not(.bg-transparent) svg {
 
 export function firePotatoConfetti(x: number, y: number) {
   const count = 10;
-  const spread = 50;
 
   for (let i = 0; i < count; i++) {
     const potato = document.createElement("img");

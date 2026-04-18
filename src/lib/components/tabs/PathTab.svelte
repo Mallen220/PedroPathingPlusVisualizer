@@ -487,16 +487,6 @@
     recordChange("Add Path");
   }
 
-  // Deprecated specific add functions - replaced by handleAddAction
-  // kept if needed by exported bindings
-  function addWait() {
-    handleAddAction($actionRegistry["wait"]);
-  }
-
-  function addRotate() {
-    handleAddAction($actionRegistry["rotate"]);
-  }
-
   function collapseAll() {
     collapsedSections.lines = lines.map(() => true);
     collapsedSections.controlPoints = lines.map(() => true);

@@ -37,8 +37,7 @@ function parsePoseCreation(tokens: string[]): Partial<Point> | null {
   const argGroups: string[][] = [];
   let currentGroup: string[] = [];
   let localDepth = 0;
-  for (let i = 0; i < argsTokens.length; i++) {
-    const t = argsTokens[i];
+  for (const t of argsTokens) {
     if (t === "(") localDepth++;
     if (t === ")") localDepth--;
 

@@ -54,7 +54,7 @@ export default defineConfig({
           ) {
             return;
           }
-        } catch (e) {
+        } catch {
           // If anything goes wrong, forward the warning to the default handler
         }
         warn(warning);
