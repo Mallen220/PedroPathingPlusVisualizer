@@ -72,6 +72,7 @@ function calculateStartPointHeadings(startPoint: Point, lines: Line[]): Point {
   );
   // strip out the "degrees" field if it existed so the resulting object conforms
   // to the linear-point variant of the Point union (which forbids degrees).
+  // eslint-disable-next-line unused-imports/no-unused-vars
   const { degrees, ...rest } = startPoint as any;
   return {
     ...rest,
@@ -222,6 +223,7 @@ async function performSave(
     const nameGroups = new Map<string, Array<Line | any>>(); // any for SequenceWaitItem
 
     // Helper to collect items
+    // eslint-disable-next-line unused-imports/no-unused-vars
     const collectItems = (items: Array<Line | any>, type: "line" | "wait") => {
       items.forEach((item) => {
         const name = item.name?.trim();

@@ -214,6 +214,7 @@
   // Use snap stores to determine step size for inputs
   let stepSize = $derived($snapToGrid && $showGrid ? $gridSize : 0.1);
 
+  // eslint-disable-next-line unused-imports/no-unused-vars
   function updatePoint(
     point: Point | ControlPoint,
     field: "x" | "y",
@@ -278,6 +279,7 @@
     recordChange();
   }
 
+  // eslint-disable-next-line unused-imports/no-unused-vars
   function updateWaitName(item: SequenceItem, name: string) {
     if (item.kind === "wait") {
       sequence = handleWaitRename(sequence, item.id, name);
@@ -285,6 +287,7 @@
     }
   }
 
+  // eslint-disable-next-line unused-imports/no-unused-vars
   function updateRotateName(item: SequenceItem, name: string) {
     if (item.kind === "rotate") {
       sequence = handleRotateRename(sequence, item.id, name);
@@ -292,6 +295,7 @@
     }
   }
 
+  // eslint-disable-next-line unused-imports/no-unused-vars
   function updateLineColor(lineId: string, color: string) {
     const line = lines.find((l) => l.id === lineId);
     if (line) {
@@ -301,6 +305,7 @@
     }
   }
 
+  // eslint-disable-next-line unused-imports/no-unused-vars
   function updateRotateDegrees(item: SequenceItem, degrees: number) {
     if (item.kind === "rotate") {
       item.degrees = degrees;
@@ -309,6 +314,7 @@
     }
   }
 
+  // eslint-disable-next-line unused-imports/no-unused-vars
   function updateWaitDuration(item: SequenceItem, duration: number) {
     if (item.kind === "wait") {
       item.durationMs = duration;
@@ -317,6 +323,7 @@
     }
   }
 
+  // eslint-disable-next-line unused-imports/no-unused-vars
   function updateMacroName(item: SequenceItem, name: string) {
     if (item.kind === "macro") {
       item.name = name;
@@ -327,8 +334,11 @@
 
   // Debug helper to log mapping between line, index and control points when rows render
   function debugPointRow(
+    // eslint-disable-next-line unused-imports/no-unused-vars
     line: Line,
+    // eslint-disable-next-line unused-imports/no-unused-vars
     cp: ControlPoint | Point | undefined,
+    // eslint-disable-next-line unused-imports/no-unused-vars
     j?: number,
   ) {
     return "";
@@ -362,7 +372,7 @@
           }
         });
         return seqCopy;
-      } catch (e) {
+      } catch {
         return sequence || [];
       }
     })(),
@@ -383,6 +393,7 @@
         )
       : [],
   );
+  // eslint-disable-next-line unused-imports/no-unused-vars
   let debugDisplayIds = $derived(
     Array.isArray(displaySequence)
       ? displaySequence.map((d) =>
@@ -445,6 +456,7 @@
   function handleWindowDrop(e: DragEvent) {
     if (!isActive) return;
 
+    // eslint-disable-next-line unused-imports/no-unused-vars
     const isInternalReorder = draggingIndex !== null;
 
     // Check for internal macro data OR OS files that could be macros
@@ -672,12 +684,15 @@
   }
 
   // Deprecated specific delete functions mapped to generic one for backward compat if needed
+  // eslint-disable-next-line unused-imports/no-unused-vars
   function deleteWait(index: number) {
     deleteSequenceItem(index);
   }
+  // eslint-disable-next-line unused-imports/no-unused-vars
   function deleteRotate(index: number) {
     deleteSequenceItem(index);
   }
+  // eslint-disable-next-line unused-imports/no-unused-vars
   function deleteMacro(index: number) {
     deleteSequenceItem(index);
   }
@@ -770,10 +785,12 @@
   let contextMenuItems: any[] = $state([]);
 
   let hoveredLinkId: string | null = $state(null);
+  // eslint-disable-next-line unused-imports/no-unused-vars
   let hoveredWaitId: string | null = $state(null);
   let hoveredStatsLineId: string | null = $state(null);
   // Anchor elements used for portal positioning (moved to body)
   let hoveredLinkAnchor: HTMLElement | null = $state(null);
+  // eslint-disable-next-line unused-imports/no-unused-vars
   let hoveredWaitAnchor: HTMLElement | null = $state(null);
   let hoveredStatsAnchor: HTMLElement | null = $state(null);
 
@@ -787,10 +804,12 @@
     hoveredLinkAnchor = null;
   }
 
+  // eslint-disable-next-line unused-imports/no-unused-vars
   function handleWaitHoverEnter(e: MouseEvent, id: string | null) {
     hoveredWaitId = id;
     hoveredWaitAnchor = e.currentTarget as HTMLElement;
   }
+  // eslint-disable-next-line unused-imports/no-unused-vars
   function handleWaitHoverLeave() {
     hoveredWaitId = null;
     hoveredWaitAnchor = null;

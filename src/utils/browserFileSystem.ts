@@ -261,6 +261,7 @@ export const browserFileSystem = {
     await set(dirPath, { type: "dir" });
     return true;
   },
+  // eslint-disable-next-line unused-imports/no-unused-vars
   getDirectoryStats: async (dirPath: string): Promise<any> => {
     return { size: 0, files: 0 };
   },

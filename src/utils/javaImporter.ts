@@ -34,11 +34,13 @@ function parsePoseCreation(tokens: string[]): Partial<Point> | null {
 
   // Group tokens by semantic boundaries. The Java Parser puts commas at the END of the parameter list often (due to AST structure)
   // Example tokens: [ '56.000', '8.000', 'Math', '.', 'toRadians', '(', '180.000', ')', ',', ',' ]
+  // eslint-disable-next-line unused-imports/no-unused-vars
   const argGroups: string[][] = [];
   let currentGroup: string[] = [];
   let localDepth = 0;
   for (const t of argsTokens) {
     if (t === "(") localDepth++;
+    // eslint-disable-next-line unused-imports/no-unused-vars
     if (t === ")") localDepth--;
 
     // We can just ignore commas, and rely on number/Math parsing to group things

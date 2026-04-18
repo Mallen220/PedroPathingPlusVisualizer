@@ -23,7 +23,7 @@
           show = false;
           dispatch("setupComplete");
         }
-      } catch (err) {}
+      } catch {}
     }
   }
 </script>

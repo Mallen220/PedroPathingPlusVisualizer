@@ -47,6 +47,7 @@ describe("PlaybackControls", () => {
   });
 
   it("toggles loop animation", async () => {
+    // eslint-disable-next-line unused-imports/no-unused-vars
     const { component } = render(PlaybackControls, {
       props: createProps(),
     });

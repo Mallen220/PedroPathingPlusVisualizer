@@ -226,6 +226,7 @@ describe("CodeTab", () => {
   });
 
   it("renders correctly and calls highlightAndSplit", async () => {
+    // eslint-disable-next-line unused-imports/no-unused-vars
     const { component } = render(CodeTab, {
       startPoint: defaultStartPoint,
       lines: [],

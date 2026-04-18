@@ -10,7 +10,9 @@ vi.mock("./utils", () => ({
 
 // Mock pointLinking
 vi.mock("../../../utils/pointLinking", () => ({
+  // eslint-disable-next-line unused-imports/no-unused-vars
   updateLinkedWaits: vi.fn((seq, id) => seq),
+  // eslint-disable-next-line unused-imports/no-unused-vars
   updateLinkedRotations: vi.fn((seq, id) => seq),
 }));
 

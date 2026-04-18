@@ -102,6 +102,7 @@ if (process.windowsStore) {
 const gotTheLock = app.requestSingleInstanceLock();
 
 if (gotTheLock) {
+  // eslint-disable-next-line unused-imports/no-unused-vars
   app.on("second-instance", (event, commandLine, workingDirectory) => {
     // Someone tried to run a second instance. Prefer focusing an existing window
     // to avoid racing with the local server or creating orphan windows.
@@ -360,6 +361,7 @@ const createWindow = async () => {
   // Handle "Save As" dialog native behavior
   newWindow.webContents.session.on(
     "will-download",
+    // eslint-disable-next-line unused-imports/no-unused-vars
     (event, item, webContents) => {
       item.on("updated", (event, state) => {
         if (state === "interrupted") {

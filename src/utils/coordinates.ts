@@ -33,6 +33,7 @@ export function toField(
 
 export function toUserHeading(
   fieldHeading: number, // degrees
+  // eslint-disable-next-line unused-imports/no-unused-vars
   system: CoordinateSystem = "Pedro",
 ): number {
   // Both systems use Right = 0, Up = 90 (Unit Circle)
@@ -41,6 +42,7 @@ export function toUserHeading(
 
 export function toFieldHeading(
   userHeading: number, // degrees
+  // eslint-disable-next-line unused-imports/no-unused-vars
   system: CoordinateSystem = "Pedro",
 ): number {
   // Both systems use Right = 0, Up = 90 (Unit Circle)
@@ -49,6 +51,7 @@ export function toFieldHeading(
 
 export function toUserCoordinate(
   val: number,
+  // eslint-disable-next-line unused-imports/no-unused-vars
   system: CoordinateSystem,
 ): number {
   return val; // Placeholder, not safe for FTC
@@ -56,6 +59,7 @@ export function toUserCoordinate(
 
 export function toFieldCoordinate(
   val: number,
+  // eslint-disable-next-line unused-imports/no-unused-vars
   system: CoordinateSystem,
 ): number {
   return val; // Placeholder

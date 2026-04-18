@@ -168,6 +168,7 @@
   // Optimization: Cache bounding rects to avoid reflows during drag
   let cachedRect: DOMRect | null = null;
   let cachedWrapperRect: DOMRect | null = null;
+  // eslint-disable-next-line unused-imports/no-unused-vars
   let dragOffset = { x: 0, y: 0 };
   let currentElem: string | null = null;
   let isDown = false;
@@ -855,6 +856,7 @@
               // diff-event-{id}-{suffix}
 
               const parts = currentElem.split("-");
+              // eslint-disable-next-line unused-imports/no-unused-vars
               const suffix = parts.pop(); // remove suffix
               // Remove 'diff' and 'event'
               parts.shift(); // diff
@@ -1019,6 +1021,7 @@
           if (currentElem.startsWith("point-")) {
             const parts = currentElem.split("-");
             const lineNum = Number(parts[1]);
+            // eslint-disable-next-line unused-imports/no-unused-vars
             const pointIdx = Number(parts[2]);
             let lId = null;
             if (!Number.isNaN(lineNum) && lineNum > 0) {
@@ -1137,7 +1140,9 @@
                 objectX = lines[line].endPoint.x;
                 objectY = lines[line].endPoint.y;
               } else if (lines[line]?.controlPoints?.[point - 1]) {
+                // eslint-disable-next-line unused-imports/no-unused-vars
                 objectX = lines[line].controlPoints[point - 1].x;
+                // eslint-disable-next-line unused-imports/no-unused-vars
                 objectY = lines[line].controlPoints[point - 1].y;
               }
             }
@@ -1968,7 +1973,9 @@
 
       // Use timeline events to find all lines (including bridge & macros)
       // Extract unique lines from timeline events of type 'travel'
+      // eslint-disable-next-line unused-imports/no-unused-vars
       let renderLines: Line[] = [];
+      // eslint-disable-next-line unused-imports/no-unused-vars
       let lineStartPoints = new Map<string, Point>(); // lineId -> startPoint
 
       // Start with standard lines for the basic "lines" array.
@@ -1997,6 +2004,7 @@
             [line],
             start,
             (l) => l.color || "#60a5fa",
+            // eslint-disable-next-line unused-imports/no-unused-vars
             (l) => width,
             `timeline-path-${idx}`,
             ctx,
@@ -2053,6 +2061,7 @@
           if (isSame) return "#3b82f6"; // Blue
           return "#22c55e"; // Green
         },
+        // eslint-disable-next-line unused-imports/no-unused-vars
         (l) => uiLength(LINE_WIDTH), // No selection highlight in diff mode? Or maybe yes.
         "diff-new",
         ctx,

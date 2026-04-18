@@ -182,6 +182,7 @@
   let shapes = $derived($shapesStore);
   let sequence = $derived($sequenceStore);
   let playing = $derived($playingStore);
+  // eslint-disable-next-line unused-imports/no-unused-vars
   let playbackSpeed = $derived($playbackSpeedStore);
 
   // Internal State

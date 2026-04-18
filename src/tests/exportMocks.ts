@@ -26,6 +26,7 @@ export function setupImageMocks() {
   globalThis.Image = MockImage as any;
 
   globalThis.XMLSerializer = class {
+    // eslint-disable-next-line unused-imports/no-unused-vars
     serializeToString(node: Node) {
       return "<svg></svg>";
     }

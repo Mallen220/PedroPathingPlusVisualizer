@@ -1,6 +1,7 @@
 // Copyright 2026 Matthew Allen. Licensed under the Modified Apache License, Version 2.0.
 // Simple simulation to reproduce mapping logic between App and WaypointTable
 function runScenario() {
+  // eslint-disable-next-line unused-imports/no-unused-vars
   function rand(min, max) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
   }

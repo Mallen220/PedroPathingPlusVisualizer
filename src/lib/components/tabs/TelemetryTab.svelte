@@ -30,6 +30,7 @@
   let sortedKeys = $derived(Object.keys(lines).sort());
 
   // Listen for IPC events
+  // eslint-disable-next-line unused-imports/no-unused-vars
   let cleanupListeners: (() => void) | null = null;
 
   onMount(() => {

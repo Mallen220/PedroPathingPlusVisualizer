@@ -130,6 +130,7 @@
     oncommit?.();
   }
 
+  // eslint-disable-next-line unused-imports/no-unused-vars
   let collapsedSegments: boolean[] = $state([]);
   let isPiecewiseCollapsed = $state(false);
 

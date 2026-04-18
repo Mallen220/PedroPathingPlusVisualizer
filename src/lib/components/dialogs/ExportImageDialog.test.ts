@@ -9,6 +9,7 @@ vi.mock("../../../utils/exportAnimation", () => ({
 
 describe("ExportImageDialog", () => {
   it("renders when show is true", () => {
+    // eslint-disable-next-line unused-imports/no-unused-vars
     const { getByText, getByRole } = render(ExportImageDialog, {
       show: true,
       twoInstance: { update: vi.fn() },
@@ -31,6 +32,7 @@ describe("ExportImageDialog", () => {
   });
 
   it("interacts with inputs correctly", async () => {
+    // eslint-disable-next-line unused-imports/no-unused-vars
     const { getByRole, getByLabelText } = render(ExportImageDialog, {
       show: true,
       twoInstance: { update: vi.fn() },

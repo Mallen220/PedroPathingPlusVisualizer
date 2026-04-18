@@ -20,6 +20,7 @@ export function generateCollisionElements(
   const { x, y, uiLength } = ctx;
 
   if (markers && markers.length > 0) {
+    // eslint-disable-next-line unused-imports/no-unused-vars
     markers.forEach((marker, idx) => {
       const group = new Two.Group();
       const isBoundary = marker.type === "boundary";

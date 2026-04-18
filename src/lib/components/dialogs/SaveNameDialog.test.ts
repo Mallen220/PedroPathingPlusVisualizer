@@ -132,7 +132,9 @@ describe("SaveNameDialog", () => {
     const input = screen.getByRole("textbox");
 
     // Fire generic event
+    // eslint-disable-next-line unused-imports/no-unused-vars
     let stopPropagationCalled = false;
+    // eslint-disable-next-line unused-imports/no-unused-vars
     let stopImmediatePropagationCalled = false;
 
     // Custom wrapper to intercept

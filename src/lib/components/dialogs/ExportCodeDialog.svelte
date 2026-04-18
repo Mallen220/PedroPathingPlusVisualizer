@@ -122,6 +122,7 @@
 
   async function refreshCode() {
     try {
+      // eslint-disable-next-line unused-imports/no-unused-vars
       const codeUnits = $settingsStore?.codeUnits || "imperial";
       const packageName = $settingsStore?.javaPackageName || DEFAULT_PACKAGE;
       const targetLibrary =

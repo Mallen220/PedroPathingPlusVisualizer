@@ -216,6 +216,7 @@ describe("Time Calculator", () => {
     };
 
     const diffDegrees = 90;
+    // eslint-disable-next-line unused-imports/no-unused-vars
     const diffRad = diffDegrees * (Math.PI / 180);
     // maxVel = PI/2 = 1.57 rad/s
     // maxAccel = 10 rad/s^2
@@ -297,6 +298,7 @@ describe("Time Calculator", () => {
       const p1 = { x: 0, y: 0 };
       const p2 = { x: 10, y: 0 };
       const controlPoints: Point[] = [];
+      // eslint-disable-next-line unused-imports/no-unused-vars
       const headingConfig = { heading: "constant", degrees: 0 } as any;
 
       const steps = analyzePathSegment(
@@ -317,6 +319,7 @@ describe("Time Calculator", () => {
       const p1 = { x: 0, y: 0 };
       const p2 = { x: 10, y: 10 };
       const controlPoints = [{ x: 10, y: 0 }]; // Quadratic bezier
+      // eslint-disable-next-line unused-imports/no-unused-vars
       const headingConfig = { heading: "constant", degrees: 0 } as any;
 
       const steps = analyzePathSegment(

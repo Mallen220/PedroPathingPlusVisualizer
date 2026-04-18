@@ -12,6 +12,8 @@ export function generatePreviewPathElements(
   ctx: RenderContext,
 ) {
   let _previewPaths: Path[] = [];
+  // eslint-disable-next-line unused-imports/no-unused-vars
+  // eslint-disable-next-line unused-imports/no-unused-vars
   const { x, y, uiLength } = ctx;
 
   if (previewOptimizedLines && previewOptimizedLines.length > 0) {

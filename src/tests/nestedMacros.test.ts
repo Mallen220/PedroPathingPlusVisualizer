@@ -24,6 +24,7 @@ const macroKind = (): SequenceMacroItem["kind"] =>
     ?.kind as SequenceMacroItem["kind"]) ?? "macro";
 
 describe("Nested Macros and Recursion", () => {
+  // eslint-disable-next-line unused-imports/no-unused-vars
   const startPoint: Point = {
     x: 0,
     y: 0,

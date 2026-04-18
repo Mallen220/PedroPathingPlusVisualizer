@@ -545,6 +545,7 @@ describe("fileHandlers", () => {
 
       let onloadHandler: any;
       const mockFileReader = {
+        // eslint-disable-next-line unused-imports/no-unused-vars
         readAsText: vi.fn(function (this: any, file) {
           onloadHandler = this.onload;
         }),

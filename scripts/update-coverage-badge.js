@@ -23,7 +23,7 @@ async function main() {
   let summaryContent;
   try {
     summaryContent = await fs.readFile(coverageSummaryPath, "utf8");
-  } catch (err) {
+  } catch {
     console.error(
       "Could not read coverage-summary.json. Did you run vitest with coverage?",
     );

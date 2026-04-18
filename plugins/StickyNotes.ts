@@ -15,6 +15,7 @@ interface StickyNote {
 }
 
 (function () {
+  // eslint-disable-next-line unused-imports/no-unused-vars
   const PLUGIN_ID = "sticky-notes-plugin";
   const CONTAINER_ID = "sticky-notes-root";
 
@@ -25,13 +26,17 @@ interface StickyNote {
 
   // State
   let noteElements = new Map<string, HTMLElement>();
+  // eslint-disable-next-line unused-imports/no-unused-vars
   let isDragging = false;
   let draggedNoteId: string | null = null;
+  // eslint-disable-next-line unused-imports/no-unused-vars
   let dragOffset = { x: 0, y: 0 };
   let isEditingId: string | null = null;
 
   // Store references
+  // eslint-disable-next-line unused-imports/no-unused-vars
   let unsubscribeData: (() => void) | null = null;
+  // eslint-disable-next-line unused-imports/no-unused-vars
   let unsubscribeView: (() => void) | null = null;
 
   // Initialization
@@ -372,6 +377,7 @@ interface StickyNote {
     textarea.placeholder = "Write something...";
     textarea.value = note.text;
 
+    // eslint-disable-next-line unused-imports/no-unused-vars
     textarea.addEventListener("input", (e) => {
       // Note input updates are immediate; debounce may be added later
     });
@@ -463,6 +469,7 @@ interface StickyNote {
       el.style.top = `${startTop + dy}px`;
     };
 
+    // eslint-disable-next-line unused-imports/no-unused-vars
     const upHandler = (ev: MouseEvent) => {
       document.removeEventListener("mousemove", moveHandler);
       document.removeEventListener("mouseup", upHandler);

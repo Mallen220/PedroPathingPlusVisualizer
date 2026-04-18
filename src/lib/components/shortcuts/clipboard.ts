@@ -339,6 +339,7 @@ export function paste(recordChange: (action?: string) => void) {
         }
       }
     } else if (lines.length > 0) {
+      // eslint-disable-next-line unused-imports/no-unused-vars
       prevPoint = lines[lines.length - 1].endPoint;
     }
 

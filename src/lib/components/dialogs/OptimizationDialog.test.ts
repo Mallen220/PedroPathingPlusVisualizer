@@ -22,6 +22,7 @@ vi.mock("$lib/components/SectionHeader.svelte", () => ({
 vi.mock("../../../utils/optimization/GeneticOptimizer", () => ({
   GeneticOptimizer: class MockOptimizer {
     constructor() {}
+    // eslint-disable-next-line unused-imports/no-unused-vars
     start(lines: Line[]) {
       return { time: 5, path: [] };
     }
@@ -54,6 +55,7 @@ describe("OptimizationDialog", () => {
   });
 
   it("can select and deselect lines", async () => {
+    // eslint-disable-next-line unused-imports/no-unused-vars
     const { getByRole, getByText } = render(OptimizationDialog, {
       isOpen: true,
       lines: [

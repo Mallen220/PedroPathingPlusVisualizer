@@ -20,7 +20,9 @@ describe("Draw Utils", () => {
     });
 
     it("returns different colors on subsequent calls", () => {
+      // eslint-disable-next-line unused-imports/no-unused-vars
       const color1 = getRandomColor();
+      // eslint-disable-next-line unused-imports/no-unused-vars
       const color2 = getRandomColor();
       // It's technically possible for them to be equal, but very unlikely
       // running it a few times to be safe

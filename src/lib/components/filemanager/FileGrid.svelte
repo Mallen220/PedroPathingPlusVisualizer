@@ -432,7 +432,7 @@
           dispatch("move-file", { sourceFile, targetDir: file });
         }
       }
-    } catch (err) {
+    } catch {
       // Ignored
     }
   }

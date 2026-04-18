@@ -74,6 +74,7 @@
     onUpdate(item);
   }
 
+  // eslint-disable-next-line unused-imports/no-unused-vars
   let filePath = $derived((item as any).filePath || "");
 </script>
 

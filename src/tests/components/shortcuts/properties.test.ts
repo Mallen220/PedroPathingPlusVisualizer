@@ -46,7 +46,9 @@ vi.mock("../../../lib/components/shortcuts/utils", () => ({
 }));
 
 vi.mock("../../../lib/utils/pathEditing", () => ({
+  // eslint-disable-next-line unused-imports/no-unused-vars
   updateLinkedWaits: vi.fn((seq, id) => seq),
+  // eslint-disable-next-line unused-imports/no-unused-vars
   updateLinkedRotations: vi.fn((seq, id) => seq),
 }));
 

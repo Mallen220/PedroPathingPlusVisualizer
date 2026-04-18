@@ -66,6 +66,7 @@ describe("Icon System Integration", () => {
         const exportRegex = new RegExp(
           `export { default as \\w+ } from "./${file}";`,
         );
+        // eslint-disable-next-line unused-imports/no-unused-vars
         const exportRegexSimple = new RegExp(
           `export { default as ${iconName} } from "./${file}";`,
         );

@@ -19,6 +19,7 @@ describe("ContextMenu", () => {
   });
 
   it("updates items correctly", async () => {
+    // eslint-disable-next-line unused-imports/no-unused-vars
     const { component, rerender } = render(ContextMenu, {
       x: 0,
       y: 0,
@@ -34,6 +35,7 @@ describe("ContextMenu", () => {
   });
 
   it("updates position correctly when going off screen", async () => {
+    // eslint-disable-next-line unused-imports/no-unused-vars
     const { component, rerender } = render(ContextMenu, {
       x: 900,
       y: 900,

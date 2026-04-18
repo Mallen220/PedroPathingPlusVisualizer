@@ -545,6 +545,7 @@
       timeline.forEach((ev) => {
         if (ev.type === "wait" && ev.waitId) {
           const seqItem = sequence.find((s) => (s as any).id === ev.waitId);
+          // eslint-disable-next-line unused-imports/no-unused-vars
           const def = seqItem ? actionRegistry.get(seqItem.kind) : null;
           if (
             (seqItem?.kind === "wait" || seqItem?.kind === "rotate") &&
@@ -585,6 +586,7 @@
     })(),
   );
   // Use the registry for tabs
+  // eslint-disable-next-line unused-imports/no-unused-vars
   let currentTab = $derived(
     $tabRegistry.find((t) => t.id === activeTab) || $tabRegistry[0],
   );

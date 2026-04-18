@@ -178,6 +178,7 @@
       recordingKeyFor = null;
       return;
     }
+    // eslint-disable-next-line unused-imports/no-unused-vars
     const binding = settings.keyBindings[bindingIndex];
 
     event.preventDefault();

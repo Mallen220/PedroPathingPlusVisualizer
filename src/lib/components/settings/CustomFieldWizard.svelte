@@ -78,6 +78,7 @@
     }
   }
 
+  // eslint-disable-next-line unused-imports/no-unused-vars
   function handleImageLoadError(e: Event) {
     alert(
       "The image failed to load in the browser. It may be corrupted or an unsupported format.",

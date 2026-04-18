@@ -112,6 +112,7 @@ describe("Generator Utilities", () => {
         lines,
         startPoint,
         (l) => l.color,
+        // eslint-disable-next-line unused-imports/no-unused-vars
         (l) => 2,
         "test-prefix",
         mockCtx,
@@ -141,6 +142,7 @@ describe("Generator Utilities", () => {
         lines,
         startPoint,
         (l) => l.color,
+        // eslint-disable-next-line unused-imports/no-unused-vars
         (l) => 2,
         "test-prefix",
         mockCtx,

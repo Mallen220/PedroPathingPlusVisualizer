@@ -597,6 +597,7 @@
     recordChange("Add Path");
   }
 
+  // eslint-disable-next-line unused-imports/no-unused-vars
   function insertWaitAfter(seqIndex: number) {
     const newSeq = [...sequence];
     newSeq.splice(seqIndex + 1, 0, {
@@ -609,6 +610,7 @@
     sequence = newSeq;
   }
 
+  // eslint-disable-next-line unused-imports/no-unused-vars
   function insertRotateAfter(seqIndex: number) {
     const newSeq = [...sequence];
     newSeq.splice(seqIndex + 1, 0, {
@@ -621,6 +623,7 @@
     sequence = newSeq;
   }
 
+  // eslint-disable-next-line unused-imports/no-unused-vars
   function insertPathAfter(seqIndex: number) {
     // Find the closest preceding path item to inherit heading from
     let prevEndPoint: Point | null = null;
@@ -837,6 +840,7 @@
   }
 
   // Helper for button classes
+  // eslint-disable-next-line unused-imports/no-unused-vars
   function getButtonColorClass(color: string) {
     return getButtonFilledClass(color);
   }
@@ -950,6 +954,7 @@
 
   <div role="list" class="flex flex-col gap-4">
     {#each sequence as item, sIdx (getItemId(item))}
+      <!-- eslint-disable-next-line unused-imports/no-unused-vars -->
       {@const isLocked = isItemLocked(item, lines)}
       {@const def = $actionRegistry[item.kind]}
       {@const prevItem = sIdx > 0 ? sequence[sIdx - 1] : null}

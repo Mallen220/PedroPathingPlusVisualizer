@@ -47,6 +47,7 @@ function runBaseline() {
     // Simulate new Two.Line
     objectCount++;
 
+    // eslint-disable-next-line unused-imports/no-unused-vars
     prevPt = currPt;
   }
   return objectCount;
@@ -92,5 +93,7 @@ function runOptimized() {
   return objectCount;
 }
 
+// eslint-disable-next-line unused-imports/no-unused-vars
 const baseline = runBaseline();
+// eslint-disable-next-line unused-imports/no-unused-vars
 const optimized = runOptimized();

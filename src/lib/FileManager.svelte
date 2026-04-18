@@ -131,6 +131,7 @@
     }
   }
 
+  // eslint-disable-next-line unused-imports/no-unused-vars
   const supportedFileTypes = [...SUPPORTED_PROJECT_EXTENSIONS];
   const electronAPI = (globalThis as any).electronAPI;
 
@@ -156,6 +157,7 @@
   let newFileInput: HTMLInputElement | null = $state(null);
   let newFolderInput: HTMLInputElement | null = $state(null);
 
+  // eslint-disable-next-line unused-imports/no-unused-vars
   function startResize(e: MouseEvent) {
     isResizing = true;
     globalThis.addEventListener("mousemove", handleResize);
@@ -475,6 +477,7 @@
           content = await new Promise((resolve, reject) => {
             const reader = new FileReader();
             reader.onload = (e) => resolve(e.target?.result as string);
+            // eslint-disable-next-line unused-imports/no-unused-vars
             reader.onerror = (e) => reject(new Error("Failed to read file"));
             reader.readAsText(file);
           });
@@ -535,7 +538,7 @@
             selectedFile = null;
 
             showToast(`Imported: ${file.name}`, "success");
-          } catch (err) {
+          } catch {
             showToast("Invalid file content", "error");
           }
         };

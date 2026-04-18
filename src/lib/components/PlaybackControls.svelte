@@ -98,9 +98,9 @@
     if (unsub2) unsub2();
   });
 
-  function startDragLoopHandle(e: MouseEvent, type: "min" | "max") {
-    e.preventDefault();
-    e.stopPropagation();
+  function startDragLoopHandle(_e: MouseEvent, type: "min" | "max") {
+    _e.preventDefault();
+    _e.stopPropagation();
     draggingLoopHandle = type;
     wasPlayingBeforeDrag = playing;
     if (playing) pause();
@@ -110,9 +110,9 @@
     globalThis.addEventListener("mouseup", handleLoopDragEnd);
   }
 
-  function handleLoopDragMove(e: MouseEvent) {
+  function handleLoopDragMove(_e: MouseEvent) {
     if (!draggingLoopHandle || !timelineRect) return;
-    let pct = ((e.clientX - timelineRect.left) / timelineRect.width) * 100;
+    let pct = ((_e.clientX - timelineRect.left) / timelineRect.width) * 100;
     pct = Math.max(0, Math.min(100, pct));
     loopRangeStore.update((r) => {
       if (draggingLoopHandle === "min") {
@@ -149,8 +149,9 @@
     showSpeedMenu = false;
   }
 
-  function handleMenuKey(e: KeyboardEvent) {
-    if (e.key === "Escape") showSpeedMenu = false;
+  // eslint-disable-next-line unused-imports/no-unused-vars
+  function handleMenuKey(_e: KeyboardEvent) {
+    if (_e.key === "Escape") showSpeedMenu = false;
   }
 
   let shiftHeld = $state(false);
@@ -161,9 +162,9 @@
     handleSeek(newPercent);
   }
 
-  function handleSeekInput(e: Event) {
+  function handleSeekInput(_e: Event) {
     if (draggingMarkerIndex !== null) return;
-    const target = e.target as HTMLInputElement;
+    const target = _e.target as HTMLInputElement;
     let val = Number.parseFloat(target.value);
 
     // Snap to markers/events if Shift is NOT held
@@ -207,19 +208,19 @@
     handleSeek(val);
   }
 
-  function handleSliderKeydown(e: KeyboardEvent) {
+  function handleSliderKeydown(_e: KeyboardEvent) {
     const step = 5;
-    if (e.key === "ArrowLeft") {
-      e.preventDefault();
+    if (_e.key === "ArrowLeft") {
+      _e.preventDefault();
       handleSeek(Math.max(0, percent - step));
-    } else if (e.key === "ArrowRight") {
-      e.preventDefault();
+    } else if (_e.key === "ArrowRight") {
+      _e.preventDefault();
       handleSeek(Math.min(100, percent + step));
-    } else if (e.key === "Home") {
-      e.preventDefault();
+    } else if (_e.key === "Home") {
+      _e.preventDefault();
       handleSeek(0);
-    } else if (e.key === "End") {
-      e.preventDefault();
+    } else if (_e.key === "End") {
+      _e.preventDefault();
       handleSeek(100);
     }
   }
@@ -234,8 +235,8 @@
     }
   });
 
-  function handleTimeInput(e: Event) {
-    const target = e.target as HTMLInputElement;
+  function handleTimeInput(_e: Event) {
+    const target = _e.target as HTMLInputElement;
     timeInputValue = target.value;
   }
 
@@ -262,24 +263,24 @@
     isEditingTime = false;
   }
 
-  function handleTimeKey(e: KeyboardEvent) {
-    if (e.key === "Enter") {
-      (e.target as HTMLInputElement).blur();
+  function handleTimeKey(_e: KeyboardEvent) {
+    if (_e.key === "Enter") {
+      (_e.target as HTMLInputElement).blur();
     }
-    if (e.key === "Escape") {
+    if (_e.key === "Escape") {
       isEditingTime = false; // Cancel
-      (e.target as HTMLInputElement).blur();
+      (_e.target as HTMLInputElement).blur();
     }
   }
 
   // Drag Handlers
   function handleMarkerDragStart(
-    e: MouseEvent,
+    _e: MouseEvent,
     index: number,
     item: (typeof timelineItems)[0],
   ) {
-    e.preventDefault();
-    e.stopPropagation();
+    _e.preventDefault();
+    _e.stopPropagation();
 
     // Only allow dragging markers
     if (item.type !== "marker") return;
@@ -302,17 +303,18 @@
     globalThis.addEventListener("mouseup", handleWindowMouseUp);
   }
 
-  function handleWindowMouseMove(e: MouseEvent) {
+  function handleWindowMouseMove(_e: MouseEvent) {
     if (draggingMarkerIndex === null || !timelineRect) return;
 
-    let x = e.clientX - timelineRect.left;
+    let x = _e.clientX - timelineRect.left;
     let pct = (x / timelineRect.width) * 100;
     pct = Math.max(0, Math.min(100, pct));
 
     draggingMarkerPercent = pct;
   }
 
-  function handleWindowMouseUp(e: MouseEvent) {
+  // eslint-disable-next-line unused-imports/no-unused-vars
+  function handleWindowMouseUp(_e: MouseEvent) {
     if (draggingMarkerIndex !== null) {
       // Commit change
       if (draggingMarkerId) {
@@ -332,14 +334,14 @@
     globalThis.removeEventListener("mouseup", handleWindowMouseUp);
   }
 
-  function handleContextMenu(e: MouseEvent, id: string | undefined) {
+  function handleContextMenu(_e: MouseEvent, id: string | undefined) {
     if (!id) return;
-    e.preventDefault();
-    e.stopPropagation();
+    _e.preventDefault();
+    _e.stopPropagation();
 
     // Position menu based on mouse cursor
-    contextMenuX = e.clientX;
-    contextMenuY = e.clientY;
+    contextMenuX = _e.clientX;
+    contextMenuY = _e.clientY;
     contextMenuTargetId = id;
     showContextMenu = true;
   }
@@ -364,7 +366,7 @@
       },
     ]}
     on:close={() => (showContextMenu = false)}
-    on:action={(e) => handleContextMenuAction(e.detail)}
+    on:action={(_e) => handleContextMenuAction(_e.detail)}
   />
 {/if}
 
@@ -455,7 +457,7 @@
         tabindex="0"
         class="absolute top-1/2 -translate-y-1/2 w-6 h-6 z-20 rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500"
         style="left: {loopRange[0]}%; transform: translateX(-50%);"
-        onmousedown={(e) => startDragLoopHandle(e, "min")}
+        onmousedown={(_e) => startDragLoopHandle(_e, "min")}
       >
         <div
           class="absolute inset-0 m-auto w-2 h-4 rounded-sm bg-purple-500 hover:bg-purple-400 shadow-md"
@@ -473,7 +475,7 @@
         tabindex="0"
         class="absolute top-1/2 -translate-y-1/2 w-6 h-6 z-20 rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500"
         style="left: {loopRange[1]}%; transform: translateX(-50%);"
-        onmousedown={(e) => startDragLoopHandle(e, "max")}
+        onmousedown={(_e) => startDragLoopHandle(_e, "max")}
       >
         <div
           class="absolute inset-0 m-auto w-2 h-4 rounded-sm bg-purple-500 hover:bg-purple-400 shadow-md"
@@ -504,14 +506,15 @@
           class="absolute z-20 group rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:ring-offset-1 dark:focus-visible:ring-offset-neutral-900"
           role="button"
           tabindex="0"
-          onmousedown={(e) => handleMarkerDragStart(e, index, item)}
-          oncontextmenu={(e) => handleContextMenu(e, item.id)}
-          onclick={(e) => {
+          onmousedown={(_e) => handleMarkerDragStart(_e, index, item)}
+          oncontextmenu={(_e) => handleContextMenu(_e, item.id)}
+          // eslint-disable-next-line unused-imports/no-unused-vars
+          onclick={(_e) => {
             if (ignoreClick) return;
             if (draggingMarkerIndex === null) handleSeek(item.percent);
           }}
-          onkeydown={(e) => {
-            if (e.key === "Enter" || e.key === " ") handleSeek(item.percent);
+          onkeydown={(_e) => {
+            if (_e.key === "Enter" || _e.key === " ") handleSeek(item.percent);
           }}
           style="left: {draggingMarkerIndex === index
             ? draggingMarkerPercent
@@ -544,8 +547,8 @@
           role="button"
           tabindex="0"
           onclick={() => handleSeek(item.percent)}
-          onkeydown={(e) => {
-            if (e.key === "Enter" || e.key === " ") handleSeek(item.percent);
+          onkeydown={(_e) => {
+            if (_e.key === "Enter" || _e.key === " ") handleSeek(item.percent);
           }}
           style={`left: ${item.percent}%; top: 50%; transform: translate(-50%, -50%); width: 14px; height: 14px; background: ${item.color}; cursor: pointer;`}
           aria-label={item.name}
@@ -570,8 +573,8 @@
         aria-label={`Playback speed options, current speed ${(playbackSpeed ?? 1).toFixed(2)}x`}
         aria-haspopup="menu"
         aria-expanded={showSpeedMenu}
-        onclick={(e) => {
-          e.stopPropagation();
+        onclick={(_e) => {
+          _e.stopPropagation();
           toggleSpeedMenu();
         }}
         class="flex items-center gap-2 px-3 py-1 rounded-md bg-neutral-100 dark:bg-neutral-800 text-sm text-neutral-800 dark:text-neutral-200 hover:bg-neutral-200 dark:hover:bg-neutral-700 focus:outline-none focus:ring-2 focus:ring-amber-500 transition-colors"
@@ -591,8 +594,8 @@
           role="menu"
           aria-label="Playback speeds"
           class="absolute left-0 bottom-full mb-2 w-36 rounded-md bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 shadow-lg z-50 overflow-hidden"
-          onclick={(e) => e.stopPropagation()}
-          onkeydown={(e) => e.stopPropagation()}
+          onclick={(_e) => _e.stopPropagation()}
+          onkeydown={(_e) => _e.stopPropagation()}
           use:menuNavigation
           onclose={() => (showSpeedMenu = false)}
           in:fly={{ y: 8, duration: 160, easing: cubicInOut }}
@@ -602,9 +605,9 @@
             <li role="menuitem">
               <button
                 onclick={() => selectSpeed(s)}
-                onkeydown={(e) => {
-                  if (e.key === "Enter" || e.key === " ") {
-                    e.preventDefault();
+                onkeydown={(_e) => {
+                  if (_e.key === "Enter" || _e.key === " ") {
+                    _e.preventDefault();
                     selectSpeed(s);
                   }
                 }}
@@ -762,12 +765,12 @@
 
 <svelte:window
   onclick={() => (showSpeedMenu = false)}
-  onkeydown={(e) => {
-    if (e.key === "Shift") shiftHeld = true;
-    if (e.key === "Escape") showSpeedMenu = false;
+  onkeydown={(_e) => {
+    if (_e.key === "Shift") shiftHeld = true;
+    if (_e.key === "Escape") showSpeedMenu = false;
   }}
-  onkeyup={(e) => {
-    if (e.key === "Shift") shiftHeld = false;
+  onkeyup={(_e) => {
+    if (_e.key === "Shift") shiftHeld = false;
   }}
 />
 

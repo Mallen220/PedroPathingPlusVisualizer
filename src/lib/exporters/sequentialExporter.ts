@@ -231,6 +231,7 @@ export async function generateSequentialCommandCode(
     ? "SequentialGroup"
     : "SequentialCommandGroup";
   const ParallelRaceClass = "ParallelRaceGroup"; // Same for NextFTC and SolversLib
+  // eslint-disable-next-line unused-imports/no-unused-vars
   const WaitCmdClass = isNextFTC ? "Delay" : "WaitCommand";
   const InstantCmdClass = "InstantCommand";
   const WaitUntilCmdClass = isNextFTC ? "WaitUntil" : "WaitUntilCommand"; // NextFTC has similar or user maps it
@@ -260,6 +261,7 @@ export async function generateSequentialCommandCode(
 
   const seq = flattenSequence(sequence?.length ? sequence : defaultSequence);
 
+  // eslint-disable-next-line unused-imports/no-unused-vars
   seq.forEach((item, idx) => {
     // Registry Check
     const action = actionRegistry.get(item.kind);
@@ -386,6 +388,7 @@ export async function generateSequentialCommandCode(
       controlPointsStr = controlPoints.join(", ") + ", ";
     }
 
+    // eslint-disable-next-line unused-imports/no-unused-vars
     let headingConfig = "";
     // Helper to generate a HeadingInterpolator string representation (e.g. "HeadingInterpolator.tangent")
     const generateInterpolatorString = (
@@ -519,6 +522,7 @@ export async function generateSequentialCommandCode(
       return "";
     };
 
+    // eslint-disable-next-line unused-imports/no-unused-vars
     const isChainRoot =
       !line.isChain && idx + 1 < lines.length && lines[idx + 1].isChain;
     let hasGlobalHeading = false;

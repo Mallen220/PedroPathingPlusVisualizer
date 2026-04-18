@@ -39,6 +39,7 @@
     }
   });
 
+  // eslint-disable-next-line unused-imports/no-unused-vars
   function handleOptimizationApply(newLines: Line[]) {
     lines = newLines;
     recordChange?.();

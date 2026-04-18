@@ -48,8 +48,8 @@
     }
   }
 
-  function handleInput(e: Event, event: any) {
-    const target = e.target as HTMLInputElement;
+  function handleInput(_e: Event, event: any) {
+    const target = _e.target as HTMLInputElement;
     const value = Number.parseFloat(target.value);
     if (!Number.isNaN(value)) {
       event.position = value;
@@ -57,8 +57,8 @@
     }
   }
 
-  function handleBlur(e: Event, event: any) {
-    const target = e.target as HTMLInputElement;
+  function handleBlur(_e: Event, event: any) {
+    const target = _e.target as HTMLInputElement;
     const value = Number.parseFloat(target.value);
     if (Number.isNaN(value) || value < 0 || value > 1) {
       // Invalid - revert to current value
@@ -70,14 +70,14 @@
     line.eventMarkers = [...line.eventMarkers!];
   }
 
-  function handleKeydown(e: KeyboardEvent, event: any) {
-    if (e.key === "Enter") {
-      const target = e.target as HTMLInputElement;
+  function handleKeydown(_e: KeyboardEvent, event: any) {
+    if (_e.key === "Enter") {
+      const target = _e.target as HTMLInputElement;
       const value = Number.parseFloat(target.value);
       if (Number.isNaN(value) || value < 0 || value > 1) {
         // Invalid - revert
         target.value = event.position.toString();
-        e.preventDefault();
+        _e.preventDefault();
         return;
       }
       // Valid - update
@@ -170,7 +170,7 @@
                 ondragstart={stopPropagation(
                   preventDefault(bubble("dragstart")),
                 )}
-                oninput={(e) => handleInput(e, event)}
+                oninput={(_e) => handleInput(_e, event)}
               />
               <input
                 type="number"
@@ -181,12 +181,13 @@
                 max="1"
                 step="0.01"
                 class="w-16 px-2 py-1 text-xs rounded-md bg-white dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-600 focus:outline-none focus:ring-1 focus:ring-purple-500"
-                oninput={(e) => {
+                // eslint-disable-next-line unused-imports/no-unused-vars
+                oninput={(_e) => {
                   // Don't update immediately, just show the typed value
                   // We'll validate on blur or Enter
                 }}
-                onblur={(e) => handleBlur(e, event)}
-                onkeydown={(e) => handleKeydown(e, event)}
+                onblur={(_e) => handleBlur(_e, event)}
+                onkeydown={(_e) => handleKeydown(_e, event)}
               />
             </div>
           </div>

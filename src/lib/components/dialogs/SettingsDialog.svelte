@@ -209,6 +209,7 @@
       searchQuery = "";
     }
   });
+  // eslint-disable-next-line unused-imports/no-unused-vars
   let availableMaps = $derived([
     ...AVAILABLE_FIELD_MAPS,
     ...(settings.customMaps || []).map((m) => ({
@@ -218,6 +219,7 @@
   ]);
   // ==== Sidebar Settings State ====
 
+  // eslint-disable-next-line unused-imports/no-unused-vars
   let activeSidebarList = $derived(
     (() => {
       const ids = settings.sidebarItems || SIDEBAR_ITEMS.map((i) => i.id);
@@ -239,6 +241,7 @@
   );
   // Native drag-and-drop reordering
 
+  // eslint-disable-next-line unused-imports/no-unused-vars
   let unusedAvailableTools = $derived(
     (() => {
       const active = settings.sidebarItems || SIDEBAR_ITEMS.map((i) => i.id);

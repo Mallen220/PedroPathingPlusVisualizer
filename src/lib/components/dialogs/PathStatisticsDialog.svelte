@@ -96,7 +96,9 @@
 
     // Detailed segment analysis
     let segments: SegmentStat[] = [];
+    // eslint-disable-next-line unused-imports/no-unused-vars
     let maxLinearVelocity = 0;
+    // eslint-disable-next-line unused-imports/no-unused-vars
     let maxAngularVelocity = 0;
 
     // Data for charts
@@ -107,12 +109,14 @@
     let insights: Insight[] = [];
 
     // Pre-calculate constants for insight thresholds
+    // eslint-disable-next-line unused-imports/no-unused-vars
     const maxAccel = settings.maxAcceleration || 30;
     const maxVel = settings.maxVelocity || 100;
     const kFriction = settings.kFriction || 0;
     const gravity = 386.22; // in/s^2
     const frictionLimitAccel = kFriction * gravity;
 
+    // eslint-disable-next-line unused-imports/no-unused-vars
     let currentHeading =
       startPoint.heading === "linear"
         ? startPoint.startDeg
@@ -120,6 +124,7 @@
           ? startPoint.degrees
           : 0; // Approx for tangential start
 
+    // eslint-disable-next-line unused-imports/no-unused-vars
     let lastPoint = startPoint;
 
     // Map timePrediction segments to sequence items

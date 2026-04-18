@@ -9,6 +9,8 @@ setupImageMocks();
 
 // Mock DOMParser
 globalThis.DOMParser = class {
+  // eslint-disable-next-line unused-imports/no-unused-vars
+  // eslint-disable-next-line unused-imports/no-unused-vars
   parseFromString(str: string, type: string) {
     return {
       documentElement: {
@@ -33,6 +35,7 @@ globalThis.FileReader = class {
 
 describe("exportPathToImage", () => {
   let mockTwo: any;
+  // eslint-disable-next-line unused-imports/no-unused-vars
   let mockCtx: any;
   let mockCanvas: any;
   let options: ExportImageOptions;

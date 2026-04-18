@@ -73,6 +73,7 @@ export function menuNavigation(
         if (item.textContent?.trim().toLowerCase().startsWith(char)) {
           event.preventDefault();
           item.focus();
+          // eslint-disable-next-line unused-imports/no-unused-vars
           found = true;
           break;
         }

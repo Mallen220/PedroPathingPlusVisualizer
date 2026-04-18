@@ -60,7 +60,7 @@
               title: `Version ${id.replaceAll(/^v/g, "")} Highlights`,
               content,
             });
-          } catch (e) {}
+          } catch {}
         }
 
         out.sort((a, b) => {
@@ -79,7 +79,7 @@
           return 0;
         });
         runtimeFeatures = out;
-      } catch (e) {}
+      } catch {}
     }
   });
 

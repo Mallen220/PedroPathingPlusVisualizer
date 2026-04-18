@@ -7,6 +7,7 @@ import { fileURLToPath } from "node:url";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const rootDir = path.resolve(__dirname, "..");
 const reportDir = path.join(rootDir, "tmp/jscpd");
+// eslint-disable-next-line unused-imports/no-unused-vars
 const reportFile = path.join(reportDir, "jscpd-report.json");
 const outputFile = path.join(rootDir, "DuplicationReport.txt");
 

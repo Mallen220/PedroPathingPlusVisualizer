@@ -151,6 +151,7 @@ describe("Field Logic and Visibility Integration", () => {
     const originalFileReader = globalThis.FileReader;
     class MockFileReader {
       onload: any;
+      // eslint-disable-next-line unused-imports/no-unused-vars
       readAsText(file: File) {
         setTimeout(() => {
           this.onload({ target: { result: mockFileContent } });

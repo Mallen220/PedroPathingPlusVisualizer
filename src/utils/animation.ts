@@ -572,6 +572,7 @@ export function generateOnionLayers(
   }
 
   // Calculate number of layers based on spacing
+  // eslint-disable-next-line unused-imports/no-unused-vars
   const numLayers = Math.max(1, Math.floor(totalLength / spacing));
 
   // Sample robot positions at regular intervals

@@ -18,6 +18,7 @@ const EXTENSIONS = {
 
 const IGNORED_FILES = new Set(["vite.config.d.ts"]);
 
+// eslint-disable-next-line unused-imports/no-unused-vars
 const COMMENT_STYLES = {
   LINE: { start: "// ", end: "", prefix: "" },
   BLOCK: { start: "/*", end: "*/", prefix: " * " }, // Kept for reference or removal

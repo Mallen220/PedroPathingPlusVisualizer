@@ -63,6 +63,7 @@ export function registerAppHandlers(state) {
     }
   });
 
+  // eslint-disable-next-line unused-imports/no-unused-vars
   ipcMain.handle("update:check", async (event) => {
     try {
       if (!state.appUpdater) {

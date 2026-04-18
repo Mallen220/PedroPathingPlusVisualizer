@@ -232,7 +232,9 @@ describe("updateAllMacroReferences", () => {
   it("handles a folder move by updating all paths with the old folder prefix", async () => {
     const OLD_FOLDER = `${BASE}/macros`;
     const NEW_FOLDER = `${BASE}/lib`;
+    // eslint-disable-next-line unused-imports/no-unused-vars
     const OLD_FILE = `${OLD_FOLDER}/macro.turt`;
+    // eslint-disable-next-line unused-imports/no-unused-vars
     const NEW_FILE = `${NEW_FOLDER}/macro.turt`;
 
     const projectPath = `${BASE}/project.turt`;

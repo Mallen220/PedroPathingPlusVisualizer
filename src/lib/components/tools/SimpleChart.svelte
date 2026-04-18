@@ -86,6 +86,7 @@
     const area = d3
       .area<{ time: number; value: number }>()
       .x((d) => x(d.time))
+      // eslint-disable-next-line unused-imports/no-unused-vars
       .y0((d) => y(0)) // Baseline at y=0
       .y1((d) => y(d.value))
       .curve(d3.curveMonotoneX);
@@ -177,6 +178,7 @@
     svg.append("g").call(d3.axisLeft(y).ticks(5)).attr("color", "#737373");
 
     // Overlay for tooltip
+    // eslint-disable-next-line unused-imports/no-unused-vars
     const overlay = svg
       .append("rect")
       .attr("width", chartWidth)

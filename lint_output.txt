@@ -1,0 +1,109 @@
+
+> turtle-tracer@2.1.2 lint
+> eslint . --ext .js,.cjs,.mjs,.ts,.svelte
+
+
+/app/plugins/turtle.d.ts
+  231:11  error  'CommandPaletteCommand' is defined but never used. Allowed unused vars must match /^_/u   unused-imports/no-unused-vars
+  257:11  error  'Settings' is defined but never used. Allowed unused vars must match /^_/u                unused-imports/no-unused-vars
+  331:11  error  'RobotProfile' is defined but never used. Allowed unused vars must match /^_/u            unused-imports/no-unused-vars
+  396:11  error  'TimePrediction' is defined but never used. Allowed unused vars must match /^_/u          unused-imports/no-unused-vars
+  403:11  error  'DirectorySettings' is defined but never used. Allowed unused vars must match /^_/u       unused-imports/no-unused-vars
+  407:11  error  'FileInfo' is defined but never used. Allowed unused vars must match /^_/u                unused-imports/no-unused-vars
+  417:11  error  'CollisionMarker' is defined but never used. Allowed unused vars must match /^_/u         unused-imports/no-unused-vars
+  430:11  error  'Notification' is defined but never used. Allowed unused vars must match /^_/u            unused-imports/no-unused-vars
+  460:11  error  'ComponentRegistryState' is defined but never used. Allowed unused vars must match /^_/u  unused-imports/no-unused-vars
+  531:11  error  'DialogDefinition' is defined but never used. Allowed unused vars must match /^_/u        unused-imports/no-unused-vars
+  718:11  error  'TelemetryPacket' is defined but never used. Allowed unused vars must match /^_/u         unused-imports/no-unused-vars
+  856:11  error  'UpdateData' is defined but never used. Allowed unused vars must match /^_/u              unused-imports/no-unused-vars
+
+/app/scripts/bump-version.js
+  161:1  error  Prefer top-level await over an async function `bumpVersion` call  unicorn/prefer-top-level-await
+
+/app/scripts/check-tile-assets.js
+  81:8  error  Prefer top-level await over using a promise chain  unicorn/prefer-top-level-await
+
+/app/scripts/duplication-report.js
+  127:1  error  Prefer top-level await over an async function `run` call  unicorn/prefer-top-level-await
+
+/app/scripts/generate-file-notice.js
+  156:1  error  Prefer top-level await over an async function `appendToNotice` call  unicorn/prefer-top-level-await
+
+/app/scripts/generate-plugin-types.js
+  60:1  error  Prefer top-level await over an async function `generate` call  unicorn/prefer-top-level-await
+
+/app/scripts/generate-windows-icons.js
+  143:8  error  Prefer top-level await over using a promise chain  unicorn/prefer-top-level-await
+
+/app/scripts/prepare-mac-icon.js
+  47:8  error  Prefer top-level await over using a promise chain  unicorn/prefer-top-level-await
+
+/app/scripts/publish.js
+  178:1  error  Prefer top-level await over an async function `main` call  unicorn/prefer-top-level-await
+
+/app/scripts/update-coverage-badge.js
+  77:8  error  Prefer top-level await over using a promise chain  unicorn/prefer-top-level-await
+
+/app/scripts/update-lighthouse-readme-badges.js
+  189:10  error  Prefer top-level await over using a promise chain  unicorn/prefer-top-level-await
+
+/app/src/App.svelte
+  1202:7   error  Unexpected if as the only statement in an else block                                                                                                                                                         no-lonely-if
+  1396:27  error  Replace `committed.startPoint,·committed.lines,·settings,·committed.sequence` with `⏎··········committed.startPoint,⏎··········committed.lines,⏎··········settings,⏎··········committed.sequence,⏎········`  prettier/prettier
+  1506:7   error  Unexpected if as the only statement in an else block                                                                                                                                                         no-lonely-if
+
+/app/src/lib/ControlTab.svelte
+  643:17  error  `{@html}` can lead to XSS attack  svelte/no-at-html-tags
+
+/app/src/lib/Navbar.svelte
+  339:9  error  `{@html}` can lead to XSS attack  svelte/no-at-html-tags
+  396:9  error  `{@html}` can lead to XSS attack  svelte/no-at-html-tags
+  508:9  error  `{@html}` can lead to XSS attack  svelte/no-at-html-tags
+
+/app/src/lib/components/LeftSidebar.svelte
+  385:17  error  `{@html}` can lead to XSS attack  svelte/no-at-html-tags
+
+/app/src/lib/components/WaypointTable.svelte
+  1497:13  error  `{@html}` can lead to XSS attack  svelte/no-at-html-tags
+  1732:15  error  `{@html}` can lead to XSS attack  svelte/no-at-html-tags
+
+/app/src/lib/components/common/DeleteButtonWithConfirm.svelte
+  20:5  error  Using a rest element or a non-destructured declaration with `$props()` means that Svelte can't infer what properties to expose when creating a custom element. Consider destructuring all the props or explicitly specifying the `customElement.props` option.
+https://svelte.dev/e/custom_element_props_identifier(custom_element_props_identifier)  svelte/valid-compile
+
+/app/src/lib/components/dialogs/ExportCodeDialog.svelte
+  422:3  error  `{@html}` can lead to XSS attack  svelte/no-at-html-tags
+
+/app/src/lib/components/dialogs/FeedbackDialog.svelte
+  190:22  error  svelte-ignore comment is used, but not warned  svelte/no-unused-svelte-ignore
+
+/app/src/lib/components/dialogs/PathStatisticsDialog.svelte
+  198:9  error  Unexpected if as the only statement in an else block  no-lonely-if
+  221:9  error  Unexpected if as the only statement in an else block  no-lonely-if
+
+/app/src/lib/components/dialogs/RatingDialog.svelte
+  198:24  error  svelte-ignore comment is used, but not warned  svelte/no-unused-svelte-ignore
+
+/app/src/lib/components/dialogs/UnsavedChangesDialog.test.ts
+  52:29  error  Prefer `globalThis` over `window`  unicorn/prefer-global-this
+
+/app/src/lib/components/dialogs/UpdateAvailableDialog.svelte
+  271:17  error  `{@html}` can lead to XSS attack  svelte/no-at-html-tags
+
+/app/src/lib/components/settings/tabs/SidebarSettingsTab.svelte
+  391:17  error  `{@html}` can lead to XSS attack  svelte/no-at-html-tags
+  466:21  error  `{@html}` can lead to XSS attack  svelte/no-at-html-tags
+
+/app/src/lib/components/tabs/CodeTab.svelte
+  483:21  error  `{@html}` can lead to XSS attack  svelte/no-at-html-tags
+  505:3   error  `{@html}` can lead to XSS attack  svelte/no-at-html-tags
+
+/app/src/lib/components/whats-new/WhatsNewDialog.svelte
+  336:23  error  `{@html}` can lead to XSS attack  svelte/no-at-html-tags
+  369:17  error  `{@html}` can lead to XSS attack  svelte/no-at-html-tags
+
+/app/src/utils/timeCalculator.test.ts
+  459:3  error  Delete `⏎⏎··`  prettier/prettier
+
+✖ 47 problems (47 errors, 0 warnings)
+  3 errors and 0 warnings potentially fixable with the `--fix` option.

@@ -17,6 +17,7 @@ describe("SettingsItem", () => {
   it("hides when search query does not match", () => {
     // The component applies a class 'hidden' to the wrapper div.
     // So we check if the parent div has the 'hidden' class
+    // eslint-disable-next-line unused-imports/no-unused-vars
     const { getByText, container } = render(SettingsItem, {
       label: "My Setting",
       description: "Setting description",

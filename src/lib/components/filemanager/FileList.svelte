@@ -50,6 +50,7 @@
   const PREVIEW_DEBUG = true;
 
   // Number of top files to proactively preload when icons are enabled
+  // eslint-disable-next-line unused-imports/no-unused-vars
   const PRELOAD_COUNT = 30;
 
   let lastRenamingPath: string | null = $state(null);
@@ -229,7 +230,7 @@
           dispatch("move-file", { sourceFile, targetDir: file });
         }
       }
-    } catch (err) {
+    } catch {
       // Ignored
     }
   }
@@ -268,6 +269,7 @@
     const file = contextMenu.file;
     contextMenu = null;
 
+    // eslint-disable-next-line unused-imports/no-unused-vars
     const eventMap: Record<string, any> = {
       open: "open",
       rename: "rename-start",

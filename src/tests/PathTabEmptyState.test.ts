@@ -63,6 +63,8 @@ test("EmptyState appears when all items are deleted", async () => {
 
   const recordChange = vi.fn();
 
+  // eslint-disable-next-line unused-imports/no-unused-vars
+  // eslint-disable-next-line unused-imports/no-unused-vars
   const { component, rerender } = render(PathTab, {
     startPoint,
     lines,

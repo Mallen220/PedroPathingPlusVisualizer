@@ -9,6 +9,7 @@ describe("UnsavedChangesDialog", () => {
     const onDiscard = vi.fn();
     const onCancel = vi.fn();
 
+    // eslint-disable-next-line unused-imports/no-unused-vars
     const { getByText, queryByText } = render(UnsavedChangesDialog, {
       show: true,
       onSave,

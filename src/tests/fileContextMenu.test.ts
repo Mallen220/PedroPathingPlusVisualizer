@@ -19,6 +19,7 @@ describe("FileContextMenu", () => {
   });
 
   it("updates fileName correctly", async () => {
+    // eslint-disable-next-line unused-imports/no-unused-vars
     const { component, rerender } = render(FileContextMenu, {
       x: 0,
       y: 0,
@@ -39,6 +40,7 @@ describe("FileContextMenu", () => {
   });
 
   it("updates position correctly when going off screen", async () => {
+    // eslint-disable-next-line unused-imports/no-unused-vars
     const { component, rerender } = render(FileContextMenu, {
       x: 900,
       y: 900,

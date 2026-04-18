@@ -53,6 +53,7 @@ export function generateDiffEventMarkerElements(
     // Sequence
     dataSequence.forEach((s) => {
       if (s.kind === "wait" || s.kind === "rotate") {
+        // eslint-disable-next-line unused-imports/no-unused-vars
         const parentName = s.name || (s.kind === "wait" ? "Wait" : "Rotate");
         // Sequence events usually attach to the end of a line.
         // Skip them in diff view when position data is unavailable and fall back to Path Events.
@@ -94,6 +95,7 @@ export function generateDiffEventMarkerElements(
 
         // Background for text
         const textMetrics = { width: label.length * 8, height: 14 }; // Approx
+        // eslint-disable-next-line unused-imports/no-unused-vars
         const bg = new Two.Rectangle(
           x(pos.x),
           y(pos.y) - uiLength(3),

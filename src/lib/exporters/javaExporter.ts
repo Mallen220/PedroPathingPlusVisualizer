@@ -41,6 +41,7 @@ export async function generateJavaCode(
   coordinateSystem: CoordinateSystem = "Pedro",
   codeUnits: "imperial" | "metric" = "imperial",
 ): Promise<string> {
+  // eslint-disable-next-line unused-imports/no-unused-vars
   const headingTypeToFunctionName = {
     constant: "setConstantHeadingInterpolation",
     linear: "setLinearHeadingInterpolation",
@@ -228,6 +229,7 @@ export async function generateJavaCode(
                 : line.endPoint.targetY.toFixed(3)
               : "0";
 
+            // eslint-disable-next-line unused-imports/no-unused-vars
             headingConfig =
               line.endPoint.heading === "constant"
                 ? `Math.toRadians(${line.endPoint.degrees})`
@@ -349,6 +351,7 @@ export async function generateJavaCode(
             return "";
           };
 
+          // eslint-disable-next-line unused-imports/no-unused-vars
           const isChainRoot =
             !line.isChain && idx + 1 < lines.length && lines[idx + 1].isChain;
           let hasGlobalHeading = false;

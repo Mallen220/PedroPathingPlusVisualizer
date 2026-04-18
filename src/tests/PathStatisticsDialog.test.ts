@@ -58,6 +58,8 @@ describe("PathStatisticsDialog", () => {
   });
 
   it("switches to graphs tab", async () => {
+    // eslint-disable-next-line unused-imports/no-unused-vars
+    // eslint-disable-next-line unused-imports/no-unused-vars
     const { getByText, getAllByText, container } = render(
       PathStatisticsDialog,
       {

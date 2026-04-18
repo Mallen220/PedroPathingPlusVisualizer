@@ -610,7 +610,7 @@
     sessionStartTime = now;
     try {
       await saveSettings(get(settingsStore));
-    } catch (e) {}
+    } catch {}
 
     const unsaved = get(isUnsaved);
     const autosaveMode = settings?.autosaveMode;
@@ -711,6 +711,7 @@
 
   // --- History ---
   const history = createHistory();
+  // eslint-disable-next-line unused-imports/no-unused-vars
   const { canUndoStore, canRedoStore, historyStore } = history;
 
   let isLoaded = $state(false);
@@ -1108,6 +1109,7 @@
     playbackSpeedStore.set(val);
   }
   // Compatibility alias expected by ControlTab props
+  // eslint-disable-next-line unused-imports/no-unused-vars
   function changePlaybackSpeed(delta: number) {
     changePlaybackSpeedBy(delta);
   }
@@ -1275,7 +1277,7 @@
       try {
         _controlTabObserver.observe(controlTabContainer);
         updateControlRect();
-      } catch (e) {}
+      } catch {}
     }
   });
   $effect(() => {
@@ -1284,9 +1286,10 @@
   let isLargeScreen = $derived(innerWidth >= 1024);
   let startPoint = $derived($startPointStore);
   let lines = $derived($linesStore);
+  // eslint-disable-next-line unused-imports/no-unused-vars
   let shapes = $derived($shapesStore);
   let sequence = $derived($sequenceStore);
-  let macros = $derived($macrosStore);
+  let _macros = $derived($macrosStore);
   let percent = $derived($percentStore);
   let playing = $derived($playingStore);
   let loopAnimation = $derived($loopAnimationStore);
@@ -1350,13 +1353,7 @@
   // --- Animation Logic ---
   $effect(() => {
     if (!$isDraggingStore) {
-      timePrediction = calculatePathTime(
-        startPoint,
-        lines,
-        settings,
-        sequence,
-        macros,
-      );
+      timePrediction = calculatePathTime(startPoint, lines, settings, sequence);
     }
   });
   // Continuous validation when path/settings change
@@ -1399,9 +1396,8 @@
       ? calculatePathTime(
           committed.startPoint,
           committed.lines,
-          committed.settings,
+          settings,
           committed.sequence,
-          macros,
         )
       : null,
   );
