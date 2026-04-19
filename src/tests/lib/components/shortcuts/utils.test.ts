@@ -66,6 +66,21 @@ describe("shortcuts utils", () => {
         false,
       );
       expect(!!shouldBlockShortcut({} as KeyboardEvent, "undo")).toBe(false);
+
+      const viewActions = [
+        "zoom-in",
+        "zoom-out",
+        "zoom-reset",
+        "pan-view-up",
+        "pan-view-down",
+        "pan-view-left",
+        "pan-view-right",
+        "pan-start",
+        "pan-end",
+      ];
+      viewActions.forEach((action) => {
+        expect(!!shouldBlockShortcut({} as KeyboardEvent, action)).toBe(false);
+      });
     });
   });
 });

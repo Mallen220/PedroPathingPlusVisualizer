@@ -43,7 +43,16 @@ export function shouldBlockShortcut(
     actionId === "undo" ||
     actionId === "redo" ||
     actionId === "open-settings" ||
-    actionId === "toggle-sidebar"
+    actionId === "toggle-sidebar" ||
+    actionId === "zoom-in" ||
+    actionId === "zoom-out" ||
+    actionId === "zoom-reset" ||
+    actionId === "pan-view-up" ||
+    actionId === "pan-view-down" ||
+    actionId === "pan-view-left" ||
+    actionId === "pan-view-right" ||
+    actionId === "pan-start" ||
+    actionId === "pan-end"
   )
     return false;
   if (e.key === "Escape") return false;
