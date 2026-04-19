@@ -58,14 +58,19 @@ export function generateEventMarkerElements(
 
       let t = 0;
       if (ev.type === "temporal") {
-        const lineDuration = 2000; // Simplified estimation for UI only when detailed prediction missing
-        t = Math.max(0, Math.min(1, (ev.time ?? 500) / lineDuration));
+        const markerTime = ev.endTime ?? ev.time ?? 500;
+        const lineDuration = 2000;
+        t = Math.max(0, Math.min(1, markerTime / lineDuration));
 
-        // Use timePrediction if available
+        // Use timePrediction if available for absolute positioning
         if (timePrediction?.timeline) {
-          const matchingEvent = timePrediction.timeline.find((e: any) => e.type === "travel" && e.line && e.line.id === line.id);
+          const matchingEvent = timePrediction.timeline.find(
+            (e: any) => e.type === "travel" && e.line && e.line.id === line.id,
+          );
           if (matchingEvent && matchingEvent.duration) {
-             t = Math.max(0, Math.min(1, (ev.time ?? 500) / matchingEvent.duration));
+            // Calculate relative time within the segment
+            const relTime = Math.max(0, markerTime / 1000 - matchingEvent.startTime);
+            t = Math.max(0, Math.min(1, relTime / matchingEvent.duration));
           }
         }
       } else if (ev.type === "pose") {

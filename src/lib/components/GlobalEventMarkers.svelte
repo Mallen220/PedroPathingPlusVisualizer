@@ -19,12 +19,14 @@
     sequence: SequenceItem[];
     lines: Line[];
     collapsedMarkers: boolean;
+    timePrediction?: any;
   }
 
   let {
     sequence = $bindable(),
     lines = $bindable(),
     collapsedMarkers = $bindable(),
+    timePrediction,
   }: Props = $props();
 
   interface GlobalMarker {
@@ -32,11 +34,14 @@
     originalId: string;
     name: string;
     globalPosition: number;
+    globalTime: number; // in ms
     parentType: "path" | "wait" | "rotate";
     parentId: string;
     parentIndex: number;
     parentName: string;
     ref: EventMarker;
+    segmentStartTime?: number; // in ms
+    segmentEndTime?: number; // in ms
   }
 
   // Keep track of dragging marker to prevent re-sorting while dragging
@@ -50,17 +55,39 @@
   } {
     const map: number[] = [];
     seq.forEach((item, index) => {
-      if (item.kind !== "macro") {
+      const def = actionRegistry.get(item.kind);
+      if (!def?.isMacro) {
         map.push(index);
       }
     });
     return { map, count: map.length };
   }
+ 
+  let segmentTimesMap = $derived.by(() => {
+    const map = new Map<string, { start: number; end: number }>();
+    if (timePrediction?.timeline) {
+      timePrediction.timeline.forEach((ev: any) => {
+        let id: string | undefined;
+        if (ev.type === "travel") id = ev.line?.id;
+        else if (ev.type === "wait") id = ev.waitId;
+        else if (ev.type === "rotate") id = ev.rotateId;
+
+        if (id) {
+          map.set(id, {
+            start: ev.startTime * 1000,
+            end: ev.endTime * 1000,
+          });
+        }
+      });
+    }
+    return map;
+  });
 
   function getAllMarkers(
     seq: SequenceItem[],
     linesList: Line[],
     draggingId: string | null,
+    timesMap: Map<string, { start: number; end: number }>,
   ): GlobalMarker[] {
     const markers: GlobalMarker[] = [];
     let markerIndex = 0;
@@ -72,52 +99,44 @@
       if (def?.isPath) {
         const line = linesList.find((l) => l.id === (item as any).lineId);
         if (line && line.eventMarkers) {
+          const times = timesMap.get(line.id!);
           line.eventMarkers.forEach((m) => {
+            const mTime = m.endTime ?? m.time ?? 0;
             markers.push({
               id: m.id,
               originalId: m.id,
               name: m.name,
               globalPosition: markerIndex + m.position,
+              globalTime: m.type === "temporal" ? mTime : (times ? times.start + (m.position * (times.end - times.start)) : 0),
               parentType: "path",
               parentId: line.id!,
               parentIndex: index,
               parentName: line.name || `Path ${index + 1}`,
               ref: m,
+              segmentStartTime: times?.start,
+              segmentEndTime: times?.end,
             });
           });
         }
-      } else if (def?.isWait) {
-        const wait = item as SequenceWaitItem;
+      } else if (def?.isWait || def?.isRotate) {
+        const wait = item as any;
         if (wait.eventMarkers) {
-          wait.eventMarkers.forEach((m) => {
+          const times = timesMap.get(wait.id);
+          wait.eventMarkers.forEach((m: EventMarker) => {
+            const mTime = m.endTime ?? m.time ?? 0;
             markers.push({
               id: m.id,
               originalId: m.id,
               name: m.name,
               globalPosition: markerIndex + m.position,
-              parentType: "wait",
+              globalTime: m.type === "temporal" ? mTime : (times ? times.start + (m.position * (times.end - times.start)) : 0),
+              parentType: def.isWait ? "wait" : "rotate",
               parentId: wait.id,
               parentIndex: index,
-              parentName: wait.name || `Wait ${index + 1}`,
+              parentName: wait.name || `${def.isWait ? "Wait" : "Rotate"} ${index + 1}`,
               ref: m,
-            });
-          });
-        }
-      } else if (def?.isRotate) {
-        const rotate = item as any;
-        const rotateMarkers = rotate.eventMarkers as EventMarker[] | undefined;
-        if (rotateMarkers && rotateMarkers.length) {
-          rotateMarkers.forEach((m) => {
-            markers.push({
-              id: m.id,
-              originalId: m.id,
-              name: m.name,
-              globalPosition: markerIndex + m.position,
-              parentType: "rotate",
-              parentId: rotate.id,
-              parentIndex: index,
-              parentName: rotate.name || `Rotate ${index + 1}`,
-              ref: m,
+              segmentStartTime: times?.start,
+              segmentEndTime: times?.end,
             });
           });
         }
@@ -157,8 +176,6 @@
   function addMarker() {
     let targetIndex = 0;
 
-    // Check selection
-
     const { map, count } = getSequenceMapping(sequence);
     if (count === 0) return;
 
@@ -174,6 +191,7 @@
       type: "parametric",
       position: 0.5,
       time: 500,
+      endTime: 500,
       poseX: 0,
       poseY: 0,
       poseHeading: 0,
@@ -184,17 +202,16 @@
       const line = lines.find((l) => l.id === (item as any).lineId);
       if (line) {
         if (!line.eventMarkers) line.eventMarkers = [];
-        // Correctly identify line index within lines array for consistency
         newMarker.lineIndex = lines.findIndex((l) => l.id === line.id);
         line.eventMarkers = [...line.eventMarkers, newMarker];
-        lines = [...lines]; // Trigger reactivity
+        lines = [...lines];
       }
     } else if (def?.isWait) {
       const wait = item as SequenceWaitItem;
       if (!wait.eventMarkers) wait.eventMarkers = [];
       newMarker.waitId = wait.id;
       wait.eventMarkers = [...wait.eventMarkers, newMarker];
-      sequence = [...sequence]; // Trigger reactivity
+      sequence = [...sequence];
     } else if (def?.isRotate) {
       const rotate = item as any;
       if (!rotate.eventMarkers) rotate.eventMarkers = [];
@@ -204,36 +221,38 @@
     }
   }
 
-  function removeMarker(marker: GlobalMarker) {
-    if (marker.parentType === "path") {
-      const line = lines.find((l) => l.id === marker.parentId);
-      if (line && line.eventMarkers) {
-        line.eventMarkers = line.eventMarkers.filter(
-          (m) => m.id !== marker.originalId,
-        );
-        lines = [...lines];
-      }
-    } else if (marker.parentType === "wait") {
-      const wait = sequence.find(
-        (s) => s.kind === "wait" && s.id === marker.parentId,
-      ) as SequenceWaitItem | undefined;
-      if (wait && wait.eventMarkers) {
-        wait.eventMarkers = wait.eventMarkers.filter(
-          (m) => m.id !== marker.originalId,
-        );
-        sequence = [...sequence];
-      }
-    } else if (marker.parentType === "rotate") {
-      const rotate = sequence.find(
-        (s) => s.kind === "rotate" && s.id === marker.parentId,
-      ) as any | undefined;
-      if (rotate && rotate.eventMarkers) {
-        rotate.eventMarkers = rotate.eventMarkers.filter(
-          (m: EventMarker) => m.id !== marker.originalId,
-        );
-        sequence = [...sequence];
+  function removeMarkerById(markerId: string) {
+    // Search in lines
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+      if (line.eventMarkers) {
+        const initialLen = line.eventMarkers.length;
+        line.eventMarkers = line.eventMarkers.filter((m) => m.id !== markerId);
+        if (line.eventMarkers.length !== initialLen) {
+          lines = [...lines];
+          return true;
+        }
       }
     }
+    // Search in sequence
+    for (let i = 0; i < sequence.length; i++) {
+      const item = sequence[i] as any;
+      if (item.eventMarkers) {
+        const initialLen = item.eventMarkers.length;
+        item.eventMarkers = item.eventMarkers.filter(
+          (m: EventMarker) => m.id !== markerId,
+        );
+        if (item.eventMarkers.length !== initialLen) {
+          sequence = [...sequence];
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  function removeMarker(marker: GlobalMarker) {
+    return removeMarkerById(marker.originalId);
   }
 
   function updateMarkerPosition(
@@ -241,15 +260,12 @@
     newVal: number,
     clampLocal: boolean,
   ) {
-    // Get valid indices
     const { map, count } = getSequenceMapping(sequence);
     const max = count;
 
-    // Clamp to valid range
     if (newVal < 0) newVal = 0;
     if (newVal > max) newVal = max;
 
-    // Determine new parent index (in mapped space) and local position
     let newMarkerIdx = Math.floor(newVal);
     let newLocalPos = newVal - newMarkerIdx;
 
@@ -260,23 +276,18 @@
 
     const newIndex = map[newMarkerIdx];
 
-    // Check if parent changed
     if (newIndex === marker.parentIndex) {
-      // Parent is same, just update local position
       if (clampLocal) {
         if (newLocalPos < 0) newLocalPos = 0;
         if (newLocalPos > 1) newLocalPos = 1;
       }
 
       marker.ref.position = newLocalPos;
-      // Trigger reactivity
       if (marker.parentType === "path") lines = [...lines];
       else sequence = [...sequence];
     } else {
-      // Remove from old parent
       removeMarker(marker);
 
-      // Add to new parent
       const newItem = sequence[newIndex];
       const newMarkerData = {
         ...marker.ref,
@@ -289,7 +300,6 @@
         const line = lines.find((l) => l.id === (newItem as any).lineId);
         if (line) {
           if (!line.eventMarkers) line.eventMarkers = [];
-          // Update context fields if needed by types (though largely unused or implicit)
           if (newMarkerData.waitId) delete newMarkerData.waitId;
           if (newMarkerData.rotateId) delete newMarkerData.rotateId;
           newMarkerData.lineIndex = lines.findIndex((l) => l.id === line.id);
@@ -297,48 +307,172 @@
           line.eventMarkers = [...line.eventMarkers, newMarkerData];
           lines = [...lines];
         }
-      } else if (def?.isWait) {
-        const wait = newItem as SequenceWaitItem;
-        if (!wait.eventMarkers) wait.eventMarkers = [];
-        if (newMarkerData.lineIndex !== undefined)
-          delete newMarkerData.lineIndex;
-        if (newMarkerData.rotateId) delete newMarkerData.rotateId;
-        newMarkerData.waitId = wait.id;
+      } else if (def?.isWait || def?.isRotate) {
+        const item = newItem as any;
+        if (!item.eventMarkers) item.eventMarkers = [];
+        if (newMarkerData.lineIndex !== undefined) delete newMarkerData.lineIndex;
+        if (def.isWait) {
+          newMarkerData.waitId = item.id;
+          delete newMarkerData.rotateId;
+        } else {
+          newMarkerData.rotateId = item.id;
+          delete newMarkerData.waitId;
+        }
 
-        wait.eventMarkers = [...wait.eventMarkers, newMarkerData];
+        item.eventMarkers = [...item.eventMarkers, newMarkerData];
         sequence = [...sequence];
-      } else if (def?.isRotate) {
-        const rotate = newItem as any;
-        if (!rotate.eventMarkers) rotate.eventMarkers = [];
-        if (newMarkerData.lineIndex !== undefined)
-          delete newMarkerData.lineIndex;
-        if (newMarkerData.waitId) delete newMarkerData.waitId;
-        newMarkerData.rotateId = rotate.id;
+      }
+    }
+  }
 
-        rotate.eventMarkers = [...rotate.eventMarkers, newMarkerData];
+  function updateMarkerTime(
+    marker: GlobalMarker,
+    newTimeMs: number,
+    commit: boolean,
+  ) {
+    if (!timePrediction || timePrediction.totalTime <= 0) {
+      marker.ref.endTime = newTimeMs;
+      marker.ref.time = newTimeMs;
+      if (marker.parentType === "path") lines = [...lines];
+      else sequence = [...sequence];
+      return;
+    }
+
+    const globalTime = newTimeMs / 1000;
+    const timeline = timePrediction.timeline;
+    let targetEvent: any = null;
+
+    for (let i = 0; i < timeline.length; i++) {
+      const ev = timeline[i];
+      if (globalTime >= ev.startTime && globalTime <= ev.endTime) {
+        targetEvent = ev;
+        break;
+      }
+    }
+
+    if (!targetEvent) {
+      if (globalTime < 0 && timeline.length > 0) targetEvent = timeline[0];
+      else if (globalTime > timePrediction.totalTime && timeline.length > 0)
+        targetEvent = timeline[timeline.length - 1];
+    }
+
+    if (!targetEvent) return;
+
+    let targetLine: Line | null = null;
+    let targetWait: any | null = null;
+
+    if (targetEvent.type === "travel") {
+      targetLine = targetEvent.line || lines[targetEvent.lineIndex];
+    } else if (targetEvent.type === "wait") {
+      const waitId = targetEvent.waitId;
+      if (waitId) {
+        targetWait = sequence.find((s) => (s as any).id === waitId);
+      }
+    } else if (targetEvent.type === "rotate") {
+      const rotateId = targetEvent.rotateId;
+      if (rotateId) {
+        targetWait = sequence.find((s) => (s as any).id === rotateId);
+      }
+    }
+
+    let localPos = 0;
+    if (targetEvent.duration > 0) {
+      if (targetLine && targetEvent.motionProfile) {
+        const profile = targetEvent.motionProfile;
+        const steps = profile.length - 1;
+        const relTime = globalTime - targetEvent.startTime;
+        let stepIndex = -1;
+        for (let i = 0; i < steps; i++) {
+          if (relTime >= profile[i] && relTime <= profile[i + 1]) {
+            stepIndex = i;
+            const t0 = profile[i];
+            const t1 = profile[i + 1];
+            const ratio = (relTime - t0) / (t1 - t0);
+            localPos = (i + ratio) / steps;
+            break;
+          }
+        }
+        if (stepIndex === -1) {
+          localPos = relTime <= 0 ? 0 : 1;
+        }
+      } else {
+        localPos = (globalTime - targetEvent.startTime) / targetEvent.duration;
+      }
+    }
+    localPos = Math.max(0, Math.min(1, localPos));
+
+    const isSameParent = 
+      (targetLine && marker.parentType === "path" && targetLine.id === marker.parentId) ||
+      (targetWait && (marker.parentType === "wait" || marker.parentType === "rotate") && targetWait.id === marker.parentId);
+
+    if (isSameParent) {
+      marker.ref.endTime = newTimeMs;
+      marker.ref.time = newTimeMs;
+      marker.ref.position = localPos;
+      if (marker.parentType === "path") lines = [...lines];
+      else sequence = [...sequence];
+    } else {
+      removeMarker(marker);
+      const newMarkerData = {
+        ...marker.ref,
+        endTime: newTimeMs,
+        time: newTimeMs,
+        position: localPos,
+      };
+
+      if (targetLine) {
+        if (!targetLine.eventMarkers) targetLine.eventMarkers = [];
+        delete newMarkerData.waitId;
+        delete newMarkerData.rotateId;
+        newMarkerData.lineIndex = lines.findIndex((l) => l.id === targetLine!.id);
+        targetLine.eventMarkers = [...targetLine.eventMarkers, newMarkerData];
+        lines = [...lines];
+      } else if (targetWait) {
+        if (!targetWait.eventMarkers) targetWait.eventMarkers = [];
+        if (newMarkerData.lineIndex !== undefined) delete newMarkerData.lineIndex;
+        if (targetWait.kind === "wait") {
+          newMarkerData.waitId = targetWait.id;
+          delete newMarkerData.rotateId;
+        } else {
+          newMarkerData.rotateId = targetWait.id;
+          delete newMarkerData.waitId;
+        }
+        targetWait.eventMarkers = [...targetWait.eventMarkers, newMarkerData];
         sequence = [...sequence];
       }
     }
   }
 
   function handleGlobalPositionInput(marker: GlobalMarker, newVal: number) {
-    // Start drag session if not already
     if (!draggingMarkerId) {
       draggingMarkerId = marker.id;
-      // Snapshot current order
       cachedSortedMarkers = [...allMarkers];
     }
-
-    // Update marker position immediately (switching parents if needed)
-    updateMarkerPosition(marker, newVal, false);
+    const latestMarker = allMarkers.find((m) => m.id === marker.id) || marker;
+    updateMarkerPosition(latestMarker, newVal, false);
   }
 
   function handleGlobalPositionCommit(marker: GlobalMarker, newVal: number) {
-    // End drag session
     draggingMarkerId = null;
     cachedSortedMarkers = [];
+    const latestMarker = allMarkers.find((m) => m.id === marker.id) || marker;
+    updateMarkerPosition(latestMarker, newVal, true);
+  }
 
-    updateMarkerPosition(marker, newVal, true);
+  function handleGlobalTimeInput(marker: GlobalMarker, newVal: number) {
+    if (!draggingMarkerId) {
+      draggingMarkerId = marker.id;
+      cachedSortedMarkers = [...allMarkers];
+    }
+    const latestMarker = allMarkers.find((m) => m.id === marker.id) || marker;
+    updateMarkerTime(latestMarker, newVal, false);
+  }
+
+  function handleGlobalTimeCommit(marker: GlobalMarker, newVal: number) {
+    draggingMarkerId = null;
+    cachedSortedMarkers = [];
+    const latestMarker = allMarkers.find((m) => m.id === marker.id) || marker;
+    updateMarkerTime(latestMarker, newVal, true);
   }
 
   export async function scrollToMarker(markerId: string) {
@@ -351,9 +485,9 @@
       el.scrollIntoView({ behavior: "smooth", block: "center" });
     }
   }
-  // Reactive list of all markers with global position
-  let allMarkers = $derived(getAllMarkers(sequence, lines, draggingMarkerId));
-  // Compute available events from disk and current project
+
+  let allMarkers = $derived(getAllMarkers(sequence, lines, draggingMarkerId, segmentTimesMap));
+  
   let currentProjectEvents = $derived(
     Array.from(new Set(allMarkers.map((m) => m.name))),
   );
@@ -455,9 +589,13 @@
                 title={marker.parentName}>{marker.parentName}</span
               >
               <span>•</span>
-              <span>Global: {marker.globalPosition.toFixed(2)}</span>
+              {#if marker.ref.type === "temporal"}
+                <span>Global Time: {Math.round(marker.globalTime)}ms</span>
+              {:else}
+                <span>Global Index: {marker.globalPosition.toFixed(2)}</span>
+              {/if}
             </div>
-
+ 
             {#if !marker.ref.type || marker.ref.type === "parametric"}
               <div class="flex items-center gap-2">
                 <input
@@ -495,39 +633,46 @@
                 />
               </div>
             {:else if marker.ref.type === "temporal"}
-              <div class="flex items-center gap-2 mt-1">
-                <span class="text-xs text-neutral-500">Time (ms):</span>
-                <input
-                  type="range"
-                  min="0"
-                  max="10000"
-                  step="10"
-                  value={marker.ref.time ?? 500}
-                  class="flex-1 slider accent-purple-500"
-                  onchange={(e) => {
-                    marker.ref.time = Number.parseFloat(e.currentTarget.value);
-                    if (marker.parentType === "path") lines = [...lines];
-                    else sequence = [...sequence];
-                  }}
-                  oninput={(e) => {
-                    marker.ref.time = Number.parseFloat(e.currentTarget.value);
-                    if (marker.parentType === "path") lines = [...lines];
-                    else sequence = [...sequence];
-                  }}
-                />
-                <input
-                  type="number"
-                  value={marker.ref.time ?? 500}
-                  aria-label="Event time in milliseconds"
-                  min="0"
-                  step="1"
-                  class="w-16 px-1 py-0.5 text-xs rounded bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 text-center"
-                  onchange={(e) => {
-                    marker.ref.time = Number.parseFloat(e.currentTarget.value);
-                    if (marker.parentType === "path") lines = [...lines];
-                    else sequence = [...sequence];
-                  }}
-                />
+              <div class="flex flex-col gap-1 mt-1">
+                {#if marker.segmentStartTime !== undefined}
+                  <div class="flex justify-between items-center text-[10px] text-neutral-400 px-1">
+                    <span>Time after Start: {Math.round(marker.globalTime - marker.segmentStartTime)}ms</span>
+                    <span>Segment End: {Math.round(marker.segmentEndTime ?? 0)}ms</span>
+                  </div>
+                {/if}
+                <div class="flex items-center gap-2">
+                  <input
+                    type="range"
+                    min="0"
+                    max={(timePrediction?.totalTime ?? 10) * 1000}
+                    step="1"
+                    value={marker.ref.endTime ?? marker.ref.time ?? 500}
+                    class="flex-1 slider accent-purple-500"
+                    oninput={(e) =>
+                      handleGlobalTimeInput(
+                        marker,
+                        Number.parseFloat(e.currentTarget.value),
+                      )}
+                    onchange={(e) =>
+                      handleGlobalTimeCommit(
+                        marker,
+                        Number.parseFloat(e.currentTarget.value),
+                      )}
+                  />
+                  <input
+                    type="number"
+                    value={marker.ref.endTime ?? marker.ref.time ?? 500}
+                    aria-label="Event time in milliseconds"
+                    min="0"
+                    step="1"
+                    class="w-20 px-1 py-0.5 text-xs rounded bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 text-center"
+                    onchange={(e) =>
+                      handleGlobalTimeCommit(
+                        marker,
+                        Number.parseFloat(e.currentTarget.value),
+                      )}
+                  />
+                </div>
               </div>
             {:else if marker.ref.type === "pose"}
               <div class="grid grid-cols-2 gap-2 mt-1">
