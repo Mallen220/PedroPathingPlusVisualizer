@@ -529,8 +529,12 @@
               if (ev.motionProfile) {
                 const steps = ev.motionProfile.length - 1;
                 if (steps > 0) {
-                  const idx = Math.min(Math.floor(m.position * steps), steps);
-                  timeOffset = ev.motionProfile[idx];
+                  const rawIdx = m.position * steps;
+                  const i = Math.min(Math.floor(rawIdx), steps - 1);
+                  const f = rawIdx - i;
+                  const t0 = ev.motionProfile[i];
+                  const t1 = ev.motionProfile[i + 1];
+                  timeOffset = t0 + f * (t1 - t0);
                 }
               } else {
                 timeOffset = ev.duration * m.position;

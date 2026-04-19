@@ -1,7 +1,7 @@
 // Copyright 2026 Matthew Allen. Licensed under the Modified Apache License, Version 2.0.
 import Two from "two.js";
 import type { Line, Point, SequenceItem } from "../../../types";
-import { getCurvePoint, findClosestT } from "../../../utils/math";
+import { getCurvePoint, findClosestT, interpolateTFromProfile, easeInOutQuad } from "../../../utils/math";
 
 import { type RenderContext } from "./GeneratorUtils";
 
@@ -70,7 +70,14 @@ export function generateEventMarkerElements(
           if (matchingEvent && matchingEvent.duration) {
             // Calculate relative time within the segment
             const relTime = Math.max(0, markerTime / 1000 - matchingEvent.startTime);
-            t = Math.max(0, Math.min(1, relTime / matchingEvent.duration));
+            
+            if (matchingEvent.motionProfile && matchingEvent.motionProfile.length > 0) {
+              t = interpolateTFromProfile(relTime, matchingEvent.motionProfile);
+            } else {
+              // Fallback to quadratic easing to match robot playback
+              const timeProgress = Math.max(0, Math.min(1, relTime / matchingEvent.duration));
+              t = easeInOutQuad(timeProgress);
+            }
           }
         }
       } else if (ev.type === "pose") {
