@@ -12,8 +12,12 @@
     onsave?: (config: CustomFieldConfig) => void;
   }
 
-  let { isOpen = $bindable(false), currentConfig = undefined, onclose, onsave }: Props =
-    $props();
+  let {
+    isOpen = $bindable(false),
+    currentConfig = undefined,
+    onclose,
+    onsave,
+  }: Props = $props();
 
   let step = $state(1); // 1: Upload, 2: Calibrate Field Bounds, 3: Review
   let imageData: string | null = $state(null);
