@@ -41,8 +41,8 @@
       lines[finalIdx].endPoint,
     ];
     const pt = getCurvePoint(finalT, cps);
-    marker.ref.poseX = pt.x;
-    marker.ref.poseY = pt.y;
+    marker.ref.poseX = Math.round(pt.x * 100) / 100;
+    marker.ref.poseY = Math.round(pt.y * 100) / 100;
 
     if (lines[finalIdx].id !== marker.parentId) {
       // Move marker to new parent line
@@ -775,11 +775,12 @@
                   <span class="text-xs text-neutral-500 w-3">X:</span>
                   <input
                     type="number"
-                    value={marker.ref.poseX ?? 0}
-                    step="0.1"
+                    value={(marker.ref.poseX ?? 0).toFixed(2)}
+                    step="0.01"
                     class="flex-1 px-1 py-0.5 text-xs rounded bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700"
                     onchange={(e) => {
-                      marker.ref.poseX = Number.parseFloat(e.currentTarget.value);
+                      const val = Number.parseFloat(e.currentTarget.value);
+                      marker.ref.poseX = Math.round(val * 100) / 100;
                       if (marker.parentType === "path") lines = [...lines];
                       else sequence = [...sequence];
                     }}
@@ -789,11 +790,12 @@
                   <span class="text-xs text-neutral-500 w-3">Y:</span>
                   <input
                     type="number"
-                    value={marker.ref.poseY ?? 0}
-                    step="0.1"
+                    value={(marker.ref.poseY ?? 0).toFixed(2)}
+                    step="0.01"
                     class="flex-1 px-1 py-0.5 text-xs rounded bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700"
                     onchange={(e) => {
-                      marker.ref.poseY = Number.parseFloat(e.currentTarget.value);
+                      const val = Number.parseFloat(e.currentTarget.value);
+                      marker.ref.poseY = Math.round(val * 100) / 100;
                       if (marker.parentType === "path") lines = [...lines];
                       else sequence = [...sequence];
                     }}

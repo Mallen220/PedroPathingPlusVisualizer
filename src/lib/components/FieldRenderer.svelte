@@ -742,8 +742,8 @@
               if (evMarkers?.[eIdx]) {
                 const ev = evMarkers[eIdx];
                 if (ev.type === "pose") {
-                  ev.poseX = inchX;
-                  ev.poseY = inchY;
+                  ev.poseX = Math.round(inchX * 100) / 100;
+                  ev.poseY = Math.round(inchY * 100) / 100;
 
                   // Find best path to attach to
                   let bestDist = Infinity;
@@ -797,8 +797,8 @@
               if (waitItem && (waitItem as any).eventMarkers?.[eIdx]) {
                 const ev = (waitItem as any).eventMarkers[eIdx];
                 if (ev.type === "pose") {
-                  ev.poseX = inchX;
-                  ev.poseY = inchY;
+                  ev.poseX = Math.round(inchX * 100) / 100;
+                  ev.poseY = Math.round(inchY * 100) / 100;
                   sequenceChanged = true;
                 }
               }
@@ -810,8 +810,8 @@
               if (rotateItem && (rotateItem as any).eventMarkers?.[eIdx]) {
                 const ev = (rotateItem as any).eventMarkers[eIdx];
                 if (ev.type === "pose") {
-                  ev.poseX = inchX;
-                  ev.poseY = inchY;
+                  ev.poseX = Math.round(inchX * 100) / 100;
+                  ev.poseY = Math.round(inchY * 100) / 100;
                   sequenceChanged = true;
                 }
               }
