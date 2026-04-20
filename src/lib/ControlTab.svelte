@@ -297,7 +297,7 @@
     if (found && oldMarker) {
       // Update properties
       oldMarker.position = localPos;
-      
+
       // Update endTime if temporal
       if (oldMarker.type === "temporal") {
         oldMarker.endTime = globalTime * 1000;

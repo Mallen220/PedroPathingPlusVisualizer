@@ -98,11 +98,7 @@
   import { generateCollisionElements } from "./renderer/CollisionMarkerGenerator";
   import { generateOnionLayerElements } from "./renderer/OnionLayerGenerator";
   import { generateFacingLineElements } from "./renderer/FacingLineGenerator";
-  import {
-    findClosestT,
-    getCurvePoint,
-    getDistance,
-  } from "../../utils/math";
+  import { findClosestT, getCurvePoint, getDistance } from "../../utils/math";
   import { type RenderContext } from "./renderer/GeneratorUtils";
 
   import { updateLinkedWaypoints } from "../../utils/pointLinking";
@@ -482,7 +478,6 @@
           let sequenceChanged = false;
 
           $multiSelectedPointIds.forEach((id) => {
-
             // If the element is a line point, verify it is not locked
             if (id.startsWith("point-")) {
               const line = Number(id.split("-")[1]) - 1;
@@ -813,8 +808,7 @@
                       (e: any) => e.type === "travel",
                     );
                     const matchingEvent = travelEvents.find(
-                      (e: any) =>
-                        e.line && e.line.id === lines[bestLineIdx].id,
+                      (e: any) => e.line && e.line.id === lines[bestLineIdx].id,
                     );
                     if (matchingEvent) {
                       const newTime =
@@ -859,7 +853,9 @@
               const parts = id.split("-");
               const waitId = parts[2];
               const eIdx = Number(parts[3]);
-              const waitItem = sequence.find(s => s.kind === "wait" && (s as any).id === waitId);
+              const waitItem = sequence.find(
+                (s) => s.kind === "wait" && (s as any).id === waitId,
+              );
               if (waitItem && (waitItem as any).eventMarkers?.[eIdx]) {
                 const ev = (waitItem as any).eventMarkers[eIdx];
                 if (ev.type === "pose") {
@@ -872,7 +868,9 @@
               const parts = id.split("-");
               const rotateId = parts[2];
               const eIdx = Number(parts[3]);
-              const rotateItem = sequence.find(s => s.kind === "rotate" && (s as any).id === rotateId);
+              const rotateItem = sequence.find(
+                (s) => s.kind === "rotate" && (s as any).id === rotateId,
+              );
               if (rotateItem && (rotateItem as any).eventMarkers?.[eIdx]) {
                 const ev = (rotateItem as any).eventMarkers[eIdx];
                 if (ev.type === "pose") {
@@ -1306,12 +1304,12 @@
                 objectX = ev.poseX ?? 0;
                 objectY = ev.poseY ?? 0;
               } else {
-                // For parametric/temporal, we could calculate the path position, 
-                // but for now let's just use mouse position as object start 
+                // For parametric/temporal, we could calculate the path position,
+                // but for now let's just use mouse position as object start
                 // if we don't want to do complex path math here.
                 // However, the user wants "initial + change relative".
                 // Let's approximate.
-                objectX = mouseX; 
+                objectX = mouseX;
                 objectY = mouseY;
               }
             }

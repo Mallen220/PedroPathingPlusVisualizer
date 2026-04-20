@@ -513,3 +513,6 @@ src/lib/components/dialogs/TransformDialog.test.ts
 src/lib/components/dialogs/UnsavedChangesDialog.test.ts
 src/lib/components/dialogs/UpdateAvailableDialog.test.ts
 src/utils/timeCalculator/math.ts
+src/lib/components/renderer/EventMarkerGenerator.ts
+src/lib/exporters/eventMarkerUtils.ts
+src/lib/exporters/utils/eventMarkerUtils.ts

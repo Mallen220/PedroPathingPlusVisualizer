@@ -24,7 +24,10 @@
     return (lIdx !== -1 ? lIdx : marker.parentIndex) + localT;
   }
 
-  function updateMarkerFromParametricIndex(marker: GlobalMarker, value: number) {
+  function updateMarkerFromParametricIndex(
+    marker: GlobalMarker,
+    value: number,
+  ) {
     if (marker.parentType !== "path") return;
 
     const finalIdx = Math.max(0, Math.min(lines.length - 1, Math.floor(value)));
@@ -155,7 +158,7 @@
     });
     return { map, count: map.length };
   }
- 
+
   let segmentTimesMap = $derived.by(() => {
     const map = new Map<string, { start: number; end: number }>();
     if (timePrediction?.timeline) {
@@ -200,7 +203,12 @@
               originalId: m.id,
               name: m.name,
               globalPosition: markerIndex + m.position,
-              globalTime: m.type === "temporal" ? mTime : (times ? times.start + (m.position * (times.end - times.start)) : 0),
+              globalTime:
+                m.type === "temporal"
+                  ? mTime
+                  : times
+                    ? times.start + m.position * (times.end - times.start)
+                    : 0,
               parentType: "path",
               parentId: line.id!,
               parentIndex: index,
@@ -222,11 +230,17 @@
               originalId: m.id,
               name: m.name,
               globalPosition: markerIndex + m.position,
-              globalTime: m.type === "temporal" ? mTime : (times ? times.start + (m.position * (times.end - times.start)) : 0),
+              globalTime:
+                m.type === "temporal"
+                  ? mTime
+                  : times
+                    ? times.start + m.position * (times.end - times.start)
+                    : 0,
               parentType: def.isWait ? "wait" : "rotate",
               parentId: wait.id,
               parentIndex: index,
-              parentName: wait.name || `${def.isWait ? "Wait" : "Rotate"} ${index + 1}`,
+              parentName:
+                wait.name || `${def.isWait ? "Wait" : "Rotate"} ${index + 1}`,
               ref: m,
               segmentStartTime: times?.start,
               segmentEndTime: times?.end,
@@ -403,7 +417,8 @@
       } else if (def?.isWait || def?.isRotate) {
         const item = newItem as any;
         if (!item.eventMarkers) item.eventMarkers = [];
-        if (newMarkerData.lineIndex !== undefined) delete newMarkerData.lineIndex;
+        if (newMarkerData.lineIndex !== undefined)
+          delete newMarkerData.lineIndex;
         if (def.isWait) {
           newMarkerData.waitId = item.id;
           delete newMarkerData.rotateId;
@@ -520,9 +535,13 @@
     }
     localPos = Math.max(0, Math.min(1, localPos));
 
-    const isSameParent = 
-      (targetLine && marker.parentType === "path" && targetLine.id === marker.parentId) ||
-      (targetWait && (marker.parentType === "wait" || marker.parentType === "rotate") && targetWait.id === marker.parentId);
+    const isSameParent =
+      (targetLine &&
+        marker.parentType === "path" &&
+        targetLine.id === marker.parentId) ||
+      (targetWait &&
+        (marker.parentType === "wait" || marker.parentType === "rotate") &&
+        targetWait.id === marker.parentId);
 
     if (isSameParent) {
       marker.ref.endTime = newTimeMs;
@@ -543,12 +562,15 @@
         if (!targetLine.eventMarkers) targetLine.eventMarkers = [];
         delete newMarkerData.waitId;
         delete newMarkerData.rotateId;
-        newMarkerData.lineIndex = lines.findIndex((l) => l.id === targetLine!.id);
+        newMarkerData.lineIndex = lines.findIndex(
+          (l) => l.id === targetLine!.id,
+        );
         targetLine.eventMarkers = [...targetLine.eventMarkers, newMarkerData];
         lines = [...lines];
       } else if (targetWait) {
         if (!targetWait.eventMarkers) targetWait.eventMarkers = [];
-        if (newMarkerData.lineIndex !== undefined) delete newMarkerData.lineIndex;
+        if (newMarkerData.lineIndex !== undefined)
+          delete newMarkerData.lineIndex;
         if (targetWait.kind === "wait") {
           newMarkerData.waitId = targetWait.id;
           delete newMarkerData.rotateId;
@@ -605,8 +627,10 @@
     }
   }
 
-  let allMarkers = $derived(getAllMarkers(sequence, lines, draggingMarkerId, segmentTimesMap));
-  
+  let allMarkers = $derived(
+    getAllMarkers(sequence, lines, draggingMarkerId, segmentTimesMap),
+  );
+
   let currentProjectEvents = $derived(
     Array.from(new Set(allMarkers.map((m) => m.name))),
   );
@@ -660,7 +684,9 @@
             <div class="flex flex-col gap-2">
               <div class="flex items-center justify-between gap-2">
                 <div class="flex items-center gap-2 flex-1">
-                  <div class="w-2 h-2 rounded-full bg-purple-500 shrink-0"></div>
+                  <div
+                    class="w-2 h-2 rounded-full bg-purple-500 shrink-0"
+                  ></div>
                   <SearchableDropdown
                     value={marker.ref.name}
                     options={availableEvents}
@@ -711,12 +737,16 @@
               {#if marker.ref.type === "temporal"}
                 <span>Global Time: {Math.round(marker.globalTime)}ms</span>
               {:else if marker.ref.type === "pose"}
-                <span>Global Index: {getParametricIndexDisplay(marker).toFixed(3)}</span>
+                <span
+                  >Global Index: {getParametricIndexDisplay(marker).toFixed(
+                    3,
+                  )}</span
+                >
               {:else}
                 <span>Global Index: {marker.globalPosition.toFixed(2)}</span>
               {/if}
             </div>
- 
+
             {#if !marker.ref.type || marker.ref.type === "parametric"}
               <div class="flex items-center gap-2">
                 <input
@@ -756,9 +786,19 @@
             {:else if marker.ref.type === "temporal"}
               <div class="flex flex-col gap-1 mt-1">
                 {#if marker.segmentStartTime !== undefined}
-                  <div class="flex justify-between items-center text-[10px] text-neutral-400 px-1">
-                    <span>Time after Start: {Math.round(marker.globalTime - marker.segmentStartTime)}ms</span>
-                    <span>Segment End: {Math.round(marker.segmentEndTime ?? 0)}ms</span>
+                  <div
+                    class="flex justify-between items-center text-[10px] text-neutral-400 px-1"
+                  >
+                    <span
+                      >Time after Start: {Math.round(
+                        marker.globalTime - marker.segmentStartTime,
+                      )}ms</span
+                    >
+                    <span
+                      >Segment End: {Math.round(
+                        marker.segmentEndTime ?? 0,
+                      )}ms</span
+                    >
                   </div>
                 {/if}
                 <div class="flex items-center gap-2">

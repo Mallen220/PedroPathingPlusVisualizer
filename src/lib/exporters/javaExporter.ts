@@ -538,28 +538,30 @@ export async function generateJavaCode(
 
   let file = "";
   if (exportFullCode) {
-      const hasEventMarkers = lines.some((line) => line.eventMarkers && line.eventMarkers.length > 0);
+    const hasEventMarkers = lines.some(
+      (line) => line.eventMarkers && line.eventMarkers.length > 0,
+    );
 
-      // Determine imports based on telemetry implementation
-      let extraImports = "";
-      if (telemetryImpl === "Panels") {
-        extraImports = `
+    // Determine imports based on telemetry implementation
+    let extraImports = "";
+    if (telemetryImpl === "Panels") {
+      extraImports = `
     import com.bylazar.configurables.annotations.Configurable;
     import com.bylazar.telemetry.TelemetryManager;
     import com.bylazar.telemetry.PanelsTelemetry;`;
-      } else if (telemetryImpl === "Dashboard") {
-        extraImports = `
+    } else if (telemetryImpl === "Dashboard") {
+      extraImports = `
     import com.acmerobotics.dashboard.FtcDashboard;
     import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
     import org.firstinspires.ftc.robotcore.external.Telemetry;`;
-      }
+    }
 
-      const namedCommandsImport = hasEventMarkers
-        ? "import com.turtletracerlib.pathing.NamedCommands;\n"
-        : "";
+    const namedCommandsImport = hasEventMarkers
+      ? "import com.turtletracerlib.pathing.NamedCommands;\n"
+      : "";
 
-      const classAnnotations =
-        telemetryImpl === "Panels" ? "@Configurable // Panels" : "";
+    const classAnnotations =
+      telemetryImpl === "Panels" ? "@Configurable // Panels" : "";
 
     let telemetryField = "";
     if (telemetryImpl === "Panels") {
