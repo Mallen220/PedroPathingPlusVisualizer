@@ -70,9 +70,9 @@ export function generateEventMarkerElements(
         // Use timePrediction if available for absolute positioning
         if (timePrediction?.timeline) {
           const matchingEvent = timePrediction.timeline.find(
-            (e: any) => e.type === "travel" && e.line && e.line.id === line.id,
+            (e: any) => e.type === "travel" && e.line?.id === line.id,
           );
-          if (matchingEvent && matchingEvent.duration) {
+          if (matchingEvent?.duration) {
             // Calculate relative time within the segment
             const relTime = Math.max(
               0,
@@ -95,12 +95,12 @@ export function generateEventMarkerElements(
           }
         }
       } else if (ev.type === "pose") {
-        if (ev.poseGuess !== undefined) {
-          t = Math.max(0, Math.min(1, ev.poseGuess));
-        } else {
+        if (ev.poseGuess === undefined) {
           // Auto-calculate best guess
           const cps = [_startPoint, ...line.controlPoints, line.endPoint];
           t = findClosestT({ x: ev.poseX ?? 0, y: ev.poseY ?? 0 }, cps);
+        } else {
+          t = Math.max(0, Math.min(1, ev.poseGuess));
         }
       } else {
         t = Math.max(0, Math.min(1, ev.position ?? 0.5));
@@ -112,16 +112,14 @@ export function generateEventMarkerElements(
         // Just render at the pose coordinates
         pos.x = ev.poseX ?? 0;
         pos.y = ev.poseY ?? 0;
+      } else if (line.controlPoints.length > 0) {
+        const cps = [_startPoint, ...line.controlPoints, line.endPoint];
+        const pt = getCurvePoint(t, cps);
+        pos.x = pt.x;
+        pos.y = pt.y;
       } else {
-        if (line.controlPoints.length > 0) {
-          const cps = [_startPoint, ...line.controlPoints, line.endPoint];
-          const pt = getCurvePoint(t, cps);
-          pos.x = pt.x;
-          pos.y = pt.y;
-        } else {
-          pos.x = _startPoint.x + (line.endPoint.x - _startPoint.x) * t;
-          pos.y = _startPoint.y + (line.endPoint.y - _startPoint.y) * t;
-        }
+        pos.x = _startPoint.x + (line.endPoint.x - _startPoint.x) * t;
+        pos.y = _startPoint.y + (line.endPoint.y - _startPoint.y) * t;
       }
 
       const px = x(pos.x);

@@ -134,8 +134,7 @@ export function calculateRobotState(
       );
 
       if (
-        activeEvent.headingProfile &&
-        activeEvent.headingProfile.length === activeEvent.motionProfile.length
+        activeEvent.headingProfile?.length === activeEvent.motionProfile.length
       ) {
         // Find the index for heading interpolation (we need the same 'i' and 'localProgress' used in interpolateTFromProfile)
         // Since we want to stay smooth, let's re-calculate local values here or refine the utility.

@@ -21,7 +21,7 @@
     if (marker.parentType !== "path") return 0;
     const localT = marker.ref.poseGuess ?? getAutoPoseGuess(marker);
     const lIdx = lines.findIndex((l) => l.id === marker.parentId);
-    return (lIdx !== -1 ? lIdx : marker.parentIndex) + localT;
+    return (lIdx === -1 ? marker.parentIndex : lIdx) + localT;
   }
 
   function updateMarkerFromParametricIndex(
@@ -880,9 +880,9 @@
                   </span>
                   <input
                     type="number"
-                    value={marker.ref.poseGuess !== undefined
-                      ? getParametricIndexDisplay(marker).toFixed(3)
-                      : ""}
+                    value={marker.ref.poseGuess === undefined
+                      ? ""
+                      : getParametricIndexDisplay(marker).toFixed(3)}
                     placeholder={getParametricIndexDisplay(marker).toFixed(3)}
                     min="0"
                     max={lines.length.toString()}

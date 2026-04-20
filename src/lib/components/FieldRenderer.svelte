@@ -757,7 +757,9 @@
                     }
                   });
 
-                  if (bestLineIdx !== lIdx) {
+                  if (bestLineIdx === lIdx) {
+                    lines[lIdx].eventMarkers = [...evMarkers];
+                  } else {
                     // Move marker to new line
                     const marker = evMarkers.splice(eIdx, 1)[0];
                     lines[lIdx].eventMarkers = [...evMarkers];
@@ -778,8 +780,6 @@
                       multiDragOffsets.delete(id);
                     }
                     if (currentElem === id) currentElem = newId;
-                  } else {
-                    lines[lIdx].eventMarkers = [...evMarkers];
                   }
                   linesChanged = true;
                 } else {
@@ -822,7 +822,9 @@
                     ev.position = bestT;
                   }
 
-                  if (bestLineIdx !== lIdx) {
+                  if (bestLineIdx === lIdx) {
+                    lines[lIdx].eventMarkers = [...evMarkers];
+                  } else {
                     // Move marker to new line
                     const marker = evMarkers.splice(eIdx, 1)[0];
                     lines[lIdx].eventMarkers = [...evMarkers];
@@ -843,8 +845,6 @@
                       multiDragOffsets.delete(id);
                     }
                     if (currentElem === id) currentElem = newId;
-                  } else {
-                    lines[lIdx].eventMarkers = [...evMarkers];
                   }
                   linesChanged = true;
                 }

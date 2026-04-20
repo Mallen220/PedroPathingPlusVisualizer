@@ -63,7 +63,7 @@ describe("GlobalEventMarkers", () => {
     // Line 2 is index 1.
     // Marker on Line 2 at 0.5 should be at 1.5.
 
-    expect(screen.getByText("Global: 1.50")).toBeTruthy();
+    expect(screen.getByText("Global Index: 1.50")).toBeTruthy();
   });
 
   it("calculates correctly without macros", () => {
@@ -82,6 +82,6 @@ describe("GlobalEventMarkers", () => {
     // Line 2 is index 1.
     // Marker on Line 2 at 0.5 should be at 1.5.
 
-    expect(screen.getByText("Global: 1.50")).toBeTruthy();
+    expect(screen.getByText("Global Index: 1.50")).toBeTruthy();
   });
 });
