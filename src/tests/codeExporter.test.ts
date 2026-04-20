@@ -168,7 +168,16 @@ describe("codeExporter", () => {
       const code = await generateJavaCode(startPoint, lines, false);
 
       expect(code).toContain(
-        '.addParametricCallback(0.500, () -> NamedCommands.getCommand("marker1").run())',
+        '.addParametricCallback(0.500, () -> NamedCommands.getCommand("marker1"))',
+      );
+    });
+
+    it("should include NamedCommands import when exportFullCode has event markers", async () => {
+      const lines = [line3];
+      const code = await generateJavaCode(startPoint, lines, true);
+
+      expect(code).toContain(
+        "import com.turtletracerlib.pathing.NamedCommands;",
       );
     });
 

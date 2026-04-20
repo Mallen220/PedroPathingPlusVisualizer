@@ -538,22 +538,28 @@ export async function generateJavaCode(
 
   let file = "";
   if (exportFullCode) {
-    // Determine imports based on telemetry implementation
-    let extraImports = "";
-    if (telemetryImpl === "Panels") {
-      extraImports = `
+      const hasEventMarkers = lines.some((line) => line.eventMarkers && line.eventMarkers.length > 0);
+
+      // Determine imports based on telemetry implementation
+      let extraImports = "";
+      if (telemetryImpl === "Panels") {
+        extraImports = `
     import com.bylazar.configurables.annotations.Configurable;
     import com.bylazar.telemetry.TelemetryManager;
     import com.bylazar.telemetry.PanelsTelemetry;`;
-    } else if (telemetryImpl === "Dashboard") {
-      extraImports = `
+      } else if (telemetryImpl === "Dashboard") {
+        extraImports = `
     import com.acmerobotics.dashboard.FtcDashboard;
     import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
     import org.firstinspires.ftc.robotcore.external.Telemetry;`;
-    }
+      }
 
-    const classAnnotations =
-      telemetryImpl === "Panels" ? "@Configurable // Panels" : "";
+      const namedCommandsImport = hasEventMarkers
+        ? "import com.turtletracerlib.pathing.NamedCommands;\n"
+        : "";
+
+      const classAnnotations =
+        telemetryImpl === "Panels" ? "@Configurable // Panels" : "";
 
     let telemetryField = "";
     if (telemetryImpl === "Panels") {
@@ -650,7 +656,7 @@ export async function generateJavaCode(
     import com.pedropathing.geometry.PedroCoordinates;
     import org.firstinspires.ftc.teamcode.pedroPathing.PedroConstants;
     import com.pedropathing.ftc.PoseConverter;
-    ${extraImports}
+    ${namedCommandsImport}${extraImports}
     import com.pedropathing.geometry.BezierCurve;
     import com.pedropathing.geometry.BezierLine;
     import com.pedropathing.follower.Follower;
