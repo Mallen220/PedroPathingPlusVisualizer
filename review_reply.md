@@ -1,0 +1,1 @@
+I checked usages of `SetupDialog` in `src/App.svelte` and it is called as `<SetupDialog bind:show={setupMode} />` on line 1783. There is no `on:setupComplete` usage in the codebase. As such, I believe the change is complete.
