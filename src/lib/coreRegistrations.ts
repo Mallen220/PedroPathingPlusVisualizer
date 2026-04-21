@@ -3,7 +3,6 @@ import { componentRegistry } from "./registries";
 import Navbar from "./Navbar.svelte";
 import FieldRenderer from "./components/FieldRenderer.svelte";
 import ControlTab from "./ControlTab.svelte";
-// @ts-ignore - Svelte 5 module export false positive
 import { registerDefaultControlTabs } from "./ControlTab.svelte";
 import { actionRegistry } from "./actionRegistry";
 import { WaitAction } from "./actions/WaitAction";
