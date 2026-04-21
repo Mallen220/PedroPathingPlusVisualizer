@@ -3,6 +3,7 @@ import { describe, it, expect, beforeEach, vi, afterEach } from "vitest";
 import { tabRegistry } from "../lib/registries";
 import { DEFAULT_SETTINGS } from "../config/defaults";
 import { get } from "svelte/store";
+// @ts-ignore - Svelte 5 module export false positive
 import { registerDefaultControlTabs } from "../lib/ControlTab.svelte";
 import * as platform from "../utils/platform";
 
