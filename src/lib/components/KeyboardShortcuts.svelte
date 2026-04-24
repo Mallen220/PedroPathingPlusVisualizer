@@ -524,10 +524,24 @@
         (document.activeElement as HTMLElement).blur();
       }
     },
-    focusX: () => focusRequest.set({ field: "x", timestamp: Date.now() }),
-    focusY: () => focusRequest.set({ field: "y", timestamp: Date.now() }),
+    focusX: () =>
+      focusRequest.set({
+        field: "x",
+        timestamp: Date.now(),
+        id: $selectedPointId || undefined,
+      }),
+    focusY: () =>
+      focusRequest.set({
+        field: "y",
+        timestamp: Date.now(),
+        id: $selectedPointId || undefined,
+      }),
     focusHeading: () =>
-      focusRequest.set({ field: "heading", timestamp: Date.now() }),
+      focusRequest.set({
+        field: "heading",
+        timestamp: Date.now(),
+        id: $selectedPointId || undefined,
+      }),
     togglePlay: () => {
       if (playing) pause();
       else play();
