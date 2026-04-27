@@ -19,7 +19,7 @@ describe("FileContextMenu", () => {
   });
 
   it("updates fileName correctly", async () => {
-    const { component, rerender } = render(FileContextMenu, {
+    const { rerender } = render(FileContextMenu as any, {
       x: 0,
       y: 0,
       fileName: "file1.txt",
@@ -39,7 +39,7 @@ describe("FileContextMenu", () => {
   });
 
   it("updates position correctly when going off screen", async () => {
-    const { component, rerender } = render(FileContextMenu, {
+    const { rerender } = render(FileContextMenu as any, {
       x: 900,
       y: 900,
       fileName: "file1.txt",

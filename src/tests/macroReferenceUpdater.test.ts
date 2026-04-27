@@ -232,8 +232,8 @@ describe("updateAllMacroReferences", () => {
   it("handles a folder move by updating all paths with the old folder prefix", async () => {
     const OLD_FOLDER = `${BASE}/macros`;
     const NEW_FOLDER = `${BASE}/lib`;
-    const OLD_FILE = `${OLD_FOLDER}/macro.turt`;
-    const NEW_FILE = `${NEW_FOLDER}/macro.turt`;
+    // const OLD_FILE = `${OLD_FOLDER}/macro.turt`;
+    // const NEW_FILE = `${NEW_FOLDER}/macro.turt`;
 
     const projectPath = `${BASE}/project.turt`;
     const relRef = "macros/macro.turt";

@@ -60,7 +60,7 @@
               title: `Version ${id.replaceAll(/^v/g, "")} Highlights`,
               content,
             });
-          } catch (e) {}
+          } catch {}
         }
 
         out.sort((a, b) => {
@@ -79,7 +79,7 @@
           return 0;
         });
         runtimeFeatures = out;
-      } catch (e) {}
+      } catch {}
     }
   });
 
@@ -333,6 +333,7 @@
                     <div
                       class="prose dark:prose-invert max-w-none text-neutral-600 dark:text-neutral-300 prose-purple prose-headings:text-neutral-900 dark:prose-headings:text-white prose-a:text-purple-600 dark:prose-a:text-purple-400 text-lg md:text-xl leading-relaxed"
                     >
+                      <!-- eslint-disable-next-line svelte/no-at-html-tags -->
                       {@html md.render(feature.content)}
                     </div>
                   </div>
@@ -366,6 +367,7 @@
               <div
                 class="prose dark:prose-invert max-w-none prose-purple text-lg md:text-xl leading-relaxed text-neutral-600 dark:text-neutral-300"
               >
+                <!-- eslint-disable-next-line svelte/no-at-html-tags -->
                 {@html activeContentHtml}
               </div>
             </div>

@@ -58,17 +58,14 @@ describe("PathStatisticsDialog", () => {
   });
 
   it("switches to graphs tab", async () => {
-    const { getByText, getAllByText, container } = render(
-      PathStatisticsDialog,
-      {
-        startPoint: defaultStartPoint,
-        lines: defaultLines,
-        sequence: defaultSequence,
-        settings: defaultSettings,
-        isOpen: true,
-        onClose: vi.fn(),
-      },
-    );
+    const { getByText, getAllByText } = render(PathStatisticsDialog, {
+      startPoint: defaultStartPoint,
+      lines: defaultLines,
+      sequence: defaultSequence,
+      settings: defaultSettings,
+      isOpen: true,
+      onClose: vi.fn(),
+    });
 
     const graphsTab = getByText("Graphs");
     expect(graphsTab).toBeTruthy();
@@ -80,7 +77,7 @@ describe("PathStatisticsDialog", () => {
   });
 
   it("shows acceleration graphs and insights tab", async () => {
-    const { getByText } = render(PathStatisticsDialog, {
+    const { getByText, getAllByText } = render(PathStatisticsDialog, {
       startPoint: defaultStartPoint,
       lines: defaultLines,
       sequence: defaultSequence,

@@ -545,7 +545,7 @@ describe("fileHandlers", () => {
 
       let onloadHandler: any;
       const mockFileReader = {
-        readAsText: vi.fn(function (this: any, file) {
+        readAsText: vi.fn(function (this: any) {
           onloadHandler = this.onload;
         }),
       };
