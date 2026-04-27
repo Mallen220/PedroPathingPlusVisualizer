@@ -38,6 +38,7 @@ function getColor(t: number) {
 function runBaseline() {
   let objectCount = 0;
   const samples = 100;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   let prevPt = getCurvePoint(0, cps);
 
   for (let i = 1; i <= samples; i++) {
@@ -60,6 +61,7 @@ function runOptimized() {
   let currentPoints: any[] = [];
   let currentColor: string | null = null;
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   let prevPt = getCurvePoint(0, cps);
 
   for (let i = 1; i <= samples; i++) {
@@ -92,5 +94,7 @@ function runOptimized() {
   return objectCount;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const baseline = runBaseline();
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const optimized = runOptimized();

@@ -63,7 +63,7 @@ test("EmptyState appears when all items are deleted", async () => {
 
   const recordChange = vi.fn();
 
-  const { component, rerender } = render(PathTab, {
+  render(PathTab, {
     startPoint,
     lines,
     sequence,

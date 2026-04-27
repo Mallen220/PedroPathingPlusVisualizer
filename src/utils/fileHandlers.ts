@@ -532,14 +532,9 @@ async function exportProjectFileWithExtension(
         }
       }
 
-      // Calculate correct headings for startPoint
-      const sp = get(startPointStore);
-      const ln = get(linesStore);
-      const updatedStartPoint = calculateStartPointHeadings(sp, ln);
-
       const projectData = createProjectData(
-        updatedStartPoint,
-        ln,
+        calculateStartPointHeadings(get(startPointStore), get(linesStore)),
+        get(linesStore),
         get(shapesStore),
         sequence,
         get(extraDataStore),
@@ -550,20 +545,6 @@ async function exportProjectFileWithExtension(
       return;
     }
   }
-
-  // Calculate correct headings for startPoint
-  const sp = get(startPointStore);
-  const ln = get(linesStore);
-  const updatedStartPoint = calculateStartPointHeadings(sp, ln);
-
-  const projectData = createProjectData(
-    updatedStartPoint,
-    ln,
-    get(shapesStore),
-    get(sequenceStore),
-    get(extraDataStore),
-  );
-  const jsonString = JSON.stringify(projectData, null, 2);
 
   // Browser fallback
   downloadTrajectory(

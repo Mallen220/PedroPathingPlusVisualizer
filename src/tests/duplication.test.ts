@@ -18,7 +18,7 @@ describe("Code Duplication Check", () => {
     // We use stdio: 'inherit' so that the formatted output appears in the test logs
     try {
       execSync(`node ${scriptPath}`, { stdio: "inherit" });
-    } catch (e) {
+    } catch {
       // The script might fail if jscpd returns exit code 1, but we want to check the report file
     }
 

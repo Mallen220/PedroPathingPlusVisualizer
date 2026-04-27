@@ -19,7 +19,7 @@ describe("ContextMenu", () => {
   });
 
   it("updates items correctly", async () => {
-    const { component, rerender } = render(ContextMenu, {
+    const { rerender } = render(ContextMenu as any, {
       x: 0,
       y: 0,
       items: [{ label: "Item 1" }],
@@ -34,7 +34,7 @@ describe("ContextMenu", () => {
   });
 
   it("updates position correctly when going off screen", async () => {
-    const { component, rerender } = render(ContextMenu, {
+    const { rerender } = render(ContextMenu as any, {
       x: 900,
       y: 900,
       items: [{ label: "Item 1" }],

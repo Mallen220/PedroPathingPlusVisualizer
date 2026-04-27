@@ -560,7 +560,7 @@ export function generateOnionLayers(
   }
 
   // Calculate number of layers based on spacing
-  const numLayers = Math.max(1, Math.floor(totalLength / spacing));
+  // const numLayers = Math.max(1, Math.floor(totalLength / spacing));
 
   // Sample robot positions at regular intervals
   currentLineStart = startPoint;

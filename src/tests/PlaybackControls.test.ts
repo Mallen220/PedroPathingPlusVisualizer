@@ -47,7 +47,7 @@ describe("PlaybackControls", () => {
   });
 
   it("toggles loop animation", async () => {
-    const { component } = render(PlaybackControls, {
+    render(PlaybackControls, {
       props: createProps(),
     });
 

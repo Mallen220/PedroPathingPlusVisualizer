@@ -53,7 +53,7 @@ export function highlightText(root: Element, query: string): void {
     // that span previously marked boundaries can match again.
     try {
       root.normalize();
-    } catch (e) {
+    } catch {
       // Ignore if normalize is not available
     }
   };

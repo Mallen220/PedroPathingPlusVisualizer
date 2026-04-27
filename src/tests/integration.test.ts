@@ -62,7 +62,7 @@ describe("Field Logic and Visibility Integration", () => {
   });
 
   it("should render the field and contain core SVG elements", async () => {
-    const { container } = render(FieldRenderer, {
+    const { container } = render(FieldRenderer as any, {
       width: 500,
       height: 500,
       onRecordChange: vi.fn(),
@@ -91,7 +91,11 @@ describe("Field Logic and Visibility Integration", () => {
   });
 
   it("should update field logic (stores and visualization) when data is loaded", async () => {
-    render(FieldRenderer, { width: 500, height: 500, onRecordChange: vi.fn() });
+    render(FieldRenderer as any, {
+      width: 500,
+      height: 500,
+      onRecordChange: vi.fn(),
+    });
 
     // Mock data mimicking a loaded file
     const mockData = {
@@ -151,7 +155,7 @@ describe("Field Logic and Visibility Integration", () => {
     const originalFileReader = globalThis.FileReader;
     class MockFileReader {
       onload: any;
-      readAsText(file: File) {
+      readAsText(_file: File) {
         setTimeout(() => {
           this.onload({ target: { result: mockFileContent } });
         }, 10);
