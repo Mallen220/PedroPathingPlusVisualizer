@@ -257,6 +257,7 @@
         </h2>
         <button
           onclick={handleClose}
+          aria-label="Close"
           class="text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded"
         >
           <CloseIcon className="h-6 w-6" />

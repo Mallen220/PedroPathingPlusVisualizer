@@ -210,6 +210,7 @@
           <!-- Mobile Close -->
           <button
             onclick={close}
+            aria-label="Close"
             class="md:hidden p-2 -mr-2 text-neutral-500 hover:text-neutral-700 dark:text-neutral-400"
           >
             <CloseIcon className="h-5 w-5" />
@@ -300,6 +301,7 @@
           <!-- Desktop Close -->
           <button
             onclick={close}
+            aria-label="Close"
             class="hidden md:block p-2 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800"
           >
             <CloseIcon className="h-5 w-5" />
