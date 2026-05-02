@@ -48,6 +48,7 @@ export function shouldBlockShortcut(
     actionId === "zoom-in" ||
     actionId === "zoom-out" ||
     actionId === "zoom-reset" ||
+    actionId === "toggle-lock-view" ||
     actionId === "pan-view-up" ||
     actionId === "pan-view-down" ||
     actionId === "pan-view-left" ||
