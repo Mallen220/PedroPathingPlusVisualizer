@@ -1,7 +1,6 @@
 <!-- Copyright 2026 Matthew Allen. Licensed under the Modified Apache License, Version 2.0. -->
 <!-- src/lib/components/filemanager/FileManagerToolbar.svelte -->
 <script lang="ts">
-  import { createEventDispatcher } from "svelte";
   import {
     SearchIcon,
     SortNameIcon,
@@ -14,24 +13,24 @@
     searchQuery?: string;
     sortMode?: "name" | "date";
     viewMode?: "list" | "grid";
+    onsortchange?: (mode: "name" | "date") => void;
+    onviewchange?: (mode: "list" | "grid") => void;
+    onsearch?: (query: string) => void;
   }
 
   let {
     searchQuery = $bindable(""),
     sortMode = "name",
     viewMode = "list",
+    onsortchange,
+    onviewchange,
+    onsearch,
   }: Props = $props();
-
-  const dispatch = createEventDispatcher<{
-    "sort-change": "name" | "date";
-    "view-change": "list" | "grid";
-    search: string;
-  }>();
 
   function handleSearch(e: Event) {
     const target = e.target as HTMLInputElement;
     searchQuery = target.value;
-    dispatch("search", searchQuery);
+    onsearch?.(searchQuery);
   }
 </script>
 
@@ -59,7 +58,7 @@
     <!-- Sort Toggle -->
     <button
       onclick={() =>
-        dispatch("sort-change", sortMode === "name" ? "date" : "name")}
+        onsortchange?.(sortMode === "name" ? "date" : "name")}
       class="p-1.5 text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-200 rounded hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors shrink-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
       title={`Sort by ${sortMode === "name" ? "Date" : "Name"}`}
       aria-label={`Sort by ${sortMode === "name" ? "Date" : "Name"}`}
@@ -74,7 +73,7 @@
     <!-- View Toggle -->
     <button
       onclick={() =>
-        dispatch("view-change", viewMode === "list" ? "grid" : "list")}
+        onviewchange?.(viewMode === "list" ? "grid" : "list")}
       class="p-1.5 text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-200 rounded hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors shrink-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
       title={`Switch to ${viewMode === "list" ? "Grid" : "List"} View`}
       aria-label={`Switch to ${viewMode === "list" ? "Grid" : "List"} View`}

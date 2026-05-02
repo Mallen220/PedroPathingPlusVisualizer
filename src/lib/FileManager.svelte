@@ -1231,10 +1231,10 @@
         {searchQuery}
         {sortMode}
         {viewMode}
-        on:search={(e) => (searchQuery = e.detail)}
-        on:sort-change={(e) => (sortMode = e.detail)}
-        on:view-change={(e) => {
-          viewMode = e.detail;
+        onsearch={(val) => (searchQuery = val)}
+        onsortchange={(val) => (sortMode = val)}
+        onviewchange={(val) => {
+          viewMode = val;
           // If switching to list/grid view, retry any previously failed previews so icons repopulate reliably
           if (viewMode === "list") {
             fileList?.refreshAllFailed?.();
