@@ -1,6 +1,6 @@
 <!-- Copyright 2026 Matthew Allen. Licensed under the Modified Apache License, Version 2.0. -->
 <script lang="ts">
-  import DocumentIcon from "../icons/DocumentIcon.svelte";
+  import { Icon } from "../icons/index";
 
   interface Props {
     title: string;
@@ -25,7 +25,11 @@
   >
     {#if icon}{@render icon()}{:else}
       <!-- Default Icon -->
-      <DocumentIcon className="size-6 text-neutral-400" strokeWidth={1.5} />
+      <Icon
+        icon="DocumentIcon"
+        className="size-6 text-neutral-400"
+        strokeWidth={1.5}
+      />
     {/if}
   </div>
   <h3 class="text-sm font-semibold text-neutral-900 dark:text-neutral-100">

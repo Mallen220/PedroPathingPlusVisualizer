@@ -1,9 +1,9 @@
 <!-- Copyright 2026 Matthew Allen. Licensed under the Modified Apache License, Version 2.0. -->
 <script lang="ts">
+  import { Icon } from "../icons/index";
   import { onMount } from "svelte";
   import MarkdownIt from "markdown-it";
   import { features, getAllFeatures, type FeatureHighlight } from "./features";
-  import { ChevronLeftIcon, ChevronRightIcon, CloseIcon } from "../icons";
 
   interface Props {
     show?: boolean;
@@ -197,7 +197,7 @@
                 class="p-1 -ml-1 text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200 transition-colors rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-700"
                 aria-label="Back"
               >
-                <ChevronLeftIcon className="h-5 w-5" />
+                <Icon icon="ChevronLeftIcon" className="h-5 w-5" />
               </button>
             {/if}
             <h2
@@ -213,7 +213,7 @@
             aria-label="Close"
             class="md:hidden p-2 -mr-2 text-neutral-500 hover:text-neutral-700 dark:text-neutral-400"
           >
-            <CloseIcon className="h-5 w-5" />
+            <Icon icon="CloseIcon" className="h-5 w-5" />
           </button>
         </div>
 
@@ -263,14 +263,14 @@
               }}
             >
               <span>View Previous Releases</span>
-              <ChevronRightIcon className="h-4 w-4" />
+              <Icon icon="ChevronRightIcon" className="h-4 w-4" />
             </button>
           {:else}
             <button
               class="w-full py-2 px-3 flex items-center justify-between text-sm text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white transition-colors"
               onclick={() => (viewMode = "features")}
             >
-              <ChevronLeftIcon className="h-4 w-4" />
+              <Icon icon="ChevronLeftIcon" className="h-4 w-4" />
               <span>Back to What's New</span>
             </button>
           {/if}
@@ -292,7 +292,7 @@
             onclick={() => (viewMode = "features")}
             class="md:hidden flex items-center gap-1 text-sm text-neutral-500 hover:text-neutral-900 dark:hover:text-white"
           >
-            <ChevronLeftIcon className="h-4 w-4" />
+            <Icon icon="ChevronLeftIcon" className="h-4 w-4" />
             Back
           </button>
 
@@ -304,7 +304,7 @@
             aria-label="Close"
             class="hidden md:block p-2 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800"
           >
-            <CloseIcon className="h-5 w-5" />
+            <Icon icon="CloseIcon" className="h-5 w-5" />
           </button>
         </div>
 
@@ -350,7 +350,7 @@
                           (activeFeatureId = parsedFeatures[i + 1].id)}
                       >
                         Next
-                        <ChevronRightIcon className="h-4 w-4" />
+                        <Icon icon="ChevronRightIcon" className="h-4 w-4" />
                       </button>
                     {:else}
                       <button

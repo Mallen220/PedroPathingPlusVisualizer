@@ -1,5 +1,6 @@
 <!-- Copyright 2026 Matthew Allen. Licensed under the Modified Apache License, Version 2.0. -->
 <script lang="ts">
+  import { Icon } from "./icons/index";
   import type {
     Line,
     SequenceItem,
@@ -7,8 +8,6 @@
     EventMarker,
   } from "../../types";
   import { tick } from "svelte";
-  import TrashIcon from "./icons/TrashIcon.svelte";
-  import ZapIcon from "./icons/ZapIcon.svelte";
   import SectionHeader from "./common/SectionHeader.svelte";
   import EmptyState from "./common/EmptyState.svelte";
   import { hoveredMarkerId, diskEventNamesStore } from "../../stores";
@@ -668,7 +667,11 @@
         >
           {#snippet icon()}
             <div>
-              <ZapIcon className="size-6 text-neutral-400" strokeWidth={1.5} />
+              <Icon
+                icon="ZapIcon"
+                className="size-6 text-neutral-400"
+                strokeWidth={1.5}
+              />
             </div>
           {/snippet}
         </EmptyState>
@@ -704,7 +707,7 @@
                   title="Remove Marker"
                   aria-label="Remove Marker"
                 >
-                  <TrashIcon className="size-4" />
+                  <Icon icon="TrashIcon" className="size-4" />
                 </button>
               </div>
 

@@ -1,16 +1,9 @@
 <!-- Copyright 2026 Matthew Allen. Licensed under the Modified Apache License, Version 2.0. -->
 <script lang="ts">
+  import { Icon } from "./icons/index";
   import { transformAngle } from "../../utils/math";
   import HeadingIndicator from "./common/HeadingIndicator.svelte";
-  import {
-    ArrowCircleIcon,
-    TriangleWarningIcon,
-    ArrowRightIcon,
-    ChevronDownIcon,
-    ChevronUpIcon,
-    EllipsisVerticalIcon,
-    TrashIcon,
-  } from "./icons";
+
   import HeadingControls from "./HeadingControls.svelte";
   import {
     reorderSequence,
@@ -319,7 +312,8 @@
       aria-label="Reverse heading direction"
       class="sr-only"
     />
-    <ArrowCircleIcon
+    <Icon
+      icon="ArrowCircleIcon"
       className={`size-4 ${endPoint.reverse ? "text-purple-500" : "text-neutral-400"}`}
     />
   </label>
@@ -364,7 +358,7 @@
             aria-label="Normalize angle to between -180 and 180 degrees"
             class="absolute right-1 top-1/2 -translate-y-1/2 p-0.5 rounded hover:bg-yellow-100 dark:hover:bg-yellow-900/30 text-yellow-600 dark:text-yellow-400 transition-colors"
           >
-            <TriangleWarningIcon className="size-3" />
+            <Icon icon="TriangleWarningIcon" className="size-3" />
           </button>
         {/if}
       </div>
@@ -406,7 +400,7 @@
             aria-label="Normalize angle to between -180 and 180 degrees"
             class="absolute right-1 top-1/2 -translate-y-1/2 p-0.5 rounded hover:bg-yellow-100 dark:hover:bg-yellow-900/30 text-yellow-600 dark:text-yellow-400 transition-colors"
           >
-            <TriangleWarningIcon className="size-3" />
+            <Icon icon="TriangleWarningIcon" className="size-3" />
           </button>
         {/if}
       </div>
@@ -447,7 +441,7 @@
             aria-label="Normalize angle to between -180 and 180 degrees"
             class="absolute right-1 top-1/2 -translate-y-1/2 p-0.5 rounded hover:bg-yellow-100 dark:hover:bg-yellow-900/30 text-yellow-600 dark:text-yellow-400 transition-colors"
           >
-            <TriangleWarningIcon className="size-3" />
+            <Icon icon="TriangleWarningIcon" className="size-3" />
           </button>
         {/if}
       </div>
@@ -456,7 +450,8 @@
     <div
       class="flex items-center justify-center gap-2 flex-[2] bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-lg px-3 min-w-0"
     >
-      <ArrowRightIcon
+      <Icon
+        icon="ArrowRightIcon"
         className="size-4 text-neutral-400 dark:text-neutral-500 shrink-0 {endPoint.reverse
           ? 'scale-x-[-1]'
           : ''}"
@@ -524,7 +519,8 @@
       }}
       class="flex items-center gap-1.5 text-xs font-semibold text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-200 uppercase tracking-wide transition-colors"
     >
-      <ChevronDownIcon
+      <Icon
+        icon="ChevronDownIcon"
         className="size-3.5 transition-transform duration-200 {isPiecewiseCollapsed
           ? '-rotate-90'
           : 'rotate-0'}"
@@ -571,7 +567,7 @@
                   class="text-red-500 hover:text-red-700 p-0.5 rounded hover:bg-red-500/10 transition-colors"
                   title="Remove Transition"
                 >
-                  <TrashIcon className="size-3" />
+                  <Icon icon="TrashIcon" className="size-3" />
                 </button>
               {/if}
             </div>
@@ -600,7 +596,7 @@
               <div
                 class="cursor-grab active:cursor-grabbing text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 shrink-0"
               >
-                <EllipsisVerticalIcon className="size-4" />
+                <Icon icon="EllipsisVerticalIcon" className="size-4" />
               </div>
             {/if}
 
@@ -616,7 +612,7 @@
                 class="p-0.5 hover:bg-neutral-50 dark:hover:bg-neutral-700 text-neutral-500 dark:text-neutral-400 disabled:opacity-30 rounded-t focus:outline-none focus:ring-2 focus:ring-purple-500"
                 disabled={i === 0 || locked}
               >
-                <ChevronUpIcon className="size-3" />
+                <Icon icon="ChevronUpIcon" className="size-3" />
               </button>
               <div
                 class="w-full h-px bg-neutral-200 dark:bg-neutral-700"
@@ -631,7 +627,7 @@
                 class="p-0.5 hover:bg-neutral-50 dark:hover:bg-neutral-700 text-neutral-500 dark:text-neutral-400 disabled:opacity-30 rounded-b focus:outline-none focus:ring-2 focus:ring-purple-500"
                 disabled={i === endPoint.segments.length - 1 || locked}
               >
-                <ChevronDownIcon className="size-3" />
+                <Icon icon="ChevronDownIcon" className="size-3" />
               </button>
             </div>
 

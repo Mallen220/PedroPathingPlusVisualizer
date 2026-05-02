@@ -1,19 +1,11 @@
 <!-- Copyright 2026 Matthew Allen. Licensed under the Modified Apache License, Version 2.0. -->
 <script lang="ts">
+  import { Icon } from "../icons/index";
   import { cubicInOut } from "svelte/easing";
   import { fade, fly, scale } from "svelte/transition";
   import { flip } from "svelte/animate";
   import { PluginManager } from "../../pluginManager";
   import { pluginsStore, type PluginInfo } from "../../pluginsStore";
-  import PuzzleIcon from "../icons/PuzzleIcon.svelte";
-  import FolderIcon from "../icons/FolderIcon.svelte";
-  import {
-    CloseIcon,
-    SearchIcon,
-    TrashIcon,
-    TriangleWarningIcon,
-    ArrowCircleIcon,
-  } from "../icons";
 
   interface Props {
     isOpen?: boolean;
@@ -75,7 +67,7 @@
             <div
               class="flex items-center justify-center w-10 h-10 rounded-xl bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400"
             >
-              <PuzzleIcon className="size-6" />
+              <Icon icon="PuzzleIcon" className="size-6" />
             </div>
             <div>
               <h2
@@ -94,7 +86,7 @@
             aria-label="Close"
             class="p-2 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors"
           >
-            <CloseIcon className="size-6" />
+            <Icon icon="CloseIcon" className="size-6" />
           </button>
         </div>
 
@@ -102,7 +94,8 @@
           <div
             class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"
           >
-            <SearchIcon
+            <Icon
+              icon="SearchIcon"
               className="size-5 text-neutral-400 group-focus-within:text-purple-500 transition-colors"
             />
           </div>
@@ -126,7 +119,8 @@
             <div
               class="p-6 bg-neutral-50 dark:bg-neutral-800/50 rounded-full mb-6"
             >
-              <PuzzleIcon
+              <Icon
+                icon="PuzzleIcon"
                 className="size-16 text-neutral-300 dark:text-neutral-600"
               />
             </div>
@@ -143,7 +137,7 @@
               onclick={() => PluginManager.openPluginsFolder()}
               class="px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-xl transition-all font-medium shadow-lg hover:shadow-purple-500/25 flex items-center gap-2"
             >
-              <FolderIcon className="size-5" />
+              <Icon icon="FolderIcon" className="size-5" />
               Open Plugins Folder
             </button>
           </div>
@@ -154,7 +148,7 @@
             <div
               class="p-4 bg-neutral-100 dark:bg-neutral-800 rounded-full mb-4"
             >
-              <SearchIcon className="size-8 text-neutral-400" />
+              <Icon icon="SearchIcon" className="size-8 text-neutral-400" />
             </div>
             <p class="text-neutral-500 dark:text-neutral-400 text-lg">
               No plugins match "<span
@@ -190,7 +184,7 @@
                         ? 'bg-gradient-to-br from-green-100 to-emerald-100 dark:from-green-900/30 dark:to-emerald-900/30 text-green-600 dark:text-green-400'
                         : 'bg-neutral-100 dark:bg-neutral-700 text-neutral-400 dark:text-neutral-500'}"
                     >
-                      <PuzzleIcon className="size-5" />
+                      <Icon icon="PuzzleIcon" className="size-5" />
                     </div>
                     <div class="min-w-0">
                       <h3
@@ -257,7 +251,7 @@
                       class="p-1.5 text-neutral-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors"
                       title="Delete plugin"
                     >
-                      <TrashIcon className="size-4" />
+                      <Icon icon="TrashIcon" className="size-4" />
                     </button>
                   </div>
                 </div>
@@ -280,7 +274,7 @@
                   <div
                     class="p-2 rounded-lg bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400"
                   >
-                    <TriangleWarningIcon className="size-5" />
+                    <Icon icon="TriangleWarningIcon" className="size-5" />
                   </div>
                   <div class="min-w-0 flex-1">
                     <h3
@@ -297,7 +291,7 @@
                     onclick={() => (pluginToDelete = plugin)}
                     class="p-1.5 text-red-400 hover:text-red-600 hover:bg-red-100 dark:hover:bg-red-900/30 rounded transition-colors"
                   >
-                    <TrashIcon className="size-4" />
+                    <Icon icon="TrashIcon" className="size-4" />
                   </button>
                 </div>
                 <div
@@ -320,14 +314,14 @@
             onclick={() => PluginManager.openPluginsFolder()}
             class="px-4 py-2 text-sm text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded-lg transition-colors font-medium flex items-center gap-2"
           >
-            <FolderIcon className="size-5" />
+            <Icon icon="FolderIcon" className="size-5" />
             Open Folder
           </button>
           <button
             onclick={() => PluginManager.reloadPlugins()}
             class="px-4 py-2 text-sm text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors font-medium flex items-center gap-2"
           >
-            <ArrowCircleIcon className="size-4" />
+            <Icon icon="ArrowCircleIcon" className="size-4" />
             Reload All
           </button>
         </div>
@@ -353,7 +347,10 @@
             <div
               class="mx-auto w-12 h-12 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mb-4"
             >
-              <TrashIcon className="size-6 text-red-600 dark:text-red-400" />
+              <Icon
+                icon="TrashIcon"
+                className="size-6 text-red-600 dark:text-red-400"
+              />
             </div>
             <h3 class="text-lg font-bold text-neutral-900 dark:text-white mb-2">
               Delete Plugin?

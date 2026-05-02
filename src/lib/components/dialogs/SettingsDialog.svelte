@@ -1,13 +1,9 @@
 <!-- Copyright 2026 Matthew Allen. Licensed under the Modified Apache License, Version 2.0. -->
 <script lang="ts">
+  import { Icon } from "../icons/index";
   import { onMount } from "svelte";
   import { cubicInOut } from "svelte/easing";
-  import {
-    CloseIcon,
-    SearchIcon,
-    ArrowCircleIcon,
-    TriangleWarningIcon,
-  } from "../icons/index";
+
   import { fade, fly } from "svelte/transition";
   import { resetSettings } from "../../../utils/settingsPersistence";
   import {
@@ -316,7 +312,8 @@
                 bind:value={searchQuery}
                 class="w-full pl-9 pr-3 py-2 bg-white dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
-              <SearchIcon
+              <Icon
+                icon="SearchIcon"
                 strokeWidth={1.5}
                 className="size-4 absolute left-3 top-2.5 text-neutral-400"
               />
@@ -348,7 +345,7 @@
               onclick={handleReset}
               class="w-full flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 bg-red-50 hover:bg-red-100 dark:bg-red-900/20 dark:hover:bg-red-900/30 rounded-lg transition-colors"
             >
-              <ArrowCircleIcon className="size-4" />
+              <Icon icon="ArrowCircleIcon" className="size-4" />
               Reset Defaults
             </button>
           </div>
@@ -381,7 +378,7 @@
                 aria-label="Close settings"
                 class="p-1 rounded hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors text-neutral-500"
               >
-                <CloseIcon className="size-6" />
+                <Icon icon="CloseIcon" className="size-6" />
               </button>
             </div>
           </div>
@@ -395,7 +392,8 @@
             <div
               class="mb-6 p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/50 rounded-lg flex gap-3"
             >
-              <TriangleWarningIcon
+              <Icon
+                icon="TriangleWarningIcon"
                 className="size-5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5"
               />
               <div class="text-sm text-amber-900 dark:text-amber-100">

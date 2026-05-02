@@ -1,17 +1,10 @@
 <!-- Copyright 2026 Matthew Allen. Licensed under the Modified Apache License, Version 2.0. -->
 <!-- src/lib/components/filemanager/FileContextMenu.svelte -->
 <script lang="ts">
+  import { Icon } from "../icons/index";
   import { createEventDispatcher, onMount, tick } from "svelte";
   import { fade } from "svelte/transition";
   import { menuNavigation } from "../../actions/menuNavigation";
-  import {
-    ArrowRightIcon,
-    ArrowDownTrayIcon,
-    PenIcon,
-    DocumentIcon,
-    ArrowCircleIcon,
-    TrashIcon,
-  } from "../icons";
 
   interface Props {
     x: number;
@@ -106,7 +99,7 @@
     onclick={() => dispatch("action", "open")}
     class="w-full text-left px-4 py-2 hover:bg-neutral-100 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-200 flex items-center gap-2"
   >
-    <ArrowRightIcon className="size-4" />
+    <Icon icon="ArrowRightIcon" className="size-4" />
     Open
   </button>
 
@@ -115,7 +108,7 @@
       onclick={() => dispatch("action", "save-to")}
       class="w-full text-left px-4 py-2 hover:bg-neutral-100 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-200 flex items-center gap-2"
     >
-      <ArrowDownTrayIcon className="size-4" />
+      <Icon icon="ArrowDownTrayIcon" className="size-4" />
       Save Current to File
     </button>
   {/if}
@@ -125,7 +118,7 @@
     onclick={() => dispatch("action", "rename")}
     class="w-full text-left px-4 py-2 hover:bg-neutral-100 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-200 flex items-center gap-2"
   >
-    <PenIcon className="size-4" strokeWidth={1.5} />
+    <Icon icon="PenIcon" className="size-4" strokeWidth={1.5} />
     Rename
   </button>
 
@@ -134,7 +127,7 @@
       onclick={() => dispatch("action", "duplicate")}
       class="w-full text-left px-4 py-2 hover:bg-neutral-100 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-200 flex items-center gap-2"
     >
-      <DocumentIcon className="size-4" strokeWidth={1.5} />
+      <Icon icon="DocumentIcon" className="size-4" strokeWidth={1.5} />
       Duplicate
     </button>
 
@@ -144,7 +137,7 @@
     >
       <!-- Need to flip vertically or similar for Mirror vs Reverse, we'll use ArrowCircleIcon or reverse its scale.
       <!-- Since ArrowCircleIcon is symmetrical, we'll just use it for both for now to replace SVG, or ArrowRightIcon -->
-      <ArrowCircleIcon className="size-4" strokeWidth={1.5} />
+      <Icon icon="ArrowCircleIcon" className="size-4" strokeWidth={1.5} />
       Mirror Copy
     </button>
 
@@ -152,7 +145,7 @@
       onclick={() => dispatch("action", "reverse")}
       class="w-full text-left px-4 py-2 hover:bg-neutral-100 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-200 flex items-center gap-2"
     >
-      <ArrowCircleIcon className="size-4" strokeWidth={1.5} />
+      <Icon icon="ArrowCircleIcon" className="size-4" strokeWidth={1.5} />
       Reverse Copy
     </button>
   {/if}
@@ -162,7 +155,7 @@
     onclick={() => dispatch("action", "delete")}
     class="w-full text-left px-4 py-2 hover:bg-red-50 dark:hover:bg-red-900/20 text-red-600 dark:text-red-400 flex items-center gap-2"
   >
-    <TrashIcon className="size-4" strokeWidth={1.5} />
+    <Icon icon="TrashIcon" className="size-4" strokeWidth={1.5} />
     Delete
   </button>
 </div>

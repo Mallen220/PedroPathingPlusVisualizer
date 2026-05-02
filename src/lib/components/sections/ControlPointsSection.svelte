@@ -1,5 +1,6 @@
 <!-- Copyright 2026 Matthew Allen. Licensed under the Modified Apache License, Version 2.0. -->
 <script lang="ts">
+  import { Icon } from "../icons/index";
   import random from "lodash/random";
   import {
     snapToGrid,
@@ -11,10 +12,6 @@
   import { settingsStore } from "../../projectStore";
   import { toUser, toField } from "../../../utils/coordinates";
   import type { Line } from "../../../types/index";
-  import ChevronDownIcon from "../icons/ChevronDownIcon.svelte";
-  import ChevronUpIcon from "../icons/ChevronUpIcon.svelte";
-  import PlusIcon from "../icons/PlusIcon.svelte";
-  import ViewListIcon from "../icons/ViewListIcon.svelte";
   import {
     reorderSequence,
     getClosestTarget,
@@ -165,7 +162,8 @@
       aria-expanded={!collapsed}
       aria-controls="control-points-list-{lineIdx}"
     >
-      <ChevronDownIcon
+      <Icon
+        icon="ChevronDownIcon"
         className="size-3 transition-transform duration-200 {collapsed
           ? '-rotate-90'
           : 'rotate-0'}"
@@ -190,7 +188,7 @@
       disabled={line.locked}
       aria-label="Add Control Point"
     >
-      <PlusIcon className="size-3" strokeWidth={2.5} />
+      <Icon icon="PlusIcon" className="size-3" strokeWidth={2.5} />
       Add
     </button>
   </div>
@@ -223,7 +221,7 @@
             <div
               class="cursor-grab active:cursor-grabbing text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 pl-1"
             >
-              <ViewListIcon className="w-4 h-4" />
+              <Icon icon="ViewListIcon" className="w-4 h-4" />
             </div>
           {/if}
 
@@ -252,7 +250,7 @@
                   class="p-0.5 hover:bg-neutral-50 dark:hover:bg-neutral-700 text-neutral-500 dark:text-neutral-400 disabled:opacity-30 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
                   disabled={idx === 0 || line.locked}
                 >
-                  <ChevronUpIcon className="size-3" />
+                  <Icon icon="ChevronUpIcon" className="size-3" />
                 </button>
                 <div
                   class="w-px h-3 bg-neutral-200 dark:bg-neutral-700"
@@ -270,7 +268,7 @@
                   disabled={idx === line.controlPoints.length - 1 ||
                     line.locked}
                 >
-                  <ChevronDownIcon className="size-3" />
+                  <Icon icon="ChevronDownIcon" className="size-3" />
                 </button>
               </div>
 

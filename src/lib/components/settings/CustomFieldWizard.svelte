@@ -1,9 +1,9 @@
 <!-- Copyright 2026 Matthew Allen. Licensed under the Modified Apache License, Version 2.0. -->
 <script lang="ts">
+  import { Icon } from "../icons/index";
   import { fade, fly } from "svelte/transition";
   import { cubicInOut } from "svelte/easing";
   import type { CustomFieldConfig } from "../../../types";
-  import { CloseIcon, PhotoIcon } from "../icons";
 
   interface Props {
     isOpen?: boolean;
@@ -260,7 +260,7 @@
           aria-label="Close"
           class="text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded"
         >
-          <CloseIcon className="h-6 w-6" />
+          <Icon icon="CloseIcon" className="h-6 w-6" />
         </button>
       </div>
 
@@ -286,7 +286,10 @@
           <div
             class="flex flex-col items-center justify-center h-64 border-2 border-dashed border-neutral-300 dark:border-neutral-700 rounded-lg bg-neutral-50 dark:bg-neutral-800/50"
           >
-            <PhotoIcon className="h-12 w-12 text-neutral-400 mb-4" />
+            <Icon
+              icon="PhotoIcon"
+              className="h-12 w-12 text-neutral-400 mb-4"
+            />
             <div class="w-full max-w-sm mb-4">
               <label
                 for="mapName"

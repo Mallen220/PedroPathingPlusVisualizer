@@ -110,3 +110,6 @@ export { default as CriticalIcon } from "./CriticalIcon.svelte";
 export { default as DisabledIcon } from "./DisabledIcon.svelte";
 export { default as EllipsisVerticalIcon } from "./EllipsisVerticalIcon.svelte";
 export { default as KeyboardIcon } from "./KeyboardIcon.svelte";
+
+export * from "./icon-map";
+export { default as Icon } from "./Icon.svelte";

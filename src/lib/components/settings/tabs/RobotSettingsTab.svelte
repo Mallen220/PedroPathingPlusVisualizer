@@ -1,11 +1,11 @@
 <!-- Copyright 2026 Matthew Allen. Licensed under the Modified Apache License, Version 2.0. -->
 <script lang="ts">
+  import { Icon } from "../../icons/index";
   import SettingsItem from "../../dialogs/SettingsItem.svelte";
   import { DEFAULT_SETTINGS } from "../../../../config/defaults";
   import type { Settings } from "../../../../types/index";
   import RobotProfileManager from "../../settings/RobotProfileManager.svelte";
   import { notification } from "../../../../stores";
-  import { CloseIcon, RobotPlaceholderIcon } from "../../icons";
 
   interface Props {
     settings: Settings;
@@ -349,7 +349,7 @@
         {:else}
           <!-- show the green square with directional arrows when no-image mode is active -->
           <div class="w-full h-full flex items-center justify-center">
-            <RobotPlaceholderIcon className="w-[80%] h-[80%]" />
+            <Icon icon="RobotPlaceholderIcon" className="w-[80%] h-[80%]" />
           </div>
         {/if}
         {#if settings.robotImage && settings.robotImage !== "/robot.png" && settings.robotImage !== "none"}
@@ -360,7 +360,7 @@
             }}
             class="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors"
           >
-            <CloseIcon className="size-3" strokeWidth={3} />
+            <Icon icon="CloseIcon" className="size-3" strokeWidth={3} />
           </button>
         {/if}
       </div>

@@ -1,6 +1,6 @@
 <!-- Copyright 2026 Matthew Allen. Licensed under the Modified Apache License, Version 2.0. -->
 <script lang="ts">
-  import { ChevronRightIcon, PlusIcon } from "../icons/index";
+  import { Icon } from "../icons/index";
 
   interface Props {
     title: string;
@@ -30,7 +30,8 @@
     title="{collapsed ? 'Show' : 'Hide'} {title}"
     aria-expanded={!collapsed}
   >
-    <ChevronRightIcon
+    <Icon
+      icon="ChevronRightIcon"
       className="size-4 transition-transform {collapsed
         ? 'rotate-0'
         : 'rotate-90'}"
@@ -50,7 +51,7 @@
       title="Add Item"
       aria-label="Add Item to {title}"
     >
-      <PlusIcon className="size-4" />
+      <Icon icon="PlusIcon" className="size-4" />
       Add
     </button>
   {/if}

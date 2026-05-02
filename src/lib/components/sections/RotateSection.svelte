@@ -1,5 +1,6 @@
 <!-- Copyright 2026 Matthew Allen. Licensed under the Modified Apache License, Version 2.0. -->
 <script lang="ts">
+  import { Icon } from "../icons/index";
   import { selectedPointId, selectedLineId } from "../../../stores";
   import DeleteButtonWithConfirm from "../common/DeleteButtonWithConfirm.svelte";
   import type { SequenceRotateItem, SequenceItem } from "../../../types/index";
@@ -11,18 +12,6 @@
   import { tooltipPortal } from "../../actions/portal";
   import { actionRegistry } from "../../actionRegistry";
   import { getSmallButtonClass } from "../../../utils/buttonStyles";
-  import {
-    ChevronRightIcon,
-    LinkIcon,
-    EyeIcon,
-    EyeSlashIcon,
-    LockIcon,
-    UnlockIcon,
-    ArrowUpIcon,
-    ArrowDownIcon,
-    ClockIcon,
-    PlusIcon,
-  } from "../icons";
 
   interface Props {
     rotate: SequenceRotateItem;
@@ -143,7 +132,8 @@
         aria-label="{collapsed ? 'Expand' : 'Collapse'} rotate"
         aria-expanded={!collapsed}
       >
-        <ChevronRightIcon
+        <Icon
+          icon="ChevronRightIcon"
           className="size-3.5 transition-transform duration-200 {collapsed
             ? 'rotate-0'
             : 'rotate-90'}"
@@ -177,7 +167,7 @@
               onmouseenter={(e) => handleRotateHoverEnter(e, rotate.id)}
               onmouseleave={handleRotateHoverLeave}
             >
-              <LinkIcon className="w-3.5 h-3.5" />
+              <Icon icon="LinkIcon" className="w-3.5 h-3.5" />
               {#if hoveredRotateId === rotate.id}
                 <div
                   use:tooltipPortal={hoveredRotateAnchor}
@@ -214,9 +204,13 @@
         aria-label={isHidden ? "Show Rotate" : "Hide Rotate"}
       >
         {#if isHidden}
-          <EyeSlashIcon className="size-4 text-neutral-400" strokeWidth={2} />
+          <Icon
+            icon="EyeSlashIcon"
+            className="size-4 text-neutral-400"
+            strokeWidth={2}
+          />
         {:else}
-          <EyeIcon className="size-4" strokeWidth={2} />
+          <Icon icon="EyeIcon" className="size-4" strokeWidth={2} />
         {/if}
       </button>
 
@@ -241,9 +235,9 @@
         aria-label={rotate.locked ? "Unlock Rotate" : "Lock Rotate"}
       >
         {#if rotate.locked}
-          <LockIcon className="size-4 text-amber-500" />
+          <Icon icon="LockIcon" className="size-4 text-amber-500" />
         {:else}
-          <UnlockIcon className="size-4" strokeWidth={2} />
+          <Icon icon="UnlockIcon" className="size-4" strokeWidth={2} />
         {/if}
       </button>
 
@@ -266,7 +260,7 @@
           title="Move Up"
           aria-label="Move Up"
         >
-          <ArrowUpIcon className="size-3.5" />
+          <Icon icon="ArrowUpIcon" className="size-3.5" />
         </button>
         <button
           onclick={(e) => {
@@ -278,7 +272,7 @@
           title="Move Down"
           aria-label="Move Down"
         >
-          <ArrowDownIcon className="size-3.5" />
+          <Icon icon="ArrowDownIcon" className="size-3.5" />
         </button>
       </div>
 
@@ -303,7 +297,8 @@
           Heading (deg)
         </label>
         <div class="relative">
-          <ClockIcon
+          <Icon
+            icon="ClockIcon"
             className="absolute left-2.5 top-1/2 -translate-y-1/2 size-4 text-neutral-400"
           />
           <input
@@ -344,7 +339,7 @@
               title={`Add ${def.label} After`}
               aria-label={`Add ${def.label} After`}
             >
-              <PlusIcon className="size-3" />
+              <Icon icon="PlusIcon" className="size-3" />
               {def.label}
             </button>
           {/if}

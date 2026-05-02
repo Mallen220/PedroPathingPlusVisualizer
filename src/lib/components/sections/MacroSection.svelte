@@ -1,5 +1,6 @@
 <!-- Copyright 2026 Matthew Allen. Licensed under the Modified Apache License, Version 2.0. -->
 <script lang="ts">
+  import { Icon } from "../icons/index";
   import { selectedPointId, selectedLineId } from "../../../stores";
   import { slide } from "svelte/transition";
   import DeleteButtonWithConfirm from "../common/DeleteButtonWithConfirm.svelte";
@@ -7,18 +8,6 @@
   import type { SequenceMacroItem, SequenceItem } from "../../../types/index";
   import { actionRegistry } from "../../actionRegistry";
   import { getSmallButtonClass } from "../../../utils/buttonStyles";
-  import {
-    ChevronRightIcon,
-    EyeIcon,
-    EyeSlashIcon,
-    LockIcon,
-    UnlockIcon,
-    ArrowUpIcon,
-    ArrowDownIcon,
-    PlusIcon,
-    ChevronDownIcon,
-    LinkIcon,
-  } from "../icons";
 
   // onInsertAfter was previously an exported prop but unused internally.
   // If external code depends on its presence, export it as a const to avoid Svelte unused-export warning.
@@ -121,7 +110,8 @@
         aria-label="{collapsed ? 'Expand' : 'Collapse'} macro"
         aria-expanded={!collapsed}
       >
-        <ChevronRightIcon
+        <Icon
+          icon="ChevronRightIcon"
           className="size-3.5 transition-transform duration-200 {collapsed
             ? 'rotate-0'
             : 'rotate-90'}"
@@ -171,9 +161,13 @@
         aria-label={isHidden ? "Show Macro" : "Hide Macro"}
       >
         {#if isHidden}
-          <EyeSlashIcon className="size-4 text-neutral-400" strokeWidth={2} />
+          <Icon
+            icon="EyeSlashIcon"
+            className="size-4 text-neutral-400"
+            strokeWidth={2}
+          />
         {:else}
-          <EyeIcon className="size-4" strokeWidth={2} />
+          <Icon icon="EyeIcon" className="size-4" strokeWidth={2} />
         {/if}
       </button>
 
@@ -195,9 +189,9 @@
         class="p-1.5 rounded-md hover:bg-neutral-100 dark:hover:bg-neutral-700 text-neutral-400 transition-colors"
       >
         {#if macro.locked}
-          <LockIcon className="size-4 text-teal-500" />
+          <Icon icon="LockIcon" className="size-4 text-teal-500" />
         {:else}
-          <UnlockIcon className="size-4" strokeWidth={2} />
+          <Icon icon="UnlockIcon" className="size-4" strokeWidth={2} />
         {/if}
       </button>
 
@@ -220,7 +214,7 @@
           title="Move Up"
           aria-label="Move Up"
         >
-          <ArrowUpIcon className="size-3.5" />
+          <Icon icon="ArrowUpIcon" className="size-3.5" />
         </button>
         <button
           onclick={(e) => {
@@ -232,7 +226,7 @@
           title="Move Down"
           aria-label="Move Down"
         >
-          <ArrowDownIcon className="size-3.5" />
+          <Icon icon="ArrowDownIcon" className="size-3.5" />
         </button>
       </div>
 
@@ -247,7 +241,7 @@
           aria-label="Unlink Macro"
           class="p-1.5 rounded-md hover:bg-neutral-100 dark:hover:bg-neutral-700 text-neutral-400 disabled:opacity-30 disabled:hover:bg-transparent transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
         >
-          <LinkIcon className="size-4" />
+          <Icon icon="LinkIcon" className="size-4" />
         </button>
       {/if}
 
@@ -290,7 +284,8 @@
               : "bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300"
           }`}
         >
-          <ChevronDownIcon
+          <Icon
+            icon="ChevronDownIcon"
             className="size-3.5 transition-transform duration-200 {showTransforms
               ? 'rotate-180'
               : ''}"
@@ -339,7 +334,7 @@
               class={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium ${getSmallButtonClass(color)}`}
               title={`Add ${def.label} After`}
             >
-              <PlusIcon className="size-3" />
+              <Icon icon="PlusIcon" className="size-3" />
               {def.label}
             </button>
           {/if}

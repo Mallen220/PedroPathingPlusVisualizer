@@ -1,13 +1,7 @@
 <!-- Copyright 2026 Matthew Allen. Licensed under the Modified Apache License, Version 2.0. -->
 <!-- src/lib/components/filemanager/FileManagerToolbar.svelte -->
 <script lang="ts">
-  import {
-    SearchIcon,
-    SortNameIcon,
-    ClockIcon,
-    ViewListIcon,
-    ViewGridIcon,
-  } from "../icons";
+  import { Icon } from "../icons/index";
 
   interface Props {
     searchQuery?: string;
@@ -44,7 +38,7 @@
       <div
         class="absolute inset-y-0 left-0 pl-2 flex items-center pointer-events-none text-neutral-400"
       >
-        <SearchIcon className="size-4" strokeWidth={2} />
+        <Icon icon="SearchIcon" className="size-4" strokeWidth={2} />
       </div>
       <input
         type="text"
@@ -57,31 +51,29 @@
 
     <!-- Sort Toggle -->
     <button
-      onclick={() =>
-        onsortchange?.(sortMode === "name" ? "date" : "name")}
+      onclick={() => onsortchange?.(sortMode === "name" ? "date" : "name")}
       class="p-1.5 text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-200 rounded hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors shrink-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
       title={`Sort by ${sortMode === "name" ? "Date" : "Name"}`}
       aria-label={`Sort by ${sortMode === "name" ? "Date" : "Name"}`}
     >
       {#if sortMode === "name"}
-        <SortNameIcon className="size-5" strokeWidth={2} />
+        <Icon icon="SortNameIcon" className="size-5" strokeWidth={2} />
       {:else}
-        <ClockIcon className="size-5" />
+        <Icon icon="ClockIcon" className="size-5" />
       {/if}
     </button>
 
     <!-- View Toggle -->
     <button
-      onclick={() =>
-        onviewchange?.(viewMode === "list" ? "grid" : "list")}
+      onclick={() => onviewchange?.(viewMode === "list" ? "grid" : "list")}
       class="p-1.5 text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-200 rounded hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors shrink-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
       title={`Switch to ${viewMode === "list" ? "Grid" : "List"} View`}
       aria-label={`Switch to ${viewMode === "list" ? "Grid" : "List"} View`}
     >
       {#if viewMode === "list"}
-        <ViewListIcon className="size-5" strokeWidth={2} />
+        <Icon icon="ViewListIcon" className="size-5" strokeWidth={2} />
       {:else}
-        <ViewGridIcon className="size-5" strokeWidth={2} />
+        <Icon icon="ViewGridIcon" className="size-5" strokeWidth={2} />
       {/if}
     </button>
   </div>

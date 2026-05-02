@@ -1,6 +1,6 @@
 <!-- Copyright 2026 Matthew Allen. Licensed under the Modified Apache License, Version 2.0. -->
 <script lang="ts">
-  import { ResetIcon } from "../icons/index";
+  import { Icon } from "../icons/index";
 
   interface Props {
     label: string;
@@ -65,7 +65,7 @@
           onclick={onReset}
           aria-label="Reset {label}"
         >
-          <ResetIcon className="w-4 h-4" />
+          <Icon icon="ResetIcon" className="w-4 h-4" />
         </button>
       {/if}
     </div>
@@ -90,7 +90,7 @@
               onclick={onReset}
               aria-label="Reset {label}"
             >
-              <ResetIcon className="w-4 h-4" />
+              <Icon icon="ResetIcon" className="w-4 h-4" />
             </button>
           {/if}
         </div>

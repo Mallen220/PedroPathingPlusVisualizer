@@ -1,5 +1,6 @@
 <!-- Copyright 2026 Matthew Allen. Licensed under the Modified Apache License, Version 2.0. -->
 <script lang="ts">
+  import { Icon } from "../icons/index";
   import type { Point, Settings } from "../../../types/index";
   import { selectedPointId, focusRequest } from "../../../stores";
   import { linesStore } from "../../../lib/projectStore";
@@ -13,10 +14,6 @@
   import HeadingControls from "../HeadingControls.svelte";
 
   import CollapseAllButton from "../tools/CollapseAllButton.svelte";
-  import LockIcon from "../icons/LockIcon.svelte";
-  import MapPinIcon from "../icons/MapPinIcon.svelte";
-  import PlusIcon from "../icons/PlusIcon.svelte";
-  import UnlockIcon from "../icons/UnlockIcon.svelte";
 
   interface Props {
     startPoint: Point;
@@ -108,7 +105,10 @@
   <div class="flex items-center justify-between">
     <div class="flex items-center gap-2">
       <div class="bg-neutral-100 dark:bg-neutral-700 p-1.5 rounded-lg">
-        <MapPinIcon className="size-4 text-neutral-500 dark:text-neutral-400" />
+        <Icon
+          icon="MapPinIcon"
+          className="size-4 text-neutral-500 dark:text-neutral-400"
+        />
       </div>
       <span class="text-sm font-bold text-neutral-700 dark:text-neutral-200"
         >STARTING POINT</span
@@ -129,9 +129,13 @@
         class="ml-1 p-1 rounded hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500"
       >
         {#if startPoint.locked}
-          <LockIcon className="size-4 text-amber-500" />
+          <Icon icon="LockIcon" className="size-4 text-amber-500" />
         {:else}
-          <UnlockIcon className="size-4 text-neutral-400" strokeWidth={2} />
+          <Icon
+            icon="UnlockIcon"
+            className="size-4 text-neutral-400"
+            strokeWidth={2}
+          />
         {/if}
       </button>
     </div>
@@ -229,7 +233,7 @@
       title={`Add Path${getShortcutFromSettings(settings, "add-path-start")}`}
       class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 hover:bg-green-100 dark:hover:bg-green-900/30 transition-colors border border-green-200 dark:border-green-800/30 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-1 dark:focus:ring-offset-neutral-900"
     >
-      <PlusIcon className="size-3" strokeWidth={2} />
+      <Icon icon="PlusIcon" className="size-3" strokeWidth={2} />
       Path
     </button>
     <button
@@ -238,7 +242,7 @@
       title={`Add Wait${getShortcutFromSettings(settings, "add-wait-start")}`}
       class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 hover:bg-amber-100 dark:hover:bg-amber-900/30 transition-colors border border-amber-200 dark:border-amber-800/30 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-1 dark:focus:ring-offset-neutral-900"
     >
-      <PlusIcon className="size-3" strokeWidth={2} />
+      <Icon icon="PlusIcon" className="size-3" strokeWidth={2} />
       Wait
     </button>
     <button
@@ -247,7 +251,7 @@
       title={`Add Rotate${getShortcutFromSettings(settings, "add-rotate-start")}`}
       class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-pink-50 dark:bg-pink-900/20 text-pink-600 dark:text-pink-400 hover:bg-pink-100 dark:hover:bg-pink-900/30 transition-colors border border-pink-200 dark:border-pink-800/30 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:ring-offset-1 dark:focus:ring-offset-neutral-900"
     >
-      <PlusIcon className="size-3" strokeWidth={2} />
+      <Icon icon="PlusIcon" className="size-3" strokeWidth={2} />
       Rotate
     </button>
   </div>

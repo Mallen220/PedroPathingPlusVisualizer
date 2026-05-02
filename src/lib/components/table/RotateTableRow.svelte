@@ -1,12 +1,7 @@
 <!-- Copyright 2026 Matthew Allen. Licensed under the Modified Apache License, Version 2.0. -->
 <script lang="ts">
+  import { Icon } from "../icons/index";
   import type { SequenceRotateItem, SequenceItem } from "../../../types";
-  import TrashIcon from "../icons/TrashIcon.svelte";
-  import Bars3Icon from "../icons/Bars3Icon.svelte";
-  import LinkIcon from "../icons/LinkIcon.svelte";
-  import TriangleWarningIcon from "../icons/TriangleWarningIcon.svelte";
-  import LockIcon from "../icons/LockIcon.svelte";
-  import UnlockIcon from "../icons/UnlockIcon.svelte";
   import { isRotateLinked } from "../../../utils/pointLinking";
   import { transformAngle } from "../../../utils/math";
   import { focusRequest } from "../../../stores";
@@ -113,7 +108,7 @@
   <td
     class="w-8 px-2 py-2 text-center cursor-grab active:cursor-grabbing text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300"
   >
-    <Bars3Icon className="w-4 h-4 mx-auto" />
+    <Icon icon="Bars3Icon" className="w-4 h-4 mx-auto" />
   </td>
   <td class="px-3 py-2">
     <div class="relative w-full max-w-[160px]">
@@ -134,7 +129,7 @@
           class="absolute right-1 top-1/2 -translate-y-1/2 text-pink-500 cursor-help flex items-center justify-center"
           title="Linked Rotate: Same Name = Shared Degrees"
         >
-          <LinkIcon className="w-3.5 h-3.5" />
+          <Icon icon="LinkIcon" className="w-3.5 h-3.5" />
         </div>
       {/if}
     </div>
@@ -163,7 +158,7 @@
           aria-label="Normalize angle"
           class="p-0.5 rounded hover:bg-yellow-100 dark:hover:bg-yellow-900/30 text-yellow-600 dark:text-yellow-400 transition-colors"
         >
-          <TriangleWarningIcon className="size-4" />
+          <Icon icon="TriangleWarningIcon" className="size-4" />
         </button>
       {/if}
     </div>
@@ -181,9 +176,9 @@
       aria-pressed={isLocked}
     >
       {#if isLocked}
-        <LockIcon className="size-5 stroke-yellow-500" />
+        <Icon icon="LockIcon" className="size-5 stroke-yellow-500" />
       {:else}
-        <UnlockIcon className="size-5 stroke-gray-400" />
+        <Icon icon="UnlockIcon" className="size-5 stroke-gray-400" />
       {/if}
     </button>
 
@@ -198,7 +193,7 @@
         aria-label="Delete rotate"
         class="inline-flex items-center justify-center h-6 w-6 p-0.5 rounded transition-colors text-neutral-400 hover:text-red-600 hover:bg-neutral-50 dark:hover:bg-neutral-800"
       >
-        <TrashIcon className="size-4" strokeWidth={2} />
+        <Icon icon="TrashIcon" className="size-4" strokeWidth={2} />
       </button>
     {:else}
       <span class="h-6 w-6" aria-hidden="true"></span>

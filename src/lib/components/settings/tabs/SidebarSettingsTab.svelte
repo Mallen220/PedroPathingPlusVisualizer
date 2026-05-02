@@ -184,7 +184,10 @@
   let commandSearchQuery = $state("");
 
   const ICON_COMPONENT_MAP: Record<string, Component<any>> = {
-    ...ICONS,
+    ...Object.fromEntries(
+      Object.entries(ICONS).filter(([k]) => k !== "iconMap" && k !== "Icon"),
+    ),
+
     Arrow: ICONS.ArrowRightIcon,
     Plus: ICONS.PlusIcon,
     Save: ICONS.SaveIcon,

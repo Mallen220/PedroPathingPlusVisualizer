@@ -1,5 +1,6 @@
 <!-- Copyright 2026 Matthew Allen. Licensed under the Modified Apache License, Version 2.0. -->
 <script lang="ts">
+  import { Icon } from "./icons/index";
   import { onMount, onDestroy } from "svelte";
   import { get } from "svelte/store";
   import Two from "two.js";
@@ -103,16 +104,6 @@
   import type { Line, Point, BasePoint } from "../../types/index";
   import MathTools from "../MathTools.svelte";
   import FieldCoordinates from "./FieldCoordinates.svelte";
-  import {
-    ArrowUpIcon,
-    ChevronRightIcon,
-    SpinnerIcon,
-    DocumentIcon,
-    PlusIcon,
-    MinusIcon,
-    ResetZoomIcon,
-    ExitPresentationModeIcon,
-  } from "./icons";
 
   interface Props {
     // State from props
@@ -2545,7 +2536,8 @@
                   opacity: ${isSwerve ? 0.8 : Math.abs(val) > 0.05 ? 0.8 : 0.2};
                 `}
               >
-                <ArrowUpIcon
+                <Icon
+                  icon="ArrowUpIcon"
                   strokeWidth={3}
                   width={arrowSize.toString()}
                   height={arrowSize.toString()}
@@ -2560,7 +2552,8 @@
           <div
             style="position:absolute; top:50%; left:50%; transform: translate(-50%, -50%); color: rgba(34, 197, 94, 1.0);"
           >
-            <ChevronRightIcon
+            <Icon
+              icon="ChevronRightIcon"
               className="w-6 h-6"
               strokeWidth={3}
               style="filter: drop-shadow(0px 0px 2px rgba(255,255,255,0.8));"
@@ -2588,7 +2581,8 @@
               style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: {settings.fakeHeadingArrowColor ||
                 '#ffffff'};"
             >
-              <ChevronRightIcon
+              <Icon
+                icon="ChevronRightIcon"
                 className="w-6 h-6"
                 strokeWidth={3}
                 style="filter: drop-shadow(0px 0px 2px rgba(255,255,255,0.8));"
@@ -2640,7 +2634,8 @@
             style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: {settings.fakeHeadingArrowColor ||
               '#ffffff'}; opacity: 0.5;"
           >
-            <ChevronRightIcon
+            <Icon
+              icon="ChevronRightIcon"
               className="w-6 h-6"
               strokeWidth={3}
               style="filter: drop-shadow(0px 0px 2px rgba(255,255,255,0.4));"
@@ -2683,10 +2678,10 @@
             title={isDiffMode ? "Exit Diff Mode" : "Compare with Saved"}
           >
             {#if $isLoadingDiff}
-              <SpinnerIcon className="animate-spin w-4 h-4" />
+              <Icon icon="SpinnerIcon" className="animate-spin w-4 h-4" />
             {:else}
               <!-- Diff Icon -->
-              <DocumentIcon className="w-4 h-4" />
+              <Icon icon="DocumentIcon" className="w-4 h-4" />
             {/if}
           </button>
           {#if !settings.lockFieldView}
@@ -2708,7 +2703,7 @@
             aria-label="Zoom in"
             title="Zoom In (Cmd/Ctrl + +)"
           >
-            <PlusIcon className="w-4 h-4" />
+            <Icon icon="PlusIcon" className="w-4 h-4" />
           </button>
           <button
             class="w-7 h-7 flex items-center justify-center rounded hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-200 transition-colors"
@@ -2724,7 +2719,7 @@
             aria-label="Zoom out"
             title="Zoom Out (Cmd/Ctrl + -)"
           >
-            <MinusIcon className="w-4 h-4" />
+            <Icon icon="MinusIcon" className="w-4 h-4" />
           </button>
           <button
             class="w-7 h-7 flex items-center justify-center rounded hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-200 transition-colors"
@@ -2736,7 +2731,7 @@
             aria-label="Reset zoom"
             title="Reset Zoom (Cmd/Ctrl + 0)"
           >
-            <ResetZoomIcon className="w-4 h-4" />
+            <Icon icon="ResetZoomIcon" className="w-4 h-4" />
           </button>
         {/if}
       </div>
@@ -2766,7 +2761,7 @@
             aria-label="Zoom in"
             title="Zoom In"
           >
-            <PlusIcon className="w-5 h-5" />
+            <Icon icon="PlusIcon" className="w-5 h-5" />
           </button>
           <button
             class="w-8 h-8 flex items-center justify-center rounded hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-200 transition-colors"
@@ -2782,7 +2777,7 @@
             aria-label="Zoom out"
             title="Zoom Out"
           >
-            <MinusIcon className="w-5 h-5" />
+            <Icon icon="MinusIcon" className="w-5 h-5" />
           </button>
           <button
             class="w-8 h-8 flex items-center justify-center rounded hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-200 transition-colors"
@@ -2794,7 +2789,7 @@
             aria-label="Reset zoom"
             title="Reset Zoom"
           >
-            <ResetZoomIcon className="w-5 h-5" />
+            <Icon icon="ResetZoomIcon" className="w-5 h-5" />
           </button>
           <div class="h-px bg-neutral-200 dark:bg-neutral-700 my-0.5"></div>
         {/if}
@@ -2804,7 +2799,7 @@
           aria-label="Exit Presentation Mode"
           title="Exit Presentation Mode (Alt+P)"
         >
-          <ExitPresentationModeIcon className="w-5 h-5" />
+          <Icon icon="ExitPresentationModeIcon" className="w-5 h-5" />
         </button>
       </div>
     </div>

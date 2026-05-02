@@ -1,6 +1,6 @@
 <!-- Copyright 2026 Matthew Allen. Licensed under the Modified Apache License, Version 2.0. -->
 <script lang="ts">
-  import TrashIcon from "../icons/TrashIcon.svelte";
+  import { Icon } from "../icons/index";
   import { onDestroy } from "svelte";
   import { fade } from "svelte/transition";
 
@@ -81,7 +81,7 @@
     >
   {:else}
     <div in:fade={{ duration: 150 }} class="flex items-center justify-center">
-      <TrashIcon className="size-4" strokeWidth={2} />
+      <Icon icon="TrashIcon" className="size-4" strokeWidth={2} />
     </div>
   {/if}
 </button>

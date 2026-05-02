@@ -1,8 +1,8 @@
 <!-- Copyright 2026 Matthew Allen. Licensed under the Modified Apache License, Version 2.0. -->
 <script lang="ts">
+  import { Icon } from "../icons/index";
   import { fade, fly } from "svelte/transition";
   import { cubicInOut } from "svelte/easing";
-  import { CloseIcon, SearchIcon, InfoIcon, ArrowCircleIcon } from "../icons";
   import type { Settings } from "../../../types/index";
   import { DEFAULT_KEY_BINDINGS } from "../../../config/keybindings";
   import { notification } from "../../../stores";
@@ -342,7 +342,7 @@
             <div
               class="p-2 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg text-indigo-600 dark:text-indigo-400"
             >
-              <InfoIcon className="size-6" />
+              <Icon icon="InfoIcon" className="size-6" />
             </div>
             <div>
               <h2
@@ -361,14 +361,15 @@
             class="p-2 rounded-lg hover:bg-neutral-200 dark:hover:bg-neutral-800 text-neutral-500 dark:text-neutral-400 transition-colors"
             aria-label="Close dialog"
           >
-            <CloseIcon className="size-6" />
+            <Icon icon="CloseIcon" className="size-6" />
           </button>
         </div>
 
         <div class="flex gap-4">
           <!-- Search -->
           <div class="relative flex-1">
-            <SearchIcon
+            <Icon
+              icon="SearchIcon"
               className="absolute left-3 top-1/2 -translate-y-1/2 size-5 text-neutral-400"
             />
             <input
@@ -397,7 +398,7 @@
           <div
             class="flex flex-col items-center justify-center h-full text-neutral-500 dark:text-neutral-400"
           >
-            <InfoIcon className="size-12 mb-2 opacity-50" />
+            <Icon icon="InfoIcon" className="size-12 mb-2 opacity-50" />
             <p>No shortcuts found matching your search.</p>
           </div>
         {:else}
@@ -454,7 +455,11 @@
                           class="text-xs text-neutral-400 hover:text-red-500 transition-colors"
                           title="Reset to default"
                         >
-                          <ArrowCircleIcon className="size-4" strokeWidth={2} />
+                          <Icon
+                            icon="ArrowCircleIcon"
+                            className="size-4"
+                            strokeWidth={2}
+                          />
                         </button>
                       {/if}
 
@@ -523,7 +528,7 @@
           <div
             class="flex items-center gap-2 text-xs text-neutral-500 dark:text-neutral-400"
           >
-            <InfoIcon className="size-4" />
+            <Icon icon="InfoIcon" className="size-4" />
             <span
               >Click a keybinding to record a new one. Press <kbd
                 class="font-mono bg-neutral-200 dark:bg-neutral-700 px-1 rounded"

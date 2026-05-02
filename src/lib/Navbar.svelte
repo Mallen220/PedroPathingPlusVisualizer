@@ -1,5 +1,6 @@
 <!-- Copyright 2026 Matthew Allen. Licensed under the Modified Apache License, Version 2.0. -->
 <script lang="ts">
+  import { Icon } from "./components/icons/index";
   import type { Point, Line, Settings, SequenceItem } from "../types";
   import { onMount, onDestroy } from "svelte";
   import {
@@ -10,21 +11,12 @@
     showStrategySheet,
     gitStatusStore,
   } from "../stores";
-  import { SaveIcon } from "./components/icons";
   import {
     calculatePathTime,
     getShortcutFromSettings,
     isBrowser,
   } from "../utils";
-  import {
-    ChevronUpIcon,
-    PenIcon,
-    PlusIcon,
-    ValidIcon,
-    SidebarLeftIcon,
-    SidebarBottomIcon,
-    SidebarHiddenIcon,
-  } from "./components/icons";
+
   import { formatDisplayDistance } from "../utils/coordinates";
   import { customExportersStore } from "./pluginsStore";
   import { navbarActionRegistry } from "./registries";
@@ -208,7 +200,7 @@
         title={`Save${getShortcutFromSettings(settings, "save-project")}`}
         aria-label="Save"
       >
-        <SaveIcon className="size-5" />
+        <Icon icon="SaveIcon" className="size-5" />
       </button>
 
       <button
@@ -218,7 +210,8 @@
         aria-label="Save options"
         onclick={toggleSaveDropdown}
       >
-        <ChevronUpIcon
+        <Icon
+          icon="ChevronUpIcon"
           className="size-3 transition-transform {saveDropdownOpen
             ? 'rotate-180'
             : ''}"
@@ -305,13 +298,13 @@
               }}
             >
               {#if $gitStatusStore[$currentFilePath] === "modified"}
-                <PenIcon className="size-3 flex-shrink-0" />
+                <Icon icon="PenIcon" className="size-3 flex-shrink-0" />
                 <span>Modified</span>
               {:else if $gitStatusStore[$currentFilePath] === "staged"}
-                <ValidIcon className="size-3 flex-shrink-0" />
+                <Icon icon="ValidIcon" className="size-3 flex-shrink-0" />
                 <span>Staged</span>
               {:else}
-                <PlusIcon className="size-3 flex-shrink-0" />
+                <Icon icon="PlusIcon" className="size-3 flex-shrink-0" />
                 <span>Untracked</span>
               {/if}
             </button>
@@ -412,7 +405,8 @@
         class="flex items-center gap-1 bg-purple-600 hover:bg-purple-700 text-white px-3 py-2 rounded-md shadow-sm transition-colors text-sm font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:ring-offset-2"
       >
         <span>Export</span>
-        <ChevronUpIcon
+        <Icon
+          icon="ChevronUpIcon"
           className="size-3 transition-transform {exportMenuOpen
             ? 'rotate-180'
             : ''}"
@@ -519,13 +513,13 @@
     >
       {#if showSidebar && isLargeScreen}
         <!-- Sidebar visible: show icon with left pane -->
-        <SidebarLeftIcon className="size-5" />
+        <Icon icon="SidebarLeftIcon" className="size-5" />
       {:else if showSidebar && !isLargeScreen}
         <!-- Shown on vertical: icon with bottom pane -->
-        <SidebarBottomIcon className="size-5" />
+        <Icon icon="SidebarBottomIcon" className="size-5" />
       {:else}
         <!-- Hidden: Empty Box -->
-        <SidebarHiddenIcon className="size-5" />
+        <Icon icon="SidebarHiddenIcon" className="size-5" />
       {/if}
     </button>
   </div>

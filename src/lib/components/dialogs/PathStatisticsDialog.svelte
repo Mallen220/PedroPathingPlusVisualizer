@@ -1,5 +1,6 @@
 <!-- Copyright 2026 Matthew Allen. Licensed under the Modified Apache License, Version 2.0. -->
 <script lang="ts">
+  import { Icon } from "../icons/index";
   import {
     analyzePathSegment,
     formatTime,
@@ -12,14 +13,7 @@
     Settings,
   } from "../../../types/index";
   import { slide } from "svelte/transition";
-  import {
-    CloseIcon,
-    SuccessIcon,
-    ErrorIcon,
-    WarningIcon,
-    InfoIcon,
-    ClipboardIcon,
-  } from "../icons";
+
   import { getAngularDifference } from "../../../utils/math";
   import { notification } from "../../../stores";
   import { formatDisplayDistance } from "../../../utils/coordinates";
@@ -667,14 +661,14 @@
             : "Copy as Markdown"}
           aria-label="Copy content"
         >
-          <ClipboardIcon className="size-5" />
+          <Icon icon="ClipboardIcon" className="size-5" />
         </button>
         <button
           onclick={onClose}
           class="p-2 text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300 rounded-lg hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
           aria-label="Close"
         >
-          <CloseIcon className="size-5" />
+          <Icon icon="CloseIcon" className="size-5" />
         </button>
       </div>
     </div>
@@ -903,7 +897,7 @@
             <div
               class="flex flex-col items-center justify-center h-full text-neutral-500"
             >
-              <SuccessIcon className="size-12 mb-2 opacity-50" />
+              <Icon icon="SuccessIcon" className="size-12 mb-2 opacity-50" />
               <p>No warnings or insights detected.</p>
             </div>
           {:else}
@@ -920,11 +914,11 @@
                 >
                   <div class="mt-0.5">
                     {#if insight.type === "error"}
-                      <ErrorIcon className="size-5" />
+                      <Icon icon="ErrorIcon" className="size-5" />
                     {:else if insight.type === "warning"}
-                      <WarningIcon className="size-5" />
+                      <Icon icon="WarningIcon" className="size-5" />
                     {:else}
-                      <InfoIcon className="size-5" />
+                      <Icon icon="InfoIcon" className="size-5" />
                     {/if}
                   </div>
                   <div class="flex-1">

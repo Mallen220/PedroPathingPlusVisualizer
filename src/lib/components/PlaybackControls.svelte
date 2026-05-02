@@ -1,5 +1,6 @@
 <!-- Copyright 2026 Matthew Allen. Licensed under the Modified Apache License, Version 2.0. -->
 <script lang="ts">
+  import { Icon } from "./icons/index";
   import type { Settings } from "../../types";
   import { fly } from "svelte/transition";
   import { cubicInOut } from "svelte/easing";
@@ -8,19 +9,7 @@
   import { onMount, onDestroy } from "svelte";
   import { loopRangeActiveStore, loopRangeStore } from "../../lib/projectStore";
   import ContextMenu from "./tools/ContextMenu.svelte";
-  import {
-    ArrowCircleIcon,
-    MapPinIcon,
-    ChevronRightIcon,
-    SkipToEndIcon,
-    ChevronDownIcon,
-    ScissorsIcon,
-    SkipToStartIcon,
-    ChevronLeftIcon,
-    PlayIcon,
-    PauseIcon,
-    CheckIcon,
-  } from "./icons";
+
   interface Props {
     playing: boolean;
     play: () => any;
@@ -424,7 +413,8 @@
             aria-hidden="true"
           >
             <!-- Small rotate icon (explicit rotates are pink) -->
-            <ArrowCircleIcon
+            <Icon
+              icon="ArrowCircleIcon"
               className="w-4 h-4 rounded-full bg-white dark:bg-neutral-900 text-pink-500"
             />
           </div>
@@ -534,7 +524,8 @@
           <div
             class="absolute inset-0 flex items-center justify-center pointer-events-none"
           >
-            <MapPinIcon
+            <Icon
+              icon="MapPinIcon"
               className="w-4 h-4 drop-shadow-md transition-transform group-hover:scale-125"
               style={item.color ? `color: ${item.color}` : ""}
             />
@@ -580,7 +571,8 @@
         tabindex="0"
       >
         <span class="font-medium">{(playbackSpeed ?? 1).toFixed(2)}x</span>
-        <ChevronDownIcon
+        <Icon
+          icon="ChevronDownIcon"
           className="size-4 text-neutral-500 dark:text-neutral-400 {showSpeedMenu
             ? 'rotate-180'
             : ''}"
@@ -614,7 +606,8 @@
               >
                 <span>{s.toFixed(2)}x</span>
                 {#if Math.abs(s - (playbackSpeed || 1)) < 1e-6}
-                  <CheckIcon
+                  <Icon
+                    icon="CheckIcon"
                     className="size-4 text-green-600"
                     strokeWidth={1.5}
                   />
@@ -635,7 +628,7 @@
         onclick={splitPath}
         class="p-1 rounded-md text-neutral-400 hover:text-neutral-600 dark:text-neutral-500 dark:hover:text-neutral-300 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500"
       >
-        <ScissorsIcon className="size-5" />
+        <Icon icon="ScissorsIcon" className="size-5" />
       </button>
 
       <!-- Skip to Start -->
@@ -645,7 +638,7 @@
         onclick={() => handleSeek(0)}
         class="p-1 rounded-md text-neutral-400 hover:text-neutral-600 dark:text-neutral-500 dark:hover:text-neutral-300 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500"
       >
-        <SkipToStartIcon className="size-4" />
+        <Icon icon="SkipToStartIcon" className="size-4" />
       </button>
 
       <!-- Step Back -->
@@ -655,7 +648,7 @@
         onclick={() => step(-0.5)}
         class="p-1 rounded-md text-neutral-400 hover:text-neutral-600 dark:text-neutral-500 dark:hover:text-neutral-300 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500"
       >
-        <ChevronLeftIcon className="size-5" />
+        <Icon icon="ChevronLeftIcon" className="size-5" />
       </button>
 
       <!-- Play/Pause -->
@@ -675,12 +668,17 @@
         class="p-1 rounded-full bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-green-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-neutral-900"
       >
         {#if !playing}
-          <PlayIcon
+          <Icon
+            icon="PlayIcon"
             className="size-8 stroke-green-600 pl-0.5"
             strokeWidth={2}
           />
         {:else}
-          <PauseIcon className="size-8 stroke-green-600" strokeWidth={2} />
+          <Icon
+            icon="PauseIcon"
+            className="size-8 stroke-green-600"
+            strokeWidth={2}
+          />
         {/if}
       </button>
 
@@ -691,7 +689,7 @@
         onclick={() => step(0.5)}
         class="p-1 rounded-md text-neutral-400 hover:text-neutral-600 dark:text-neutral-500 dark:hover:text-neutral-300 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500"
       >
-        <ChevronRightIcon className="size-5" />
+        <Icon icon="ChevronRightIcon" className="size-5" />
       </button>
 
       <!-- Skip to End -->
@@ -701,7 +699,7 @@
         onclick={() => handleSeek(100)}
         class="p-1 rounded-md text-neutral-400 hover:text-neutral-600 dark:text-neutral-500 dark:hover:text-neutral-300 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500"
       >
-        <SkipToEndIcon className="size-4" />
+        <Icon icon="SkipToEndIcon" className="size-4" />
       </button>
     </div>
 
@@ -756,7 +754,11 @@
         class="rounded-md focus:outline-none focus-visible:ring-2 focus-visible:ring-green-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-neutral-900"
         aria-live="polite"
       >
-        <ArrowCircleIcon className="size-6 stroke-blue-500" strokeWidth={2} />
+        <Icon
+          icon="ArrowCircleIcon"
+          className="size-6 stroke-blue-500"
+          strokeWidth={2}
+        />
       </button>
     </div>
   </div>

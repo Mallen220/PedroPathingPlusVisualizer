@@ -1,5 +1,6 @@
 <!-- Copyright 2026 Matthew Allen. Licensed under the Modified Apache License, Version 2.0. -->
 <script lang="ts">
+  import { Icon } from "./lib/components/icons/index";
   import { onMount, onDestroy } from "svelte";
   import { get } from "svelte/store";
   import * as d3 from "d3";
@@ -38,7 +39,6 @@
   import FeedbackDialog from "./lib/components/dialogs/FeedbackDialog.svelte";
   import RatingDialog from "./lib/components/dialogs/RatingDialog.svelte";
   import TransformDialog from "./lib/components/dialogs/TransformDialog.svelte";
-  import { CloudArrowDownIcon } from "./lib/components/icons";
 
   // Stores
   import {
@@ -1844,7 +1844,8 @@
     <div
       class="bg-white dark:bg-neutral-800 p-8 rounded-xl shadow-2xl flex flex-col items-center animate-bounce-slight"
     >
-      <CloudArrowDownIcon
+      <Icon
+        icon="CloudArrowDownIcon"
         className="h-16 w-16 text-purple-600 dark:text-purple-400 mb-4"
       />
       <h2 class="text-2xl font-bold mb-2 dark:text-white">Drop to Open</h2>

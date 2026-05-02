@@ -1,5 +1,6 @@
 <!-- Copyright 2026 Matthew Allen. Licensed under the Modified Apache License, Version 2.0. -->
 <script lang="ts">
+  import { Icon } from "../icons/index";
   import type {
     Point,
     Line,
@@ -46,7 +47,6 @@
   } from "../../../utils/pointLinking";
   import PathActionButtons from "./PathActionButtons.svelte";
   import DebugPanel from "../common/DebugPanel.svelte";
-  import MapPinIcon from "../icons/MapPinIcon.svelte";
   import { isSupportedProjectFileName } from "../../../utils/fileExtensions";
 
   interface Props {
@@ -943,7 +943,11 @@
     >
       {#snippet icon()}
         <div>
-          <MapPinIcon className="size-6 text-neutral-400" strokeWidth={1.5} />
+          <Icon
+            icon="MapPinIcon"
+            className="size-6 text-neutral-400"
+            strokeWidth={1.5}
+          />
         </div>
       {/snippet}
       {#snippet action()}

@@ -1,6 +1,7 @@
 // Copyright 2026 Matthew Allen. Licensed under the Modified Apache License, Version 2.0.
 import { defineConfig } from "vite";
 import { svelte } from "@sveltejs/vite-plugin-svelte";
+import Icons from "unplugin-icons/vite";
 
 export default defineConfig({
   server: {
@@ -9,7 +10,12 @@ export default defineConfig({
   preview: {
     cors: false,
   },
-  plugins: [svelte()],
+  plugins: [
+    svelte(),
+    Icons({
+      compiler: "svelte",
+    }),
+  ],
   resolve: {
     alias: {
       "prettier/doc": "prettier/doc.js",

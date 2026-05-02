@@ -1,10 +1,10 @@
 <!-- Copyright 2026 Matthew Allen. Licensed under the Modified Apache License, Version 2.0. -->
 <!-- src/lib/components/tabs/PathActionButtons.svelte -->
 <script lang="ts">
+  import { Icon } from "../icons/index";
   import { actionRegistry } from "../../actionRegistry";
   import { getButtonFilledClass } from "../../../utils/buttonStyles";
   import { getShortcutFromSettings } from "../../../utils";
-  import { PlusIcon, ClockIcon, ArrowCircleIcon } from "../icons";
 
   interface Props {
     settings: any;
@@ -33,13 +33,13 @@
       aria-label={`Add ${def.label}`}
     >
       {#if def.kind === "path"}
-        <PlusIcon className="size-4" strokeWidth={2} />
+        <Icon icon="PlusIcon" className="size-4" strokeWidth={2} />
       {:else if def.kind === "wait"}
-        <ClockIcon className="size-4" />
+        <Icon icon="ClockIcon" className="size-4" />
       {:else if def.kind === "rotate"}
-        <ArrowCircleIcon className="size-4" />
+        <Icon icon="ArrowCircleIcon" className="size-4" />
       {:else}
-        <PlusIcon className="size-4" strokeWidth={2} />
+        <Icon icon="PlusIcon" className="size-4" strokeWidth={2} />
       {/if}
       Add {def.label}
     </button>

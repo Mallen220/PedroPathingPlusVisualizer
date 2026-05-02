@@ -1,9 +1,9 @@
 <!-- Copyright 2026 Matthew Allen. Licensed under the Modified Apache License, Version 2.0. -->
 <script lang="ts">
+  import { Icon } from "../icons/index";
   import { createEventDispatcher } from "svelte";
 
   import { saveAutoPathsDirectory } from "../../../utils/directorySettings";
-  import { RocketIcon, FolderIcon } from "../icons";
 
   interface Props {
     show?: boolean;
@@ -41,7 +41,7 @@
       <div
         class="w-20 h-20 shrink-0 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center text-green-600 dark:text-green-400 mb-8"
       >
-        <FolderIcon className="w-6 h-6" />
+        <Icon icon="FolderIcon" className="w-6 h-6" />
       </div>
       <h2
         id="setup-title"
@@ -67,7 +67,7 @@
         <h3
           class="text-lg font-bold text-neutral-900 dark:text-white mb-2 flex items-center gap-2"
         >
-          <RocketIcon className="w-6 h-6" /> Install TurtleTracerLib
+          <Icon icon="RocketIcon" className="w-6 h-6" /> Install TurtleTracerLib
         </h3>
         <p
           class="text-neutral-600 dark:text-neutral-300 text-sm leading-relaxed"
@@ -87,7 +87,7 @@
         class="px-8 py-3 bg-green-600 hover:bg-green-700 text-white font-bold rounded-xl shadow-lg hover:shadow-xl hover:shadow-green-500/20 transform hover:-translate-y-1 transition-all duration-200 flex items-center gap-3 text-lg w-full sm:w-auto justify-center"
         onclick={selectDirectory}
       >
-        <FolderIcon className="w-6 h-6" />
+        <Icon icon="FolderIcon" className="w-6 h-6" />
         Select Directory...
       </button>
     </div>

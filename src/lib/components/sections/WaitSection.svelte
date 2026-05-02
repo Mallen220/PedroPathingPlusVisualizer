@@ -1,5 +1,6 @@
 <!-- Copyright 2026 Matthew Allen. Licensed under the Modified Apache License, Version 2.0. -->
 <script lang="ts">
+  import { Icon } from "../icons/index";
   import { selectedPointId, selectedLineId } from "../../../stores";
   import DeleteButtonWithConfirm from "../common/DeleteButtonWithConfirm.svelte";
   import type { SequenceWaitItem, SequenceItem } from "../../../types/index";
@@ -11,15 +12,6 @@
   import { tooltipPortal } from "../../actions/portal";
   import { actionRegistry } from "../../actionRegistry";
   import { getSmallButtonClass } from "../../../utils/buttonStyles";
-  import ChevronDownIcon from "../icons/ChevronDownIcon.svelte";
-  import ChevronUpIcon from "../icons/ChevronUpIcon.svelte";
-  import EyeIcon from "../icons/EyeIcon.svelte";
-  import EyeSlashIcon from "../icons/EyeSlashIcon.svelte";
-  import InfoIcon from "../icons/InfoIcon.svelte";
-  import LockIcon from "../icons/LockIcon.svelte";
-  import PlusIcon from "../icons/PlusIcon.svelte";
-  import UnlockIcon from "../icons/UnlockIcon.svelte";
-  import ClockIcon from "../icons/ClockIcon.svelte";
 
   // Markers collapsed state (for "Collapse All" deep behavior)
 
@@ -144,7 +136,8 @@
         aria-label="{collapsed ? 'Expand' : 'Collapse'} wait"
         aria-expanded={!collapsed}
       >
-        <ChevronDownIcon
+        <Icon
+          icon="ChevronDownIcon"
           strokeWidth={2.5}
           className="size-3.5 transition-transform duration-200 {collapsed
             ? '-rotate-90'
@@ -179,7 +172,7 @@
               onmouseenter={(e) => handleWaitHoverEnter(e, wait.id)}
               onmouseleave={handleWaitHoverLeave}
             >
-              <InfoIcon className="w-3.5 h-3.5" />
+              <Icon icon="InfoIcon" className="w-3.5 h-3.5" />
               {#if hoveredWaitId === wait.id}
                 <div
                   use:tooltipPortal={hoveredWaitAnchor}
@@ -216,9 +209,13 @@
         aria-label={isHidden ? "Show Wait" : "Hide Wait"}
       >
         {#if isHidden}
-          <EyeSlashIcon className="size-4 text-neutral-400" strokeWidth={2} />
+          <Icon
+            icon="EyeSlashIcon"
+            className="size-4 text-neutral-400"
+            strokeWidth={2}
+          />
         {:else}
-          <EyeIcon className="size-4" strokeWidth={2} />
+          <Icon icon="EyeIcon" className="size-4" strokeWidth={2} />
         {/if}
       </button>
 
@@ -240,9 +237,9 @@
         class="p-1.5 rounded-md hover:bg-neutral-100 dark:hover:bg-neutral-700 text-neutral-400 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500"
       >
         {#if wait.locked}
-          <LockIcon className="size-4 text-amber-500" />
+          <Icon icon="LockIcon" className="size-4 text-amber-500" />
         {:else}
-          <UnlockIcon className="size-4" strokeWidth={2} />
+          <Icon icon="UnlockIcon" className="size-4" strokeWidth={2} />
         {/if}
       </button>
 
@@ -265,7 +262,7 @@
           title="Move Up"
           aria-label="Move Up"
         >
-          <ChevronUpIcon className="size-3.5" />
+          <Icon icon="ChevronUpIcon" className="size-3.5" />
         </button>
         <button
           onclick={(e) => {
@@ -277,7 +274,7 @@
           title="Move Down"
           aria-label="Move Down"
         >
-          <ChevronDownIcon className="size-3.5" />
+          <Icon icon="ChevronDownIcon" className="size-3.5" />
         </button>
       </div>
 
@@ -302,7 +299,8 @@
           Duration (ms)
         </label>
         <div class="relative">
-          <ClockIcon
+          <Icon
+            icon="ClockIcon"
             className="absolute left-2.5 top-1/2 -translate-y-1/2 size-4 text-neutral-400"
           />
           <input
@@ -343,7 +341,7 @@
               title={`Add ${def.label} After`}
               aria-label={`Add ${def.label} After`}
             >
-              <PlusIcon className="size-3" strokeWidth={2} />
+              <Icon icon="PlusIcon" className="size-3" strokeWidth={2} />
               {def.label}
             </button>
           {/if}

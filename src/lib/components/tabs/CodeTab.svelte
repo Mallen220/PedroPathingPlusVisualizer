@@ -1,5 +1,6 @@
 <!-- Copyright 2026 Matthew Allen. Licensed under the Modified Apache License, Version 2.0. -->
 <script lang="ts">
+  import { Icon } from "../icons/index";
   import type {
     Point,
     Line,
@@ -29,7 +30,6 @@
   import LoadingSpinner from "../common/LoadingSpinner.svelte";
   import pkg from "../../../../package.json";
   import { customExportersStore } from "../../pluginsStore";
-  import { CogIcon, DownloadIcon, CheckIcon, ClipboardIcon } from "../icons";
 
   // Register languages for core highlight.js
   hljs.registerLanguage("java", java);
@@ -409,7 +409,7 @@
       class="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-neutral-500"
       title="Open Settings"
     >
-      <CogIcon className="size-4" />
+      <Icon icon="CogIcon" className="size-4" />
       Auto Export Settings
     </button>
 
@@ -421,7 +421,7 @@
       disabled={!code}
       aria-disabled={!code}
     >
-      <DownloadIcon className="size-4" strokeWidth={2} />
+      <Icon icon="DownloadIcon" className="size-4" strokeWidth={2} />
       Download {format === "points" || format === "custom"
         ? ".txt"
         : format === "json"
@@ -441,10 +441,10 @@
         <LoadingSpinner size="sm" color="text-white" showText={false} />
         Generating...
       {:else if copyButtonText === "Copied!"}
-        <CheckIcon className="size-4" strokeWidth={2} />
+        <Icon icon="CheckIcon" className="size-4" strokeWidth={2} />
         Copied!
       {:else}
-        <ClipboardIcon className="size-4" strokeWidth={2} />
+        <Icon icon="ClipboardIcon" className="size-4" strokeWidth={2} />
         Copy Code
       {/if}
     </button>

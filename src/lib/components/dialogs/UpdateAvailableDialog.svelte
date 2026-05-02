@@ -1,5 +1,6 @@
 <!-- Copyright 2026 Matthew Allen. Licensed under the Modified Apache License, Version 2.0. -->
 <script lang="ts">
+  import { Icon } from "../icons/index";
   import { onMount } from "svelte";
   import { fade, scale } from "svelte/transition";
   import { cubicOut } from "svelte/easing";
@@ -13,14 +14,7 @@
   const showUpdateAvailableDialog = _showUpdateAvailableDialog;
   import MarkdownIt from "markdown-it";
   import DOMPurify from "dompurify";
-  import {
-    CloseIcon,
-    RocketIcon,
-    ListIcon,
-    ArrowDownTrayIcon,
-    MicrosoftStoreIcon,
-    ArrowRightIcon,
-  } from "../icons";
+
   import LoadingSpinner from "../common/LoadingSpinner.svelte";
 
   interface Props {
@@ -186,7 +180,7 @@
         class="absolute top-4 right-4 p-2 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-all z-10"
         aria-label="Close"
       >
-        <CloseIcon className="w-5 h-5" />
+        <Icon icon="CloseIcon" className="w-5 h-5" />
       </button>
 
       <div class="relative p-8 flex flex-col gap-6">
@@ -195,7 +189,7 @@
           <div
             class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-purple-100 to-indigo-100 dark:from-purple-900/30 dark:to-indigo-900/30 text-purple-600 dark:text-purple-400 mb-2 shadow-sm ring-1 ring-purple-100 dark:ring-purple-900/50"
           >
-            <RocketIcon className="w-8 h-8" />
+            <Icon icon="RocketIcon" className="w-8 h-8" />
           </div>
           <h2
             id="update-title"
@@ -223,7 +217,7 @@
                 class="bg-blue-100 dark:bg-blue-900/50 p-2 rounded-lg text-blue-600 dark:text-blue-400 shrink-0"
               >
                 <!-- Microsoft 4‑square logo (colored) — increased size -->
-                <MicrosoftStoreIcon className="w-6 h-6" />
+                <Icon icon="MicrosoftStoreIcon" className="w-6 h-6" />
               </div>
               <div class="flex-1">
                 <h3
@@ -242,7 +236,8 @@
                   class="mt-2 text-xs font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 inline-flex items-center gap-1 transition-colors group"
                 >
                   Get it for free
-                  <ArrowRightIcon
+                  <Icon
+                    icon="ArrowRightIcon"
                     className="h-3 w-3 transition-transform group-hover:translate-x-0.5"
                   />
                 </button>
@@ -256,7 +251,7 @@
           <div
             class="flex items-center gap-2 text-sm font-semibold text-neutral-900 dark:text-white"
           >
-            <ListIcon className="w-4 h-4 text-purple-500" />
+            <Icon icon="ListIcon" className="w-4 h-4 text-purple-500" />
             Release Notes
           </div>
           <div
@@ -280,7 +275,7 @@
             onclick={handleDownload}
             class="w-full py-3 px-4 bg-neutral-900 hover:bg-neutral-800 dark:bg-white dark:hover:bg-neutral-200 text-white dark:text-black font-semibold rounded-xl transition-all transform active:scale-[0.98] shadow-lg shadow-neutral-500/20 dark:shadow-none flex justify-center items-center gap-2"
           >
-            <ArrowDownTrayIcon className="w-5 h-5" />
+            <Icon icon="ArrowDownTrayIcon" className="w-5 h-5" />
             Download & Install
           </button>
 

@@ -1,24 +1,7 @@
 <!-- Copyright 2026 Matthew Allen. Licensed under the Modified Apache License, Version 2.0. -->
 <script lang="ts">
+  import { Icon } from "./icons/index";
   import type { Component } from "svelte";
-  import {
-    UndoIcon,
-    ClockIcon,
-    ProtractorIcon,
-    RedoIcon,
-    RulerIcon,
-    GridIcon,
-    OnionSkinIcon,
-    VelocityHeatmapIcon,
-    LockIcon,
-    UnlockIcon,
-    OnionSkinCurrentPathIcon,
-    DocumentPlusIcon,
-    CogIcon,
-    FeedbackIcon,
-    GithubIcon,
-    SidebarCollapseIcon,
-  } from "./icons";
 
   import {
     showFileManager,
@@ -48,7 +31,6 @@
   import { menuNavigation } from "../actions/menuNavigation";
   import { isBrowser } from "../../utils/platform";
   import {
-    MagnetIcon,
     FolderIcon,
     ListIcon,
     ArrowRightIcon,
@@ -64,13 +46,6 @@
     ZapIcon,
     BoxIcon,
     CompassIcon,
-    PresentationModeIcon,
-    RocketIcon,
-    QuestionMarkIcon,
-    PhotoIcon,
-    ExportGifIcon,
-    PuzzleIcon,
-    SearchIcon,
   } from "./icons";
   import * as ICONS from "./icons";
   import {
@@ -422,7 +397,7 @@
                 {@const SvelteComponent = ICON_COMPONENT_MAP[item.iconSvg]}
                 <SvelteComponent className="sidebar-icon flex-none" />
               {:else}
-                <StarIcon className="sidebar-icon flex-none" />
+                <Icon icon="StarIcon" className="sidebar-icon flex-none" />
               {/if}
             </div>
             {#if sidebarExpanded}
@@ -462,7 +437,7 @@
                 {#if item.iconComponent}
                   <item.iconComponent className="sidebar-icon flex-none" />
                 {:else}
-                  <FolderIcon className="sidebar-icon flex-none" />
+                  <Icon icon="FolderIcon" className="sidebar-icon flex-none" />
                 {/if}
               </div>
               {#if sidebarExpanded}
@@ -539,7 +514,8 @@
               <div
                 class="sidebar-icon flex-none flex items-center justify-center"
               >
-                <SearchIcon
+                <Icon
+                  icon="SearchIcon"
                   className="sidebar-icon-small flex-none"
                   strokeWidth={2}
                 />
@@ -583,7 +559,10 @@
                     className="sidebar-icon-small flex-none"
                   />
                 {:else}
-                  <UndoIcon className="sidebar-icon-small flex-none" />
+                  <Icon
+                    icon="UndoIcon"
+                    className="sidebar-icon-small flex-none"
+                  />
                 {/if}
               </div>
               {#if sidebarExpanded}
@@ -631,7 +610,10 @@
                       className="sidebar-icon-small flex-none"
                     />
                   {:else}
-                    <ClockIcon className="sidebar-icon-small flex-none" />
+                    <Icon
+                      icon="ClockIcon"
+                      className="sidebar-icon-small flex-none"
+                    />
                   {/if}
                 </div>
                 {#if sidebarExpanded}
@@ -723,7 +705,10 @@
               <div
                 class="sidebar-icon flex-none flex items-center justify-center"
               >
-                <RedoIcon className="sidebar-icon-small flex-none" />
+                <Icon
+                  icon="RedoIcon"
+                  className="sidebar-icon-small flex-none"
+                />
               </div>
               {#if sidebarExpanded}
                 <span class="ml-3 text-sm font-medium truncate"
@@ -799,7 +784,10 @@
               <div
                 class="sidebar-icon flex-none flex items-center justify-center"
               >
-                <RulerIcon className="sidebar-icon-small flex-none" />
+                <Icon
+                  icon="RulerIcon"
+                  className="sidebar-icon-small flex-none"
+                />
               </div>
               {#if sidebarExpanded}
                 <span class="ml-3 text-sm font-medium truncate"
@@ -836,7 +824,10 @@
               <div
                 class="sidebar-icon flex-none flex items-center justify-center"
               >
-                <ProtractorIcon className="sidebar-icon-small flex-none" />
+                <Icon
+                  icon="ProtractorIcon"
+                  className="sidebar-icon-small flex-none"
+                />
               </div>
               {#if sidebarExpanded}
                 <span class="ml-3 text-sm font-medium truncate"
@@ -864,9 +855,15 @@
                   class="sidebar-icon flex-none flex items-center justify-center"
                 >
                   {#if $protractorLockToRobot}
-                    <LockIcon className="sidebar-icon-small flex-none" />
+                    <Icon
+                      icon="LockIcon"
+                      className="sidebar-icon-small flex-none"
+                    />
                   {:else}
-                    <UnlockIcon className="sidebar-icon-small flex-none" />
+                    <Icon
+                      icon="UnlockIcon"
+                      className="sidebar-icon-small flex-none"
+                    />
                   {/if}
                 </div>
                 {#if sidebarExpanded}
@@ -903,7 +900,10 @@
               <div
                 class="sidebar-icon flex-none flex items-center justify-center"
               >
-                <GridIcon className="sidebar-icon-small flex-none" />
+                <Icon
+                  icon="GridIcon"
+                  className="sidebar-icon-small flex-none"
+                />
               </div>
               {#if sidebarExpanded}
                 <span class="ml-3 text-sm font-medium truncate"
@@ -926,7 +926,10 @@
                 <div
                   class="sidebar-icon flex-none flex items-center justify-center"
                 >
-                  <MagnetIcon className="sidebar-icon-small flex-none" />
+                  <Icon
+                    icon="MagnetIcon"
+                    className="sidebar-icon-small flex-none"
+                  />
                 </div>
                 {#if sidebarExpanded}
                   <span class="ml-3 text-xs truncate">Snap to Grid</span>
@@ -997,7 +1000,10 @@
               <div
                 class="sidebar-icon flex-none flex items-center justify-center"
               >
-                <OnionSkinIcon className="sidebar-icon-small flex-none" />
+                <Icon
+                  icon="OnionSkinIcon"
+                  className="sidebar-icon-small flex-none"
+                />
               </div>
               {#if sidebarExpanded}
                 <span class="ml-3 text-sm font-medium truncate"
@@ -1029,7 +1035,8 @@
                 <div
                   class="sidebar-icon flex-none flex items-center justify-center"
                 >
-                  <OnionSkinCurrentPathIcon
+                  <Icon
+                    icon="OnionSkinCurrentPathIcon"
                     isActive={settings.onionSkinCurrentPathOnly}
                     className="sidebar-icon-small flex-none"
                   />
@@ -1074,7 +1081,10 @@
               <div
                 class="sidebar-icon flex-none flex items-center justify-center"
               >
-                <VelocityHeatmapIcon className="sidebar-icon-small flex-none" />
+                <Icon
+                  icon="VelocityHeatmapIcon"
+                  className="sidebar-icon-small flex-none"
+                />
               </div>
               {#if sidebarExpanded}
                 <span class="ml-3 text-sm font-medium truncate"
@@ -1085,7 +1095,9 @@
           </div>
         {:else if item.id === "lockView"}
           <!-- Lock View -->
-          <div class="w-full flex justify-center {sidebarExpanded ? 'px-2' : ''}">
+          <div
+            class="w-full flex justify-center {sidebarExpanded ? 'px-2' : ''}"
+          >
             <button
               title={`Toggle Field View Lock${getShortcutFromSettings(settings, "toggle-lock-view")}`}
               aria-label="Toggle Field View Lock"
@@ -1102,15 +1114,25 @@
                 ? 'text-blue-500 bg-blue-50 dark:bg-blue-900/20'
                 : 'text-neutral-500 dark:text-neutral-400 hover:bg-neutral-200 dark:hover:bg-neutral-800'}"
             >
-              <div class="sidebar-icon flex-none flex items-center justify-center">
+              <div
+                class="sidebar-icon flex-none flex items-center justify-center"
+              >
                 {#if settings.lockFieldView}
-                  <LockIcon className="sidebar-icon-small flex-none" />
+                  <Icon
+                    icon="LockIcon"
+                    className="sidebar-icon-small flex-none"
+                  />
                 {:else}
-                  <UnlockIcon className="sidebar-icon-small flex-none" />
+                  <Icon
+                    icon="UnlockIcon"
+                    className="sidebar-icon-small flex-none"
+                  />
                 {/if}
               </div>
               {#if sidebarExpanded}
-                <span class="ml-3 text-sm font-medium truncate">{item.label}</span>
+                <span class="ml-3 text-sm font-medium truncate"
+                  >{item.label}</span
+                >
               {/if}
             </button>
           </div>
@@ -1141,7 +1163,10 @@
               <div
                 class="sidebar-icon flex-none flex items-center justify-center"
               >
-                <DocumentPlusIcon className="sidebar-icon flex-none" />
+                <Icon
+                  icon="DocumentPlusIcon"
+                  className="sidebar-icon flex-none"
+                />
               </div>
               {#if sidebarExpanded}
                 <span class="ml-3 text-sm font-medium truncate"
@@ -1177,7 +1202,7 @@
               <div
                 class="sidebar-icon flex-none flex items-center justify-center"
               >
-                <CogIcon className="sidebar-icon-small flex-none" />
+                <Icon icon="CogIcon" className="sidebar-icon-small flex-none" />
               </div>
               {#if sidebarExpanded}
                 <span class="ml-3 text-sm font-medium truncate"
@@ -1213,7 +1238,8 @@
               <div
                 class="sidebar-icon flex-none flex items-center justify-center"
               >
-                <FeedbackIcon
+                <Icon
+                  icon="FeedbackIcon"
                   className="sidebar-icon-small flex-none text-purple-600 dark:text-purple-400"
                 />
               </div>
@@ -1252,7 +1278,8 @@
               <div
                 class="sidebar-icon flex-none flex items-center justify-center"
               >
-                <GithubIcon
+                <Icon
+                  icon="GithubIcon"
                   className="sidebar-icon-small flex-none dark:fill-white"
                 />
               </div>
@@ -1296,7 +1323,8 @@
                     className="sidebar-icon-small flex-none"
                   />
                 {:else}
-                  <PresentationModeIcon
+                  <Icon
+                    icon="PresentationModeIcon"
                     className="sidebar-icon-small flex-none"
                   />
                 {/if}
@@ -1339,7 +1367,10 @@
                     className="sidebar-icon-small flex-none"
                   />
                 {:else}
-                  <PuzzleIcon className="sidebar-icon-small flex-none" />
+                  <Icon
+                    icon="PuzzleIcon"
+                    className="sidebar-icon-small flex-none"
+                  />
                 {/if}
               </div>
               {#if sidebarExpanded}
@@ -1380,7 +1411,10 @@
                     className="sidebar-icon-small flex-none"
                   />
                 {:else}
-                  <RocketIcon className="sidebar-icon-small flex-none" />
+                  <Icon
+                    icon="RocketIcon"
+                    className="sidebar-icon-small flex-none"
+                  />
                 {/if}
               </div>
               {#if sidebarExpanded}
@@ -1416,7 +1450,10 @@
               <div
                 class="sidebar-icon flex-none flex items-center justify-center"
               >
-                <QuestionMarkIcon className="sidebar-icon-small flex-none" />
+                <Icon
+                  icon="QuestionMarkIcon"
+                  className="sidebar-icon-small flex-none"
+                />
               </div>
               {#if sidebarExpanded}
                 <span class="ml-3 text-sm font-medium truncate"
@@ -1451,7 +1488,10 @@
               <div
                 class="sidebar-icon flex-none flex items-center justify-center"
               >
-                <PhotoIcon className="sidebar-icon-small flex-none" />
+                <Icon
+                  icon="PhotoIcon"
+                  className="sidebar-icon-small flex-none"
+                />
               </div>
               {#if sidebarExpanded}
                 <span class="ml-3 text-sm font-medium truncate"
@@ -1486,7 +1526,10 @@
               <div
                 class="sidebar-icon flex-none flex items-center justify-center"
               >
-                <ExportGifIcon className="sidebar-icon-small flex-none" />
+                <Icon
+                  icon="ExportGifIcon"
+                  className="sidebar-icon-small flex-none"
+                />
               </div>
               {#if sidebarExpanded}
                 <span class="ml-3 text-sm font-medium truncate"
@@ -1521,7 +1564,7 @@
               ? 'rotate-180'
               : ''}"
           >
-            <SidebarCollapseIcon className="sidebar-icon" />
+            <Icon icon="SidebarCollapseIcon" className="sidebar-icon" />
           </div>
         </div>
         {#if sidebarExpanded}

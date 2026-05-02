@@ -1,5 +1,6 @@
 <!-- Copyright 2026 Matthew Allen. Licensed under the Modified Apache License, Version 2.0. -->
 <script lang="ts">
+  import { Icon } from "../icons/index";
   import { tick } from "svelte";
   import type { Point, Line, SequenceItem, Settings } from "../../../types";
   import { fade, fly } from "svelte/transition";
@@ -10,7 +11,6 @@
     formatDisplayCoordinate,
   } from "../../../utils/coordinates";
   import { extraDataStore } from "../../projectStore";
-  import { CloseIcon, DocumentIcon, ArrowDownTrayIcon } from "../icons";
 
   interface Props {
     isOpen?: boolean;
@@ -519,14 +519,14 @@
             onclick={handlePrint}
             class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors"
           >
-            <DocumentIcon className="size-4" />
+            <Icon icon="DocumentIcon" className="size-4" />
             Print
           </button>
           <button
             onclick={handleDownloadPdf}
             class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-green-600 hover:bg-green-700 rounded-lg transition-colors"
           >
-            <ArrowDownTrayIcon className="size-4" />
+            <Icon icon="ArrowDownTrayIcon" className="size-4" />
             Download PDF
           </button>
           <button
@@ -534,7 +534,7 @@
             aria-label="Close"
             class="p-2 rounded-lg text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
           >
-            <CloseIcon className="size-5" />
+            <Icon icon="CloseIcon" className="size-5" />
           </button>
         </div>
       </div>

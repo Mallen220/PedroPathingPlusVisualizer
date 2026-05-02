@@ -1,5 +1,6 @@
 <!-- Copyright 2026 Matthew Allen. Licensed under the Modified Apache License, Version 2.0. -->
 <script lang="ts">
+  import { Icon } from "../icons/index";
   import type {
     Line,
     Point,
@@ -8,12 +9,7 @@
     Shape,
   } from "../../../types/index";
   import SectionHeader from "../common/SectionHeader.svelte";
-  import {
-    LockIcon,
-    SpinnerIcon,
-    ChevronRightSolidIcon,
-    PlayIcon,
-  } from "../icons/index";
+
   import {
     PathOptimizer,
     type OptimizationResult,
@@ -270,7 +266,8 @@
         <summary
           class="cursor-pointer font-medium hover:text-neutral-800 dark:hover:text-neutral-200 transition-colors list-none appearance-none [&::-webkit-details-marker]:hidden flex items-center gap-1"
         >
-          <ChevronRightSolidIcon
+          <Icon
+            icon="ChevronRightSolidIcon"
             className="size-3 transition-transform group-open:rotate-90 text-neutral-500 dark:text-neutral-400"
           />
           About Path Optimization
@@ -293,7 +290,8 @@
             class="flex justify-between items-center cursor-pointer list-none appearance-none [&::-webkit-details-marker]:hidden"
           >
             <div class="flex items-center gap-1">
-              <ChevronRightSolidIcon
+              <Icon
+                icon="ChevronRightSolidIcon"
                 className="size-3 transition-transform group-open:rotate-90 text-neutral-500 dark:text-neutral-400"
               />
               <span
@@ -340,7 +338,7 @@
                   >{line.name || `Path ${i + 1}`}</span
                 >
                 {#if line.locked}
-                  <LockIcon className="size-3 text-yellow-500" />
+                  <Icon icon="LockIcon" className="size-3 text-yellow-500" />
                 {/if}
               </label>
             {/each}
@@ -408,7 +406,8 @@
             disabled
             class="flex-1 px-4 py-2 bg-neutral-400 text-white rounded-md text-sm font-medium cursor-not-allowed flex items-center justify-center gap-2"
           >
-            <SpinnerIcon
+            <Icon
+              icon="SpinnerIcon"
               className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
             />
             Optimizing...
@@ -462,7 +461,7 @@
           onclick={startOptimization}
           class="w-full px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-md text-sm font-medium transition-colors flex items-center justify-center gap-2"
         >
-          <PlayIcon className="size-4" />
+          <Icon icon="PlayIcon" className="size-4" />
           Start Optimization
         </button>
       {/if}

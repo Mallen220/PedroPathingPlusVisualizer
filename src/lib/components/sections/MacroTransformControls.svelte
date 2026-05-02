@@ -1,15 +1,8 @@
 <!-- Copyright 2026 Matthew Allen. Licensed under the Modified Apache License, Version 2.0. -->
 <script lang="ts">
+  import { Icon } from "../icons/index";
   import { slide } from "svelte/transition";
   import type { SequenceMacroItem, Transformation } from "../../../types";
-  import {
-    ArrowsPointingOutIcon,
-    ArrowCircleIcon,
-    SwitchIcon,
-    ChevronUpIcon,
-    ChevronDownIcon,
-    TrashIcon,
-  } from "../icons";
 
   interface Props {
     macro: SequenceMacroItem;
@@ -339,11 +332,15 @@
             class="flex-none p-1 rounded bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400"
           >
             {#if t.type === "translate"}
-              <ArrowsPointingOutIcon className="size-3" strokeWidth={2} />
+              <Icon
+                icon="ArrowsPointingOutIcon"
+                className="size-3"
+                strokeWidth={2}
+              />
             {:else if t.type === "rotate"}
-              <ArrowCircleIcon className="size-3" strokeWidth={2} />
+              <Icon icon="ArrowCircleIcon" className="size-3" strokeWidth={2} />
             {:else}
-              <SwitchIcon className="size-3" strokeWidth={2} />
+              <Icon icon="SwitchIcon" className="size-3" strokeWidth={2} />
             {/if}
           </div>
 
@@ -372,7 +369,7 @@
               aria-label="Move transform up"
               class="p-0.5 text-neutral-400 hover:text-neutral-600 disabled:opacity-0"
             >
-              <ChevronUpIcon className="size-3" />
+              <Icon icon="ChevronUpIcon" className="size-3" />
             </button>
             <button
               onclick={() => moveTransform(i, 1)}
@@ -380,14 +377,14 @@
               aria-label="Move transform down"
               class="p-0.5 text-neutral-400 hover:text-neutral-600 disabled:opacity-0"
             >
-              <ChevronDownIcon className="size-3" />
+              <Icon icon="ChevronDownIcon" className="size-3" />
             </button>
             <button
               onclick={() => removeTransform(i)}
               aria-label="Remove transform"
               class="p-0.5 text-red-400 hover:text-red-600 ml-1"
             >
-              <TrashIcon className="size-3" />
+              <Icon icon="TrashIcon" className="size-3" />
             </button>
           </div>
         </div>

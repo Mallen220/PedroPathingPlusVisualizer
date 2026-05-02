@@ -1,8 +1,8 @@
 <!-- Copyright 2026 Matthew Allen. Licensed under the Modified Apache License, Version 2.0. -->
 <!-- src/lib/components/filemanager/FileManagerBreadcrumbs.svelte -->
 <script lang="ts">
+  import { Icon } from "../icons/index";
   import { createEventDispatcher, tick } from "svelte";
-  import { FolderIcon, UndoIcon } from "../icons";
   import { isBrowser } from "../../../utils/platform";
 
   interface Props {
@@ -100,7 +100,7 @@
         title="Go up one directory"
         aria-label="Go Up"
       >
-        <UndoIcon className="size-4" />
+        <Icon icon="UndoIcon" className="size-4" />
       </button>
     {/if}
     <div
@@ -121,7 +121,7 @@
         title="Change Directory"
         aria-label="Change Directory"
       >
-        <FolderIcon className="size-4" />
+        <Icon icon="FolderIcon" className="size-4" />
       </button>
     {/if}
   </div>

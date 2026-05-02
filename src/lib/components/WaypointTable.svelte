@@ -1,5 +1,6 @@
 <!-- Copyright 2026 Matthew Allen. Licensed under the Modified Apache License, Version 2.0. -->
 <script lang="ts">
+  import { Icon } from "./icons/index";
   import type {
     Point,
     Line,
@@ -32,23 +33,9 @@
   import { tick } from "svelte";
   import { derived } from "svelte/store";
   import { tooltipPortal } from "../actions/portal";
-  import TrashIcon from "./icons/TrashIcon.svelte";
   import ColorPicker from "./tools/ColorPicker.svelte";
   import ContextMenu from "./tools/ContextMenu.svelte";
-  import {
-    ClockIcon,
-    ArrowCircleIcon,
-    PlusIcon,
-    LockIcon,
-    UnlockIcon,
-    CheckIcon,
-    EyeIcon,
-    EyeSlashIcon,
-    ClipboardIcon,
-    Bars3Icon,
-    InfoIcon,
-    LinkIcon,
-  } from "./icons";
+
   import {
     makeId,
     generateName,
@@ -1324,9 +1311,13 @@
       >
         <span>{copyButtonText}</span>
         {#if copyButtonText === "Copied!"}
-          <CheckIcon className="size-6 text-green-500" strokeWidth={1.5} />
+          <Icon
+            icon="CheckIcon"
+            className="size-6 text-green-500"
+            strokeWidth={1.5}
+          />
         {:else}
-          <ClipboardIcon className="size-6" strokeWidth={1.5} />
+          <Icon icon="ClipboardIcon" className="size-6" strokeWidth={1.5} />
         {/if}
       </button>
     </div>
@@ -1432,7 +1423,7 @@
               title="Locked"
               class="inline-flex items-center justify-center h-6 w-6 text-neutral-400"
             >
-              <LockIcon className="h-4 w-4" />
+              <Icon icon="LockIcon" className="h-4 w-4" />
             </span>
           {:else}
             <span class="h-6 w-6" aria-hidden="true"></span>
@@ -1458,7 +1449,8 @@
                     : "Chain paths together"}
                   aria-label="Toggle Path Chain"
                 >
-                  <LinkIcon
+                  <Icon
+                    icon="LinkIcon"
                     className={`w-3.5 h-3.5 ${(item as any).isChain ? "text-green-500 dark:text-green-400" : "text-neutral-400 opacity-50"}`}
                     strokeWidth={(item as any).isChain ? 2.5 : 1.5}
                   />
@@ -1496,7 +1488,7 @@
               <td
                 class="w-8 px-2 py-2 text-center cursor-grab active:cursor-grabbing text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300"
               >
-                <Bars3Icon className="w-4 h-4 mx-auto" />
+                <Icon icon="Bars3Icon" className="w-4 h-4 mx-auto" />
               </td>
               <td class="px-3 py-2">
                 <div class="flex flex-row items-center gap-2">
@@ -1544,7 +1536,7 @@
                           handleStatsHoverEnter(e, line.id || null)}
                         onmouseleave={handleStatsHoverLeave}
                       >
-                        <InfoIcon className="w-3.5 h-3.5" />
+                        <Icon icon="InfoIcon" className="w-3.5 h-3.5" />
                         {#if hoveredStatsLineId === line.id}
                           <div
                             use:tooltipPortal={hoveredStatsAnchor}
@@ -1579,7 +1571,7 @@
                           handleLinkHoverEnter(e, line.id || null)}
                         onmouseleave={handleLinkHoverLeave}
                       >
-                        <LinkIcon className="w-3.5 h-3.5" />
+                        <Icon icon="LinkIcon" className="w-3.5 h-3.5" />
                         {#if hoveredLinkId === line.id}
                           <div
                             use:tooltipPortal={hoveredLinkAnchor}
@@ -1657,9 +1649,12 @@
                   class="inline-flex items-center justify-center h-6 w-6 p-0.5 rounded hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
                 >
                   {#if line.hidden}
-                    <EyeSlashIcon className="size-5 text-neutral-400" />
+                    <Icon
+                      icon="EyeSlashIcon"
+                      className="size-5 text-neutral-400"
+                    />
                   {:else}
-                    <EyeIcon className="size-5 text-gray-400" />
+                    <Icon icon="EyeIcon" className="size-5 text-gray-400" />
                   {/if}
                 </button>
 
@@ -1683,9 +1678,15 @@
                   aria-pressed={line.locked}
                 >
                   {#if line.locked}
-                    <LockIcon className="size-5 stroke-yellow-500" />
+                    <Icon
+                      icon="LockIcon"
+                      className="size-5 stroke-yellow-500"
+                    />
                   {:else}
-                    <UnlockIcon className="size-5 stroke-gray-400" />
+                    <Icon
+                      icon="UnlockIcon"
+                      className="size-5 stroke-gray-400"
+                    />
                   {/if}
                 </button>
 
@@ -1700,7 +1701,7 @@
                     aria-label="Delete path"
                     class="inline-flex items-center justify-center h-6 w-6 p-0.5 rounded transition-colors text-neutral-400 hover:text-red-600 hover:bg-neutral-50 dark:hover:bg-neutral-800"
                   >
-                    <TrashIcon className="size-4" strokeWidth={2} />
+                    <Icon icon="TrashIcon" className="size-4" strokeWidth={2} />
                   </button>
                 {:else}
                   <span class="h-6 w-6" aria-hidden="true"></span>
@@ -1765,7 +1766,7 @@
                       title="Locked"
                       class="inline-flex items-center justify-center h-6 w-6 text-neutral-400"
                     >
-                      <LockIcon className="h-4 w-4" />
+                      <Icon icon="LockIcon" className="h-4 w-4" />
                     </span>
                     <span class="h-6 w-6" aria-hidden="true"></span>
                   {:else}
@@ -1779,7 +1780,11 @@
                       aria-label="Delete control point"
                       class="inline-flex items-center justify-center h-6 w-6 p-0.5 rounded transition-colors text-neutral-400 hover:text-red-600 hover:bg-neutral-50 dark:hover:bg-neutral-800"
                     >
-                      <TrashIcon className="size-4" strokeWidth={2} />
+                      <Icon
+                        icon="TrashIcon"
+                        className="size-4"
+                        strokeWidth={2}
+                      />
                     </button>
                   {/if}
                 </td>
@@ -1820,7 +1825,8 @@
           >
             <div class="flex flex-col items-center gap-4">
               <div class="p-3 bg-neutral-100 dark:bg-neutral-800 rounded-full">
-                <PlusIcon
+                <Icon
+                  icon="PlusIcon"
                   className="size-6 text-neutral-400 strokeWidth={1.5}"
                 />
               </div>
@@ -1858,7 +1864,7 @@
       aria-label="Add new path segment"
       title={`Add new path segment${getShortcutFromSettings(settings, "add-path")}`}
     >
-      <PlusIcon className="size-3" strokeWidth={2} />
+      <Icon icon="PlusIcon" className="size-3" strokeWidth={2} />
       Add Path
     </button>
 
@@ -1872,12 +1878,12 @@
         >
           <!-- Render Icon based on kind for now as SVG string is not easily injectable here without raw HTML -->
           {#if def.kind === "wait"}
-            <ClockIcon className="size-3" />
+            <Icon icon="ClockIcon" className="size-3" />
           {:else if def.kind === "rotate"}
-            <ArrowCircleIcon className="size-3" />
+            <Icon icon="ArrowCircleIcon" className="size-3" />
           {:else}
             <!-- Fallback icon -->
-            <PlusIcon className="size-3" strokeWidth={2} />
+            <Icon icon="PlusIcon" className="size-3" strokeWidth={2} />
           {/if}
           Add {def.label}
         </button>

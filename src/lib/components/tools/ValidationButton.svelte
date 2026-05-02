@@ -1,16 +1,12 @@
 <!-- Copyright 2026 Matthew Allen. Licensed under the Modified Apache License, Version 2.0. -->
 <script lang="ts">
+  import { Icon } from "../icons/index";
   import {
     collisionMarkers,
     notification,
     forceShowValidation,
   } from "../../../stores";
   import { settingsStore } from "../../projectStore";
-  import ValidIcon from "../icons/ValidIcon.svelte";
-  import WarningIcon from "../icons/WarningIcon.svelte";
-  import ErrorIcon from "../icons/ErrorIcon.svelte";
-  import CriticalIcon from "../icons/CriticalIcon.svelte";
-  import DisabledIcon from "../icons/DisabledIcon.svelte";
 
   let isHovering = $state(false);
 
@@ -77,15 +73,15 @@
     aria-label="Toggle Validation"
   >
     {#if $settingsStore.validationDisabled}
-      <DisabledIcon className="size-5 text-neutral-400" />
+      <Icon icon="DisabledIcon" className="size-5 text-neutral-400" />
     {:else if errorCount === 0}
-      <ValidIcon className="size-5 text-green-500" />
+      <Icon icon="ValidIcon" className="size-5 text-green-500" />
     {:else if errorCount === 1}
-      <WarningIcon className="size-5 text-amber-500" />
+      <Icon icon="WarningIcon" className="size-5 text-amber-500" />
     {:else if errorCount === 2}
-      <ErrorIcon className="size-5 text-orange-500" />
+      <Icon icon="ErrorIcon" className="size-5 text-orange-500" />
     {:else}
-      <CriticalIcon className="size-5 text-red-500" />
+      <Icon icon="CriticalIcon" className="size-5 text-red-500" />
     {/if}
   </button>
 

@@ -1,15 +1,10 @@
 <!-- Copyright 2026 Matthew Allen. Licensed under the Modified Apache License, Version 2.0. -->
 <script lang="ts">
+  import { Icon } from "./icons/index";
   import { fade, fly } from "svelte/transition";
   import { notification } from "../../stores";
   import { onDestroy } from "svelte";
-  import {
-    SuccessIcon,
-    WarningIcon,
-    ErrorIcon,
-    InfoIcon,
-    CloseIcon,
-  } from "./icons";
+  import { SuccessIcon, WarningIcon, ErrorIcon, InfoIcon } from "./icons";
 
   let visible = $state(false);
   let currentNotification: import("../../types/index").Notification | null =
@@ -118,7 +113,7 @@
         class="shrink-0 ml-3 p-1 rounded-md hover:bg-black/10 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-neutral-500"
         aria-label="Close notification"
       >
-        <CloseIcon className="size-4" />
+        <Icon icon="CloseIcon" className="size-4" />
       </button>
     </div>
   </div>

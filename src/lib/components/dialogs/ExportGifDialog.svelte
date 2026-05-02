@@ -1,12 +1,12 @@
 <!-- Copyright 2026 Matthew Allen. Licensed under the Modified Apache License, Version 2.0. -->
 <script lang="ts">
+  import { Icon } from "../icons/index";
   import { untrack, onMount, onDestroy, createEventDispatcher } from "svelte";
   import { scale } from "svelte/transition";
   import {
     exportPathToGif,
     exportPathToApng,
   } from "../../../utils/exportAnimation";
-  import { CloseIcon, PhotoIcon } from "../icons";
 
   const dispatch = createEventDispatcher();
 
@@ -295,7 +295,7 @@
           onclick={close}
           aria-label="Close"
         >
-          <CloseIcon className="w-6 h-6" />
+          <Icon icon="CloseIcon" className="w-6 h-6" />
         </button>
       </div>
 
@@ -462,7 +462,7 @@
             <div
               class="text-neutral-400 dark:text-neutral-500 flex flex-col items-center gap-2"
             >
-              <PhotoIcon className="w-12 h-12" />
+              <Icon icon="PhotoIcon" className="w-12 h-12" />
               <span>Preview will appear here</span>
             </div>
           {/if}

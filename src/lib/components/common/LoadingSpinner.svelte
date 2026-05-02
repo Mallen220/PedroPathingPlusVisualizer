@@ -1,7 +1,7 @@
 <!-- Copyright 2026 Matthew Allen. Licensed under the Modified Apache License, Version 2.0. -->
 <!-- src/lib/components/common/LoadingSpinner.svelte -->
 <script lang="ts">
-  import { SpinnerIcon } from "../icons/index";
+  import { Icon } from "../icons/index";
 
   interface Props {
     size?: string; // sm, md, lg
@@ -30,7 +30,7 @@
 </script>
 
 <div class="flex flex-col items-center justify-center gap-2">
-  <SpinnerIcon className={`animate-spin ${svgClass} ${color}`} />
+  <Icon icon="SpinnerIcon" className={`animate-spin ${svgClass} ${color}`} />
   {#if showText}
     <span class="text-sm text-neutral-500 dark:text-neutral-400 font-medium"
       >{text}</span

@@ -1,12 +1,12 @@
 <!-- Copyright 2026 Matthew Allen. Licensed under the Modified Apache License, Version 2.0. -->
 <script lang="ts">
+  import { Icon } from "../icons/index";
   import { createEventDispatcher, onMount, onDestroy } from "svelte";
   import { get } from "svelte/store";
   import { scale } from "svelte/transition";
   import { exportPathToImage } from "../../../utils/exportAnimation";
   import { FIELD_SIZE } from "../../../config";
   import { fieldZoom, fieldPan } from "../../../stores";
-  import { CloseIcon, SpinnerIcon, ArrowDownTrayIcon } from "../icons";
 
   interface Props {
     show?: boolean;
@@ -251,7 +251,7 @@
           onclick={close}
           aria-label="Close"
         >
-          <CloseIcon className="w-6 h-6" />
+          <Icon icon="CloseIcon" className="w-6 h-6" />
         </button>
       </div>
 
@@ -343,7 +343,10 @@
           <div
             class="flex items-center gap-2 text-sm text-neutral-600 dark:text-neutral-400"
           >
-            <SpinnerIcon className="animate-spin h-4 w-4 text-purple-600" />
+            <Icon
+              icon="SpinnerIcon"
+              className="animate-spin h-4 w-4 text-purple-600"
+            />
             <span>{statusMessage}</span>
           </div>
         {:else if status === "error"}
@@ -392,7 +395,11 @@
           onclick={downloadImage}
           disabled={status === "generating" || !previewUrl}
         >
-          <ArrowDownTrayIcon className="w-4 h-4" strokeWidth={1.5} />
+          <Icon
+            icon="ArrowDownTrayIcon"
+            className="w-4 h-4"
+            strokeWidth={1.5}
+          />
           Download / Save
         </button>
       </div>

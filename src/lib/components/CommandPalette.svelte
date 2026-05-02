@@ -1,10 +1,10 @@
 <!-- Copyright 2026 Matthew Allen. Licensed under the Modified Apache License, Version 2.0. -->
 <script lang="ts">
+  import { Icon } from "./icons/index";
   import { fade, fly } from "svelte/transition";
   import { cubicInOut } from "svelte/easing";
   import { onMount } from "svelte";
   import type { CommandPaletteCommand } from "../../types";
-  import SearchIcon from "./icons/SearchIcon.svelte";
 
   interface Props {
     isOpen?: boolean;
@@ -167,7 +167,8 @@
       <div
         class="bg-white dark:bg-neutral-900 rounded-2xl shadow-xl flex items-center px-5 py-4 border border-neutral-200 dark:border-neutral-700 ring-1 ring-black/5"
       >
-        <SearchIcon
+        <Icon
+          icon="SearchIcon"
           className="size-6 text-neutral-400 mr-4 flex-shrink-0"
           strokeWidth={2}
         />

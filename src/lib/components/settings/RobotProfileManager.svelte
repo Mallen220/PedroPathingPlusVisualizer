@@ -1,12 +1,11 @@
 <!-- Copyright 2026 Matthew Allen. Licensed under the Modified Apache License, Version 2.0. -->
 <script lang="ts">
+  import { Icon } from "../icons/index";
   import { onDestroy } from "svelte";
   import type { RobotProfile, Settings } from "../../../types";
   import { notification } from "../../../stores";
   import { robotProfilesStore } from "../../../lib/projectStore";
   import DeleteButtonWithConfirm from "../common/DeleteButtonWithConfirm.svelte";
-  import SaveIcon from "../icons/SaveIcon.svelte";
-  import DownloadIcon from "../icons/DownloadIcon.svelte";
   import { fade } from "svelte/transition";
 
   interface Props {
@@ -407,7 +406,7 @@
                   in:fade={{ duration: 150 }}
                   class="flex items-center justify-center"
                 >
-                  <SaveIcon className="size-4" strokeWidth={2} />
+                  <Icon icon="SaveIcon" className="size-4" strokeWidth={2} />
                 </div>
               {/if}
             </button>
@@ -418,7 +417,7 @@
               class="ml-1 p-1.5 rounded-md transition-all duration-200 flex items-center justify-center hover:bg-neutral-100 dark:hover:bg-neutral-700 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 w-8"
               title="Export Profile"
             >
-              <DownloadIcon className="size-4" strokeWidth={2} />
+              <Icon icon="DownloadIcon" className="size-4" strokeWidth={2} />
             </button>
 
             <!-- Delete Button -->

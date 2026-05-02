@@ -1,18 +1,11 @@
 <!-- Copyright 2026 Matthew Allen. Licensed under the Modified Apache License, Version 2.0. -->
 <!-- src/lib/components/filemanager/FileList.svelte -->
 <script lang="ts">
+  import { Icon } from "../icons/index";
   import { createEventDispatcher, tick } from "svelte";
   import type { FileInfo } from "../../../types";
   import FileContextMenu from "./FileContextMenu.svelte";
   import PathPreview from "./PathPreview.svelte";
-  import {
-    FolderIcon,
-    DocumentIcon,
-    PenIcon,
-    CheckIcon,
-    QuestionMarkIcon,
-    EllipsisHorizontalIcon,
-  } from "../icons";
 
   const dispatch = createEventDispatcher<{
     select: FileInfo;
@@ -460,7 +453,7 @@
               <div
                 class="w-12 h-12 flex items-center justify-center text-blue-500 dark:text-blue-400"
               >
-                <FolderIcon className="size-5" />
+                <Icon icon="FolderIcon" className="size-5" />
               </div>
             {:else if previews[file.path]?.startPoint}
               <PathPreview
@@ -474,7 +467,7 @@
               <div
                 class="w-12 h-12 flex items-center justify-center text-blue-500 dark:text-blue-400"
               >
-                <DocumentIcon className="size-6" />
+                <Icon icon="DocumentIcon" className="size-6" />
               </div>
             {/if}
           </div>
@@ -526,13 +519,21 @@
                           : "Git: Untracked (New File)"}
                     >
                       {#if file.gitStatus === "modified"}
-                        <PenIcon className="size-3" strokeWidth={2} />
+                        <Icon
+                          icon="PenIcon"
+                          className="size-3"
+                          strokeWidth={2}
+                        />
                         <span>Modified</span>
                       {:else if file.gitStatus === "staged"}
-                        <CheckIcon className="size-3" strokeWidth={2.5} />
+                        <Icon
+                          icon="CheckIcon"
+                          className="size-3"
+                          strokeWidth={2.5}
+                        />
                         <span>Staged</span>
                       {:else}
-                        <QuestionMarkIcon className="size-3" />
+                        <Icon icon="QuestionMarkIcon" className="size-3" />
                         <span>Untracked</span>
                       {/if}
                     </div>
@@ -571,7 +572,7 @@
               title="More actions"
               aria-label="File actions"
             >
-              <EllipsisHorizontalIcon className="size-5" />
+              <Icon icon="EllipsisHorizontalIcon" className="size-5" />
             </button>
           </div>
         </div>

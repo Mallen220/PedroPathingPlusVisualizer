@@ -1,12 +1,8 @@
 <!-- Copyright 2026 Matthew Allen. Licensed under the Modified Apache License, Version 2.0. -->
 <script lang="ts">
+  import { Icon } from "../icons/index";
   import type { SequenceWaitItem, SequenceItem } from "../../../types";
   import { tooltipPortal } from "../../actions/portal";
-  import TrashIcon from "../icons/TrashIcon.svelte";
-  import Bars3Icon from "../icons/Bars3Icon.svelte";
-  import LinkIcon from "../icons/LinkIcon.svelte";
-  import LockIcon from "../icons/LockIcon.svelte";
-  import UnlockIcon from "../icons/UnlockIcon.svelte";
   import { isWaitLinked } from "../../../utils/pointLinking";
   import { focusRequest } from "../../../stores";
 
@@ -108,7 +104,7 @@
   <td
     class="w-8 px-2 py-2 text-center cursor-grab active:cursor-grabbing text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300"
   >
-    <Bars3Icon className="w-4 h-4 mx-auto" />
+    <Icon icon="Bars3Icon" className="w-4 h-4 mx-auto" />
   </td>
   <td class="px-3 py-2">
     <div class="relative w-full max-w-[160px]">
@@ -132,7 +128,7 @@
           onmouseenter={(e) => handleWaitHoverEnter(e, item.id)}
           onmouseleave={handleWaitHoverLeave}
         >
-          <LinkIcon className="w-3.5 h-3.5" />
+          <Icon icon="LinkIcon" className="w-3.5 h-3.5" />
           {#if hoveredWaitId === item.id}
             <div
               use:tooltipPortal={hoveredWaitAnchor}
@@ -173,9 +169,9 @@
       aria-pressed={isLocked}
     >
       {#if isLocked}
-        <LockIcon className="size-5 stroke-yellow-500" />
+        <Icon icon="LockIcon" className="size-5 stroke-yellow-500" />
       {:else}
-        <UnlockIcon className="size-5 stroke-gray-400" />
+        <Icon icon="UnlockIcon" className="size-5 stroke-gray-400" />
       {/if}
     </button>
 
@@ -190,7 +186,7 @@
         aria-label="Delete wait"
         class="inline-flex items-center justify-center h-6 w-6 p-0.5 rounded transition-colors text-neutral-400 hover:text-red-600 hover:bg-neutral-50 dark:hover:bg-neutral-800"
       >
-        <TrashIcon className="size-4" strokeWidth={2} />
+        <Icon icon="TrashIcon" className="size-4" strokeWidth={2} />
       </button>
     {:else}
       <span class="h-6 w-6" aria-hidden="true"></span>

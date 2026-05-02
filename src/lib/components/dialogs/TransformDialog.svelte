@@ -1,7 +1,7 @@
 <!-- Copyright 2026 Matthew Allen. Licensed under the Modified Apache License, Version 2.0. -->
 <script lang="ts">
+  import { Icon } from "../icons/index";
   import { fade, fly } from "svelte/transition";
-  import { CloseIcon } from "../icons";
   import { cubicInOut } from "svelte/easing";
   import { get } from "svelte/store";
   import {
@@ -172,7 +172,11 @@
           class="p-1 hover:bg-neutral-200 dark:hover:bg-neutral-700 rounded-md transition-colors"
           aria-label="Close"
         >
-          <CloseIcon className="w-5 h-5 text-neutral-500" strokeWidth={2} />
+          <Icon
+            icon="CloseIcon"
+            className="w-5 h-5 text-neutral-500"
+            strokeWidth={2}
+          />
         </button>
       </div>
 

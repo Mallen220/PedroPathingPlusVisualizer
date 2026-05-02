@@ -1,5 +1,6 @@
 <!-- Copyright 2026 Matthew Allen. Licensed under the Modified Apache License, Version 2.0. -->
 <script lang="ts">
+  import { Icon } from "../icons/index";
   import type { Point, Line, SequenceItem, Shape } from "../../../types/index";
   import Highlight from "svelte-highlight";
   import { java } from "svelte-highlight/languages";
@@ -7,16 +8,7 @@
   import plaintext from "svelte-highlight/languages/plaintext";
   import codeStyle from "svelte-highlight/styles/androidstudio";
   import { fade, fly } from "svelte/transition";
-  import {
-    SearchIcon,
-    ChevronUpIcon,
-    ChevronDownIcon,
-    CloseIcon,
-    TriangleWarningIcon,
-    DownloadIcon,
-    SuccessIcon,
-    ClipboardIcon,
-  } from "../icons/index";
+
   import { currentFilePath, notification } from "../../../stores";
   import { exporterRegistry } from "../../exporters";
   import { tick } from "svelte";
@@ -485,7 +477,7 @@
               aria-label="Search code"
               title="Search (Ctrl+F)"
             >
-              <SearchIcon strokeWidth={2} className="size-5" />
+              <Icon icon="SearchIcon" strokeWidth={2} className="size-5" />
             </button>
           {:else}
             <!-- Search Bar -->
@@ -523,7 +515,7 @@
                 class="p-1 hover:bg-neutral-200 dark:hover:bg-neutral-700 rounded text-neutral-600 dark:text-neutral-400 disabled:opacity-30"
                 aria-label="Previous match"
               >
-                <ChevronUpIcon strokeWidth={2} className="size-4" />
+                <Icon icon="ChevronUpIcon" strokeWidth={2} className="size-4" />
               </button>
               <button
                 onclick={nextMatch}
@@ -531,7 +523,11 @@
                 class="p-1 hover:bg-neutral-200 dark:hover:bg-neutral-700 rounded text-neutral-600 dark:text-neutral-400 disabled:opacity-30"
                 aria-label="Next match"
               >
-                <ChevronDownIcon strokeWidth={2} className="size-4" />
+                <Icon
+                  icon="ChevronDownIcon"
+                  strokeWidth={2}
+                  className="size-4"
+                />
               </button>
               <button
                 onclick={() => {
@@ -542,7 +538,7 @@
                 class="p-1 hover:bg-red-100 dark:hover:bg-red-900/30 hover:text-red-500 rounded text-neutral-500 transition-colors"
                 aria-label="Close search"
               >
-                <CloseIcon strokeWidth={2} className="size-4" />
+                <Icon icon="CloseIcon" strokeWidth={2} className="size-4" />
               </button>
             </div>
           {/if}
@@ -553,7 +549,7 @@
             class="p-2 rounded-lg text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
             aria-label="Close export dialog"
           >
-            <CloseIcon strokeWidth={2} className="size-5" />
+            <Icon icon="CloseIcon" strokeWidth={2} className="size-5" />
           </button>
         </div>
       </div>
@@ -675,7 +671,7 @@
                 class="flex items-center gap-2 px-3 py-1.5 bg-yellow-50 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-200 text-xs rounded-lg border border-yellow-200 dark:border-yellow-800/50"
                 role="alert"
               >
-                <TriangleWarningIcon className="size-4 shrink-0" />
+                <Icon icon="TriangleWarningIcon" className="size-4 shrink-0" />
                 <span>NextFTC output is <strong>experimental</strong>.</span>
               </div>
             {/if}
@@ -684,7 +680,7 @@
                 class="flex items-center gap-2 px-3 py-1.5 bg-yellow-50 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-200 text-xs rounded-lg border border-yellow-200 dark:border-yellow-800/50"
                 role="alert"
               >
-                <TriangleWarningIcon className="size-4 shrink-0" />
+                <Icon icon="TriangleWarningIcon" className="size-4 shrink-0" />
                 <span
                   >Metric code generation requires embedding poses. Please
                   enable 'Embed Pose Data'.</span
@@ -804,7 +800,7 @@
               onclick={handleSaveFile}
               title="Save the generated content to a file"
             >
-              <DownloadIcon className="size-4" />
+              <Icon icon="DownloadIcon" className="size-4" />
               Save to File
             </button>
           {/if}
@@ -814,7 +810,7 @@
               class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-neutral-700 dark:text-neutral-200 bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 rounded-lg transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-neutral-500"
               onclick={exportAsProjectFile}
             >
-              <DownloadIcon className="size-4" />
+              <Icon icon="DownloadIcon" className="size-4" />
               Download as .turt
             </button>
           {/if}
@@ -824,10 +820,13 @@
             disabled={copied}
           >
             {#if copied}
-              <SuccessIcon className="size-4 animate-in zoom-in duration-200" />
+              <Icon
+                icon="SuccessIcon"
+                className="size-4 animate-in zoom-in duration-200"
+              />
               Copied!
             {:else}
-              <ClipboardIcon className="size-4" />
+              <Icon icon="ClipboardIcon" className="size-4" />
               Copy Code
             {/if}
           </button>

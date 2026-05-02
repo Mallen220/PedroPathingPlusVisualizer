@@ -1,5 +1,6 @@
 <!-- Copyright 2026 Matthew Allen. Licensed under the Modified Apache License, Version 2.0. -->
 <script module lang="ts">
+  import { Icon } from "./components/icons/index";
   import { tabRegistry as tabRegistryModule } from "./registries";
   import PathTab from "./components/tabs/PathTab.svelte";
   import FieldTab from "./components/tabs/FieldTab.svelte";
@@ -13,8 +14,6 @@
     TableTabIcon,
     ZapIcon,
     CodeIcon,
-    DocumentIcon,
-    StatsIcon,
   } from "./components/icons";
 
   // Register default tabs; callable so plugin reloads can restore baseline tabs
@@ -616,7 +615,7 @@
         class="bg-purple-100 dark:bg-purple-900/20 text-purple-800 dark:text-purple-200 px-4 py-3 rounded-xl border border-purple-200 dark:border-purple-800 flex items-center justify-between"
       >
         <span class="font-semibold flex items-center gap-2">
-          <DocumentIcon className="size-5" />
+          <Icon icon="DocumentIcon" className="size-5" />
           Diff View
         </span>
       </div>
@@ -662,7 +661,7 @@
         class="flex-none flex items-center justify-center px-4 py-2 text-sm font-semibold rounded-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 border border-neutral-200 dark:border-neutral-700 hover:bg-neutral-50 dark:hover:bg-neutral-700 hover:text-neutral-900 dark:hover:text-neutral-200 gap-2 shadow-sm"
         title={`Path Statistics${getShortcutFromSettings(settings, "toggle-stats")}`}
       >
-        <StatsIcon className="size-4" />
+        <Icon icon="StatsIcon" className="size-4" />
         Stats
       </button>
     </div>

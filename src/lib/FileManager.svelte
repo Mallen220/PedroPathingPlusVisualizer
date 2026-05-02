@@ -1,5 +1,6 @@
 <!-- Copyright 2026 Matthew Allen. Licensed under the Modified Apache License, Version 2.0. -->
 <script lang="ts" module>
+  import { Icon } from "./components/icons/index";
 </script>
 
 <script lang="ts">
@@ -48,18 +49,6 @@
   import FileList from "./components/filemanager/FileList.svelte";
   import FileGrid from "./components/filemanager/FileGrid.svelte";
   import LoadingSpinner from "./components/common/LoadingSpinner.svelte";
-  import {
-    FolderIcon,
-    CloudArrowDownIcon,
-    CloseIcon,
-    PlusIcon,
-    DocumentIcon,
-    FolderPlusIcon,
-    ArrowDownTrayIcon,
-    CodeBracketSquareIcon,
-    ServerStackIcon,
-    ArrowCircleIcon,
-  } from "./components/icons";
 
   // Initialize from session state
   const session = get(fileManagerSessionState);
@@ -1167,7 +1156,8 @@
       <div
         class="bg-white dark:bg-neutral-800 p-8 rounded-xl shadow-2xl flex flex-col items-center border-4 border-dashed border-purple-500 animate-pulse"
       >
-        <CloudArrowDownIcon
+        <Icon
+          icon="CloudArrowDownIcon"
           className="h-16 w-16 text-purple-600 dark:text-purple-400 mb-4"
         />
         <h2 class="text-2xl font-bold mb-2 text-neutral-900 dark:text-white">
@@ -1213,7 +1203,7 @@
       <h2
         class="text-lg font-bold text-neutral-900 dark:text-white flex items-center gap-2"
       >
-        <FolderIcon className="size-5" />
+        <Icon icon="FolderIcon" className="size-5" />
         Files
       </h2>
       <button
@@ -1221,7 +1211,7 @@
         class="p-1 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
         aria-label="Close"
       >
-        <CloseIcon className="size-5" />
+        <Icon icon="CloseIcon" className="size-5" />
       </button>
     </div>
 
@@ -1341,7 +1331,7 @@
           aria-haspopup="true"
           aria-expanded={showAddMenu}
         >
-          <PlusIcon className="size-5" />
+          <Icon icon="PlusIcon" className="size-5" />
         </button>
 
         {#if showAddMenu}
@@ -1355,7 +1345,7 @@
               }}
               class="px-4 py-2 text-sm text-left text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700 flex items-center gap-2"
             >
-              <DocumentIcon className="size-4 text-green-500" />
+              <Icon icon="DocumentIcon" className="size-4 text-green-500" />
               New File
             </button>
 
@@ -1366,7 +1356,7 @@
               }}
               class="px-4 py-2 text-sm text-left text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700 flex items-center gap-2"
             >
-              <FolderPlusIcon className="size-4 text-blue-500" />
+              <Icon icon="FolderPlusIcon" className="size-4 text-blue-500" />
               New Folder
             </button>
 
@@ -1383,7 +1373,10 @@
               }}
               class="px-4 py-2 text-sm text-left text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700 flex items-center gap-2"
             >
-              <ArrowDownTrayIcon className="size-4 text-purple-500" />
+              <Icon
+                icon="ArrowDownTrayIcon"
+                className="size-4 text-purple-500"
+              />
               Import File
             </button>
 
@@ -1394,7 +1387,10 @@
               }}
               class="px-4 py-2 text-sm text-left text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700 flex items-center gap-2"
             >
-              <CodeBracketSquareIcon className="size-4 text-orange-500" />
+              <Icon
+                icon="CodeBracketSquareIcon"
+                className="size-4 text-orange-500"
+              />
               Import Java
             </button>
 
@@ -1406,7 +1402,7 @@
               }}
               class="px-4 py-2 text-sm text-left text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700 flex items-center gap-2"
             >
-              <ServerStackIcon className="size-4 text-blue-500" />
+              <Icon icon="ServerStackIcon" className="size-4 text-blue-500" />
               Import Telemetry
             </button>
           </div>
@@ -1442,7 +1438,7 @@
         <div
           class="flex-1 flex flex-col items-center justify-center text-neutral-400 p-8 text-center h-full"
         >
-          <DocumentIcon className="size-12 mb-2 opacity-30" />
+          <Icon icon="DocumentIcon" className="size-12 mb-2 opacity-30" />
           <p class="text-sm">No files found</p>
           {#if searchQuery}
             <button
@@ -1505,7 +1501,7 @@
           title="Refresh"
           aria-label="Refresh"
         >
-          <ArrowCircleIcon className="size-4" />
+          <Icon icon="ArrowCircleIcon" className="size-4" />
         </button>
         <span
           >{filteredFiles.length} file{filteredFiles.length === 1

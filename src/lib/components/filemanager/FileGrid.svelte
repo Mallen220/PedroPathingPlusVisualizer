@@ -1,19 +1,13 @@
 <!-- Copyright 2026 Matthew Allen. Licensed under the Modified Apache License, Version 2.0. -->
 <!-- src/lib/components/filemanager/FileGrid.svelte -->
 <script lang="ts">
+  import { Icon } from "../icons/index";
   import { createEventDispatcher, tick, onMount, onDestroy } from "svelte";
   import type { FileInfo, Point, Line } from "../../../types";
   import FileContextMenu from "./FileContextMenu.svelte";
   import PathPreview from "./PathPreview.svelte";
   import { AVAILABLE_FIELD_MAPS } from "../../../config/defaults";
-  import {
-    FolderIcon,
-    DocumentIcon,
-    PenIcon,
-    CheckIcon,
-    QuestionMarkIcon,
-    EllipsisHorizontalIcon,
-  } from "../icons";
+
   interface Props {
     files?: FileInfo[];
     selectedFilePath?: string | null;
@@ -555,11 +549,15 @@
                 </div>
 
                 {#if file.gitStatus === "modified"}
-                  <PenIcon className="size-3" strokeWidth={2} />
+                  <Icon icon="PenIcon" className="size-3" strokeWidth={2} />
                 {:else if file.gitStatus === "staged"}
-                  <CheckIcon className="size-3" strokeWidth={2.5} />
+                  <Icon icon="CheckIcon" className="size-3" strokeWidth={2.5} />
                 {:else}
-                  <QuestionMarkIcon className="size-3" strokeWidth={2} />
+                  <Icon
+                    icon="QuestionMarkIcon"
+                    className="size-3"
+                    strokeWidth={2}
+                  />
                 {/if}
               </div>
             {/if}
@@ -568,7 +566,7 @@
               <div
                 class="w-[80px] h-[80px] rounded flex items-center justify-center text-blue-500 dark:text-blue-400 bg-neutral-50 dark:bg-neutral-900/50 border border-neutral-200 dark:border-neutral-700"
               >
-                <FolderIcon className="size-12" />
+                <Icon icon="FolderIcon" className="size-12" />
               </div>
             {:else if previews[file.path]?.startPoint}
               <PathPreview
@@ -598,7 +596,7 @@
                   <div
                     class="w-full h-full flex items-center justify-center text-blue-500 dark:text-blue-400"
                   >
-                    <DocumentIcon className="size-8" />
+                    <Icon icon="DocumentIcon" className="size-8" />
                   </div>
                 {/if}
               </div>
@@ -614,7 +612,8 @@
               }}
               title="More actions"
             >
-              <EllipsisHorizontalIcon
+              <Icon
+                icon="EllipsisHorizontalIcon"
                 className="size-4 text-neutral-600 dark:text-neutral-300"
               />
             </button>

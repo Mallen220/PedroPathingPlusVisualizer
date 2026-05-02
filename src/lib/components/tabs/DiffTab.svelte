@@ -1,9 +1,9 @@
 <!-- Copyright 2026 Matthew Allen. Licensed under the Modified Apache License, Version 2.0. -->
 <script lang="ts">
+  import { Icon } from "../icons/index";
   import { diffResult } from "../../diffStore";
   import { formatDisplayDistance } from "../../../utils/coordinates";
   import type { Settings } from "../../../types";
-  import { PlusCircleIcon, MinusCircleIcon, PenIcon } from "../icons";
 
   interface Props {
     settings: Settings;
@@ -125,7 +125,8 @@
                 <div
                   class="mt-1 flex-none w-6 h-6 rounded-full bg-green-100 dark:bg-green-900/50 flex items-center justify-center"
                 >
-                  <PlusCircleIcon
+                  <Icon
+                    icon="PlusCircleIcon"
                     className="w-3 h-3 text-green-600 dark:text-green-400"
                   />
                 </div>
@@ -151,7 +152,8 @@
                 <div
                   class="mt-1 flex-none w-6 h-6 rounded-full bg-red-100 dark:bg-red-900/50 flex items-center justify-center"
                 >
-                  <MinusCircleIcon
+                  <Icon
+                    icon="MinusCircleIcon"
                     className="w-3 h-3 text-red-600 dark:text-red-400"
                   />
                 </div>
@@ -177,7 +179,8 @@
                 <div
                   class="mt-1 flex-none w-6 h-6 rounded-full bg-blue-100 dark:bg-blue-900/50 flex items-center justify-center"
                 >
-                  <PenIcon
+                  <Icon
+                    icon="PenIcon"
                     className="w-3 h-3 text-blue-600 dark:text-blue-400"
                   />
                 </div>

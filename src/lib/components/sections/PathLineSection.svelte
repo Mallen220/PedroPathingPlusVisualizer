@@ -1,5 +1,6 @@
 <!-- Copyright 2026 Matthew Allen. Licensed under the Modified Apache License, Version 2.0. -->
 <script lang="ts">
+  import { Icon } from "../icons/index";
   import { untrack } from "svelte";
 
   import type { Line } from "../../../types/index";
@@ -29,17 +30,6 @@
   import { onMount } from "svelte";
   import { actionRegistry } from "../../actionRegistry";
   import { getSmallButtonClass } from "../../../utils/buttonStyles";
-  import {
-    ChevronRightIcon,
-    EyeIcon,
-    EyeSlashIcon,
-    LockIcon,
-    UnlockIcon,
-    ArrowUpIcon,
-    ArrowDownIcon,
-    PlusIcon,
-    LinkIcon,
-  } from "../icons";
 
   interface Props {
     line: Line;
@@ -362,7 +352,8 @@
         aria-label="{collapsed ? 'Expand' : 'Collapse'} Path {idx + 1}"
         aria-expanded={!collapsed}
       >
-        <ChevronRightIcon
+        <Icon
+          icon="ChevronRightIcon"
           className="size-3.5 transition-transform duration-200 {collapsed
             ? 'rotate-0'
             : 'rotate-90'}"
@@ -396,7 +387,7 @@
               onmouseenter={(e) => handleLinkHoverEnter(e, line.id || null)}
               onmouseleave={handleLinkHoverLeave}
             >
-              <LinkIcon className="w-3.5 h-3.5" />
+              <Icon icon="LinkIcon" className="w-3.5 h-3.5" />
               {#if hoveredLinkId === line.id}
                 <div
                   use:tooltipPortal={hoveredLinkAnchor}
@@ -443,9 +434,13 @@
         aria-label={isHidden ? "Show Path" : "Hide Path"}
       >
         {#if isHidden}
-          <EyeSlashIcon className="size-4 text-neutral-400" strokeWidth={2} />
+          <Icon
+            icon="EyeSlashIcon"
+            className="size-4 text-neutral-400"
+            strokeWidth={2}
+          />
         {:else}
-          <EyeIcon className="size-4" strokeWidth={2} />
+          <Icon icon="EyeIcon" className="size-4" strokeWidth={2} />
         {/if}
       </button>
 
@@ -463,9 +458,9 @@
         aria-label={line.locked ? "Unlock Path" : "Lock Path"}
       >
         {#if line.locked}
-          <LockIcon className="size-4 text-amber-500" />
+          <Icon icon="LockIcon" className="size-4 text-amber-500" />
         {:else}
-          <UnlockIcon className="size-4" strokeWidth={2} />
+          <Icon icon="UnlockIcon" className="size-4" strokeWidth={2} />
         {/if}
       </button>
 
@@ -488,7 +483,7 @@
           title="Move Up"
           aria-label="Move Up"
         >
-          <ArrowUpIcon className="size-3.5" />
+          <Icon icon="ArrowUpIcon" className="size-3.5" />
         </button>
         <button
           onclick={(e) => {
@@ -500,7 +495,7 @@
           title="Move Down"
           aria-label="Move Down"
         >
-          <ArrowDownIcon className="size-3.5" />
+          <Icon icon="ArrowDownIcon" className="size-3.5" />
         </button>
       </div>
 
@@ -635,7 +630,10 @@
               }}
               title="Jump to global source"
             >
-              <LinkIcon className="size-4 shrink-0 text-purple-500" />
+              <Icon
+                icon="LinkIcon"
+                className="size-4 shrink-0 text-purple-500"
+              />
               Overridden by Global Chain Heading
             </button>
           </div>
@@ -768,7 +766,7 @@
               title={`Add ${def.label} After`}
               aria-label={`Add ${def.label} After`}
             >
-              <PlusIcon className="size-3" />
+              <Icon icon="PlusIcon" className="size-3" />
               {def.label}
             </button>
           {/if}

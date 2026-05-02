@@ -1,5 +1,6 @@
 <!-- Copyright 2026 Matthew Allen. Licensed under the Modified Apache License, Version 2.0. -->
 <script lang="ts">
+  import { Icon } from "../icons/index";
   import { createTriangle } from "../../../utils";
   import {
     snapToGrid,
@@ -12,24 +13,12 @@
     toUserCoordinate,
     toFieldCoordinate,
   } from "../../../utils/coordinates";
-  import TrashIcon from "../icons/TrashIcon.svelte";
-  import SaveIcon from "../icons/SaveIcon.svelte";
   import SectionHeader from "../common/SectionHeader.svelte";
   import EmptyState from "../common/EmptyState.svelte";
   import ColorPicker from "../tools/ColorPicker.svelte";
   import SaveNameDialog from "../dialogs/SaveNameDialog.svelte";
   import DeleteButtonWithConfirm from "../common/DeleteButtonWithConfirm.svelte";
   import type { Shape, ObstaclePreset } from "../../../types/index";
-  import {
-    ArrowDownTrayIcon,
-    BoxIcon,
-    ChevronRightIcon,
-    EyeIcon,
-    EyeSlashIcon,
-    LockIcon,
-    UnlockIcon,
-    PlusIcon,
-  } from "../icons";
 
   interface Props {
     shapes: Shape[];
@@ -200,7 +189,7 @@
           class="p-1 h-7 w-7 flex items-center justify-center rounded-md text-neutral-500 dark:text-neutral-400 border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
         >
           <!-- Download/Load Icon -->
-          <ArrowDownTrayIcon className="size-4" />
+          <Icon icon="ArrowDownTrayIcon" className="size-4" />
         </button>
 
         <button
@@ -210,7 +199,7 @@
           aria-label="Save Current as Preset"
           class="p-1 h-7 w-7 flex items-center justify-center rounded-md text-neutral-500 dark:text-neutral-400 border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
         >
-          <SaveIcon className="size-4" />
+          <Icon icon="SaveIcon" className="size-4" />
         </button>
 
         <button
@@ -220,7 +209,7 @@
           aria-label="Delete Selected Preset"
           class="p-1 h-7 w-7 flex items-center justify-center rounded-md text-neutral-500 dark:text-neutral-400 border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 hover:text-red-500 hover:bg-neutral-100 dark:hover:bg-neutral-700 disabled:opacity-40 disabled:hover:text-neutral-500 disabled:cursor-not-allowed transition-colors"
         >
-          <TrashIcon className="size-4" />
+          <Icon icon="TrashIcon" className="size-4" />
         </button>
       </div>
     </div>
@@ -243,7 +232,7 @@
         >
           {#snippet icon()}
             <div>
-              <BoxIcon className="size-6 text-neutral-400" />
+              <Icon icon="BoxIcon" className="size-6 text-neutral-400" />
             </div>
           {/snippet}
         </EmptyState>
@@ -264,7 +253,8 @@
                     ? 'Keep-In'
                     : 'Obstacle'}"
                 >
-                  <ChevronRightIcon
+                  <Icon
+                    icon="ChevronRightIcon"
                     className="size-4 transition-transform {collapsedObstacles[
                       shapeIdx
                     ]
@@ -342,9 +332,10 @@
                   class="p-1 rounded-md hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-400 transition-colors"
                 >
                   {#if shape.visible !== false}
-                    <EyeIcon className="size-4" strokeWidth={1.5} />
+                    <Icon icon="EyeIcon" className="size-4" strokeWidth={1.5} />
                   {:else}
-                    <EyeSlashIcon
+                    <Icon
+                      icon="EyeSlashIcon"
                       className="size-4 text-neutral-400"
                       strokeWidth={1.5}
                     />
@@ -372,9 +363,13 @@
                   class="p-1 rounded-md hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-400 transition-colors"
                 >
                   {#if shape.locked}
-                    <LockIcon className="size-4 text-amber-500" />
+                    <Icon icon="LockIcon" className="size-4 text-amber-500" />
                   {:else}
-                    <UnlockIcon className="size-4" strokeWidth={2} />
+                    <Icon
+                      icon="UnlockIcon"
+                      className="size-4"
+                      strokeWidth={2}
+                    />
                   {/if}
                 </button>
                 <DeleteButtonWithConfirm
@@ -509,7 +504,11 @@
                           }}
                           disabled={shape.locked ?? false}
                         >
-                          <PlusIcon className="size-4" strokeWidth={2} />
+                          <Icon
+                            icon="PlusIcon"
+                            className="size-4"
+                            strokeWidth={2}
+                          />
                         </button>
                         {#if shape.vertices.length > 3}
                           <DeleteButtonWithConfirm

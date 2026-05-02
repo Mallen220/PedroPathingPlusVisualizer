@@ -1,15 +1,10 @@
 <!-- Copyright 2026 Matthew Allen. Licensed under the Modified Apache License, Version 2.0. -->
 <script lang="ts">
+  import { Icon } from "../icons/index";
   import { showRatingDialog, ratingDialogAutoOpened } from "../../../stores";
   import { fade, fly } from "svelte/transition";
   import { onMount, onDestroy } from "svelte";
-  import {
-    StarIcon,
-    CloseIcon,
-    ErrorIcon,
-    SuccessIcon,
-    SpinnerIcon,
-  } from "../icons";
+
   import { settingsStore } from "../../projectStore";
   import { saveSettings } from "../../../utils/settingsPersistence";
   import pkg from "../../../../package.json";
@@ -213,7 +208,7 @@
         <h2
           class="text-lg font-bold text-neutral-900 dark:text-white flex items-center gap-2"
         >
-          <StarIcon className="w-5 h-5 text-yellow-500" />
+          <Icon icon="StarIcon" className="w-5 h-5 text-yellow-500" />
           Enjoying Turtle Tracer?
         </h2>
         <button
@@ -222,7 +217,7 @@
           class="text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-200 transition-colors disabled:opacity-50"
           title="Close dialog"
         >
-          <CloseIcon className="h-5 w-5" />
+          <Icon icon="CloseIcon" className="h-5 w-5" />
         </button>
       </div>
 
@@ -243,7 +238,8 @@
                 class="hover:scale-110 transition-transform focus:outline-none disabled:opacity-50"
                 aria-label="{star} star rating"
               >
-                <StarIcon
+                <Icon
+                  icon="StarIcon"
                   className="w-8 h-8 {rating >= star
                     ? 'text-yellow-400'
                     : 'text-neutral-300 dark:text-neutral-600'}"
@@ -282,14 +278,14 @@
           <div
             class="p-3 bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-400 text-sm rounded-lg flex items-start gap-2 border border-red-200 dark:border-red-900/50"
           >
-            <ErrorIcon className="w-5 h-5 flex-shrink-0 mt-0.5" />
+            <Icon icon="ErrorIcon" className="w-5 h-5 flex-shrink-0 mt-0.5" />
             <p>{errorMessage}</p>
           </div>
         {:else if status === "success"}
           <div
             class="p-3 bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-400 text-sm rounded-lg flex items-center gap-2 border border-green-200 dark:border-green-900/50"
           >
-            <SuccessIcon className="w-5 h-5 flex-shrink-0" />
+            <Icon icon="SuccessIcon" className="w-5 h-5 flex-shrink-0" />
             <p>Feedback sent successfully! Thank you.</p>
           </div>
         {/if}
@@ -323,7 +319,8 @@
           class="px-5 py-2 text-sm font-medium text-white bg-purple-600 hover:bg-purple-700 shadow-sm shadow-purple-900/20 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500/50 disabled:opacity-50 flex items-center gap-2"
         >
           {#if isSubmitting}
-            <SpinnerIcon
+            <Icon
+              icon="SpinnerIcon"
               className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
             />
             Submitting...

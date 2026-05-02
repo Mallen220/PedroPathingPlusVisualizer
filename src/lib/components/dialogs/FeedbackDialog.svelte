@@ -1,5 +1,6 @@
 <!-- Copyright 2026 Matthew Allen. Licensed under the Modified Apache License, Version 2.0. -->
 <script lang="ts">
+  import { Icon } from "../icons/index";
   import {
     showFeedbackDialog,
     showRatingDialog,
@@ -7,14 +8,7 @@
   } from "../../../stores";
   import { fade, fly } from "svelte/transition";
   import { onMount, onDestroy } from "svelte";
-  import {
-    CloseIcon,
-    FeedbackIcon,
-    InfoIcon,
-    ErrorIcon,
-    SuccessIcon,
-    SpinnerIcon,
-  } from "../icons";
+
   import { settingsStore } from "../../projectStore";
   import { saveSettings } from "../../../utils/settingsPersistence";
   import pkg from "../../../../package.json";
@@ -211,7 +205,8 @@
         <h2
           class="text-lg font-bold text-neutral-900 dark:text-white flex items-center gap-2"
         >
-          <FeedbackIcon
+          <Icon
+            icon="FeedbackIcon"
             className="w-5 h-5 text-purple-600 dark:text-purple-400"
           />
           Report Issue / Feedback / Features
@@ -222,7 +217,7 @@
           class="text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-200 transition-colors disabled:opacity-50"
           title="Close dialog"
         >
-          <CloseIcon className="h-5 w-5" />
+          <Icon icon="CloseIcon" className="h-5 w-5" />
         </button>
       </div>
 
@@ -246,7 +241,7 @@
           <div
             class="mt-2 flex items-start gap-1.5 text-xs text-neutral-500 dark:text-neutral-400"
           >
-            <InfoIcon className="w-4 h-4 flex-shrink-0" />
+            <Icon icon="InfoIcon" className="w-4 h-4 flex-shrink-0" />
             <p>
               All data is private and no personal information is sent unless you
               explicitly provide it.
@@ -275,14 +270,14 @@
           <div
             class="p-3 bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-400 text-sm rounded-lg flex items-start gap-2 border border-red-200 dark:border-red-900/50"
           >
-            <ErrorIcon className="w-5 h-5 flex-shrink-0 mt-0.5" />
+            <Icon icon="ErrorIcon" className="w-5 h-5 flex-shrink-0 mt-0.5" />
             <p>{errorMessage}</p>
           </div>
         {:else if status === "success"}
           <div
             class="p-3 bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-400 text-sm rounded-lg flex items-center gap-2 border border-green-200 dark:border-green-900/50"
           >
-            <SuccessIcon className="w-5 h-5 flex-shrink-0" />
+            <Icon icon="SuccessIcon" className="w-5 h-5 flex-shrink-0" />
             <p>Feedback sent successfully! Thank you.</p>
           </div>
         {/if}
@@ -321,7 +316,8 @@
             {#if cooldownSeconds > 0}
               Wait {Math.floor(cooldownSeconds / 60) + 1}m
             {:else if isSubmitting}
-              <SpinnerIcon
+              <Icon
+                icon="SpinnerIcon"
                 className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
               />
               Submitting...
