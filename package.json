@@ -89,6 +89,7 @@
     "vitest": "^2.1.9"
   },
   "dependencies": {
+    "@iconify-json/line-md": "^1.2.16",
     "@types/d3": "^7.4.3",
     "@types/diff": "^8.0.0",
     "@types/dompurify": "^3.0.5",

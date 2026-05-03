@@ -40,3 +40,8 @@ declare global {
     copyFile?: (source: string, dest: string) => Promise<boolean>;
   };
 }
+declare module "~icons/line-md/*" {
+  import type { Component } from "svelte";
+  const component: Component<any>;
+  export default component;
+}
