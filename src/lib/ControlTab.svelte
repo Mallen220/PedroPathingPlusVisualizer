@@ -9,13 +9,6 @@
   import DiffTab from "./components/tabs/DiffTab.svelte";
   import TelemetryTab from "./components/tabs/TelemetryTab.svelte";
   import CodeTab from "./components/tabs/CodeTab.svelte";
-  import {
-    PathTabIcon,
-    FieldTabIcon,
-    TableTabIcon,
-    ZapIcon,
-    CodeIcon,
-  } from "./components/icons";
 
   // Register default tabs; callable so plugin reloads can restore baseline tabs
   export const registerDefaultControlTabs = () => {

@@ -15,7 +15,7 @@
   import { settingsActiveTab } from "../../../stores";
   import { SIDEBAR_ITEMS } from "../../../config/sidebarItems";
   import { isBrowser } from "../../../utils/platform";
-    import GeneralSettingsTab from "../settings/tabs/GeneralSettingsTab.svelte";
+  import GeneralSettingsTab from "../settings/tabs/GeneralSettingsTab.svelte";
   import RobotSettingsTab from "../settings/tabs/RobotSettingsTab.svelte";
   import MotionSettingsTab from "../settings/tabs/MotionSettingsTab.svelte";
   import InterfaceSettingsTab from "../settings/tabs/InterfaceSettingsTab.svelte";

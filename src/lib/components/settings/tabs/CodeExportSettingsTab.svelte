@@ -5,8 +5,7 @@
   import { DEFAULT_SETTINGS } from "../../../../config/defaults";
   import type { Settings } from "../../../../types/index";
   import { currentFilePath, currentDirectoryStore } from "../../../../stores";
-    import Icon from "../../icons/Icon.svelte";
-  import type { IconName } from "../../icons/icon-map";
+  import Icon from "../../icons/Icon.svelte";
   import { isBrowser } from "../../../../utils/platform";
 
   interface Props {

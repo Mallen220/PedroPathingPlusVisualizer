@@ -9,8 +9,7 @@
   import { themesStore } from "../../../pluginsStore";
   import { followRobotStore } from "../../../projectStore";
   import { fieldZoom, fieldPan } from "../../../../stores";
-    import Icon from "../../icons/Icon.svelte";
-  import type { IconName } from "../../icons/icon-map";
+  import Icon from "../../icons/Icon.svelte";
   import CustomFieldWizard from "../../settings/CustomFieldWizard.svelte";
 
   interface Props {
@@ -73,6 +72,32 @@
 </script>
 
 <div class="section-container mb-8">
+
+  <SettingsItem
+    label="Icon Theme"
+    isModified={settings.iconTheme !== DEFAULT_SETTINGS.iconTheme}
+    onReset={() => {
+      settings.iconTheme = DEFAULT_SETTINGS.iconTheme;
+      settings = { ...settings };
+    }}
+    description="Select the icon set used throughout the application."
+    searchQuery={searchQuery}
+    forId="icon-theme-select"
+  >
+    <select
+      id="icon-theme-select"
+      value={settings.iconTheme}
+      onchange={(e) => {
+        settings.iconTheme = e.currentTarget.value as any;
+        settings = { ...settings };
+      }}
+      class="w-full px-3 py-2 rounded-md border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+    >
+      <option value="default">Default</option>
+      <option value="too-many-animations">Animated</option>
+    </select>
+  </SettingsItem>
+
   {#if searchQuery}
     <h4
       class="text-xs font-bold text-neutral-500 uppercase tracking-wider mb-4 border-b border-neutral-100 dark:border-neutral-800 pb-1"

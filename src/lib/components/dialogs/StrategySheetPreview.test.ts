@@ -16,6 +16,10 @@ vi.mock("../../../stores", () => ({
 }));
 
 vi.mock("../../projectStore", () => ({
+  settingsStore: require("svelte/store").writable({
+    iconTheme: "default",
+    coordinateSystem: "Pedro",
+  }),
   extraDataStore: {
     subscribe: vi.fn((fn) => {
       fn({ strategyNotes: "Test strategy notes" });

@@ -2,7 +2,8 @@
 import { render, screen } from "@testing-library/svelte";
 import { vi, test, expect } from "vitest";
 import PathTab from "../lib/components/tabs/PathTab.svelte";
-import { DEFAULT_SETTINGS, getDefaultStartPoint } from "../config";
+import { DEFAULT_SETTINGS } from "../config/defaults";
+import { getDefaultStartPoint } from "../config/defaults";
 import type { Line, SequenceItem } from "../types";
 
 // Mock stores that PathTab uses

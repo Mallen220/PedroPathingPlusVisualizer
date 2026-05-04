@@ -9,6 +9,7 @@ vi.mock("../../../stores", () => ({
 }));
 
 vi.mock("../../../lib/projectStore", () => ({
+  settingsStore: require("svelte/store").writable({ iconTheme: "default" }),
   startPointStore: { get: vi.fn(), set: vi.fn(), subscribe: vi.fn() },
   linesStore: { get: vi.fn(), set: vi.fn(), subscribe: vi.fn() },
   shapesStore: { get: vi.fn(), set: vi.fn(), subscribe: vi.fn() },

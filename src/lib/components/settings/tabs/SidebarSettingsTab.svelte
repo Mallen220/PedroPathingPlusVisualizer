@@ -461,7 +461,10 @@
                 class="w-5 h-5 flex-none flex items-center justify-center text-neutral-500"
               >
                 {#if (available as any).iconName}
-                  <Icon icon={(available as any).iconName as IconName} className="size-4" />
+                  <Icon
+                    icon={(available as any).iconName as IconName}
+                    className="size-4"
+                  />
                 {:else if available.iconSvg}
                   {#if ICON_COMPONENT_MAP[available.iconSvg]}
                     {@const SvelteComponent_1 =
@@ -590,7 +593,11 @@
                     <div
                       class="absolute inset-y-0 left-3 flex items-center pointer-events-none text-neutral-400"
                     >
-                      <Icon icon="SearchIcon" className="size-4" strokeWidth={2} />
+                      <Icon
+                        icon="SearchIcon"
+                        className="size-4"
+                        strokeWidth={2}
+                      />
                     </div>
                     <input
                       type="text"
@@ -675,7 +682,8 @@
                           class="text-neutral-700 dark:text-neutral-300 truncate"
                           >{customActionIconKey}</span
                         >
-                        <Icon icon="ChevronDownIcon"
+                        <Icon
+                          icon="ChevronDownIcon"
                           className="size-3 ml-auto text-neutral-400 transition-transform {isIconMenuOpen
                             ? 'rotate-180'
                             : 'rotate-0'}"

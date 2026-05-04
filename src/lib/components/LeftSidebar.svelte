@@ -2,7 +2,6 @@
 <script lang="ts">
   import type { IconName } from "./icons/icon-map";
   import { Icon } from "./icons/index";
-  import type { Component } from "svelte";
 
   import {
     showFileManager,
@@ -356,7 +355,10 @@
               class="sidebar-icon flex-none flex items-center justify-center"
             >
               {#if item.iconName}
-                <Icon icon={item.iconName as IconName} className="sidebar-icon flex-none" />
+                <Icon
+                  icon={item.iconName as IconName}
+                  className="sidebar-icon flex-none"
+                />
               {:else}
                 {@html item.iconSvg}
               {/if}
@@ -393,7 +395,10 @@
               class="sidebar-icon flex-none flex items-center justify-center"
             >
               {#if item.iconName}
-                <Icon icon={item.iconName as IconName} className="sidebar-icon flex-none" />
+                <Icon
+                  icon={item.iconName as IconName}
+                  className="sidebar-icon flex-none"
+                />
               {:else if item.iconSvg && ICON_COMPONENT_MAP[item.iconSvg]}
                 {@const SvelteComponent = ICON_COMPONENT_MAP[item.iconSvg]}
                 <SvelteComponent className="sidebar-icon flex-none" />
@@ -436,7 +441,10 @@
                 class="sidebar-icon flex-none flex items-center justify-center"
               >
                 {#if item.iconName}
-                  <Icon icon={item.iconName as IconName} className="sidebar-icon flex-none" />
+                  <Icon
+                    icon={item.iconName as IconName}
+                    className="sidebar-icon flex-none"
+                  />
                 {:else}
                   <Icon icon="FolderIcon" className="sidebar-icon flex-none" />
                 {/if}
@@ -477,7 +485,8 @@
                 class="sidebar-icon flex-none flex items-center justify-center"
               >
                 {#if item.iconName}
-                  <Icon icon={item.iconName as IconName}
+                  <Icon
+                    icon={item.iconName as IconName}
                     className="sidebar-icon-small flex-none"
                   />
                 {/if}
@@ -556,7 +565,8 @@
                 class="sidebar-icon flex-none flex items-center justify-center"
               >
                 {#if item.iconName}
-                  <Icon icon={item.iconName as IconName}
+                  <Icon
+                    icon={item.iconName as IconName}
                     className="sidebar-icon-small flex-none"
                   />
                 {:else}
@@ -607,7 +617,8 @@
                   class="sidebar-icon flex-none flex items-center justify-center"
                 >
                   {#if item.iconName}
-                    <Icon icon={item.iconName as IconName}
+                    <Icon
+                      icon={item.iconName as IconName}
                       className="sidebar-icon-small flex-none"
                     />
                   {:else}
@@ -1320,7 +1331,8 @@
                 class="sidebar-icon flex-none flex items-center justify-center"
               >
                 {#if item.iconName}
-                  <Icon icon={item.iconName as IconName}
+                  <Icon
+                    icon={item.iconName as IconName}
                     className="sidebar-icon-small flex-none"
                   />
                 {:else}
@@ -1364,7 +1376,8 @@
                 class="sidebar-icon flex-none flex items-center justify-center"
               >
                 {#if item.iconName}
-                  <Icon icon={item.iconName as IconName}
+                  <Icon
+                    icon={item.iconName as IconName}
                     className="sidebar-icon-small flex-none"
                   />
                 {:else}
@@ -1408,7 +1421,8 @@
                 class="sidebar-icon flex-none flex items-center justify-center"
               >
                 {#if item.iconName}
-                  <Icon icon={item.iconName as IconName}
+                  <Icon
+                    icon={item.iconName as IconName}
                     className="sidebar-icon-small flex-none"
                   />
                 {:else}

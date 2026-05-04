@@ -37,7 +37,7 @@ describe("File Utils", () => {
     maxAcceleration: 0,
     fieldMap: "",
     theme: "auto",
-      iconTheme: "default",
+    iconTheme: "default",
   };
 
   beforeEach(() => {
