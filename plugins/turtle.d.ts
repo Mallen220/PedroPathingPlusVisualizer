@@ -261,10 +261,11 @@ interface CustomSidebarItem {
   label: string;
   commandId: string;
   iconSvg: string;
-  iconComponent?: Component;
+  iconName?: string;
 }
 
 interface Settings {
+  iconTheme: "default" | "too-many-animations";
   xVelocity: number;
   yVelocity: number;
   aVelocity: number;
@@ -476,7 +477,7 @@ interface TabDefinition {
   label: string;
   component: any;
   icon?: string;
-  iconComponent?: any;
+  iconName?: string;
   order?: number;
 }
 

@@ -57,6 +57,7 @@ describe("PathOptimizer", () => {
       maxAcceleration: 20,
       fieldMap: "centerstage",
       theme: "dark",
+      iconTheme: "default",
       optimizationIterations: 10,
       optimizationPopulationSize: 10,
       optimizationMutationRate: 0.5,

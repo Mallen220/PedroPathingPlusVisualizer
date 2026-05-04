@@ -55,6 +55,7 @@ describe("PathOptimizer Keep-In Zones", () => {
       maxAcceleration: 20,
       fieldMap: "centerstage",
       theme: "dark",
+      iconTheme: "default",
       optimizationIterations: 10,
       optimizationPopulationSize: 10,
       validateFieldBoundaries: false, // Disable boundary checks to focus on Keep-In

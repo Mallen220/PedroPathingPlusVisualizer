@@ -45,6 +45,7 @@ describe("Time Calculator", () => {
     rWidth: 18,
     safetyMargin: 1,
     theme: "auto",
+      iconTheme: "default",
   };
 
   const startPoint: Point = {

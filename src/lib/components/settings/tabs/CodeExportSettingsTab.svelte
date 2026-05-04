@@ -5,7 +5,8 @@
   import { DEFAULT_SETTINGS } from "../../../../config/defaults";
   import type { Settings } from "../../../../types/index";
   import { currentFilePath, currentDirectoryStore } from "../../../../stores";
-  import * as ICONS from "../../icons";
+    import Icon from "../../icons/Icon.svelte";
+  import type { IconName } from "../../icons/icon-map";
   import { isBrowser } from "../../../../utils/platform";
 
   interface Props {
@@ -172,7 +173,7 @@
               title="Browse Directory"
             >
               <!-- Folder Icon -->
-              <ICONS.FolderIcon className="size-5" />
+              <Icon icon="FolderIcon" className="size-5" />
             </button>
           </div>
           <div class="text-xs text-neutral-500 dark:text-neutral-400 mt-1">
@@ -238,7 +239,7 @@
               class="mt-2 flex items-center gap-2 px-3 py-1.5 bg-yellow-50 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-200 text-xs rounded-lg border border-yellow-200 dark:border-yellow-800/50"
               role="alert"
             >
-              <ICONS.TriangleWarningIcon className="size-4 shrink-0" />
+              <Icon icon="TriangleWarningIcon" className="size-4 shrink-0" />
               <span
                 >Metric code generation requires embedding poses. Please enable
                 'Embed Pose Data' below.</span

@@ -23,6 +23,7 @@ const defaultSettings = {
   maxAngularAcceleration: 3,
   fieldMap: "none",
   theme: "auto",
+      iconTheme: "default" as const,
 };
 
 describe("unwrapAngle", () => {

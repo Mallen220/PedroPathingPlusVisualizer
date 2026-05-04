@@ -1,5 +1,6 @@
 <!-- Copyright 2026 Matthew Allen. Licensed under the Modified Apache License, Version 2.0. -->
 <script module lang="ts">
+  import type { IconName } from "./components/icons/icon-map";
   import { Icon } from "./components/icons/index";
   import { tabRegistry as tabRegistryModule } from "./registries";
   import PathTab from "./components/tabs/PathTab.svelte";
@@ -23,35 +24,35 @@
       label: "Paths",
       component: PathTab,
       order: 0,
-      iconComponent: PathTabIcon,
+      iconName: "PathTabIcon",
     });
     tabRegistryModule.register({
       id: "field",
       label: "Field",
       component: FieldTab,
       order: 1,
-      iconComponent: FieldTabIcon,
+      iconName: "FieldTabIcon",
     });
     tabRegistryModule.register({
       id: "table",
       label: "Table",
       component: TableTab,
       order: 2,
-      iconComponent: TableTabIcon,
+      iconName: "TableTabIcon",
     });
     tabRegistryModule.register({
       id: "telemetry",
       label: "Telemetry",
       component: TelemetryTab,
       order: 3,
-      iconComponent: ZapIcon,
+      iconName: "ZapIcon",
     });
     tabRegistryModule.register({
       id: "code",
       label: "Code",
       component: CodeTab,
       order: 3,
-      iconComponent: CodeIcon,
+      iconName: "CodeIcon",
     });
   };
 
@@ -647,8 +648,8 @@
             >
               {#if tab.icon}
                 {@html tab.icon}
-              {:else if tab.iconComponent}
-                <tab.iconComponent className="size-4" />
+              {:else if tab.iconName}
+                <Icon icon={tab.iconName as IconName} className="size-4" />
               {/if}
               {tab.label}
             </button>

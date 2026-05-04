@@ -1,5 +1,6 @@
 <!-- Copyright 2026 Matthew Allen. Licensed under the Modified Apache License, Version 2.0. -->
 <script lang="ts">
+  import type { IconName } from "./icons/icon-map";
   import { Icon } from "./icons/index";
   import type { Component } from "svelte";
 
@@ -62,7 +63,7 @@
     shortcutKey?: string;
     commandId?: string;
     iconSvg?: string;
-    iconComponent?: Component;
+    iconName?: string;
   };
 
   const ICON_COMPONENT_MAP: Record<string, any> = {
@@ -354,8 +355,8 @@
             <div
               class="sidebar-icon flex-none flex items-center justify-center"
             >
-              {#if item.iconComponent}
-                <item.iconComponent className="sidebar-icon flex-none" />
+              {#if item.iconName}
+                <Icon icon={item.iconName as IconName} className="sidebar-icon flex-none" />
               {:else}
                 {@html item.iconSvg}
               {/if}
@@ -391,8 +392,8 @@
             <div
               class="sidebar-icon flex-none flex items-center justify-center"
             >
-              {#if item.iconComponent}
-                <item.iconComponent className="sidebar-icon flex-none" />
+              {#if item.iconName}
+                <Icon icon={item.iconName as IconName} className="sidebar-icon flex-none" />
               {:else if item.iconSvg && ICON_COMPONENT_MAP[item.iconSvg]}
                 {@const SvelteComponent = ICON_COMPONENT_MAP[item.iconSvg]}
                 <SvelteComponent className="sidebar-icon flex-none" />
@@ -434,8 +435,8 @@
               <div
                 class="sidebar-icon flex-none flex items-center justify-center"
               >
-                {#if item.iconComponent}
-                  <item.iconComponent className="sidebar-icon flex-none" />
+                {#if item.iconName}
+                  <Icon icon={item.iconName as IconName} className="sidebar-icon flex-none" />
                 {:else}
                   <Icon icon="FolderIcon" className="sidebar-icon flex-none" />
                 {/if}
@@ -475,8 +476,8 @@
               <div
                 class="sidebar-icon flex-none flex items-center justify-center"
               >
-                {#if item.iconComponent}
-                  <item.iconComponent
+                {#if item.iconName}
+                  <Icon icon={item.iconName as IconName}
                     className="sidebar-icon-small flex-none"
                   />
                 {/if}
@@ -554,8 +555,8 @@
               <div
                 class="sidebar-icon flex-none flex items-center justify-center"
               >
-                {#if item.iconComponent}
-                  <item.iconComponent
+                {#if item.iconName}
+                  <Icon icon={item.iconName as IconName}
                     className="sidebar-icon-small flex-none"
                   />
                 {:else}
@@ -605,8 +606,8 @@
                 <div
                   class="sidebar-icon flex-none flex items-center justify-center"
                 >
-                  {#if item.iconComponent}
-                    <item.iconComponent
+                  {#if item.iconName}
+                    <Icon icon={item.iconName as IconName}
                       className="sidebar-icon-small flex-none"
                     />
                   {:else}
@@ -745,7 +746,7 @@
               <div
                 class="sidebar-icon flex-none flex items-center justify-center"
               >
-                <item.iconComponent />
+                <Icon icon={item.iconName as IconName} />
               </div>
               {#if sidebarExpanded}
                 <span
@@ -1318,8 +1319,8 @@
               <div
                 class="sidebar-icon flex-none flex items-center justify-center"
               >
-                {#if item.iconComponent}
-                  <item.iconComponent
+                {#if item.iconName}
+                  <Icon icon={item.iconName as IconName}
                     className="sidebar-icon-small flex-none"
                   />
                 {:else}
@@ -1362,8 +1363,8 @@
               <div
                 class="sidebar-icon flex-none flex items-center justify-center"
               >
-                {#if item.iconComponent}
-                  <item.iconComponent
+                {#if item.iconName}
+                  <Icon icon={item.iconName as IconName}
                     className="sidebar-icon-small flex-none"
                   />
                 {:else}
@@ -1406,8 +1407,8 @@
               <div
                 class="sidebar-icon flex-none flex items-center justify-center"
               >
-                {#if item.iconComponent}
-                  <item.iconComponent
+                {#if item.iconName}
+                  <Icon icon={item.iconName as IconName}
                     className="sidebar-icon-small flex-none"
                   />
                 {:else}

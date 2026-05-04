@@ -1,5 +1,6 @@
 <!-- Copyright 2026 Matthew Allen. Licensed under the Modified Apache License, Version 2.0. -->
 <script lang="ts">
+  import type { IconName } from "../icons/icon-map";
   import { Icon } from "../icons/index";
   import { onMount } from "svelte";
   import { cubicInOut } from "svelte/easing";
@@ -14,8 +15,7 @@
   import { settingsActiveTab } from "../../../stores";
   import { SIDEBAR_ITEMS } from "../../../config/sidebarItems";
   import { isBrowser } from "../../../utils/platform";
-  import * as ICONS from "../icons";
-  import GeneralSettingsTab from "../settings/tabs/GeneralSettingsTab.svelte";
+    import GeneralSettingsTab from "../settings/tabs/GeneralSettingsTab.svelte";
   import RobotSettingsTab from "../settings/tabs/RobotSettingsTab.svelte";
   import MotionSettingsTab from "../settings/tabs/MotionSettingsTab.svelte";
   import InterfaceSettingsTab from "../settings/tabs/InterfaceSettingsTab.svelte";
@@ -52,42 +52,42 @@
     {
       id: "general",
       label: "General",
-      iconComponent: ICONS.CogIcon,
+      iconName: "CogIcon",
     },
     {
       id: "robot",
       label: "Robot",
-      iconComponent: ICONS.ShowRobotIcon,
+      iconName: "ShowRobotIcon",
     },
     {
       id: "motion",
       label: "Motion",
-      iconComponent: ICONS.ZapIcon,
+      iconName: "ZapIcon",
     },
     {
       id: "interface",
       label: "Interface",
-      iconComponent: ICONS.PenIcon,
+      iconName: "PenIcon",
     },
     {
       id: "sidebar",
       label: "Sidebar",
-      iconComponent: ICONS.SidebarLeftIcon,
+      iconName: "SidebarLeftIcon",
     },
     {
       id: "code-export",
       label: "Code Export",
-      iconComponent: ICONS.CodeBracketSquareIcon,
+      iconName: "CodeBracketSquareIcon",
     },
     {
       id: "advanced",
       label: "Advanced",
-      iconComponent: ICONS.WrenchIcon,
+      iconName: "WrenchIcon",
     },
     {
       id: "about",
       label: "About",
-      iconComponent: ICONS.InfoIcon,
+      iconName: "InfoIcon",
     },
   ] as const;
 
@@ -333,7 +333,7 @@
                   ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300'
                   : 'text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800'}"
               >
-                <tab.iconComponent className="size-5" />
+                <Icon icon={tab.iconName as IconName} className="size-5" />
                 {tab.label}
               </button>
             {/each}

@@ -40,6 +40,7 @@ describe("Time Calculator Extended", () => {
     rWidth: 18,
     safetyMargin: 1,
     theme: "auto",
+      iconTheme: "default",
   };
 
   describe("analyzePathSegment Consistency", () => {

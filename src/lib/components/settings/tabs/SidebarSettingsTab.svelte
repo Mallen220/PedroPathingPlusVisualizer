@@ -1,5 +1,7 @@
 <!-- Copyright 2026 Matthew Allen. Licensed under the Modified Apache License, Version 2.0. -->
 <script lang="ts">
+  import type { IconName } from "../../icons/icon-map";
+  import Icon from "../../icons/Icon.svelte";
   import type { Component } from "svelte";
   import SettingsItem from "../../dialogs/SettingsItem.svelte";
   import DeleteButtonWithConfirm from "../../common/DeleteButtonWithConfirm.svelte";
@@ -69,7 +71,7 @@
           id,
           label: item?.label ?? id,
           icon: item?.iconSvg ?? "",
-          iconComponent: item?.iconComponent,
+          iconName: (item as any)?.iconName,
           isCustom: !!isCustom,
         };
       });
@@ -378,14 +380,14 @@
           <div
             class="flex-none text-neutral-300 dark:text-neutral-600 cursor-grab active:cursor-grabbing hover:text-neutral-500 dark:hover:text-neutral-400 transition-colors"
           >
-            <ICONS.ListIcon className="size-4" />
+            <Icon icon="ListIcon" className="size-4" />
           </div>
           <!-- Icon -->
           <div
             class="flex-none w-5 h-5 flex items-center justify-center text-neutral-500"
           >
-            {#if item.iconComponent}
-              <item.iconComponent className="size-5" />
+            {#if item.iconName}
+              <Icon icon={item.iconName as IconName} className="size-5" />
             {:else if item.icon}
               {#if ICON_COMPONENT_MAP[item.icon]}
                 {@const SvelteComponent = ICON_COMPONENT_MAP[item.icon]}
@@ -394,13 +396,13 @@
                 {@html item.icon}
               {/if}
             {:else if item.id === "separator"}
-              <ICONS.MinusCircleIcon className="size-4" />
+              <Icon icon="MinusCircleIcon" className="size-4" />
             {:else if item.id === "spacer"}
               <div
                 class="h-4 w-4 border-2 border-dashed border-neutral-300 rounded-full"
               ></div>
             {:else}
-              <ICONS.PlusIcon className="size-4" />
+              <Icon icon="PlusIcon" className="size-4" />
             {/if}
           </div>
           <!-- Label -->
@@ -418,7 +420,7 @@
               class="p-1 rounded text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
               title="Move up"
             >
-              <ICONS.ChevronUpIcon className="size-4" />
+              <Icon icon="ChevronUpIcon" className="size-4" />
             </button>
             <button
               onclick={() => moveSidebarItemDown(idx)}
@@ -426,14 +428,14 @@
               class="p-1 rounded text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-700 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
               title="Move down"
             >
-              <ICONS.ChevronDownIcon className="size-4" />
+              <Icon icon="ChevronDownIcon" className="size-4" />
             </button>
             <button
               onclick={() => removeSidebarItem(idx)}
               class="p-1 hover:bg-red-100 dark:hover:bg-red-900/40 text-neutral-400 hover:text-red-500 dark:hover:text-red-400 rounded transition-colors"
               title="Remove from sidebar"
             >
-              <ICONS.CloseIcon className="size-4" />
+              <Icon icon="CloseIcon" className="size-4" />
             </button>
           </div>
         </div>
@@ -458,8 +460,8 @@
               <span
                 class="w-5 h-5 flex-none flex items-center justify-center text-neutral-500"
               >
-                {#if available.iconComponent}
-                  <available.iconComponent className="size-4" />
+                {#if (available as any).iconName}
+                  <Icon icon={(available as any).iconName as IconName} className="size-4" />
                 {:else if available.iconSvg}
                   {#if ICON_COMPONENT_MAP[available.iconSvg]}
                     {@const SvelteComponent_1 =
@@ -469,7 +471,7 @@
                     {@html available.iconSvg}
                   {/if}
                 {:else}
-                  <ICONS.PlusIcon className="size-4" />
+                  <Icon icon="PlusIcon" className="size-4" />
                 {/if}
               </span>
               <span class="truncate" title={available.label}
@@ -510,7 +512,7 @@
             class="inline-flex items-center gap-2 px-2.5 py-1 text-xs font-semibold text-red-600 bg-red-50 hover:text-red-700 hover:bg-red-100 dark:text-red-400 dark:hover:text-red-300 dark:bg-red-900/20 dark:hover:bg-red-900/30 rounded-md transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
             disabled={!isSidebarLayoutModified && !hasCustomSidebarTools}
           >
-            <ICONS.ResetIcon className="size-4" />
+            <Icon icon="ResetIcon" className="size-4" />
             Reset Sidebar
           </button>
         </div>
@@ -524,7 +526,7 @@
             onclick={() => (showCustomSidebarForm = true)}
             class="w-full flex items-center justify-center gap-2 py-2 px-4 border-2 border-dashed border-neutral-300 dark:border-neutral-700 rounded-lg text-sm font-medium text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/10 hover:border-blue-300 transition-colors"
           >
-            <ICONS.PlusIcon className="size-4" />
+            <Icon icon="PlusIcon" className="size-4" />
             Create Custom Sidebar Tool
           </button>
         {:else}
@@ -546,7 +548,7 @@
                 onclick={() => (showCustomSidebarForm = false)}
                 class="text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 transition-colors"
               >
-                <ICONS.CloseIcon className="size-4" />
+                <Icon icon="CloseIcon" className="size-4" />
               </button>
             </div>
 
@@ -588,7 +590,7 @@
                     <div
                       class="absolute inset-y-0 left-3 flex items-center pointer-events-none text-neutral-400"
                     >
-                      <ICONS.SearchIcon className="size-4" strokeWidth={2} />
+                      <Icon icon="SearchIcon" className="size-4" strokeWidth={2} />
                     </div>
                     <input
                       type="text"
@@ -673,7 +675,7 @@
                           class="text-neutral-700 dark:text-neutral-300 truncate"
                           >{customActionIconKey}</span
                         >
-                        <ICONS.ChevronDownIcon
+                        <Icon icon="ChevronDownIcon"
                           className="size-3 ml-auto text-neutral-400 transition-transform {isIconMenuOpen
                             ? 'rotate-180'
                             : 'rotate-0'}"

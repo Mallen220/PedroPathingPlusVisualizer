@@ -9,7 +9,8 @@
   import { themesStore } from "../../../pluginsStore";
   import { followRobotStore } from "../../../projectStore";
   import { fieldZoom, fieldPan } from "../../../../stores";
-  import * as ICONS from "../../icons";
+    import Icon from "../../icons/Icon.svelte";
+  import type { IconName } from "../../icons/icon-map";
   import CustomFieldWizard from "../../settings/CustomFieldWizard.svelte";
 
   interface Props {
@@ -183,7 +184,7 @@
           class="p-2 text-neutral-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded transition-colors"
           onclick={() => handleDeleteCustomMap(settings.fieldMap)}
         >
-          <ICONS.TrashIcon className="size-5" />
+          <Icon icon="TrashIcon" className="size-5" />
         </button>
       {/if}
     </div>

@@ -40,6 +40,7 @@ describe("PathStatisticsDialog", () => {
       safetyMargin: 0,
       fieldMap: "centerstage.webp",
       theme: "light",
+      iconTheme: "default",
     };
   });
 
