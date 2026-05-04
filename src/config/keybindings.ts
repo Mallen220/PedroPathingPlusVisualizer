@@ -630,7 +630,13 @@ export const DEFAULT_KEY_BINDINGS: KeyBinding[] = [
     key: "h",
     description: "Focus Heading Input",
     action: "focusHeading",
-    category: "Editing",
+  },
+  {
+    id: "zoom-to-fit",
+    key: "shift+z",
+    description: "Zoom to Fit",
+    action: "zoomToFit",
+    category: "View",
   },
   {
     id: "open-whats-new",

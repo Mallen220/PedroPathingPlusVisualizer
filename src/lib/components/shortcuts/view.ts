@@ -9,7 +9,7 @@ import {
   selectedLineId,
 } from "../../../stores";
 import { computeZoomStep } from "../../zoomHelpers";
-import { getDefaultStartPoint } from "../../../config";
+import { getDefaultStartPoint, FIELD_SIZE } from "../../../config";
 import { isUIElementFocused } from "./utils";
 
 export function cycleGridSize() {
@@ -135,4 +135,52 @@ export function panToEnd(fieldRenderer: any) {
 export function panView(dx: number, dy: number) {
   if (isUIElementFocused() || get(settingsStore).lockFieldView) return;
   fieldPan.update((p) => ({ x: p.x + dx, y: p.y + dy }));
+}
+
+
+export function zoomToFit(fieldRenderer: any) {
+  if (isUIElementFocused() || get(settingsStore).lockFieldView) return;
+  const startPoint = get(startPointStore);
+  const lines = get(linesStore);
+
+  let minX = startPoint.x;
+  let maxX = startPoint.x;
+  let minY = startPoint.y;
+  let maxY = startPoint.y;
+
+  lines.forEach((line) => {
+    minX = Math.min(minX, line.endPoint.x);
+    maxX = Math.max(maxX, line.endPoint.x);
+    minY = Math.min(minY, line.endPoint.y);
+    maxY = Math.max(maxY, line.endPoint.y);
+  });
+
+  const padding = FIELD_SIZE * 0.1;
+  minX -= padding;
+  maxX += padding;
+  minY -= padding;
+  maxY += padding;
+
+  const width = maxX - minX;
+  const height = maxY - minY;
+
+  if (width <= 0 || height <= 0) {
+    resetZoom();
+    return;
+  }
+
+  const scaleX = FIELD_SIZE / width;
+  const scaleY = FIELD_SIZE / height;
+  let newZoom = Math.min(scaleX, scaleY);
+  newZoom = Math.max(0.1, Math.min(5, newZoom));
+
+  const centerX = (minX + maxX) / 2;
+  const centerY = (minY + maxY) / 2;
+
+  if (fieldRenderer && fieldRenderer.panToField) {
+    fieldZoom.set(Number(newZoom.toFixed(2)));
+    fieldRenderer.panToField(centerX, centerY);
+  } else {
+    resetZoom();
+  }
 }
