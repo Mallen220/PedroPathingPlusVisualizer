@@ -57,8 +57,7 @@
 
     <!-- Sort Toggle -->
     <button
-      onclick={() =>
-        onsortchange?.(sortMode === "name" ? "date" : "name")}
+      onclick={() => onsortchange?.(sortMode === "name" ? "date" : "name")}
       class="p-1.5 text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-200 rounded hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors shrink-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
       title={`Sort by ${sortMode === "name" ? "Date" : "Name"}`}
       aria-label={`Sort by ${sortMode === "name" ? "Date" : "Name"}`}
@@ -72,8 +71,7 @@
 
     <!-- View Toggle -->
     <button
-      onclick={() =>
-        onviewchange?.(viewMode === "list" ? "grid" : "list")}
+      onclick={() => onviewchange?.(viewMode === "list" ? "grid" : "list")}
       class="p-1.5 text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-200 rounded hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors shrink-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
       title={`Switch to ${viewMode === "list" ? "Grid" : "List"} View`}
       aria-label={`Switch to ${viewMode === "list" ? "Grid" : "List"} View`}

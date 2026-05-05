@@ -1085,7 +1085,9 @@
           </div>
         {:else if item.id === "lockView"}
           <!-- Lock View -->
-          <div class="w-full flex justify-center {sidebarExpanded ? 'px-2' : ''}">
+          <div
+            class="w-full flex justify-center {sidebarExpanded ? 'px-2' : ''}"
+          >
             <button
               title={`Toggle Field View Lock${getShortcutFromSettings(settings, "toggle-lock-view")}`}
               aria-label="Toggle Field View Lock"
@@ -1102,7 +1104,9 @@
                 ? 'text-blue-500 bg-blue-50 dark:bg-blue-900/20'
                 : 'text-neutral-500 dark:text-neutral-400 hover:bg-neutral-200 dark:hover:bg-neutral-800'}"
             >
-              <div class="sidebar-icon flex-none flex items-center justify-center">
+              <div
+                class="sidebar-icon flex-none flex items-center justify-center"
+              >
                 {#if settings.lockFieldView}
                   <LockIcon className="sidebar-icon-small flex-none" />
                 {:else}
@@ -1110,7 +1114,9 @@
                 {/if}
               </div>
               {#if sidebarExpanded}
-                <span class="ml-3 text-sm font-medium truncate">{item.label}</span>
+                <span class="ml-3 text-sm font-medium truncate"
+                  >{item.label}</span
+                >
               {/if}
             </button>
           </div>
