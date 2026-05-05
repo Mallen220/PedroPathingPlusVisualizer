@@ -410,8 +410,7 @@
   }
 
   // Handle directory change (manual input)
-  async function changeDirectoryManual(e: CustomEvent<string>) {
-    const newDir = e.detail;
+  async function changeDirectoryManual(newDir: string) {
     if (!newDir) return;
 
     try {
@@ -540,9 +539,9 @@
 
   // File Operations
   async function handleMoveFile(
-    e: CustomEvent<{ sourceFile: FileInfo; targetDir: FileInfo }>,
+    data: { sourceFile: FileInfo; targetDir: FileInfo },
   ) {
-    const { sourceFile, targetDir } = e.detail;
+    const { sourceFile, targetDir } = data;
     if (!targetDir.isDirectory) return;
     if (sourceFile.path === targetDir.path) return;
     if (sourceFile.name === "..") return; // cannot move the .. directory itself
@@ -1026,9 +1025,8 @@
   }
 
   // Event handlers for child components
-  function handleMenuAction(e: any) {
-    // If called from template with detail extracted or raw event
-    const { action, file } = e.detail || e;
+  function handleMenuAction(data: { action: string; file: FileInfo }) {
+    const { action, file } = data;
     switch (action) {
       case "open":
         handleOpen(file);
@@ -1251,9 +1249,9 @@
     <FileManagerBreadcrumbs
       currentPath={currentDirectory}
       isAtBase={currentDirectory === baseDirectory}
-      on:change-dir={changeDirectoryManual}
-      on:change-dir-dialog={changeDirectoryDialog}
-      on:go-up={goUpDirectory}
+      onchangeDir={changeDirectoryManual}
+      onchangeDirDialog={changeDirectoryDialog}
+      ongoUp={goUpDirectory}
     />
 
     <!-- Error Display -->
@@ -1464,14 +1462,14 @@
           {sortMode}
           fieldImage={settings.fieldMap}
           {renamingFile}
-          on:select={(e) => (selectedFile = e.detail)}
-          on:open={(e) => handleOpen(e.detail)}
-          on:rename-start={(e) => (renamingFile = e.detail)}
-          on:rename-save={(e) =>
-            renamingFile && renameFile(renamingFile, e.detail)}
-          on:rename-cancel={() => (renamingFile = null)}
-          on:menu-action={handleMenuAction}
-          on:move-file={handleMoveFile}
+          onselect={(file) => (selectedFile = file)}
+          onopen={(file) => handleOpen(file)}
+          onrenameStart={(file) => (renamingFile = file)}
+          onrenameSave={(name) =>
+            renamingFile && renameFile(renamingFile, name)}
+          onrenameCancel={() => (renamingFile = null)}
+          onmenuAction={handleMenuAction}
+          onmoveFile={handleMoveFile}
         />
       {:else}
         <FileGrid
@@ -1482,14 +1480,14 @@
           fieldImage={settings.fieldMap}
           showGitStatus={settings.gitIntegration}
           {renamingFile}
-          on:select={(e) => (selectedFile = e.detail)}
-          on:open={(e) => handleOpen(e.detail)}
-          on:rename-start={(e) => (renamingFile = e.detail)}
-          on:rename-save={(e) =>
-            renamingFile && renameFile(renamingFile, e.detail)}
-          on:rename-cancel={() => (renamingFile = null)}
-          on:menu-action={handleMenuAction}
-          on:move-file={handleMoveFile}
+          onselect={(file) => (selectedFile = file)}
+          onopen={(file) => handleOpen(file)}
+          onrenameStart={(file) => (renamingFile = file)}
+          onrenameSave={(name) =>
+            renamingFile && renameFile(renamingFile, name)}
+          onrenameCancel={() => (renamingFile = null)}
+          onmenuAction={handleMenuAction}
+          onmoveFile={handleMoveFile}
         />
       {/if}
     </div>

@@ -1724,7 +1724,7 @@
     robotStateFunction={(p) =>
       calculateRobotState(p, timePrediction.timeline, lines, startPoint, x, y)}
     {electronAPI}
-    on:close={() => showExportGif.set(false)}
+    onclose={() => showExportGif.set(false)}
   />
 {/if}
 
@@ -1750,7 +1750,7 @@
       ).heading,
     }}
     {electronAPI}
-    on:close={() => showExportImage.set(false)}
+    onclose={() => showExportImage.set(false)}
   />
 {/if}
 
@@ -1786,7 +1786,7 @@
   whatsNewOpen={$showWhatsNew}
   setupDialogOpen={setupMode}
   {isLoaded}
-  on:tutorialComplete={() => showWhatsNew.set(true)}
+  ontutorialComplete={() => showWhatsNew.set(true)}
 />
 
 <SaveNameDialog

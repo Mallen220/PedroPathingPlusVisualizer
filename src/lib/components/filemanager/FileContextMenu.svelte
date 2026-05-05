@@ -1,7 +1,7 @@
 <!-- Copyright 2026 Matthew Allen. Licensed under the Modified Apache License, Version 2.0. -->
 <!-- src/lib/components/filemanager/FileContextMenu.svelte -->
 <script lang="ts">
-  import { createEventDispatcher, onMount, tick } from "svelte";
+  import { onMount, tick } from "svelte";
   import { fade } from "svelte/transition";
   import { menuNavigation } from "../../actions/menuNavigation";
   import {
@@ -18,27 +18,17 @@
     y: number;
     fileName: string;
     isDirectory?: boolean;
+    onclose?: () => void;
+    onaction?: (action: "open" | "rename" | "delete" | "duplicate" | "mirror" | "reverse" | "save-to") => void;
   }
 
-  let { x, y, fileName, isDirectory = false }: Props = $props();
-
-  const dispatch = createEventDispatcher<{
-    close: void;
-    action:
-      | "open"
-      | "rename"
-      | "delete"
-      | "duplicate"
-      | "mirror"
-      | "reverse"
-      | "save-to";
-  }>();
+  let { x, y, fileName, isDirectory = false, onclose, onaction }: Props = $props();
 
   let menuElement: HTMLDivElement | undefined = $state();
 
   function handleClickOutside(event: MouseEvent) {
     if (menuElement && !menuElement.contains(event.target as Node)) {
-      dispatch("close");
+      onclose?.();
     }
   }
 
@@ -88,7 +78,7 @@
 
 <div
   use:menuNavigation
-  onclose={() => dispatch("close")}
+  onclose={() => onclose?.()}
   bind:this={menuElement}
   class="fixed z-[1200] min-w-[160px] py-1 bg-white dark:bg-neutral-800 rounded-lg shadow-xl border border-neutral-200 dark:border-neutral-700 text-sm"
   style="top: {adjustedY}px; left: {adjustedX}px;"
@@ -103,7 +93,7 @@
   </div>
 
   <button
-    onclick={() => dispatch("action", "open")}
+    onclick={() => onaction?.("open")}
     class="w-full text-left px-4 py-2 hover:bg-neutral-100 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-200 flex items-center gap-2"
   >
     <ArrowRightIcon className="size-4" />
@@ -112,7 +102,7 @@
 
   {#if !isDirectory}
     <button
-      onclick={() => dispatch("action", "save-to")}
+      onclick={() => onaction?.("save-to")}
       class="w-full text-left px-4 py-2 hover:bg-neutral-100 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-200 flex items-center gap-2"
     >
       <ArrowDownTrayIcon className="size-4" />
@@ -122,7 +112,7 @@
   <div class="h-px bg-neutral-200 dark:bg-neutral-700 my-1"></div>
 
   <button
-    onclick={() => dispatch("action", "rename")}
+    onclick={() => onaction?.("rename")}
     class="w-full text-left px-4 py-2 hover:bg-neutral-100 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-200 flex items-center gap-2"
   >
     <PenIcon className="size-4" strokeWidth={1.5} />
@@ -131,7 +121,7 @@
 
   {#if !isDirectory}
     <button
-      onclick={() => dispatch("action", "duplicate")}
+      onclick={() => onaction?.("duplicate")}
       class="w-full text-left px-4 py-2 hover:bg-neutral-100 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-200 flex items-center gap-2"
     >
       <DocumentIcon className="size-4" strokeWidth={1.5} />
@@ -139,7 +129,7 @@
     </button>
 
     <button
-      onclick={() => dispatch("action", "mirror")}
+      onclick={() => onaction?.("mirror")}
       class="w-full text-left px-4 py-2 hover:bg-neutral-100 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-200 flex items-center gap-2"
     >
       <!-- Need to flip vertically or similar for Mirror vs Reverse, we'll use ArrowCircleIcon or reverse its scale.
@@ -149,7 +139,7 @@
     </button>
 
     <button
-      onclick={() => dispatch("action", "reverse")}
+      onclick={() => onaction?.("reverse")}
       class="w-full text-left px-4 py-2 hover:bg-neutral-100 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-200 flex items-center gap-2"
     >
       <ArrowCircleIcon className="size-4" strokeWidth={1.5} />
@@ -159,7 +149,7 @@
   <div class="h-px bg-neutral-200 dark:bg-neutral-700 my-1"></div>
 
   <button
-    onclick={() => dispatch("action", "delete")}
+    onclick={() => onaction?.("delete")}
     class="w-full text-left px-4 py-2 hover:bg-red-50 dark:hover:bg-red-900/20 text-red-600 dark:text-red-400 flex items-center gap-2"
   >
     <TrashIcon className="size-4" strokeWidth={1.5} />

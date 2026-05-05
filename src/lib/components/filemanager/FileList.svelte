@@ -1,7 +1,7 @@
 <!-- Copyright 2026 Matthew Allen. Licensed under the Modified Apache License, Version 2.0. -->
 <!-- src/lib/components/filemanager/FileList.svelte -->
 <script lang="ts">
-  import { createEventDispatcher, tick } from "svelte";
+  import { tick } from "svelte";
   import type { FileInfo } from "../../../types";
   import FileContextMenu from "./FileContextMenu.svelte";
   import PathPreview from "./PathPreview.svelte";
@@ -13,16 +13,6 @@
     QuestionMarkIcon,
     EllipsisHorizontalIcon,
   } from "../icons";
-
-  const dispatch = createEventDispatcher<{
-    select: FileInfo;
-    open: FileInfo;
-    "rename-start": FileInfo;
-    "rename-save": string;
-    "rename-cancel": void;
-    "context-menu": { event: MouseEvent; file: FileInfo };
-    "move-file": { sourceFile: FileInfo; targetDir: FileInfo };
-  }>();
 
   let contextMenu: { x: number; y: number; file: FileInfo } | null =
     $state(null);
@@ -223,7 +213,7 @@
       if (data) {
         const sourceFile = JSON.parse(data) as FileInfo;
         if (sourceFile.path !== file.path) {
-          dispatch("move-file", { sourceFile, targetDir: file });
+          onmoveFile?.({ sourceFile, targetDir: file });
         }
       }
     } catch (err) {
@@ -257,7 +247,7 @@
   function handleContextMenu(event: MouseEvent, file: FileInfo) {
     event.preventDefault();
     contextMenu = { x: event.clientX, y: event.clientY, file };
-    dispatch("select", file);
+    onselect?.(file);
   }
 
   function handleMenuAction(action: string) {
@@ -275,9 +265,9 @@
     };
 
     if (action === "rename") {
-      dispatch("rename-start", file);
+      onrenameStart?.(file);
     } else {
-      dispatch("menu-action" as any, { action, file });
+      onmenuAction?.({ action, file });
     }
   }
 
@@ -364,6 +354,13 @@
     sortMode?: "name" | "date";
     renamingFile?: FileInfo | null;
     showGitStatus?: boolean;
+    onselect?: (file: FileInfo) => void;
+    onopen?: (file: FileInfo) => void;
+    onrenameStart?: (file: FileInfo) => void;
+    onrenameSave?: (name: string) => void;
+    onrenameCancel?: () => void;
+    onmoveFile?: (data: { sourceFile: FileInfo; targetDir: FileInfo }) => void;
+    onmenuAction?: (data: { action: string; file: FileInfo }) => void;
   }
 
   let {
@@ -373,6 +370,13 @@
     sortMode = "name",
     renamingFile = null,
     showGitStatus = true,
+    onselect,
+    onopen,
+    onrenameStart,
+    onrenameSave,
+    onrenameCancel,
+    onmoveFile,
+    onmenuAction,
   }: Props = $props();
   onMount(() => setupObserver());
   onDestroy(() => observer && observer.disconnect());
@@ -439,8 +443,8 @@
           {dragOverTarget === file.path
             ? 'bg-blue-100 dark:bg-blue-900 ring-2 ring-blue-500'
             : ''}"
-          onclick={() => dispatch("select", file)}
-          ondblclick={() => dispatch("open", file)}
+          onclick={() => onselect?.(file)}
+          ondblclick={() => onopen?.(file)}
           oncontextmenu={(e) => handleContextMenu(e, file)}
           role="button"
           tabindex="0"
@@ -451,7 +455,7 @@
           ondragleave={(e) => handleDragLeave(e, file)}
           ondrop={(e) => handleDrop(e, file)}
           onkeydown={(e) => {
-            if (e.key === "Enter") dispatch("open", file);
+            if (e.key === "Enter") onopen?.(file);
           }}
         >
           <!-- Icon -->
@@ -496,10 +500,10 @@
                   class="w-full px-1 py-0.5 text-sm border border-blue-400 rounded focus:outline-none dark:bg-neutral-700"
                   onkeydown={(e: KeyboardEvent) => {
                     e.stopPropagation();
-                    if (e.key === "Enter") dispatch("rename-save", renameInput);
-                    if (e.key === "Escape") dispatch("rename-cancel");
+                    if (e.key === "Enter") onrenameSave?.(renameInput);
+                    if (e.key === "Escape") onrenameCancel?.();
                   }}
-                  onblur={() => dispatch("rename-cancel")}
+                  onblur={() => onrenameCancel?.()}
                 />
               </div>
             {:else}
@@ -586,7 +590,7 @@
     y={contextMenu.y}
     fileName={contextMenu.file.name}
     isDirectory={contextMenu.file.isDirectory}
-    on:close={() => (contextMenu = null)}
-    on:action={(e) => handleMenuAction(e.detail)}
+    onclose={() => (contextMenu = null)}
+    onaction={(action) => handleMenuAction(action)}
   />
 {/if}

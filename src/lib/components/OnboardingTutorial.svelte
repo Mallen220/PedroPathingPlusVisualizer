@@ -1,6 +1,5 @@
 <!-- Copyright 2026 Matthew Allen. Licensed under the Modified Apache License, Version 2.0. -->
 <script lang="ts">
-  import { createEventDispatcher } from "svelte";
   import { driver } from "driver.js";
   import "driver.js/dist/driver.css";
   import { startTutorial } from "../../stores";
@@ -10,15 +9,15 @@
     whatsNewOpen?: boolean;
     setupDialogOpen?: boolean;
     isLoaded?: boolean;
+    ontutorialComplete?: () => void;
   }
 
   let {
     whatsNewOpen = false,
     setupDialogOpen = false,
     isLoaded = false,
+    ontutorialComplete,
   }: Props = $props();
-
-  const dispatch = createEventDispatcher();
 
   // Dev flag to force start tutorial
   const FORCE_START_DEV = false;
@@ -136,7 +135,7 @@
       // If this was the initial first-run tutorial, trigger the "What's New" / Docs
       if (isFirstRun) {
         isFirstRun = false;
-        dispatch("tutorialComplete");
+        ontutorialComplete?.();
       }
     },
   });

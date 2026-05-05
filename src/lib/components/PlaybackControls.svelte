@@ -365,8 +365,8 @@
         danger: true,
       },
     ]}
-    on:close={() => (showContextMenu = false)}
-    on:action={(e) => handleContextMenuAction(e.detail)}
+    onclose={() => (showContextMenu = false)}
+    onaction={(action) => handleContextMenuAction(action)}
   />
 {/if}
 

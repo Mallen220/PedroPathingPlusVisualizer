@@ -1,6 +1,6 @@
 <!-- Copyright 2026 Matthew Allen. Licensed under the Modified Apache License, Version 2.0. -->
 <script lang="ts">
-  import { createEventDispatcher, onMount, onDestroy } from "svelte";
+  import { onMount, onDestroy } from "svelte";
   import { get } from "svelte/store";
   import { scale } from "svelte/transition";
   import { exportPathToImage } from "../../../utils/exportAnimation";
@@ -19,6 +19,7 @@
     // D3 Scales passed as functions
     xScale?: (v: number) => number;
     yScale?: (v: number) => number;
+    onclose?: () => void;
   }
 
   let {
@@ -31,9 +32,8 @@
     electronAPI,
     xScale = (v) => v,
     yScale = (v) => v,
+    onclose,
   }: Props = $props();
-
-  const dispatch = createEventDispatcher();
 
   let format: "png" | "jpeg" | "svg" = $state("png");
   let resolutionScale = $state(1);
@@ -62,7 +62,7 @@
     previewUrl = null;
     previewBlob = null;
     status = "idle";
-    dispatch("close");
+    onclose?.();
   }
 
   function toggleValidationVisibility(visible: boolean) {

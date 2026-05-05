@@ -1306,7 +1306,7 @@
     x={contextMenuX}
     y={contextMenuY}
     items={contextMenuItems}
-    on:close={() => (contextMenuOpen = false)}
+    onclose={() => (contextMenuOpen = false)}
   />
 {/if}
 

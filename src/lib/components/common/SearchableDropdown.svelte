@@ -1,6 +1,6 @@
 <!-- Copyright 2026 Matthew Allen. Licensed under the Modified Apache License, Version 2.0. -->
 <script lang="ts">
-  import { createEventDispatcher, tick } from "svelte";
+  import { tick } from "svelte";
   import { slide } from "svelte/transition";
 
   interface Props {
@@ -18,8 +18,6 @@
     disabled = false,
     onchange,
   }: Props = $props();
-
-  const dispatch = createEventDispatcher();
 
   let isOpen = $state(false);
   let inputElement: HTMLInputElement | undefined = $state();
@@ -43,7 +41,6 @@
   function handleInput(e: Event) {
     value = (e.target as HTMLInputElement).value;
     isOpen = true;
-    dispatch("change", value);
     onchange?.(value);
   }
 
@@ -62,7 +59,6 @@
     value = opt;
     isOpen = false;
     highlightedIndex = -1;
-    dispatch("change", value);
     onchange?.(value);
   }
 
