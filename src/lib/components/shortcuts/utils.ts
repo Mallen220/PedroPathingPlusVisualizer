@@ -8,9 +8,23 @@ export function isInputFocused(): boolean {
   const el = document.activeElement as HTMLElement | null;
   if (!el) return false;
   const tag = el.tagName;
+  const isTextInput =
+    tag === "INPUT" &&
+    ![
+      "button",
+      "submit",
+      "reset",
+      "checkbox",
+      "radio",
+      "range",
+      "color",
+      "file",
+    ].includes((el.getAttribute("type") || "").toLowerCase());
   return (
-    ["INPUT", "TEXTAREA", "SELECT"].includes(tag) ||
-    (el as any).isContentEditable
+    isTextInput ||
+    tag === "TEXTAREA" ||
+    tag === "SELECT" ||
+    !!(el as any).isContentEditable
   );
 }
 
@@ -22,7 +36,11 @@ export function isButtonFocused(): boolean {
   const el = document.activeElement as HTMLElement | null;
   if (!el) return false;
   const tag = el.tagName;
-  return tag === "BUTTON" || el.getAttribute("role") === "button";
+  return (
+    tag === "BUTTON" ||
+    el.getAttribute("role") === "button" ||
+    el.getAttribute("role") === "slider"
+  );
 }
 
 export function shouldBlockShortcut(
