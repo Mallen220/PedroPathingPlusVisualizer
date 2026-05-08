@@ -56,12 +56,10 @@ interface ExtendedElectronAPI {
   createDirectory?: (dirPath: string) => Promise<boolean>;
 }
 
-// Access electronAPI dynamically to allow mocking/runtime changes
 function getElectronAPI(): ExtendedElectronAPI | undefined {
   return (globalThis as any).electronAPI as ExtendedElectronAPI | undefined;
 }
 
-// Helper to update startPoint headings based on path geometry
 function calculateStartPointHeadings(startPoint: Point, lines: Line[]): Point {
   if (!lines || lines.length === 0) return startPoint;
 
@@ -70,9 +68,8 @@ function calculateStartPointHeadings(startPoint: Point, lines: Line[]): Point {
     lines[lines.length - 1],
     lines.length > 1 ? lines[lines.length - 2].endPoint : startPoint,
   );
-  // strip out the "degrees" field if it existed so the resulting object conforms
-  // to the linear-point variant of the Point union (which forbids degrees).
-  const { degrees, ...rest } = startPoint as any;
+
+  const { degrees: _degrees, ...rest } = startPoint as any;
   return {
     ...rest,
     heading: "linear",
@@ -85,11 +82,8 @@ function addToRecentFiles(path: string, settings?: Settings) {
   const currentSettings = settings || get(settingsStore);
   let recent = currentSettings.recentFiles || [];
 
-  // Remove if exists
   recent = recent.filter((f) => f !== path);
-  // Add to top
   recent.unshift(path);
-  // Limit to 10
   if (recent.length > 10) recent = recent.slice(0, 10);
 
   settingsStore.update((s) => ({ ...s, recentFiles: recent }));
@@ -178,7 +172,6 @@ export async function loadRecentFile(path: string) {
     projectMetadataStore.set({ filepath: path, lastSaved: new Date() });
     addToRecentFiles(path);
 
-    // Trigger auto-export for recent file loads so exported code stays in sync
     await triggerAutoExportWithStores(data, path);
   } catch (err) {
     console.error("Error loading recent file:", err);
@@ -186,7 +179,6 @@ export async function loadRecentFile(path: string) {
   }
 }
 
-// Internal implementation of save logic
 async function performSave(
   startPoint: Point,
   lines: Line[],
@@ -199,13 +191,10 @@ async function performSave(
   const electronAPI = getElectronAPI();
   const extraData = get(extraDataStore);
   try {
-    // Basic validation
     if (!sequence || sequence.length === 0) {
-      // Auto-generate sequence if missing
       sequence = lines.map((l) => ({ kind: "path", lineId: l.id! }));
     }
 
-    // Ensure all items have IDs
     lines.forEach((l) => {
       if (!l.id) l.id = makeId();
     });
@@ -213,16 +202,12 @@ async function performSave(
       if (s.kind === "wait" && !s.id) s.id = makeId();
     });
 
-    // --- PREPARE FOR SAVE: Handle Linked Names ---
-    // Deep copy lines and sequence to modify names for saving without affecting the UI
     const linesToSave = structuredClone(lines);
     const sequenceToSave = structuredClone(sequence);
 
-    // Track usage of names to detect duplicates
-    const nameGroups = new Map<string, Array<Line | any>>(); // any for SequenceWaitItem
+    const nameGroups = new Map<string, Array<Line | any>>();
 
-    // Helper to collect items
-    const collectItems = (items: Array<Line | any>, type: "line" | "wait") => {
+    const collectItems = (items: Array<Line | any>, _type: "line" | "wait") => {
       items.forEach((item) => {
         const name = item.name?.trim();
         if (name) {
@@ -238,7 +223,6 @@ async function performSave(
     const waits = sequenceToSave.filter((s) => s.kind === "wait");
     collectItems(waits, "wait");
 
-    // Process groups
     nameGroups.forEach((group, name) => {
       if (group.length > 1) {
         group.forEach((item, index) => {
@@ -247,8 +231,6 @@ async function performSave(
         });
       }
     });
-
-    // --- DETERMINE SAVE PATH EARLY ---
 
     if (!targetPath && electronAPI) {
       if (electronAPI.showSaveDialog) {
@@ -275,8 +257,6 @@ async function performSave(
       targetPath = ensureDefaultProjectExtension(targetPath);
     }
 
-    // --- RELATIVIZE MACRO PATHS ---
-
     if (targetPath && electronAPI?.makeRelativePath) {
       for (const item of sequenceToSave) {
         if (item.kind === "macro") {
@@ -288,13 +268,11 @@ async function performSave(
       }
     }
 
-    // Calculate correct headings for startPoint to ensure the file reflects the path geometry
     const updatedStartPoint = calculateStartPointHeadings(
       startPoint,
       linesToSave,
     );
 
-    // Create the project data structure
     const projectData = createProjectData(
       updatedStartPoint,
       linesToSave,
@@ -306,7 +284,6 @@ async function performSave(
     const jsonString = JSON.stringify(projectData, null, 2);
 
     if (electronAPI?.saveFile) {
-      // Use the new saveFile API if available (mocked in tests)
       const result = await electronAPI.saveFile(jsonString, targetPath);
       if (result.success) {
         projectMetadataStore.update((m) => ({
@@ -333,7 +310,6 @@ async function performSave(
           }
         }
 
-        // Update macro cache if this file is being used as a macro in the current project
         const macros = get(macrosStore);
         if (result.filepath && macros.has(result.filepath)) {
           updateMacroContent(result.filepath, projectData as any);
@@ -363,7 +339,7 @@ async function performSave(
         return false;
       }
     } else if (electronAPI?.writeFile) {
-      if (!targetPath) return false; // Should have been determined above
+      if (!targetPath) return false;
 
       await electronAPI.writeFile(targetPath, jsonString);
       projectMetadataStore.update((m) => ({ ...m, filepath: targetPath! }));
@@ -387,7 +363,6 @@ async function performSave(
         }
       }
 
-      // Update macro cache if this file is being used as a macro
       const macros = get(macrosStore);
       if (targetPath && macros.has(targetPath)) {
         updateMacroContent(targetPath, projectData as any);
@@ -419,7 +394,6 @@ async function performSave(
   }
 }
 
-// Used by UI
 export async function saveProject(
   startPoint?: Point,
   lines?: Line[],
@@ -430,17 +404,7 @@ export async function saveProject(
   specificPath?: string,
   options: { quiet?: boolean } = {},
 ) {
-  // If called with just one argument that happens to be options (common if optional args are skipped)
-  // This signature is getting messy; fix usage in calls instead or detect it.
-  // Actually, standard usage in App.svelte is saveProject().
-  // If I change signature, I must be careful.
-  // Support an overload-like approach or just named args in future.
-  // For now, assume if the first arg is an object with 'quiet', it's options.
-  // BUT the first arg is Point.
-  // To avoid breaking changes, append options at the end.
-
   const electronAPI = getElectronAPI();
-  // If arguments are missing, grab from stores (UI behavior)
   const sp = startPoint || get(startPointStore);
   const ln = lines || get(linesStore);
   const st = settings || get(settingsStore);
@@ -462,7 +426,6 @@ export async function saveProject(
 
 export function saveFileAs() {
   const filePath = get(currentFilePath);
-  // Extract just the filename without the path and extension
   let filename = "trajectory";
   if (filePath) {
     const baseName = filePath.split(/[\\/]/).pop() || "";
@@ -496,7 +459,6 @@ async function exportProjectFileWithExtension(
 ) {
   const electronAPI = getElectronAPI();
   const filePath = get(currentFilePath);
-  // Extract just the filename without the path and extension
   let filename = "trajectory";
   if (filePath) {
     const baseName = filePath.split(/[\\\/]/).pop() || "";
@@ -505,21 +467,19 @@ async function exportProjectFileWithExtension(
   const defaultName = `${filename}${extension}`;
 
   if (electronAPI && !(electronAPI as any).isVirtual) {
-    // Use save dialog + writeFile
     if (electronAPI.showSaveDialog && electronAPI.writeFile) {
-      const filePath = await electronAPI.showSaveDialog({
+      const targetFilePath = await electronAPI.showSaveDialog({
         title,
         defaultPath: defaultName,
         filters: [{ name: filterName, extensions: filterExtensions }],
       });
-      if (!filePath) return;
+      if (!targetFilePath) return;
 
       const resolvedPath =
         extension === DEFAULT_PROJECT_EXTENSION
-          ? ensureDefaultProjectExtension(filePath)
-          : filePath;
+          ? ensureDefaultProjectExtension(targetFilePath)
+          : targetFilePath;
 
-      // Relativize paths
       const sequence = structuredClone(get(sequenceStore));
       if (electronAPI.makeRelativePath) {
         for (const item of sequence) {
@@ -546,7 +506,6 @@ async function exportProjectFileWithExtension(
     }
   }
 
-  // Browser fallback
   downloadTrajectory(
     get(startPointStore),
     get(linesStore),
@@ -582,40 +541,29 @@ export async function handleExternalFileOpen(filePath: string) {
   if (!electronAPI?.readFile) return;
 
   try {
-    // 1. Load the file content
     const content = await electronAPI.readFile(filePath);
     const data = JSON.parse(content);
 
-    // 2. Check if a working directory
     const savedDir = await electronAPI.getSavedDirectory?.();
     const fileName =
       filePath.split(/[\\/]/).pop() || `unknown${DEFAULT_PROJECT_EXTENSION}`;
 
-    // If no directory saved, just load it
     if (!savedDir) {
       await loadProjectData(data, filePath);
       currentFilePath.set(filePath);
       addToRecentFiles(filePath);
-
-      // If auto-export is enabled, regenerate exported code for the newly loaded file
-      // (this covers external editors / file-watchers changing the project file on disk).
       await triggerAutoExportWithStores(data, filePath);
-
       return;
     }
 
-    // 3. Check if file is already in the working directory
     const normFilePath = filePath.replaceAll(`\\`, "/").toLowerCase();
     let normSavedDir = savedDir.replaceAll(`\\`, "/").toLowerCase();
     if (!normSavedDir.endsWith("/")) normSavedDir += "/";
 
     if (normFilePath.startsWith(normSavedDir)) {
-      // Already in directory
       await loadProjectData(data, filePath);
       currentFilePath.set(filePath);
       addToRecentFiles(filePath);
-
-      // If auto-export is enabled, regenerate exported code for the newly loaded file
       await triggerAutoExportWithStores(data, filePath);
     } else if (
       confirm(
@@ -628,14 +576,12 @@ export async function handleExternalFileOpen(filePath: string) {
         : savedDir;
       const destPath = cleanSavedDir + separator + fileName;
 
-      // Check if overwrite
       if (electronAPI.fileExists && (await electronAPI.fileExists(destPath))) {
         if (
           !confirm(
             `File "${fileName}" already exists in the destination. Overwrite?`,
           )
         ) {
-          // User cancelled overwrite, just load original
           await loadProjectData(data, filePath);
           currentFilePath.set(filePath);
           addToRecentFiles(filePath);
@@ -643,33 +589,23 @@ export async function handleExternalFileOpen(filePath: string) {
         }
       }
 
-      // Perform Copy
       if (electronAPI.copyFile) {
         await electronAPI.copyFile(filePath, destPath);
-        // Load the NEW path
-        await loadProjectData(data, destPath); // data is same
+        await loadProjectData(data, destPath);
         currentFilePath.set(destPath);
         addToRecentFiles(destPath);
-
-        // Trigger auto-export for the copied/loaded file too
         await triggerAutoExportWithStores(data, destPath);
       } else {
-        // Fallback if copyFile not available (should be)
         await electronAPI.writeFile(destPath, content);
         await loadProjectData(data, destPath);
         currentFilePath.set(destPath);
         addToRecentFiles(destPath);
-
-        // Trigger auto-export for the loaded file
         await triggerAutoExportWithStores(data, destPath);
       }
     } else {
-      // User said no to copy
       await loadProjectData(data, filePath);
       currentFilePath.set(filePath);
       addToRecentFiles(filePath);
-
-      // Auto-export the file that was loaded externally as well
       await triggerAutoExportWithStores(data, filePath);
     }
   } catch (err) {
@@ -695,7 +631,6 @@ export async function loadFile(evt: Event) {
   const currPath = get(currentFilePath);
 
   if (electronAPI && currPath) {
-    // Electron copy logic
     try {
       const reader = new FileReader();
       reader.onload = async (e) => {
@@ -728,8 +663,6 @@ export async function loadFile(evt: Event) {
         await loadProjectData(data, destPath);
         currentFilePath.set(destPath);
         addToRecentFiles(destPath);
-
-        // Trigger auto-export after loading a file uploaded by the user
         await triggerAutoExportWithStores(data, destPath);
       };
       reader.readAsText(file);
@@ -737,7 +670,6 @@ export async function loadFile(evt: Event) {
       alert("Error loading file: " + (error as Error).message);
     }
   } else {
-    // Web load
     loadTrajectoryFromFile(evt, async (data) => {
       let path = undefined;
       if ((file as any).path) {
@@ -758,7 +690,7 @@ export async function handleAutoExport(
   sequence: SequenceItem[],
   settings: Settings,
   shapes: Shape[],
-  projectData: any, // passed for JSON export
+  projectData: any,
   targetPath: string,
 ) {
   const electronAPI = getElectronAPI();
@@ -766,15 +698,12 @@ export async function handleAutoExport(
 
   try {
     const exportDirName = settings.autoExportPath || "GeneratedCode";
-    // Resolve export directory relative to the target project file
     const exportDir = await electronAPI.resolvePath(targetPath, exportDirName);
 
-    // Create directory
     if (electronAPI.createDirectory) {
       await electronAPI.createDirectory(exportDir);
     }
 
-    // Determine content and extension
     let content = "";
     let extension = "txt";
     const baseName =
@@ -801,7 +730,7 @@ export async function handleAutoExport(
           { startPoint, lines, shapes: projectData.shapes, sequence },
           settingsObj,
         );
-        extension = settings.autoExportFormat === "points" ? "txt" : "java"; // Default guess, plugins might need UI config for this later
+        extension = settings.autoExportFormat === "points" ? "txt" : "java";
       } else {
         throw new Error(
           `Auto export format ${settings.autoExportFormat} not found.`,
@@ -809,12 +738,7 @@ export async function handleAutoExport(
       }
     }
 
-    // Determine filename
-
     const filename = `${baseName}.${extension}`;
-
-    // Resolve final file path. resolvePath resolves base (file) + relative (path).
-
     const relativePath = `${exportDirName}/${filename}`;
     const finalPath = await electronAPI.resolvePath(targetPath, relativePath);
 
@@ -829,7 +753,7 @@ export async function handleAutoExport(
     console.error("Auto Export Failed:", err);
     notification.set({
       message: `Auto Export Failed: ${err.message}`,
-      type: "warning", // Warning so they don't think save failed
+      type: "warning",
       timeout: 5000,
     });
   }

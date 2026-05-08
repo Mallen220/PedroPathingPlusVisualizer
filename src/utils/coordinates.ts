@@ -1,13 +1,13 @@
 // Copyright 2026 Matthew Allen. Licensed under the Modified Apache License, Version 2.0.
 export type CoordinateSystem = "Pedro" | "FTC";
+type Point = { x: number; y: number };
+type SettingsWithUnits = { visualizerUnits?: "imperial" | "metric" };
 
 export function toUser(
-  point: { x: number; y: number },
+  point: Point,
   system: CoordinateSystem = "Pedro",
-): { x: number; y: number } {
+): Point {
   if (system === "FTC") {
-    // User X = 72 - Field Y
-    // User Y = Field X - 72
     return {
       x: 72 - point.y,
       y: point.x - 72,
@@ -17,12 +17,10 @@ export function toUser(
 }
 
 export function toField(
-  point: { x: number; y: number },
+  point: Point,
   system: CoordinateSystem = "Pedro",
-): { x: number; y: number } {
+): Point {
   if (system === "FTC") {
-    // Field X = User Y + 72
-    // Field Y = 72 - User X
     return {
       x: point.y + 72,
       y: 72 - point.x,
@@ -32,55 +30,44 @@ export function toField(
 }
 
 export function toUserHeading(
-  fieldHeading: number, // degrees
-  system: CoordinateSystem = "Pedro",
+  fieldHeading: number,
+  _system: CoordinateSystem = "Pedro",
 ): number {
-  // Both systems use Right = 0, Up = 90 (Unit Circle)
   return fieldHeading;
 }
 
 export function toFieldHeading(
-  userHeading: number, // degrees
-  system: CoordinateSystem = "Pedro",
+  userHeading: number,
+  _system: CoordinateSystem = "Pedro",
 ): number {
-  // Both systems use Right = 0, Up = 90 (Unit Circle)
   return userHeading;
 }
 
 export function toUserCoordinate(
   val: number,
-  system: CoordinateSystem,
+  _system: CoordinateSystem,
 ): number {
-  return val; // Placeholder, not safe for FTC
+  return val;
 }
 
 export function toFieldCoordinate(
   val: number,
-  system: CoordinateSystem,
+  _system: CoordinateSystem,
 ): number {
-  return val; // Placeholder
+  return val;
 }
 
-/**
- * Converts inches to centimeters.
- */
 export function inchToCm(inches: number): number {
   return inches * 2.54;
 }
 
-/**
- * Converts centimeters to inches.
- */
 export function cmToInch(cm: number): number {
   return cm / 2.54;
 }
 
-/**
- * Formats a coordinate value for display based on the visualizer units setting.
- */
 export function formatDisplayCoordinate(
   val: number,
-  settings: { visualizerUnits?: "imperial" | "metric" },
+  settings: SettingsWithUnits,
   fractionDigits: number = 2,
 ): string {
   if (settings?.visualizerUnits === "metric") {
@@ -89,12 +76,9 @@ export function formatDisplayCoordinate(
   return val.toFixed(fractionDigits);
 }
 
-/**
- * Formats a distance value with its unit label based on the visualizer units setting.
- */
 export function formatDisplayDistance(
   val: number,
-  settings: { visualizerUnits?: "imperial" | "metric" },
+  settings: SettingsWithUnits,
   fractionDigits: number = 2,
 ): string {
   if (settings?.visualizerUnits === "metric") {

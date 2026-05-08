@@ -8,7 +8,6 @@ const DB_VERSION = 1;
 
 let dbPromise: Promise<IDBDatabase> | null = null;
 
-// In-memory cache for faster reads
 const fileCache = new Map<string, any>();
 let cacheInitialized = false;
 let initPromise: Promise<void> | null = null;
@@ -126,16 +125,13 @@ async function renameInDB(
   });
 }
 
-// We treat "/" as root.
 const VIRTUAL_ROOT = "/browser_fs";
 
-// Simple path resolution
 function resolvePath(base: string, relative: string): string {
-  if (relative.startsWith("/")) return relative; // absolute
+  if (relative.startsWith("/")) return relative;
 
   const baseParts = base.split("/").filter(Boolean);
 
-  // if base is a file, go to its directory
   if (base.includes(".") && !base.endsWith("/")) {
     baseParts.pop();
   }
@@ -153,10 +149,6 @@ function resolvePath(base: string, relative: string): string {
 
   return "/" + baseParts.join("/");
 }
-
-// Emulate File System structure in IndexedDB
-// Key: full path string (e.g. "/browser_fs/project1/file.turt")
-// Value: string (file content) OR object for directory (e.g. { type: "dir" })
 
 export const browserFileSystem = {
   isVirtual: true,
@@ -229,9 +221,8 @@ export const browserFileSystem = {
     return val as string;
   },
   writeFile: async (filePath: string, content: string): Promise<boolean> => {
-    // ensure parent dir exists
     const parts = filePath.split("/").filter(Boolean);
-    parts.pop(); // remove filename
+    parts.pop();
     if (parts.length > 0) {
       await setMultiple([
         { key: filePath, value: content },
@@ -251,7 +242,6 @@ export const browserFileSystem = {
     return val !== undefined && val !== null;
   },
   getSavedDirectory: async (): Promise<string> => {
-    // just return virtual root if it exists
     const val = await get(VIRTUAL_ROOT);
     if (val) return VIRTUAL_ROOT;
     await set(VIRTUAL_ROOT, { type: "dir" });
@@ -261,7 +251,7 @@ export const browserFileSystem = {
     await set(dirPath, { type: "dir" });
     return true;
   },
-  getDirectoryStats: async (dirPath: string): Promise<any> => {
+  getDirectoryStats: async (_dirPath: string): Promise<any> => {
     return { size: 0, files: 0 };
   },
   resolvePath: async (base: string, relative: string): Promise<string> => {
@@ -302,7 +292,6 @@ export const browserFileSystem = {
   },
   rendererReady: async (): Promise<void> => {},
   makeRelativePath: async (base: string, target: string): Promise<string> => {
-    // simple relative path for virtual fs
     const baseParts = base.split("/").filter(Boolean);
     if (base.includes(".") && !base.endsWith("/")) baseParts.pop();
     const targetParts = target.split("/").filter(Boolean);
