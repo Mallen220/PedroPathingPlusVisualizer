@@ -19,10 +19,26 @@
     fileName: string;
     isDirectory?: boolean;
     onclose?: () => void;
-    onaction?: (action: "open" | "rename" | "delete" | "duplicate" | "mirror" | "reverse" | "save-to") => void;
+    onaction?: (
+      action:
+        | "open"
+        | "rename"
+        | "delete"
+        | "duplicate"
+        | "mirror"
+        | "reverse"
+        | "save-to",
+    ) => void;
   }
 
-  let { x, y, fileName, isDirectory = false, onclose, onaction }: Props = $props();
+  let {
+    x,
+    y,
+    fileName,
+    isDirectory = false,
+    onclose,
+    onaction,
+  }: Props = $props();
 
   let menuElement: HTMLDivElement | undefined = $state();
 

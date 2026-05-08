@@ -13,7 +13,13 @@
     ongoUp?: () => void;
   }
 
-  let { currentPath, isAtBase = false, onchangeDir, onchangeDirDialog, ongoUp }: Props = $props();
+  let {
+    currentPath,
+    isAtBase = false,
+    onchangeDir,
+    onchangeDirDialog,
+    ongoUp,
+  }: Props = $props();
 
   let isEditing = $state(false);
   let inputPath = $state("");

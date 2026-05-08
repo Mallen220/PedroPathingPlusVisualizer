@@ -538,9 +538,10 @@
   }
 
   // File Operations
-  async function handleMoveFile(
-    data: { sourceFile: FileInfo; targetDir: FileInfo },
-  ) {
+  async function handleMoveFile(data: {
+    sourceFile: FileInfo;
+    targetDir: FileInfo;
+  }) {
     const { sourceFile, targetDir } = data;
     if (!targetDir.isDirectory) return;
     if (sourceFile.path === targetDir.path) return;

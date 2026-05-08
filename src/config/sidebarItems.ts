@@ -18,7 +18,6 @@ import {
   OnionSkinIcon,
   VelocityHeatmapIcon,
   LockIcon,
-  UnlockIcon,
   FeedbackIcon,
   GithubIcon,
   ShowRobotIcon,
