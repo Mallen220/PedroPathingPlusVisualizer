@@ -69,6 +69,7 @@
     ratingDialogAutoOpened,
     gitStatusStore,
     showTransformDialog,
+    notification,
   } from "./stores";
 
   // keep a locally-named binding for the watchers and template
@@ -160,6 +161,7 @@
     gitShow?: (filePath: string) => Promise<string | null>;
     isWindowsStore?: () => Promise<boolean>;
     onUpdateAvailable?: (callback: (data: any) => void) => void;
+    onStoreUpdateAvailable?: (callback: (data: any) => void) => void;
     downloadUpdate?: (version: string, url: string) => void;
     skipUpdate?: (version: string) => void;
   }
@@ -247,6 +249,23 @@
       electronAPI.onUpdateAvailable((data: any) => {
         updateDataStore.set(data);
         showUpdateAvailableDialog.set(true);
+      });
+    }
+
+    if (electronAPI && electronAPI.onStoreUpdateAvailable) {
+      electronAPI.onStoreUpdateAvailable((data: any) => {
+        notification.set({
+          message: `Update ${data.version} is available in the Microsoft Store.`,
+          type: "info",
+          timeout: 0,
+          actionLabel: "Open Store",
+          action: () => {
+            if (electronAPI.openExternal)
+              electronAPI.openExternal(
+                "https://apps.microsoft.com/store/detail/9NK0B4FDJ3ZW?cid=DevShareMCLPCS",
+              );
+          },
+        });
       });
     }
 

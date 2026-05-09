@@ -72,11 +72,25 @@ describe("updater.js", () => {
   });
 
   describe("checkForUpdates", () => {
-    it("skips check if running in Microsoft Store", async () => {
+    it("triggers store-update-available if running in Microsoft Store", async () => {
       process.windowsStore = true;
+      const releaseData = {
+        tag_name: "v2.0.0",
+        body: "notes",
+        html_url: "url",
+      };
+      globalThis.fetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => releaseData,
+      });
+
       const result = await updater.checkForUpdates();
-      expect(result.updateAvailable).toBe(false);
-      expect(result.reason).toBe("store");
+      expect(result.updateAvailable).toBe(true);
+      expect(result.version).toBe("2.0.0");
+      expect(mockWindow.webContents.send).toHaveBeenCalledWith(
+        "store-update-available",
+        { version: "2.0.0" },
+      );
       delete process.windowsStore;
     });
 
