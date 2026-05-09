@@ -483,7 +483,7 @@ export const DEFAULT_KEY_BINDINGS: KeyBinding[] = [
   },
   {
     id: "toggle-protractor-lock",
-    key: "alt+l",
+    key: "alt+q",
     description: "Toggle Protractor Lock",
     action: "toggleProtractorLock",
     category: "View",
