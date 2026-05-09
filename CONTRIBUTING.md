@@ -6,7 +6,7 @@ Whether you’re fixing a bug, adding a feature, improving performance, or just 
 
 ---
 
-## 📌 Project Status
+## Project Status
 
 This project is under **active and rapid development**. Expect:
 
@@ -22,23 +22,23 @@ If you encounter issues, please:
 
 ---
 
-## 🧭 Ways to Contribute
+## Ways to Contribute
 
 You can contribute in many ways:
 
-- 🐛 Bug reports and fixes
-- ✨ New features or tools
-- ⚡ Performance improvements
-- 🎨 UI/UX polish
-- 🧪 Testing and validation
-- 📖 Documentation improvements
-- 🔌 Plugins and extensions
+- Bug reports and fixes
+- New features or tools
+- Performance improvements
+- UI/UX polish
+- Testing and validation
+- Documentation improvements
+- Plugins and extensions
 
 No contribution is too small.
 
 ---
 
-## 🐞 Reporting Bugs
+## Reporting Bugs
 
 Before opening an issue, please check if it already exists.
 
@@ -55,7 +55,7 @@ https://github.com/Mallen220/TurtleTracer/issues
 
 ---
 
-## 💡 Feature Requests
+## Feature Requests
 
 Feature ideas are welcome. When proposing one:
 
@@ -71,7 +71,7 @@ Keep in mind:
 
 ---
 
-## 🧩 Development Setup
+## Development Setup
 
 ### Prerequisites
 
@@ -95,7 +95,7 @@ npm run dist
 
 ---
 
-## 🏗️ Project Structure (High-Level)
+## Project Structure (High-Level)
 
 - `src/` – Svelte UI and core application logic
 - `electron/` – Electron main and preload processes
@@ -106,7 +106,7 @@ Try to keep changes scoped and modular.
 
 ---
 
-## 🧪 Testing & Validation
+## Testing & Validation
 
 - Test your changes on at least one platform (macOS, Windows, or Linux)
 - Verify paths load, save, and export correctly
@@ -117,7 +117,7 @@ Automated testing is evolving—manual validation is currently important.
 
 ---
 
-## 🎨 UI & UX Guidelines
+## UI & UX Guidelines
 
 - Maintain the existing color semantics:
   - Green = Paths
@@ -130,7 +130,7 @@ Automated testing is evolving—manual validation is currently important.
 
 ---
 
-## 🔧 Coding Standards
+## Coding Standards
 
 - Favor readability and maintainability
 - Avoid premature optimization
@@ -146,7 +146,7 @@ Fix telemetry desync on timeline scrub
 
 ---
 
-## 🔀 Pull Request Process
+## Pull Request Process
 
 1. Fork the repository
 2. Create a feature branch
@@ -165,7 +165,7 @@ Please include:
 
 ---
 
-## 🔌 Plugins
+## Plugins
 
 If contributing a plugin:
 
@@ -176,13 +176,13 @@ If contributing a plugin:
 
 ---
 
-## 📄 License
+## License
 
 By contributing, you agree that your contributions will be licensed under the **Apache 2.0 License**, consistent with the rest of the project.
 
 ---
 
-## 🙏 Thanks
+## Thanks
 
 Every contribution helps make this tool better for teams at competitions, in the shop, and during those late-night build sessions.
 

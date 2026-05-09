@@ -65,7 +65,7 @@
 
 <br/>
 
-> **⚠️ Rapid Development Notice**
+> **Rapid Development Notice**
 > This project is currently undergoing rapid updates. Please check back regularly for bug fixes and new features. If you find an error, please report it via the [Issues tab](https://github.com/Mallen220/TurtleTracer/issues) and revert to a previous version.
 
 ---
@@ -258,7 +258,7 @@ This project is open-source and released under a [Modified Apache 2.0 License](L
 
 Your privacy is important to us. Turtle Tracer runs locally and does not collect personal data. Review our full [Privacy Policy](PRIVACY.md).
 
-## 🙏 Acknowledgments
+## Acknowledgments
 
 - **#16166 Watt's Up**: For the initial concept, development, and inspiration.
 - **Pedro Pathing Developers**: For the underlying library this visualizer supports.
