@@ -77,9 +77,11 @@ export const RotateAction: ActionDefinition = {
           const markerGroup = new Two.Group();
           markerGroup.id = `rotate-event-${rotateItem.id}-${idx}`;
 
+          markerGroup.translation.set(x(point.x), y(point.y));
+
           const markerCircle = new Two.Circle(
-            x(point.x),
-            y(point.y),
+            0,
+            0,
             uiLength(POINT_RADIUS * radiusMult),
           );
           markerCircle.id = `rotate-event-circle-${rotateItem.id}-${idx}`;
@@ -98,17 +100,11 @@ export const RotateAction: ActionDefinition = {
 
           const arrowSize = uiLength(isHovered ? 1 : 0.6);
           const arrowPoints = [
-            new Two.Anchor(
-              x(point.x) - arrowSize / 3,
-              y(point.y) - arrowSize / 3,
-            ),
-            new Two.Anchor(
-              x(point.x) + arrowSize / 3,
-              y(point.y) - arrowSize / 3,
-            ),
-            new Two.Anchor(x(point.x) + arrowSize / 3, y(point.y)),
-            new Two.Anchor(x(point.x), y(point.y)),
-            new Two.Anchor(x(point.x), y(point.y) + arrowSize / 3),
+            new Two.Anchor(-arrowSize / 3, -arrowSize / 3),
+            new Two.Anchor(arrowSize / 3, -arrowSize / 3),
+            new Two.Anchor(arrowSize / 3, 0),
+            new Two.Anchor(0, 0),
+            new Two.Anchor(0, arrowSize / 3),
           ];
           const arrow = new Two.Path(arrowPoints, false);
           arrow.fill = "none";

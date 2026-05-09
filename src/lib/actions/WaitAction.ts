@@ -76,9 +76,11 @@ export const WaitAction: ActionDefinition = {
           // FieldRenderer uses: `wait-event-${ev.waitId}-${eventIdx}`
           markerGroup.id = `wait-event-${waitItem.id}-${idx}`;
 
+          markerGroup.translation.set(x(point.x), y(point.y));
+
           const markerCircle = new Two.Circle(
-            x(point.x),
-            y(point.y),
+            0,
+            0,
             uiLength(POINT_RADIUS * radiusMult),
           );
           markerCircle.id = `wait-event-circle-${waitItem.id}-${idx}`;
@@ -97,9 +99,9 @@ export const WaitAction: ActionDefinition = {
 
           const flagSize = uiLength(isHovered ? 1 : 0.6);
           const flagPoints = [
-            new Two.Anchor(x(point.x), y(point.y) - flagSize / 2),
-            new Two.Anchor(x(point.x) + flagSize / 2, y(point.y)),
-            new Two.Anchor(x(point.x), y(point.y) + flagSize / 2),
+            new Two.Anchor(0, -flagSize / 2),
+            new Two.Anchor(flagSize / 2, 0),
+            new Two.Anchor(0, flagSize / 2),
           ];
           const flag = new Two.Path(flagPoints, true);
           flag.fill = waitSelected ? "#fffbeb" : "#ffffff";

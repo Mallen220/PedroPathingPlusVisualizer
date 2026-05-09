@@ -126,7 +126,9 @@ export function generateEventMarkerElements(
       const py = y(pos.y);
       let grp = new Two.Group();
       grp.id = `event-${idx}-${evIdx}`;
-      let circle = new Two.Circle(px, py, uiLength(radius));
+      grp.translation.set(px, py);
+
+      let circle = new Two.Circle(0, 0, uiLength(radius));
       circle.id = `event-circle-${idx}-${evIdx}`;
       circle.fill = color;
       circle.noStroke();
@@ -157,5 +159,61 @@ export function generateEventMarkerElements(
       }
     });
   }
+  // Post-process to fan out overlapping markers
+  const clusters: InstanceType<typeof Two.Group>[][] = [];
+  const overlapThreshold = uiLength(3.6); // About 2 * max radius
+
+  twoMarkers.forEach((marker) => {
+    let placed = false;
+    for (const cluster of clusters) {
+      const root = cluster[0];
+      const dx = marker.translation.x - root.translation.x;
+      const dy = marker.translation.y - root.translation.y;
+      if (Math.sqrt(dx * dx + dy * dy) < overlapThreshold) {
+        cluster.push(marker);
+        placed = true;
+        break;
+      }
+    }
+    if (!placed) {
+      clusters.push([marker]);
+    }
+  });
+
+  clusters.forEach((cluster) => {
+    if (cluster.length > 1) {
+      // Fan out in a circle
+      // Average center (though they should all be roughly the same)
+      let cx = 0,
+        cy = 0;
+      cluster.forEach((m) => {
+        cx += m.translation.x;
+        cy += m.translation.y;
+      });
+      cx /= cluster.length;
+      cy /= cluster.length;
+
+      const fanRadius = uiLength(2) + cluster.length * uiLength(0.5);
+      const angleStep = (Math.PI * 2) / cluster.length;
+
+      cluster.forEach((marker, i) => {
+        const angle = i * angleStep;
+        const newX = cx + Math.cos(angle) * fanRadius;
+        const newY = cy + Math.sin(angle) * fanRadius;
+
+        marker.translation.set(newX, newY);
+
+        // Add a leader line
+        const dx = cx - newX;
+        const dy = cy - newY;
+        const leader = new Two.Line(0, 0, dx, dy);
+        leader.stroke = "#a3a3a3"; // neutral-400
+        leader.linewidth = uiLength(0.2);
+        // Put line behind other children
+        marker.children.unshift(leader);
+      });
+    }
+  });
+
   return twoMarkers;
 }
