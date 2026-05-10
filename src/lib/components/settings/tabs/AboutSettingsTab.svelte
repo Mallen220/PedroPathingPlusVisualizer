@@ -1,6 +1,7 @@
 <!-- Copyright 2026 Matthew Allen. Licensed under the Modified Apache License, Version 2.0. -->
 <script lang="ts">
   import SettingsItem from "../../dialogs/SettingsItem.svelte";
+  import { DotIcon } from "../../icons";
   import packageJson from "../../../../../package.json";
   interface Props {
     searchQuery: string;
@@ -72,48 +73,48 @@
               target="_blank"
               class="text-blue-600 dark:text-blue-400 hover:underline">Issues</a
             >
-            <span class="text-neutral-300 dark:text-neutral-600">•</span>
+            <DotIcon className="-mx-1 text-neutral-300 dark:text-neutral-600 shrink-0" />
             <a
               href="https://github.com/Mallen220/TurtleTracer/releases"
               target="_blank"
               class="text-blue-600 dark:text-blue-400 hover:underline"
               >Releases</a
             >
-            <span class="text-neutral-300 dark:text-neutral-600">•</span>
+            <DotIcon className="-mx-1 text-neutral-300 dark:text-neutral-600 shrink-0" />
             <a
               href="https://github.com/Mallen220/TurtleTracer/blob/main/README.md"
               target="_blank"
               class="text-blue-600 dark:text-blue-400 hover:underline">README</a
             >
-            <span class="text-neutral-300 dark:text-neutral-600">•</span>
+            <DotIcon className="-mx-1 text-neutral-300 dark:text-neutral-600 shrink-0" />
             <a
               href="https://github.com/Mallen220/TurtleTracer/blob/main/CODE_OF_CONDUCT.md"
               target="_blank"
               class="text-blue-600 dark:text-blue-400 hover:underline"
               >Code of Conduct</a
             >
-            <span class="text-neutral-300 dark:text-neutral-600">•</span>
+            <DotIcon className="-mx-1 text-neutral-300 dark:text-neutral-600 shrink-0" />
             <a
               href="https://github.com/Mallen220/TurtleTracer/blob/main/CONTRIBUTING.md"
               target="_blank"
               class="text-blue-600 dark:text-blue-400 hover:underline"
               >Contributing</a
             >
-            <span class="text-neutral-300 dark:text-neutral-600">•</span>
+            <DotIcon className="-mx-1 text-neutral-300 dark:text-neutral-600 shrink-0" />
             <a
               href="https://github.com/Mallen220/TurtleTracer/blob/main/LICENSE"
               target="_blank"
               class="text-blue-600 dark:text-blue-400 hover:underline"
               >License</a
             >
-            <span class="text-neutral-300 dark:text-neutral-600">•</span>
+            <DotIcon className="-mx-1 text-neutral-300 dark:text-neutral-600 shrink-0" />
             <a
               href="https://github.com/Mallen220/TurtleTracer/blob/main/SECURITY.md"
               target="_blank"
               class="text-blue-600 dark:text-blue-400 hover:underline"
               >Security</a
             >
-            <span class="text-neutral-300 dark:text-neutral-600">•</span>
+            <DotIcon className="-mx-1 text-neutral-300 dark:text-neutral-600 shrink-0" />
             <a
               href="https://discord.gg/chHSzS4ewF"
               target="_blank"

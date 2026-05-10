@@ -2,7 +2,13 @@
 <script lang="ts">
   import { fade, fly } from "svelte/transition";
   import { cubicInOut } from "svelte/easing";
-  import { CloseIcon, SearchIcon, InfoIcon, ArrowCircleIcon } from "../icons";
+  import {
+    CloseIcon,
+    SearchIcon,
+    InfoIcon,
+    TriangleWarningIcon,
+    ArrowCircleIcon,
+  } from "../icons";
   import type { Settings } from "../../../types/index";
   import { DEFAULT_KEY_BINDINGS } from "../../../config/keybindings";
   import { notification } from "../../../stores";
@@ -403,9 +409,10 @@
         {:else}
           {#if duplicateKeys.length > 0}
             <div
-              class="mb-4 p-3 rounded bg-amber-100 dark:bg-amber-900/20 text-sm text-amber-800"
+              class="mb-4 p-3 rounded bg-amber-100 dark:bg-amber-900/20 text-sm text-amber-800 flex items-center gap-2"
             >
-              <strong class="mr-2">⚠️ Duplicate keybindings detected:</strong>
+              <TriangleWarningIcon className="size-4 shrink-0" />
+              <strong class="font-bold">Duplicate keybindings detected:</strong>
               {#each duplicateKeys as [k, arr], idx}
                 <span class="font-medium">{k}</span>
                 <span> — {arr.map((b) => b.description).join(", ")}</span>{idx <

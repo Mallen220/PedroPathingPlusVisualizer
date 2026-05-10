@@ -12,6 +12,7 @@
   import SectionHeader from "./common/SectionHeader.svelte";
   import EmptyState from "./common/EmptyState.svelte";
   import { hoveredMarkerId, diskEventNamesStore } from "../../stores";
+  import { DotIcon } from "./icons";
   import SearchableDropdown from "./common/SearchableDropdown.svelte";
   import { actionRegistry } from "../actionRegistry";
   import { findClosestT, getCurvePoint } from "../../utils/math";
@@ -733,7 +734,7 @@
                 class="truncate max-w-[100px] font-mono"
                 title={marker.parentName}>{marker.parentName}</span
               >
-              <span>•</span>
+              <DotIcon className="-mx-1 opacity-40 shrink-0" />
               {#if marker.ref.type === "temporal"}
                 <span>Global Time: {Math.round(marker.globalTime)}ms</span>
               {:else if marker.ref.type === "pose"}

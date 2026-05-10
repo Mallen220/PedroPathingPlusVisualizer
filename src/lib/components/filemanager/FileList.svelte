@@ -12,6 +12,8 @@
     CheckIcon,
     QuestionMarkIcon,
     EllipsisHorizontalIcon,
+    TriangleWarningIcon,
+    DotIcon,
   } from "../icons";
 
   let contextMenu: { x: number; y: number; file: FileInfo } | null =
@@ -542,7 +544,7 @@
                     </div>
                   {/if}
                   {#if file.error}
-                    <span class="text-xs text-red-500">⚠</span>
+                    <TriangleWarningIcon className="size-3 text-red-500" />
                   {/if}
                 </div>
               </div>
@@ -553,7 +555,7 @@
                   <span>{formatFileSize(file.size)}</span>
                 {/if}
                 {#if sortMode === "name" && !file.isDirectory}
-                  <span>•</span>
+                  <DotIcon className="-mx-1 opacity-40 shrink-0" />
                 {/if}
                 {#if sortMode === "name" || file.isDirectory}
                   <span>{formatDate(file.modified)}</span>

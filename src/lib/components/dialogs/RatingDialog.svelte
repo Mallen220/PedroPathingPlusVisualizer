@@ -111,7 +111,7 @@
             fields: [
               {
                 name: "Rating",
-                value: "⭐".repeat(rating) + " (" + rating + "/5)",
+                value: "Stars: " + rating + " / 5",
                 inline: true,
               },
               {

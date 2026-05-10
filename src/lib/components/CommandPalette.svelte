@@ -5,6 +5,8 @@
   import { onMount } from "svelte";
   import type { CommandPaletteCommand } from "../../types";
   import SearchIcon from "./icons/SearchIcon.svelte";
+  import ArrowUpIcon from "./icons/ArrowUpIcon.svelte";
+  import ArrowDownIcon from "./icons/ArrowDownIcon.svelte";
 
   interface Props {
     isOpen?: boolean;
@@ -267,12 +269,12 @@
         >
           <span class="flex items-center gap-1.5"
             ><kbd
-              class="font-mono bg-neutral-200 dark:bg-neutral-700 px-1.5 py-0.5 rounded min-w-[1.5em] text-center"
-              >↑</kbd
+              class="font-mono bg-neutral-200 dark:bg-neutral-700 px-1.5 py-0.5 rounded min-w-[1.5em] flex items-center justify-center"
+              ><ArrowUpIcon className="size-3" /></kbd
             >
             <kbd
-              class="font-mono bg-neutral-200 dark:bg-neutral-700 px-1.5 py-0.5 rounded min-w-[1.5em] text-center"
-              >↓</kbd
+              class="font-mono bg-neutral-200 dark:bg-neutral-700 px-1.5 py-0.5 rounded min-w-[1.5em] flex items-center justify-center"
+              ><ArrowDownIcon className="size-3" /></kbd
             > to navigate</span
           >
           <span class="flex items-center gap-1.5"

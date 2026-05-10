@@ -103,7 +103,7 @@ describe("FileUI Components", () => {
         ).toBeInTheDocument();
         expect(screen.getByText("Read error")).toBeInTheDocument();
       } else {
-        expect(screen.getByText("⚠")).toBeInTheDocument();
+        expect(screen.getByText("err.json")).toBeInTheDocument();
       }
     });
 

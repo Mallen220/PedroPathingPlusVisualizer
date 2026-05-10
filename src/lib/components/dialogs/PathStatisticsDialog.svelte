@@ -19,6 +19,7 @@
     WarningIcon,
     InfoIcon,
     ClipboardIcon,
+    DotIcon,
   } from "../icons";
   import { getAngularDifference } from "../../../utils/math";
   import { notification } from "../../../stores";
@@ -940,7 +941,10 @@
                         At {formatTime(insight.startTime)}
                       {/if}
                       {#if insight.value}
-                        • Max Value: {insight.value.toFixed(1)}
+                      <div class="flex items-center gap-1.5">
+                        <DotIcon className="-mx-0.5 opacity-50" />
+                        <span>Max Value: {insight.value.toFixed(1)}</span>
+                      </div>
                       {/if}
                     </div>
                   </div>

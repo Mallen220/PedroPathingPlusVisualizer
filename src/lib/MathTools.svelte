@@ -480,12 +480,12 @@
           aria-label="Drag to rotate radius line"
           onmousedown={(e) => handleMouseDown(e, "protractor-rotate")}
         />
-        <text
-          x={protractorRadius}
-          y="4"
-          class="fill-white text-xs font-bold pointer-events-none"
-          text-anchor="middle">➜</text
-        >
+        <path
+          d="M-3.5 -3.5 L3.5 0 L-3.5 3.5 Z"
+          fill="white"
+          transform="translate({protractorRadius}, 0)"
+          class="pointer-events-none"
+        />
       </g>
 
       <!-- Angle display -->
@@ -513,14 +513,14 @@
           aria-label="Drag to resize protractor"
           onmousedown={(e) => handleMouseDown(e, "protractor-resize")}
         />
-        <text
-          x={resizeHandlePosition.x}
-          y={resizeHandlePosition.y + 4}
-          class="fill-white text-xs font-bold pointer-events-none"
-          text-anchor="middle"
-        >
-          ↔
-        </text>
+        <path
+          d="M-5 0 L5 0 M-5 0 L-2 -3 M-5 0 L-2 3 M5 0 L2 -3 M5 0 L2 3"
+          stroke="white"
+          stroke-width="1.5"
+          fill="none"
+          transform="translate({resizeHandlePosition.x}, {resizeHandlePosition.y})"
+          class="pointer-events-none"
+        />
       </g>
 
       <!-- Center move handle / lock indicator -->

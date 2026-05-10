@@ -7,6 +7,7 @@
     SearchIcon,
     ArrowCircleIcon,
     TriangleWarningIcon,
+    DotIcon,
   } from "../icons/index";
   import { fade, fly } from "svelte/transition";
   import { resetSettings } from "../../../utils/settingsPersistence";
@@ -305,7 +306,8 @@
             >
               <span>Version {appVersion}</span>
               {#if downloadCount}
-                <span>• {downloadCount.toLocaleString()} Downloads</span>
+                <DotIcon className="-mx-1 opacity-40 shrink-0" />
+                <span>{downloadCount.toLocaleString()} Downloads</span>
               {/if}
             </div>
 
