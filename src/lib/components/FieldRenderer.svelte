@@ -475,7 +475,7 @@
         // Optimization: Don't use elementFromPoint here. It forces a reflow.
 
         if (isBoxSelecting && boxSelectStart && boxSelectElement) {
-          boxSelectCurrent = { x: currentMouseX, y: currentMouseY };
+          boxSelectCurrent = { x: rawInchXForDisplay, y: rawInchYForDisplay };
 
           const minX = Math.min(boxSelectStart.x, boxSelectCurrent.x);
           const maxX = Math.max(boxSelectStart.x, boxSelectCurrent.x);
@@ -1204,7 +1204,7 @@
             );
             boxSelectElement.fill = "rgba(59, 130, 246, 0.2)"; // blue-500 with opacity
             boxSelectElement.stroke = "#3b82f6";
-            boxSelectElement.linewidth = uiLength(1.5);
+            boxSelectElement.linewidth = 1;
             two!.add(boxSelectElement);
             two!.update();
             return;
