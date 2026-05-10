@@ -207,6 +207,63 @@
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  function checkEventMarkerSelections(
+    line: any,
+    lIdx: number,
+    minX: number,
+    maxX: number,
+    minY: number,
+    maxY: number,
+    newSelections: string[],
+  ) {
+    if (!line.eventMarkers) return;
+    line.eventMarkers.forEach((em: any, eIdx: number) => {
+      if (em.type === "pose" && em.poseX !== undefined && em.poseY !== undefined) {
+        if (isPointInBox(em.poseX, em.poseY, minX, maxX, minY, maxY)) {
+          newSelections.push(`event-${lIdx}-${eIdx}`);
+        }
+      }
+    });
+  }
+
+  function checkLineSelections(
+    minX: number,
+    maxX: number,
+    minY: number,
+    maxY: number,
+    newSelections: string[],
+  ) {
+    lines.forEach((line, lIdx) => {
+      if (isPointInBox(line.endPoint.x, line.endPoint.y, minX, maxX, minY, maxY)) {
+        newSelections.push(`point-${lIdx + 1}-0`);
+      }
+      line.controlPoints.forEach((cp, cpIdx) => {
+        if (isPointInBox(cp.x, cp.y, minX, maxX, minY, maxY)) {
+          newSelections.push(`point-${lIdx + 1}-${cpIdx + 1}`);
+        }
+      });
+      checkEventMarkerSelections(line, lIdx, minX, maxX, minY, maxY, newSelections);
+    });
+  }
+
+  function checkObstacleSelections(
+    minX: number,
+    maxX: number,
+    minY: number,
+    maxY: number,
+    newSelections: string[],
+  ) {
+    shapes.forEach((shape, sIdx) => {
+      if (!shape.vertices) return;
+      shape.vertices.forEach((v, vIdx) => {
+        if (isPointInBox(v.x, v.y, minX, maxX, minY, maxY)) {
+          newSelections.push(`obstacle-${sIdx}-${vIdx}`);
+        }
+      });
+    });
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   function handleBoxSelectionComplete(
     minX: number,
     maxX: number,
@@ -219,41 +276,8 @@
       newSelections.push("point-0-0");
     }
 
-    lines.forEach((line, lIdx) => {
-      if (
-        isPointInBox(line.endPoint.x, line.endPoint.y, minX, maxX, minY, maxY)
-      ) {
-        newSelections.push(`point-${lIdx + 1}-0`);
-      }
-      line.controlPoints.forEach((cp, cpIdx) => {
-        if (isPointInBox(cp.x, cp.y, minX, maxX, minY, maxY)) {
-          newSelections.push(`point-${lIdx + 1}-${cpIdx + 1}`);
-        }
-      });
-      if (line.eventMarkers) {
-        line.eventMarkers.forEach((em, eIdx) => {
-          if (
-            em.type === "pose" &&
-            em.poseX !== undefined &&
-            em.poseY !== undefined
-          ) {
-            if (isPointInBox(em.poseX, em.poseY, minX, maxX, minY, maxY)) {
-              newSelections.push(`event-${lIdx}-${eIdx}`);
-            }
-          }
-        });
-      }
-    });
-
-    shapes.forEach((shape, sIdx) => {
-      if (shape.vertices) {
-        shape.vertices.forEach((v, vIdx) => {
-          if (isPointInBox(v.x, v.y, minX, maxX, minY, maxY)) {
-            newSelections.push(`obstacle-${sIdx}-${vIdx}`);
-          }
-        });
-      }
-    });
+    checkLineSelections(minX, maxX, minY, maxY, newSelections);
+    checkObstacleSelections(minX, maxX, minY, maxY, newSelections);
 
     if (newSelections.length > 0) {
       multiSelectedPointIds.update((ids) => {
