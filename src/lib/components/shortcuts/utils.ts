@@ -65,6 +65,21 @@ export function shouldBlockShortcut(
 ): boolean {
   // Whitelist specific actions that should work even when input is focused
   if (
+    actionId === "open-file" ||
+    actionId === "new-file" ||
+    actionId === "toggle-file-manager" ||
+    actionId === "export-java" ||
+    actionId === "export-points" ||
+    actionId === "export-sequential" ||
+    actionId === "export-pp" ||
+    actionId === "clear-obstacles" ||
+    actionId === "toggle-plugin-manager" ||
+    actionId === "copy-code" ||
+    actionId === "copy-table" ||
+    actionId === "download-java" ||
+    actionId === "focus-path-list" ||
+    actionId === "focus-code-editor" ||
+    actionId === "confirm-dialog" ||
     actionId === "toggle-command-palette" ||
     actionId === "show-help" ||
     actionId === "cycle-tabs-next" ||
