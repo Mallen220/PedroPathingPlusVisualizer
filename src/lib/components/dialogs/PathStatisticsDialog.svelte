@@ -941,10 +941,10 @@
                         At {formatTime(insight.startTime)}
                       {/if}
                       {#if insight.value}
-                      <div class="flex items-center gap-1.5">
-                        <DotIcon className="-mx-0.5 opacity-50" />
-                        <span>Max Value: {insight.value.toFixed(1)}</span>
-                      </div>
+                        <div class="flex items-center gap-1.5">
+                          <DotIcon className="-mx-0.5 opacity-50" />
+                          <span>Max Value: {insight.value.toFixed(1)}</span>
+                        </div>
                       {/if}
                     </div>
                   </div>

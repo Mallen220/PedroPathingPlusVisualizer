@@ -172,6 +172,13 @@
   let isDown = false;
   let isPanning = false;
   let isDrawing = false;
+
+  // Box Selection State
+  let isBoxSelecting = false;
+  let boxSelectStart: { x: number; y: number } | null = null;
+  let boxSelectCurrent: { x: number; y: number } | null = null;
+  let boxSelectElement: InstanceType<typeof Two.Path> | null = null;
+
   let drawPoints: { x: number; y: number }[] = [];
   let drawPathElement: InstanceType<typeof Two.Path> | null = null;
   let multiDragOffsets = new Map<string, { x: number; y: number }>();
@@ -467,7 +474,32 @@
         // Cursor and Dragging Logic
         // Optimization: Don't use elementFromPoint here. It forces a reflow.
 
-        if (isDown && currentElem) {
+        if (isBoxSelecting && boxSelectStart && boxSelectElement) {
+          boxSelectCurrent = { x: currentMouseX, y: currentMouseY };
+
+          const minX = Math.min(boxSelectStart.x, boxSelectCurrent.x);
+          const maxX = Math.max(boxSelectStart.x, boxSelectCurrent.x);
+          const minY = Math.min(boxSelectStart.y, boxSelectCurrent.y);
+          const maxY = Math.max(boxSelectStart.y, boxSelectCurrent.y);
+
+          // Update rectangle vertices
+          // Using Anchor because Two.Path uses Anchor objects for vertices
+          const p1x = x(minX);
+          const p1y = y(minY);
+          const p2x = x(maxX);
+          const p2y = y(minY);
+          const p3x = x(maxX);
+          const p3y = y(maxY);
+          const p4x = x(minX);
+          const p4y = y(maxY);
+
+          boxSelectElement.vertices[0].set(p1x, p1y);
+          boxSelectElement.vertices[1].set(p2x, p2y);
+          boxSelectElement.vertices[2].set(p3x, p3y);
+          boxSelectElement.vertices[3].set(p4x, p4y);
+
+          two!.update();
+        } else if (isDown && currentElem) {
           // Dragging Logic
 
           let linesChanged = false;
@@ -1137,11 +1169,51 @@
           }
         }
 
-        if (!clickedElem && !evt.shiftKey && !evt.ctrlKey && !evt.metaKey) {
-          selectedPointId.set(null);
-          selectedLineId.set(null);
-          multiSelectedPointIds.set([]);
-          multiSelectedLineIds.set([]);
+        if (!clickedElem) {
+          if (evt.shiftKey) {
+            // Start Box Selection
+            isBoxSelecting = true;
+
+            const rectForMouse =
+              two!.renderer.domElement.getBoundingClientRect();
+            const transformedForMouse = getTransformedCoordinates(
+              evt.clientX,
+              evt.clientY,
+              rectForMouse,
+              settings.fieldRotation || 0,
+            );
+            let inchX = x.invert(transformedForMouse.x);
+            let inchY = y.invert(transformedForMouse.y);
+
+            boxSelectStart = { x: inchX, y: inchY };
+            boxSelectCurrent = { x: inchX, y: inchY };
+
+            if (boxSelectElement) boxSelectElement.remove();
+
+            // Create a path for the box
+            boxSelectElement = two!.makePath(
+              x(inchX),
+              y(inchY),
+              x(inchX),
+              y(inchY),
+              x(inchX),
+              y(inchY),
+              x(inchX),
+              y(inchY),
+              true as any,
+            );
+            boxSelectElement.fill = "rgba(59, 130, 246, 0.2)"; // blue-500 with opacity
+            boxSelectElement.stroke = "#3b82f6";
+            boxSelectElement.linewidth = uiLength(1.5);
+            two!.add(boxSelectElement);
+            two!.update();
+            return;
+          } else if (!evt.ctrlKey && !evt.metaKey) {
+            selectedPointId.set(null);
+            selectedLineId.set(null);
+            multiSelectedPointIds.set([]);
+            multiSelectedLineIds.set([]);
+          }
         }
 
         if (clickedElem) {
@@ -1456,6 +1528,119 @@
 
     two!.renderer.domElement.addEventListener("mouseup", () => {
       snapGuides = [];
+      if (isBoxSelecting) {
+        isBoxSelecting = false;
+        if (boxSelectElement) {
+          boxSelectElement.remove();
+          boxSelectElement = null;
+          two!.update();
+        }
+
+        if (boxSelectStart && boxSelectCurrent) {
+          const minX = Math.min(boxSelectStart.x, boxSelectCurrent.x);
+          const maxX = Math.max(boxSelectStart.x, boxSelectCurrent.x);
+          const minY = Math.min(boxSelectStart.y, boxSelectCurrent.y);
+          const maxY = Math.max(boxSelectStart.y, boxSelectCurrent.y);
+
+          // We only want to select if the box has some area to prevent accidental tiny selections
+          if (maxX - minX > 0.5 || maxY - minY > 0.5) {
+            const newSelections: string[] = [];
+
+            // Check start point
+            if (
+              startPoint.x >= minX &&
+              startPoint.x <= maxX &&
+              startPoint.y >= minY &&
+              startPoint.y <= maxY
+            ) {
+              newSelections.push("point-0-0");
+            }
+
+            // Check paths
+            lines.forEach((line, lIdx) => {
+              if (
+                line.endPoint.x >= minX &&
+                line.endPoint.x <= maxX &&
+                line.endPoint.y >= minY &&
+                line.endPoint.y <= maxY
+              ) {
+                newSelections.push(`point-${lIdx + 1}-0`);
+              }
+              line.controlPoints.forEach((cp, cpIdx) => {
+                if (
+                  cp.x >= minX &&
+                  cp.x <= maxX &&
+                  cp.y >= minY &&
+                  cp.y <= maxY
+                ) {
+                  newSelections.push(`point-${lIdx + 1}-${cpIdx + 1}`);
+                }
+              });
+              if (line.eventMarkers) {
+                line.eventMarkers.forEach((em, eIdx) => {
+                  if (
+                    em.type === "pose" &&
+                    em.poseX !== undefined &&
+                    em.poseY !== undefined
+                  ) {
+                    if (
+                      em.poseX >= minX &&
+                      em.poseX <= maxX &&
+                      em.poseY >= minY &&
+                      em.poseY <= maxY
+                    ) {
+                      newSelections.push(`event-${lIdx}-${eIdx}`);
+                    }
+                  }
+                });
+              }
+            });
+
+            // Check obstacles
+            shapes.forEach((shape, sIdx) => {
+              if (shape.vertices) {
+                shape.vertices.forEach((v, vIdx) => {
+                  if (
+                    v.x >= minX &&
+                    v.x <= maxX &&
+                    v.y >= minY &&
+                    v.y <= maxY
+                  ) {
+                    newSelections.push(`obstacle-${sIdx}-${vIdx}`);
+                  }
+                });
+              }
+            });
+
+            if (newSelections.length > 0) {
+              multiSelectedPointIds.update((ids) => {
+                const set = new Set([...ids, ...newSelections]);
+                return Array.from(set);
+              });
+
+              // Set selectedLineId if we selected path points, to keep UI consistent
+              const firstLineId = newSelections.find((s) =>
+                s.startsWith("point-"),
+              );
+              if (firstLineId && firstLineId !== "point-0-0") {
+                const parts = firstLineId.split("-");
+                const lIdx = Number(parts[1]) - 1;
+                if (lines[lIdx]) selectedLineId.set(lines[lIdx].id as string);
+              }
+
+              notification.set({
+                message: `Selected ${newSelections.length} items`,
+                type: "info",
+                timeout: 1500,
+              });
+            }
+          }
+        }
+        boxSelectStart = null;
+        boxSelectCurrent = null;
+        return;
+      }
+
       if ($isDrawingMode && isDrawing) {
         isDrawing = false;
         if (drawPathElement) {
