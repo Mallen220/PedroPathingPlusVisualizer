@@ -984,6 +984,13 @@ export const DEFAULT_KEY_BINDINGS: KeyBinding[] = [
     category: "Editing",
   },
   {
+    id: "center-selected",
+    key: "f",
+    description: "Focus/Center Selected Item",
+    action: "centerSelected",
+    category: "View",
+  },
+  {
     id: "reset-start",
     key: "alt+home",
     description: "Reset Start Point",

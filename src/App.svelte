@@ -1104,7 +1104,6 @@
     previewOptimizedLines = newLines;
   }
 
-
   function stepForward() {
     const p = Math.min(100, percent + 1);
     percentStore.set(p);

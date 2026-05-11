@@ -11,6 +11,8 @@ import {
 import { computeZoomStep } from "../../zoomHelpers";
 import { getDefaultStartPoint } from "../../../config";
 import { isUIElementFocused } from "./utils";
+import { parseSelectionId } from "./itemUtils";
+import { shapesStore } from "../../projectStore";
 
 export function cycleGridSize() {
   const options = [0.5, 1, 3, 6, 12, 24];
@@ -135,4 +137,47 @@ export function panToEnd(fieldRenderer: any) {
 export function panView(dx: number, dy: number) {
   if (isUIElementFocused() || get(settingsStore).lockFieldView) return;
   fieldPan.update((p) => ({ x: p.x + dx, y: p.y + dy }));
+}
+
+export function centerSelected(fieldRenderer: any) {
+  const sel = get(selectedPointId);
+  if (!sel || !fieldRenderer?.panToField) return;
+
+  const info = parseSelectionId(sel);
+  const startPoint = get(startPointStore);
+  const lines = get(linesStore);
+  const shapes = get(shapesStore);
+
+  let targetX, targetY;
+
+  if (info.type === "point") {
+    if (info.lineNum === 0 && info.ptIdx === 0) {
+      targetX = startPoint.x;
+      targetY = startPoint.y;
+    } else {
+      const line = lines[info.lineNum - 1];
+      if (line) {
+        if (info.ptIdx === 0) {
+          targetX = line.endPoint.x;
+          targetY = line.endPoint.y;
+        } else {
+          const cp = line.controlPoints[info.ptIdx - 1];
+          if (cp) {
+            targetX = cp.x;
+            targetY = cp.y;
+          }
+        }
+      }
+    }
+  } else if (info.type === "obstacle") {
+    const shape = shapes[info.shapeIdx];
+    if (shape && shape.vertices[info.vertexIdx]) {
+      targetX = shape.vertices[info.vertexIdx].x;
+      targetY = shape.vertices[info.vertexIdx].y;
+    }
+  }
+
+  if (targetX !== undefined && targetY !== undefined) {
+    fieldRenderer.panToField(targetX, targetY);
+  }
 }

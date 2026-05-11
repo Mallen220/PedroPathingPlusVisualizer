@@ -108,6 +108,7 @@
     panToStart,
     panToEnd,
     panView,
+    centerSelected,
   } from "./shortcuts/view";
   import {
     changePlaybackSpeedBy,
@@ -627,6 +628,7 @@
     resetStartPoint: () => resetStartPoint(recordChange),
     panToStart: () => panToStart(fieldRenderer),
     panToEnd: () => panToEnd(fieldRenderer),
+    centerSelected: () => centerSelected(fieldRenderer),
     panViewUp: () => panView(0, 50),
     panViewDown: () => panView(0, -50),
     panViewLeft: () => panView(50, 0),
