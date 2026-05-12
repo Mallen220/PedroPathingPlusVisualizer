@@ -35,9 +35,7 @@ export function getClosestTarget(
 
   if (!closest) return null;
 
-  const rect = (closest as HTMLElement).getBoundingClientRect();
-  const midY = rect.top + rect.height / 2;
-  const position = mouseY < midY ? "top" : "bottom";
+  const position = calculateDragPosition(e, closest as HTMLElement);
 
   return { element: closest as HTMLElement, position };
 }

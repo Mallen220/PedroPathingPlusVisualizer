@@ -40,8 +40,10 @@ export function minDistanceToPolygon(
     const p1 = polygon[i];
     const p2 = polygon[(i + 1) % polygon.length];
 
-    const distance = pointToLineDistance(point, [p1.x, p1.y], [p2.x, p2.y]);
-    minDistance = Math.min(minDistance, distance);
+    minDistance = Math.min(
+      minDistance,
+      pointToLineDistance(point, [p1.x, p1.y], [p2.x, p2.y]),
+    );
   }
 
   return minDistance;
