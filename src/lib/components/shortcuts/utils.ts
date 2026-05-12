@@ -90,7 +90,31 @@ export function shouldBlockShortcut(
     actionId === "pan-start" ||
     actionId === "pan-end" ||
     actionId === "toggle-lock-field-view" ||
-    actionId === "toggle-continuous-validation"
+    actionId === "toggle-continuous-validation" ||
+    actionId === "toggle-file-manager" ||
+    actionId === "toggle-plugin-manager" ||
+    actionId === "copy-code" ||
+    actionId === "copy-table" ||
+    actionId === "download-java" ||
+    actionId === "export-java" ||
+    actionId === "export-points" ||
+    actionId === "export-sequential" ||
+    actionId === "export-pp" ||
+    actionId === "export-gif" ||
+    actionId === "export-image" ||
+    actionId === "open-file" ||
+    actionId === "new-file" ||
+    actionId === "toggle-history" ||
+    actionId === "toggle-strategy-sheet" ||
+    actionId === "toggle-presentation-mode" ||
+    actionId === "toggle-diff" ||
+    actionId === "toggle-robot-visibility" ||
+    actionId === "toggle-robot-arrows" ||
+    actionId === "optimize-start" ||
+    actionId === "optimize-stop" ||
+    actionId === "optimize-apply" ||
+    actionId === "optimize-discard" ||
+    actionId === "optimize-retry"
   )
     return false;
   if (e.key === "Escape") return false;

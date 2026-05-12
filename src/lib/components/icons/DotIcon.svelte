@@ -6,6 +6,9 @@
   let { className = "" }: Props = $props();
 </script>
 
-<span class="inline-block select-none leading-none {className}" aria-hidden="true">
+<span
+  class="inline-block select-none leading-none {className}"
+  aria-hidden="true"
+>
   •
 </span>
