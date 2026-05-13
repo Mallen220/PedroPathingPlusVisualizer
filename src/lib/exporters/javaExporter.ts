@@ -39,12 +39,6 @@ export async function generateJavaCode(
   coordinateSystem: CoordinateSystem = "Pedro",
   codeUnits: "imperial" | "metric" = "imperial",
 ): Promise<string> {
-  const headingTypeToFunctionName = {
-    constant: "setConstantHeadingInterpolation",
-    linear: "setLinearHeadingInterpolation",
-    tangential: "setTangentHeadingInterpolation",
-  };
-
   const flattenSequence = (seq: SequenceItem[]): SequenceItem[] => {
     const result: SequenceItem[] = [];
     seq.forEach((item) => {
@@ -113,7 +107,7 @@ export async function generateJavaCode(
         const pathData = lines.map((line, idx) => {
           const variableName = pathChainNames[idx];
 
-          let startCode, controlPointsCode, endCode, headingConfig;
+          let startCode, controlPointsCode, endCode;
 
           if (coordinateSystem === "FTC") {
             // Helper to format buildPose call

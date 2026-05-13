@@ -254,8 +254,7 @@ export async function generateSequentialCommandCode(
   const SequentialGroupClass = isNextFTC
     ? "SequentialGroup"
     : "SequentialCommandGroup";
-  const WaitCmdClass = isNextFTC ? "Delay" : "WaitCommand";
-  const InstantCmdClass = "InstantCommand";
+
   const FollowPathCmdClass = isNextFTC ? "FollowPath" : "FollowPathCommand";
 
   // Generate addCommands calls with event handling; iterate sequence if provided
