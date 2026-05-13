@@ -13,7 +13,14 @@
     distance?: number;
   }
 
-  let { visible = false, x = 0, y = 0, velocity = 0, time = 0, distance }: Props = $props();
+  let {
+    visible = false,
+    x = 0,
+    y = 0,
+    velocity = 0,
+    time = 0,
+    distance,
+  }: Props = $props();
 
   let settings = $derived($settingsStore);
 </script>
@@ -26,21 +33,34 @@
   >
     <div class="flex flex-col gap-1 text-xs whitespace-nowrap">
       <div class="flex justify-between items-center gap-4">
-        <span class="text-neutral-500 dark:text-neutral-400 font-medium">Velocity:</span>
-        <span class="font-mono text-emerald-600 dark:text-emerald-400 font-bold">{velocity.toFixed(1)} in/s</span>
+        <span class="text-neutral-500 dark:text-neutral-400 font-medium"
+          >Velocity:</span
+        >
+        <span class="font-mono text-emerald-600 dark:text-emerald-400 font-bold"
+          >{velocity.toFixed(1)} in/s</span
+        >
       </div>
       <div class="flex justify-between items-center gap-4">
-        <span class="text-neutral-500 dark:text-neutral-400 font-medium">Time:</span>
-        <span class="font-mono text-neutral-800 dark:text-neutral-200 font-bold">{formatTime(time)}</span>
+        <span class="text-neutral-500 dark:text-neutral-400 font-medium"
+          >Time:</span
+        >
+        <span class="font-mono text-neutral-800 dark:text-neutral-200 font-bold"
+          >{formatTime(time)}</span
+        >
       </div>
       {#if distance !== undefined}
-        <div class="flex justify-between items-center gap-4 border-t border-neutral-100 dark:border-neutral-700 pt-1 mt-0.5">
-          <span class="text-neutral-500 dark:text-neutral-400 font-medium">Distance:</span>
-          <span class="font-mono text-neutral-800 dark:text-neutral-200 font-bold">{formatDisplayDistance(distance, settings, 1)}</span>
+        <div
+          class="flex justify-between items-center gap-4 border-t border-neutral-100 dark:border-neutral-700 pt-1 mt-0.5"
+        >
+          <span class="text-neutral-500 dark:text-neutral-400 font-medium"
+            >Distance:</span
+          >
+          <span
+            class="font-mono text-neutral-800 dark:text-neutral-200 font-bold"
+            >{formatDisplayDistance(distance, settings, 1)}</span
+          >
         </div>
       {/if}
     </div>
-    <!-- Little caret pointing down -->
-    <div class="absolute left-1/2 bottom-0 transform -translate-x-1/2 translate-y-full w-0 h-0 border-l-[6px] border-r-[6px] border-t-[6px] border-l-transparent border-r-transparent border-t-white/95 dark:border-t-neutral-800/95 drop-shadow-sm"></div>
   </div>
 {/if}

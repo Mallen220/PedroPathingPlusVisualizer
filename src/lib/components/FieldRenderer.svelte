@@ -175,7 +175,7 @@
   let isDrawing = false;
 
   // Box Selection State
-    let tooltipVisible = $state(false);
+  let tooltipVisible = $state(false);
   let tooltipX = $state(0);
   let tooltipY = $state(0);
   let tooltipVelocity = $state(0);
@@ -560,9 +560,15 @@
         currentMouseY = Math.max(0, Math.min(FIELD_SIZE, rawInchYForDisplay));
         isMouseOverField = true;
 
-
         // Velocity Tooltip Logic
-        if (settings.showVelocityTooltip && effectiveTimePrediction?.timeline && !isDown && !$isDrawingMode && !isPanning && !isBoxSelecting) {
+        if (
+          settings.showVelocityTooltip &&
+          effectiveTimePrediction?.timeline &&
+          !isDown &&
+          !$isDrawingMode &&
+          !isPanning &&
+          !isBoxSelecting
+        ) {
           let foundTooltip = false;
           let bestDist = 0.5; // Snap threshold
           let bestLineIdx = -1;
@@ -573,9 +579,15 @@
             if (line.hidden) return;
             const prevP = idx === 0 ? startPoint : lines[idx - 1].endPoint;
             const cps = [prevP, ...line.controlPoints, line.endPoint];
-            const t = findClosestT({ x: rawInchXForDisplay, y: rawInchYForDisplay }, cps);
+            const t = findClosestT(
+              { x: rawInchXForDisplay, y: rawInchYForDisplay },
+              cps,
+            );
             const pt = getCurvePoint(t, cps);
-            const dist = getDistance({ x: rawInchXForDisplay, y: rawInchYForDisplay }, pt);
+            const dist = getDistance(
+              { x: rawInchXForDisplay, y: rawInchYForDisplay },
+              pt,
+            );
             if (dist < bestDist) {
               bestDist = dist;
               bestLineIdx = idx;
@@ -586,16 +598,22 @@
 
           if (bestLineIdx !== -1) {
             const tlEvent = effectiveTimePrediction.timeline.find(
-              (e: any) => e.type === "travel" && e.lineIndex === bestLineIdx
+              (e: any) => e.type === "travel" && e.lineIndex === bestLineIdx,
             );
 
-            if (tlEvent?.velocityProfile && tlEvent.velocityProfile.length > 0) {
+            if (
+              tlEvent?.velocityProfile &&
+              tlEvent.velocityProfile.length > 0
+            ) {
               const vProfile = tlEvent.velocityProfile;
               const profileIndex = Math.floor(bestT * (vProfile.length - 1));
-              const safeIndex = Math.min(vProfile.length - 1, Math.max(0, profileIndex));
+              const safeIndex = Math.min(
+                vProfile.length - 1,
+                Math.max(0, profileIndex),
+              );
 
               tooltipVelocity = vProfile[safeIndex];
-              tooltipTime = tlEvent.startTime + (bestT * tlEvent.duration);
+              tooltipTime = tlEvent.startTime + bestT * tlEvent.duration;
 
               // We'll calculate a fast estimate instead of a heavy loop for cumulative distance
               // The timeCalculator already computed total lengths per segment (in segments length array or meta)
@@ -603,25 +621,40 @@
               // using line length approximations or just linear dist if fast.
 
               let priorDist = 0;
-              for (let i = 0; i < effectiveTimePrediction.timeline.length; i++) {
+              for (
+                let i = 0;
+                i < effectiveTimePrediction.timeline.length;
+                i++
+              ) {
                 const evtItem = effectiveTimePrediction.timeline[i];
                 if (evtItem === tlEvent) break;
-                if (evtItem.type === "travel" && evtItem.lineIndex !== undefined) {
-                    const line = lines[evtItem.lineIndex];
-                    if ((line as any).length) {
-                       priorDist += (line as any).length;
-                    } else {
-                       const p1 = evtItem.lineIndex === 0 ? startPoint : lines[evtItem.lineIndex - 1].endPoint;
-                       priorDist += getDistance(p1, line.endPoint);
-                    }
+                if (
+                  evtItem.type === "travel" &&
+                  evtItem.lineIndex !== undefined
+                ) {
+                  const line = lines[evtItem.lineIndex];
+                  if ((line as any).length) {
+                    priorDist += (line as any).length;
+                  } else {
+                    const p1 =
+                      evtItem.lineIndex === 0
+                        ? startPoint
+                        : lines[evtItem.lineIndex - 1].endPoint;
+                    priorDist += getDistance(p1, line.endPoint);
+                  }
                 }
               }
 
               const currentLine = lines[bestLineIdx];
-              const prevPForCurrent = bestLineIdx === 0 ? startPoint : lines[bestLineIdx - 1].endPoint;
-              const approxLineLength = (currentLine as any).length || getDistance(prevPForCurrent, currentLine.endPoint);
+              const prevPForCurrent =
+                bestLineIdx === 0
+                  ? startPoint
+                  : lines[bestLineIdx - 1].endPoint;
+              const approxLineLength =
+                (currentLine as any).length ||
+                getDistance(prevPForCurrent, currentLine.endPoint);
 
-              tooltipDistance = priorDist + (approxLineLength * bestT);
+              tooltipDistance = priorDist + approxLineLength * bestT;
 
               // The original DOM event parameter is named "evt" in this scope.
               tooltipX = evt.clientX;
