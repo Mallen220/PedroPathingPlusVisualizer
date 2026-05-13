@@ -830,6 +830,12 @@
         return { ...s, lockFieldView: newVal };
       });
     },
+    toggleVelocityTooltip: () => {
+      settingsStore.update((s) => ({
+        ...s,
+        showVelocityTooltip: !s.showVelocityTooltip,
+      }));
+    },
     focusPathList: () => {
       activeControlTab = "path";
       setTimeout(() => {

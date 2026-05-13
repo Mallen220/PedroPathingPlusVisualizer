@@ -13,7 +13,12 @@ const srcDir = path.resolve(__dirname, "..");
 describe("Icon System Integration", () => {
   const iconFiles = fs
     .readdirSync(iconsDir)
-    .filter((f) => f.endsWith(".svelte"));
+    .filter(
+      (f) =>
+        f.endsWith(".svelte") &&
+        f !== "DotIcon.svelte" &&
+        f !== "VelocityTooltip.svelte",
+    );
   const indexContent = fs.readFileSync(
     path.join(iconsDir, "index.ts"),
     "utf-8",

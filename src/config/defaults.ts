@@ -62,6 +62,7 @@ export const DEFAULT_SETTINGS: Settings = {
   autosaveMode: "never",
   autosaveInterval: 5,
   showVelocityHeatmap: false,
+  showVelocityTooltip: false,
   showOnionLayers: false,
   onionSkinCurrentPathOnly: false,
   onionLayerSpacing: 6, // inches between each robot body trace

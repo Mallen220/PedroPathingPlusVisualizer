@@ -1082,4 +1082,11 @@ export const DEFAULT_KEY_BINDINGS: KeyBinding[] = [
     action: "startTutorial",
     category: "Help",
   },
+  {
+    id: "toggle-velocity-tooltip",
+    key: "",
+    description: "Toggle Velocity Tooltip",
+    action: "toggleVelocityTooltip",
+    category: "View",
+  },
 ];
