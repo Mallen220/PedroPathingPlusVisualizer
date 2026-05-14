@@ -66,7 +66,6 @@ export function shouldBlockShortcut(
   // Whitelist specific actions that should work even when input is focused
   if (
     actionId === "toggle-command-palette" ||
-    actionId === "show-help" ||
     actionId === "cycle-tabs-next" ||
     actionId === "cycle-tabs-prev" ||
     actionId === "select-code-tab" ||
@@ -75,8 +74,6 @@ export function shouldBlockShortcut(
     actionId === "select-table-tab" ||
     actionId === "save-project" ||
     actionId === "save-file-as" ||
-    actionId === "undo" ||
-    actionId === "redo" ||
     actionId === "open-settings" ||
     actionId === "toggle-sidebar" ||
     actionId === "zoom-in" ||
@@ -87,10 +84,22 @@ export function shouldBlockShortcut(
     actionId === "pan-view-down" ||
     actionId === "pan-view-left" ||
     actionId === "pan-view-right" ||
-    actionId === "pan-start" ||
-    actionId === "pan-end" ||
     actionId === "toggle-lock-field-view" ||
-    actionId === "toggle-continuous-validation"
+    actionId === "toggle-continuous-validation" ||
+    actionId === "new-file" ||
+    actionId === "open-file" ||
+    actionId === "export-java" ||
+    actionId === "export-points" ||
+    actionId === "export-sequential" ||
+    actionId === "export-pp" ||
+    actionId === "export-gif" ||
+    actionId === "export-image" ||
+    actionId === "download-java" ||
+    actionId === "copy-code" ||
+    actionId === "copy-table" ||
+    actionId === "docs" ||
+    actionId === "focus-name" ||
+    actionId === "confirm-dialog"
   )
     return false;
   if (e.key === "Escape") return false;

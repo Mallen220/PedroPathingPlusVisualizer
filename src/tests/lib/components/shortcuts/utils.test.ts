@@ -65,7 +65,7 @@ describe("shortcuts utils", () => {
       expect(!!shouldBlockShortcut({} as KeyboardEvent, "save-project")).toBe(
         false,
       );
-      expect(!!shouldBlockShortcut({} as KeyboardEvent, "undo")).toBe(false);
+
 
       const viewActions = [
         "zoom-in",
@@ -75,8 +75,8 @@ describe("shortcuts utils", () => {
         "pan-view-down",
         "pan-view-left",
         "pan-view-right",
-        "pan-start",
-        "pan-end",
+
+
       ];
       viewActions.forEach((action) => {
         expect(!!shouldBlockShortcut({} as KeyboardEvent, action)).toBe(false);
