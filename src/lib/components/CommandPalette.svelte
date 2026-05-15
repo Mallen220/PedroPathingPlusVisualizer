@@ -62,24 +62,80 @@
     }
   });
 
+  function fuzzyScore(query, text) {
+    if (!query) return 1;
+    const lQuery = query.toLowerCase();
+    const lText = text.toLowerCase();
+
+    let qIdx = 0;
+    let tIdx = 0;
+    let score = 0;
+    let consecutiveMatches = 0;
+
+    while (qIdx < lQuery.length && tIdx < lText.length) {
+      if (lQuery[qIdx] === lText[tIdx]) {
+        score += 10 + consecutiveMatches * 5;
+        // Boost score if match is at the start of a word
+        if (tIdx === 0 || lText[tIdx - 1] === " " || lText[tIdx - 1] === "-") {
+          score += 15;
+        }
+        consecutiveMatches++;
+        qIdx++;
+      } else {
+        consecutiveMatches = 0;
+      }
+      tIdx++;
+    }
+
+    // If we didn't match all characters in the query in order, it's not a match
+    if (qIdx < lQuery.length) return 0;
+
+    // Slight penalty for match length ratio
+    score -= (lText.length - lQuery.length) * 0.5;
+
+    return Math.max(1, score); // At least 1 if it's a match
+  }
+
   let filteredCommands = $derived(
     (() => {
-      const lowerQuery = searchQuery.toLowerCase();
-      let matched = commands.filter((cmd) =>
-        cmd.label.toLowerCase().includes(lowerQuery),
-      );
+      let matched = [];
+      const lowerQuery = searchQuery.trim();
 
-      // Sort by recent first
+      if (!lowerQuery) {
+        matched = [...commands];
+      } else {
+        matched = commands
+          .map((cmd) => {
+            let labelScore = fuzzyScore(lowerQuery, cmd.label);
+            let categoryScore = cmd.category
+              ? fuzzyScore(lowerQuery, cmd.category)
+              : 0;
+            // Use the best score between label and category, but boost label matches
+            return {
+              cmd,
+              score: Math.max(labelScore, categoryScore * 0.8),
+            };
+          })
+          .filter((item) => item.score > 0)
+          .sort((a, b) => b.score - a.score)
+          .map((item) => item.cmd);
+      }
+
+      // Sort by recent first if they matched
       matched.sort((a, b) => {
         const indexA = recentCommandIds.indexOf(a.id);
         const indexB = recentCommandIds.indexOf(b.id);
 
-        if (indexA !== -1 && indexB !== -1) {
-          return indexA - indexB; // Both recent: earlier in list means more recent
-        }
-        if (indexA !== -1) return -1; // A is recent
-        if (indexB !== -1) return 1; // B is recent
+        // If one is recent and the other is not, recent always wins
+        if (indexA !== -1 && indexB === -1) return -1;
+        if (indexB !== -1 && indexA === -1) return 1;
 
+        // Both recent: earlier in recent list means more recent
+        if (indexA !== -1 && indexB !== -1) {
+          return indexA - indexB;
+        }
+
+        // Neither recent: maintain the fuzzy score sort order
         return 0;
       });
 
