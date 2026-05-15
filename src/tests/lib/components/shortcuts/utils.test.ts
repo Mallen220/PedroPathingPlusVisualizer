@@ -66,7 +66,6 @@ describe("shortcuts utils", () => {
         false,
       );
 
-
       const viewActions = [
         "zoom-in",
         "zoom-out",
@@ -75,8 +74,6 @@ describe("shortcuts utils", () => {
         "pan-view-down",
         "pan-view-left",
         "pan-view-right",
-
-
       ];
       viewActions.forEach((action) => {
         expect(!!shouldBlockShortcut({} as KeyboardEvent, action)).toBe(false);
