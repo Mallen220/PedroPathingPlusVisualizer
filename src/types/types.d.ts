@@ -160,6 +160,12 @@ interface Line {
   globalTargetX?: number;
   globalTargetY?: number;
   globalReverse?: boolean;
+  brakingStrength?: number;
+  noDeceleration?: boolean;
+  globalDeceleration?: boolean;
+  globalBrakingStrength?: number;
+  globalBrakingStart?: number;
+  globalNoDeceleration?: boolean;
   globalSegments?: PiecewiseSegment[];
 }
 

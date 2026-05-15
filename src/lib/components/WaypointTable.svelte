@@ -957,13 +957,28 @@
           endIdx++;
         }
 
-        // Reset globalHeading for all paths in the former chain island
+        // Reset globalHeading and globalDeceleration for all paths in the former chain island
         for (let i = rootIdx; i <= endIdx; i++) {
           const sItem = sequence[i];
           if (sItem.kind === "path") {
             const lIdx = lines.findIndex((l) => l.id === (sItem as any).lineId);
-            if (lIdx !== -1 && lines[lIdx].globalHeading !== undefined) {
-              lines[lIdx] = { ...lines[lIdx], globalHeading: undefined };
+            if (lIdx !== -1) {
+              let updated = false;
+              let newLineObj = { ...lines[lIdx] };
+              if (newLineObj.globalHeading !== undefined) {
+                newLineObj.globalHeading = undefined;
+                updated = true;
+              }
+              if (newLineObj.globalDeceleration !== undefined) {
+                newLineObj.globalDeceleration = undefined;
+                newLineObj.globalBrakingStrength = undefined;
+                newLineObj.globalBrakingStart = undefined;
+                newLineObj.globalNoDeceleration = undefined;
+                updated = true;
+              }
+              if (updated) {
+                lines[lIdx] = newLineObj;
+              }
             }
           }
         }

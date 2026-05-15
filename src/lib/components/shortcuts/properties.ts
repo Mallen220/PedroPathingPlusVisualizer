@@ -551,3 +551,78 @@ export function toggleGlobalHeading(recordChange: (action?: string) => void) {
     timeout: 2000,
   });
 }
+
+export function toggleGlobalDeceleration(recordChange: (action?: string) => void) {
+  const selId = get(selectedLineId);
+  const sequence = get(sequenceStore);
+  const lines = get(linesStore);
+
+  if (!selId) return;
+
+  const sIdx = sequence.findIndex(
+    (s) => s.kind === "path" && s.lineId === selId,
+  );
+  if (sIdx === -1) return;
+
+  const item = sequence[sIdx] as any;
+  const line = lines.find((l) => l.id === selId);
+  if (!line || line.locked) return;
+
+  let chainRootIndex = -1;
+
+  if (item.isChain) {
+    for (let i = sIdx; i >= 0; i--) {
+      const pLineId = (sequence[i] as any).lineId;
+      const pLineIdx = lines.findIndex((l) => l.id === pLineId);
+      if (pLineIdx !== -1 && !lines[pLineIdx].isChain) {
+        chainRootIndex = pLineIdx;
+        break;
+      }
+    }
+  } else if (
+    sIdx + 1 < sequence.length &&
+    sequence[sIdx + 1].kind === "path" &&
+    (sequence[sIdx + 1] as any).isChain
+  ) {
+    for (let i = 0; i < lines.length; i++) {
+      if (lines[i].id === selId) {
+        chainRootIndex = i;
+        break;
+      }
+    }
+  } else {
+    for (let i = sIdx; i >= 0; i--) {
+      if (!lines[i].isChain) {
+        chainRootIndex = i;
+        break;
+      }
+    }
+  }
+
+  if (chainRootIndex === -1) return;
+
+  const targetLine = lines[chainRootIndex];
+  const hasGlobalDeceleration = targetLine.globalDeceleration !== undefined;
+
+  if (hasGlobalDeceleration) {
+    targetLine.globalDeceleration = undefined;
+    targetLine.globalBrakingStrength = undefined;
+    targetLine.globalBrakingStart = undefined;
+    targetLine.globalNoDeceleration = undefined;
+  } else {
+    targetLine.globalDeceleration = true;
+    if (line.brakingStrength !== undefined) targetLine.globalBrakingStrength = line.brakingStrength;
+    targetLine.globalBrakingStart = 0;
+    if (line.noDeceleration !== undefined) targetLine.globalNoDeceleration = line.noDeceleration;
+  }
+
+  lines[chainRootIndex] = { ...targetLine };
+  linesStore.set([...lines]);
+
+  recordChange("Toggle Global Deceleration");
+  notification.set({
+    message: `Global chain deceleration ${hasGlobalDeceleration ? "disabled" : "enabled"}`,
+    type: "success",
+    timeout: 2000,
+  });
+}

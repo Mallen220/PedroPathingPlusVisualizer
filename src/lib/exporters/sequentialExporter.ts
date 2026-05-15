@@ -428,6 +428,8 @@ export async function generateSequentialCommandCode(
 
     let headingMethodCode = "";
     let globalHeadingCode = "";
+    let decelerationCode = "";
+    let globalDecelerationCode = "";
 
     const constructHeadingMethod = (targetConfig: any) => {
       if (targetConfig.heading === "piecewise") {
@@ -514,6 +516,29 @@ export async function generateSequentialCommandCode(
       headingMethodCode = constructHeadingMethod(line.endPoint);
     }
 
+    if (rootLine.globalDeceleration) {
+      if (!line.isChain) {
+        if (rootLine.globalNoDeceleration) {
+          globalDecelerationCode += `\n            .setNoDeceleration()`;
+        } else {
+          if (rootLine.globalBrakingStrength !== undefined) {
+            globalDecelerationCode += `\n            .setGlobalDeceleration(${rootLine.globalBrakingStrength})`;
+          } else {
+            globalDecelerationCode += `\n            .setGlobalDeceleration()`;
+          }
+          if (rootLine.globalBrakingStart !== undefined && rootLine.globalBrakingStart !== 0) {
+            globalDecelerationCode += `\n            .setBrakingStart(${rootLine.globalBrakingStart})`;
+          }
+        }
+      }
+    } else {
+      if (line.noDeceleration) {
+        decelerationCode += `\n            .setNoDeceleration()`;
+      } else if (line.brakingStrength !== undefined) {
+        decelerationCode += `\n            .setBrakingStrength(${line.brakingStrength})`;
+      }
+    }
+
     // Add event markers to the path builder
     const _startP =
       idx === 0 ? startPoint : lines[idx - 1]?.endPoint || startPoint;
@@ -531,7 +556,7 @@ export async function generateSequentialCommandCode(
     if (line.isChain) {
       currentBuilderStr += `
             .addPath(new ${curveType}(${actualStartPose}, ${controlPointsStr}${endPoseVar}))
-            ${headingMethodCode}${eventMarkerCode}`;
+            ${headingMethodCode}${decelerationCode}${eventMarkerCode}`;
     } else {
       if (currentBuilderStr !== "") {
         currentBuilderStr += "\n            .build();";
@@ -539,7 +564,7 @@ export async function generateSequentialCommandCode(
       }
       currentBuilderStr = `        ${pathName} = follower.pathBuilder()
             .addPath(new ${curveType}(${actualStartPose}, ${controlPointsStr}${endPoseVar}))
-            ${headingMethodCode}${eventMarkerCode}${globalHeadingCode}`;
+            ${headingMethodCode}${decelerationCode}${eventMarkerCode}${globalHeadingCode}${globalDecelerationCode}`;
     }
   });
 

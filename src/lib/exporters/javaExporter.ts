@@ -235,6 +235,8 @@ export async function generateJavaCode(
 
           let headingMethodCode = "";
           let globalHeadingCode = "";
+          let decelerationCode = "";
+          let globalDecelerationCode = "";
 
           const generateInterpolatorString = (pointDef: any) => {
             let config = "";
@@ -378,6 +380,29 @@ export async function generateJavaCode(
             headingMethodCode = constructHeadingMethod(line.endPoint);
           }
 
+          if (rootLine.globalDeceleration) {
+            if (!line.isChain) {
+              if (rootLine.globalNoDeceleration) {
+                globalDecelerationCode += `\n        .setNoDeceleration()`;
+              } else {
+                if (rootLine.globalBrakingStrength !== undefined) {
+                  globalDecelerationCode += `\n        .setGlobalDeceleration(${rootLine.globalBrakingStrength})`;
+                } else {
+                  globalDecelerationCode += `\n        .setGlobalDeceleration()`;
+                }
+                if (rootLine.globalBrakingStart !== undefined && rootLine.globalBrakingStart !== 0) {
+                  globalDecelerationCode += `\n        .setBrakingStart(${rootLine.globalBrakingStart})`;
+                }
+              }
+            }
+          } else {
+            if (line.noDeceleration) {
+              decelerationCode += `\n        .setNoDeceleration()`;
+            } else if (line.brakingStrength !== undefined) {
+              decelerationCode += `\n        .setBrakingStrength(${line.brakingStrength})`;
+            }
+          }
+
           // Add event markers to the path builder
           const _startPt = idx === 0 ? startPoint : lines[idx - 1].endPoint;
           const _cps = [_startPt, ...line.controlPoints, line.endPoint];
@@ -400,6 +425,8 @@ export async function generateJavaCode(
             headingMethodCode,
             eventMarkerCode,
             globalHeadingCode,
+            decelerationCode,
+            globalDecelerationCode,
           };
         });
 
@@ -407,25 +434,29 @@ export async function generateJavaCode(
         const consolidatedBlocks: string[] = [];
         let currentBlock = "";
         let currentGlobalHeadingCode = "";
+        let currentGlobalDecelerationCode = "";
 
         for (let i = 0; i < pathData.length; i++) {
           const pd = pathData[i];
 
           if (pd.line.isChain) {
-            currentBlock += `\n        .addPath(\n          ${pd.curveType}(\n            ${pd.startCode},\n            ${pd.controlPointsCode}\n            ${pd.endCode}\n          )\n        )${pd.headingMethodCode}${pd.eventMarkerCode}`;
+            currentBlock += `\n        .addPath(\n          ${pd.curveType}(\n            ${pd.startCode},\n            ${pd.controlPointsCode}\n            ${pd.endCode}\n          )\n        )${pd.headingMethodCode}${pd.decelerationCode}${pd.eventMarkerCode}`;
           } else {
             if (currentBlock) {
               currentBlock += currentGlobalHeadingCode;
+              currentBlock += currentGlobalDecelerationCode;
               currentBlock += "\n        .build();";
               consolidatedBlocks.push(currentBlock);
             }
             currentGlobalHeadingCode = pd.globalHeadingCode;
-            currentBlock = `${pd.variableName} = follower.pathBuilder()\n        .addPath(\n          ${pd.curveType}(\n            ${pd.startCode},\n            ${pd.controlPointsCode}\n            ${pd.endCode}\n          )\n        )${pd.headingMethodCode}${pd.eventMarkerCode}`;
+            currentGlobalDecelerationCode = pd.globalDecelerationCode;
+            currentBlock = `${pd.variableName} = follower.pathBuilder()\n        .addPath(\n          ${pd.curveType}(\n            ${pd.startCode},\n            ${pd.controlPointsCode}\n            ${pd.endCode}\n          )\n        )${pd.headingMethodCode}${pd.decelerationCode}${pd.eventMarkerCode}`;
           }
         }
 
         if (currentBlock) {
           currentBlock += currentGlobalHeadingCode;
+          currentBlock += currentGlobalDecelerationCode;
           currentBlock += "\n        .build();";
           consolidatedBlocks.push(currentBlock);
         }

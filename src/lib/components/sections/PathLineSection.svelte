@@ -199,6 +199,17 @@
     return -1;
   });
 
+  let chainGlobalDecelerationSourceLine = $derived.by(() => {
+    if (chainRootIndex === -1) return null;
+    if (lines[chainRootIndex].globalDeceleration !== undefined)
+      return lines[chainRootIndex];
+    for (let i = chainRootIndex + 1; i < lines.length; i++) {
+      if (!lines[i].isChain) break;
+      if (lines[i].globalDeceleration !== undefined) return lines[i];
+    }
+    return null;
+  });
+
   let chainGlobalSourceLine = $derived.by(() => {
     if (chainRootIndex === -1) return null;
     if (lines[chainRootIndex].globalHeading !== undefined)
@@ -215,9 +226,24 @@
   let isOverriddenByGlobalHeading = $derived(
     chainGlobalSourceLine !== null && chainGlobalSourceLine !== line,
   );
+  let hasGlobalDecelerationDef = $derived(line.globalDeceleration !== undefined);
+  let isOverriddenByGlobalDeceleration = $derived(
+    chainGlobalDecelerationSourceLine !== null && chainGlobalDecelerationSourceLine !== line,
+  );
+  let canShowGlobalDecelerationToggle = $derived(
+    isPartOfChain && !isOverriddenByGlobalDeceleration,
+  );
+
   let canShowGlobalHeadingToggle = $derived(
     isPartOfChain && !isOverriddenByGlobalHeading,
   );
+
+  let pseudoGlobalDeceleration = $state({
+    enabled: false,
+    brakingStrength: undefined as number | undefined,
+    brakingStart: undefined as number | undefined,
+    noDeceleration: false,
+  });
 
   let pseudoGlobalEndPoint = $state({
     heading: "tangential",
@@ -241,6 +267,10 @@
     const gtx = line.globalTargetX;
     const gty = line.globalTargetY;
     const gsegs = line.globalSegments;
+    const gdec = line.globalDeceleration;
+    const gbs = line.globalBrakingStrength;
+    const gbst = line.globalBrakingStart;
+    const gnodec = line.globalNoDeceleration;
 
     untrack(() => {
       // Apply to our local pseudo-object for the UI
@@ -262,6 +292,10 @@
         }
         pseudoGlobalEndPoint.segments = nextSegs;
       }
+      pseudoGlobalDeceleration.enabled = gdec ?? false;
+      pseudoGlobalDeceleration.brakingStrength = gbs;
+      pseudoGlobalDeceleration.brakingStart = gbst;
+      pseudoGlobalDeceleration.noDeceleration = gnodec ?? false;
     });
   });
 
@@ -277,6 +311,18 @@
     targetLine.globalTargetX = pseudoGlobalEndPoint.targetX;
     targetLine.globalTargetY = pseudoGlobalEndPoint.targetY;
     targetLine.globalSegments = $state.snapshot(pseudoGlobalEndPoint.segments);
+
+    if (pseudoGlobalDeceleration.enabled) {
+      targetLine.globalDeceleration = true;
+      targetLine.globalBrakingStrength = pseudoGlobalDeceleration.brakingStrength;
+      targetLine.globalBrakingStart = pseudoGlobalDeceleration.brakingStart;
+      targetLine.globalNoDeceleration = pseudoGlobalDeceleration.noDeceleration;
+    } else {
+      targetLine.globalDeceleration = undefined;
+      targetLine.globalBrakingStrength = undefined;
+      targetLine.globalBrakingStart = undefined;
+      targetLine.globalNoDeceleration = undefined;
+    }
 
     lines[targetIdx] = { ...targetLine };
     lines = [...lines];
@@ -733,6 +779,162 @@
                     if (recordChange) recordChange("Update Global Heading");
                   }}
                 />
+              </div>
+            {/if}
+          </div>
+        {/if}
+      </div>
+
+
+      <!-- Deceleration Control -->
+      <div class="mt-4 pt-4 border-t border-neutral-100 dark:border-neutral-700/50">
+        <span class="text-xs font-semibold text-neutral-700 dark:text-neutral-300 uppercase tracking-wide block mb-3">Deceleration Options</span>
+
+        {#if !isOverriddenByGlobalDeceleration && !hasGlobalDecelerationDef}
+          <div class="grid gap-4 grid-cols-1 md:grid-cols-2 bg-neutral-50 dark:bg-neutral-800/30 p-3 rounded-lg border border-neutral-200 dark:border-neutral-700/50">
+            <div class="space-y-1">
+              <label class="text-xs font-medium text-neutral-500 flex items-center gap-2">
+                Braking Strength
+              </label>
+              <input
+                type="number"
+                class="w-full px-2 py-1.5 text-sm bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-lg focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 outline-none transition-all disabled:opacity-50"
+                step="0.1"
+                min="0"
+                value={line.brakingStrength ?? ""}
+                placeholder="Default"
+                oninput={(e) => {
+                  const val = e.currentTarget.value;
+                  lines[idx] = { ...line, brakingStrength: val === "" ? undefined : parseFloat(val) };
+                  lines = [...lines];
+                }}
+                onblur={() => recordChange && recordChange("Update Braking Strength")}
+                disabled={line.locked || line.noDeceleration}
+              />
+            </div>
+
+            <div class="flex items-center mt-6">
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={line.noDeceleration ?? false}
+                  onchange={(e) => {
+                    lines[idx] = { ...line, noDeceleration: e.currentTarget.checked ? true : undefined };
+                    lines = [...lines];
+                    if (recordChange) recordChange("Toggle No Deceleration");
+                  }}
+                  disabled={line.locked}
+                  class="rounded text-purple-500 focus:ring-purple-500 bg-white dark:bg-neutral-900 border-neutral-300 dark:border-neutral-700"
+                />
+                <span class="text-sm font-medium text-neutral-600 dark:text-neutral-300">No Deceleration</span>
+              </label>
+            </div>
+          </div>
+        {:else}
+          <div class="space-y-2">
+            <button
+              class="w-full text-left text-sm text-neutral-400 p-2 bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-200 dark:border-neutral-700/50 rounded-lg flex items-center gap-2 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+              onclick={() => {
+                if (onScrollToItem && chainGlobalDecelerationSourceLine?.id) {
+                  onScrollToItem(chainGlobalDecelerationSourceLine.id);
+                }
+              }}
+              title="Jump to global source"
+            >
+              <LinkIcon className="size-4 shrink-0 text-purple-500" />
+              Overridden by Global Chain Deceleration
+            </button>
+          </div>
+        {/if}
+
+        {#if canShowGlobalDecelerationToggle}
+          <div class="mt-3 pt-3 border-t border-neutral-100 dark:border-neutral-700 border-dashed">
+            <label class="flex items-center gap-2 cursor-pointer w-fit mb-3">
+              <input
+                type="checkbox"
+                checked={pseudoGlobalDeceleration.enabled}
+                onchange={(e) => {
+                  const targetIdx = chainRootIndex === -1 ? idx : chainRootIndex;
+                  const targetLine = lines[targetIdx];
+                  if (e.currentTarget.checked) {
+                    targetLine.globalDeceleration = true;
+                    if (line.brakingStrength !== undefined) targetLine.globalBrakingStrength = line.brakingStrength;
+                    targetLine.globalBrakingStart = 0;
+                    if (line.noDeceleration !== undefined) targetLine.globalNoDeceleration = line.noDeceleration;
+                  } else {
+                    targetLine.globalDeceleration = undefined;
+                    targetLine.globalBrakingStrength = undefined;
+                    targetLine.globalBrakingStart = undefined;
+                    targetLine.globalNoDeceleration = undefined;
+                  }
+                  lines[targetIdx] = { ...targetLine };
+                  lines = [...lines];
+                  if (recordChange) recordChange("Toggle Global Deceleration");
+                }}
+                disabled={line.locked}
+                class="rounded text-purple-500 focus:ring-purple-500 bg-neutral-100 dark:bg-neutral-900 border-neutral-300 dark:border-neutral-700"
+              />
+              <span class="text-sm font-semibold text-neutral-600 dark:text-neutral-300">Global Chain Deceleration</span>
+            </label>
+
+            {#if pseudoGlobalDeceleration.enabled}
+              <div class="pl-2 ml-1 border-l-2 border-purple-500/30">
+                <div class="grid gap-3 grid-cols-1 sm:grid-cols-3 bg-neutral-50 dark:bg-neutral-800/30 p-3 rounded-lg border border-neutral-200 dark:border-neutral-700/50">
+                  <div class="space-y-1">
+                    <label class="text-[10px] font-bold text-neutral-500 uppercase tracking-wider block">Strength</label>
+                    <input
+                      type="number"
+                      class="w-full px-2 py-1 text-sm bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded focus:ring-1 focus:ring-purple-500 outline-none transition-all disabled:opacity-50"
+                      step="0.1"
+                      min="0"
+                      value={pseudoGlobalDeceleration.brakingStrength ?? ""}
+                      placeholder="Default"
+                      oninput={(e) => {
+                        const val = e.currentTarget.value;
+                        pseudoGlobalDeceleration.brakingStrength = val === "" ? undefined : parseFloat(val);
+                        handleGlobalChange();
+                      }}
+                      onblur={() => recordChange && recordChange("Update Global Braking Strength")}
+                      disabled={line.locked || pseudoGlobalDeceleration.noDeceleration}
+                    />
+                  </div>
+
+                  <div class="space-y-1">
+                    <label class="text-[10px] font-bold text-neutral-500 uppercase tracking-wider block">Start</label>
+                    <input
+                      type="number"
+                      class="w-full px-2 py-1 text-sm bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded focus:ring-1 focus:ring-purple-500 outline-none transition-all disabled:opacity-50"
+                      step="0.1"
+                      min="0"
+                      value={pseudoGlobalDeceleration.brakingStart ?? ""}
+                      placeholder="Default"
+                      oninput={(e) => {
+                        const val = e.currentTarget.value;
+                        pseudoGlobalDeceleration.brakingStart = val === "" ? undefined : parseFloat(val);
+                        handleGlobalChange();
+                      }}
+                      onblur={() => recordChange && recordChange("Update Global Braking Start")}
+                      disabled={line.locked || pseudoGlobalDeceleration.noDeceleration}
+                    />
+                  </div>
+
+                  <div class="flex items-center sm:mt-5">
+                    <label class="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={pseudoGlobalDeceleration.noDeceleration}
+                        onchange={(e) => {
+                          pseudoGlobalDeceleration.noDeceleration = e.currentTarget.checked;
+                          handleGlobalChange();
+                          if (recordChange) recordChange("Toggle Global No Deceleration");
+                        }}
+                        disabled={line.locked}
+                        class="rounded text-purple-500 focus:ring-purple-500 bg-white dark:bg-neutral-900 border-neutral-300 dark:border-neutral-700"
+                      />
+                      <span class="text-xs font-medium text-neutral-600 dark:text-neutral-300">No Decel</span>
+                    </label>
+                  </div>
+                </div>
               </div>
             {/if}
           </div>
