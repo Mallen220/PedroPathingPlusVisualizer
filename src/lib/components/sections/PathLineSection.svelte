@@ -695,7 +695,7 @@
                       targetLine.globalEndDeg = line.endPoint.endDeg;
 
                     targetLine.globalDeceleration = false;
-                    targetLine.globalBrakingStrength = 1.0;
+                    targetLine.globalBrakingStrength = 1;
                     targetLine.globalBrakingStart = undefined;
                     targetLine.globalNoDeceleration = false;
                     if (

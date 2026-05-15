@@ -517,45 +517,29 @@ export async function generateSequentialCommandCode(
       headingMethodCode = constructHeadingMethod(line.endPoint);
     }
 
-    if (isChainRoot) {
-      if (line.globalNoDeceleration) {
-        decelerationCode = `\n            .setNoDeceleration()`;
-      } else if (line.globalDeceleration) {
-        let str = `\n            .setGlobalDeceleration(`;
-        if (line.globalBrakingStrength !== undefined) {
-          str += `${line.globalBrakingStrength}`;
-        }
+    const generateDecelerationCode = (targetLine: any, indentation: string) => {
+      if (targetLine.globalNoDeceleration)
+        return `\n${indentation}.setNoDeceleration()`;
+      if (targetLine.globalDeceleration) {
+        let str = `\n${indentation}.setGlobalDeceleration(`;
+        if (targetLine.globalBrakingStrength !== undefined)
+          str += targetLine.globalBrakingStrength;
         str += `)`;
-        if (line.globalBrakingStart !== undefined) {
-          str += `\n            .setBrakingStart(${line.globalBrakingStart})`;
-        }
-        decelerationCode = str;
-      } else if (
-        line.globalBrakingStrength !== undefined &&
-        line.globalBrakingStrength !== 1
-      ) {
-        decelerationCode = `\n            .setBrakingStrength(${line.globalBrakingStrength})`;
+        if (targetLine.globalBrakingStart !== undefined)
+          str += `\n${indentation}.setBrakingStart(${targetLine.globalBrakingStart})`;
+        return str;
       }
-    } else if (!line.isChain) {
-      if (line.globalNoDeceleration) {
-        decelerationCode = `\n            .setNoDeceleration()`;
-      } else if (line.globalDeceleration) {
-        let str = `\n            .setGlobalDeceleration(`;
-        if (line.globalBrakingStrength !== undefined) {
-          str += `${line.globalBrakingStrength}`;
-        }
-        str += `)`;
-        if (line.globalBrakingStart !== undefined) {
-          str += `\n            .setBrakingStart(${line.globalBrakingStart})`;
-        }
-        decelerationCode = str;
-      } else if (
-        line.globalBrakingStrength !== undefined &&
-        line.globalBrakingStrength !== 1
+      if (
+        targetLine.globalBrakingStrength !== undefined &&
+        targetLine.globalBrakingStrength !== 1
       ) {
-        decelerationCode = `\n            .setBrakingStrength(${line.globalBrakingStrength})`;
+        return `\n${indentation}.setBrakingStrength(${targetLine.globalBrakingStrength})`;
       }
-    }
+      return "";
+    };
+
+    if (isChainRoot || !line.isChain)
+      decelerationCode = generateDecelerationCode(line, "            ");
 
     // Add event markers to the path builder
     const _startP =

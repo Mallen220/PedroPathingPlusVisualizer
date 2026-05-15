@@ -26,14 +26,14 @@
       line.globalNoDeceleration = false;
       line.globalDeceleration = true;
       if (line.globalBrakingStrength === undefined)
-        line.globalBrakingStrength = 1.0;
+        line.globalBrakingStrength = 1;
       if (line.globalBrakingStart === undefined) line.globalBrakingStart = 0.5;
     } else {
       // default
       line.globalNoDeceleration = false;
       line.globalDeceleration = false;
       if (line.globalBrakingStrength === undefined)
-        line.globalBrakingStrength = 1.0;
+        line.globalBrakingStrength = 1;
     }
 
     if (onchange) onchange();
