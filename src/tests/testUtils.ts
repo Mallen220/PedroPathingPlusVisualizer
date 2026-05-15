@@ -29,3 +29,50 @@ export const isPathItem = (s: SequenceItem): s is SequencePathItem =>
 
 export const isMacroItem = (s: SequenceItem): s is SequenceMacroItem =>
   s.kind === macroKind();
+
+export const setupUIViewport = () => {
+  Object.defineProperty(globalThis, "innerWidth", {
+    writable: true,
+    configurable: true,
+    value: 1000,
+  });
+  Object.defineProperty(globalThis, "innerHeight", {
+    writable: true,
+    configurable: true,
+    value: 1000,
+  });
+};
+
+export const testMenuOffScreenPositioning = async (
+  initialProps: any,
+  updatedProps: any,
+  tick: any,
+  screen: any,
+  expect: any,
+  renderComponent: any,
+) => {
+  const { rerender } = renderComponent(initialProps);
+  const menuNodes = screen.getAllByRole("menu");
+  const menuNode = menuNodes[menuNodes.length - 1]; // get the latest rendered menu
+  menuNode.getBoundingClientRect = () =>
+    ({
+      width: 200,
+      height: 200,
+      top: 0,
+      left: 0,
+      right: 200,
+      bottom: 200,
+      x: 0,
+      y: 0,
+      toJSON: () => {},
+    }) as any;
+  await tick();
+  await tick();
+  expect(menuNode.style.left).toBe("700px");
+  expect(menuNode.style.top).toBe("700px");
+  await rerender(updatedProps);
+  await tick();
+  await tick();
+  expect(menuNode.style.left).toBe("100px");
+  expect(menuNode.style.top).toBe("100px");
+};
