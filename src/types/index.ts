@@ -162,6 +162,10 @@ export interface Line {
   globalTargetY?: number;
   globalReverse?: boolean;
   globalSegments?: PiecewiseSegment[];
+  globalDeceleration?: boolean;
+  globalBrakingStrength?: number;
+  globalBrakingStart?: number;
+  globalNoDeceleration?: boolean;
 }
 
 export type SequencePathItem = {

@@ -161,6 +161,10 @@ interface Line {
   globalTargetY?: number;
   globalReverse?: boolean;
   globalSegments?: PiecewiseSegment[];
+  globalDeceleration?: boolean;
+  globalBrakingStrength?: number;
+  globalBrakingStart?: number;
+  globalNoDeceleration?: boolean;
 }
 
 type SequencePathItem = {

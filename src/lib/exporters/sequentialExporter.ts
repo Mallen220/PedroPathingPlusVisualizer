@@ -318,6 +318,8 @@ export async function generateSequentialCommandCode(
   // Generate path building
   const pathBuildersArr: string[] = [];
   let currentBuilderStr = "";
+  let currentGlobalHeadingCode = "";
+  let currentDecelerationCode = "";
 
   lines.forEach((line, idx) => {
     const startPoseVar =
@@ -428,6 +430,7 @@ export async function generateSequentialCommandCode(
 
     let headingMethodCode = "";
     let globalHeadingCode = "";
+    let decelerationCode = "";
 
     const constructHeadingMethod = (targetConfig: any) => {
       if (targetConfig.heading === "piecewise") {
@@ -514,6 +517,46 @@ export async function generateSequentialCommandCode(
       headingMethodCode = constructHeadingMethod(line.endPoint);
     }
 
+    if (isChainRoot) {
+      if (line.globalNoDeceleration) {
+        decelerationCode = `\n            .setNoDeceleration()`;
+      } else if (line.globalDeceleration) {
+        let str = `\n            .setGlobalDeceleration(`;
+        if (line.globalBrakingStrength !== undefined) {
+          str += `${line.globalBrakingStrength}`;
+        }
+        str += `)`;
+        if (line.globalBrakingStart !== undefined) {
+          str += `\n            .setBrakingStart(${line.globalBrakingStart})`;
+        }
+        decelerationCode = str;
+      } else if (
+        line.globalBrakingStrength !== undefined &&
+        line.globalBrakingStrength !== 1
+      ) {
+        decelerationCode = `\n            .setBrakingStrength(${line.globalBrakingStrength})`;
+      }
+    } else if (!line.isChain) {
+      if (line.globalNoDeceleration) {
+        decelerationCode = `\n            .setNoDeceleration()`;
+      } else if (line.globalDeceleration) {
+        let str = `\n            .setGlobalDeceleration(`;
+        if (line.globalBrakingStrength !== undefined) {
+          str += `${line.globalBrakingStrength}`;
+        }
+        str += `)`;
+        if (line.globalBrakingStart !== undefined) {
+          str += `\n            .setBrakingStart(${line.globalBrakingStart})`;
+        }
+        decelerationCode = str;
+      } else if (
+        line.globalBrakingStrength !== undefined &&
+        line.globalBrakingStrength !== 1
+      ) {
+        decelerationCode = `\n            .setBrakingStrength(${line.globalBrakingStrength})`;
+      }
+    }
+
     // Add event markers to the path builder
     const _startP =
       idx === 0 ? startPoint : lines[idx - 1]?.endPoint || startPoint;
@@ -534,16 +577,22 @@ export async function generateSequentialCommandCode(
             ${headingMethodCode}${eventMarkerCode}`;
     } else {
       if (currentBuilderStr !== "") {
+        currentBuilderStr += currentGlobalHeadingCode;
+        currentBuilderStr += currentDecelerationCode;
         currentBuilderStr += "\n            .build();";
         pathBuildersArr.push(currentBuilderStr);
       }
+      currentGlobalHeadingCode = globalHeadingCode;
+      currentDecelerationCode = decelerationCode;
       currentBuilderStr = `        ${pathName} = follower.pathBuilder()
             .addPath(new ${curveType}(${actualStartPose}, ${controlPointsStr}${endPoseVar}))
-            ${headingMethodCode}${eventMarkerCode}${globalHeadingCode}`;
+            ${headingMethodCode}${eventMarkerCode}`;
     }
   });
 
   if (currentBuilderStr !== "") {
+    currentBuilderStr += currentGlobalHeadingCode;
+    currentBuilderStr += currentDecelerationCode;
     currentBuilderStr += "\n            .build();";
     pathBuildersArr.push(currentBuilderStr);
   }

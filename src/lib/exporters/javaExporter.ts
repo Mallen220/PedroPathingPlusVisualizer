@@ -235,6 +235,7 @@ export async function generateJavaCode(
 
           let headingMethodCode = "";
           let globalHeadingCode = "";
+          let decelerationCode = "";
 
           const generateInterpolatorString = (pointDef: any) => {
             let config = "";
@@ -378,6 +379,46 @@ export async function generateJavaCode(
             headingMethodCode = constructHeadingMethod(line.endPoint);
           }
 
+          if (isChainRoot) {
+            if (line.globalNoDeceleration) {
+              decelerationCode = `\n        .setNoDeceleration()`;
+            } else if (line.globalDeceleration) {
+              let str = `\n        .setGlobalDeceleration(`;
+              if (line.globalBrakingStrength !== undefined) {
+                str += `${line.globalBrakingStrength}`;
+              }
+              str += `)`;
+              if (line.globalBrakingStart !== undefined) {
+                str += `\n        .setBrakingStart(${line.globalBrakingStart})`;
+              }
+              decelerationCode = str;
+            } else if (
+              line.globalBrakingStrength !== undefined &&
+              line.globalBrakingStrength !== 1
+            ) {
+              decelerationCode = `\n        .setBrakingStrength(${line.globalBrakingStrength})`;
+            }
+          } else if (!line.isChain) {
+            if (line.globalNoDeceleration) {
+              decelerationCode = `\n        .setNoDeceleration()`;
+            } else if (line.globalDeceleration) {
+              let str = `\n        .setGlobalDeceleration(`;
+              if (line.globalBrakingStrength !== undefined) {
+                str += `${line.globalBrakingStrength}`;
+              }
+              str += `)`;
+              if (line.globalBrakingStart !== undefined) {
+                str += `\n        .setBrakingStart(${line.globalBrakingStart})`;
+              }
+              decelerationCode = str;
+            } else if (
+              line.globalBrakingStrength !== undefined &&
+              line.globalBrakingStrength !== 1
+            ) {
+              decelerationCode = `\n        .setBrakingStrength(${line.globalBrakingStrength})`;
+            }
+          }
+
           // Add event markers to the path builder
           const _startPt = idx === 0 ? startPoint : lines[idx - 1].endPoint;
           const _cps = [_startPt, ...line.controlPoints, line.endPoint];
@@ -400,6 +441,7 @@ export async function generateJavaCode(
             headingMethodCode,
             eventMarkerCode,
             globalHeadingCode,
+            decelerationCode,
           };
         });
 
@@ -407,6 +449,7 @@ export async function generateJavaCode(
         const consolidatedBlocks: string[] = [];
         let currentBlock = "";
         let currentGlobalHeadingCode = "";
+        let currentDecelerationCode = "";
 
         for (let i = 0; i < pathData.length; i++) {
           const pd = pathData[i];
@@ -416,16 +459,19 @@ export async function generateJavaCode(
           } else {
             if (currentBlock) {
               currentBlock += currentGlobalHeadingCode;
+              currentBlock += currentDecelerationCode;
               currentBlock += "\n        .build();";
               consolidatedBlocks.push(currentBlock);
             }
             currentGlobalHeadingCode = pd.globalHeadingCode;
+            currentDecelerationCode = pd.decelerationCode;
             currentBlock = `${pd.variableName} = follower.pathBuilder()\n        .addPath(\n          ${pd.curveType}(\n            ${pd.startCode},\n            ${pd.controlPointsCode}\n            ${pd.endCode}\n          )\n        )${pd.headingMethodCode}${pd.eventMarkerCode}`;
           }
         }
 
         if (currentBlock) {
           currentBlock += currentGlobalHeadingCode;
+          currentBlock += currentDecelerationCode;
           currentBlock += "\n        .build();";
           consolidatedBlocks.push(currentBlock);
         }

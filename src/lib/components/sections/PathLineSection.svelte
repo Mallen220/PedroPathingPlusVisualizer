@@ -6,6 +6,7 @@
   import { snapToGrid, showGrid, gridSize } from "../../../stores";
   import ControlPointsSection from "./ControlPointsSection.svelte";
   import HeadingControls from "../HeadingControls.svelte";
+  import DecelerationControls from "../DecelerationControls.svelte";
   import ColorPicker from "../tools/ColorPicker.svelte";
   import {
     selectedLineId,
@@ -230,6 +231,13 @@
     segments: [] as any[],
   });
 
+  let pseudoGlobalDeceleration = $state({
+    globalDeceleration: false as boolean | undefined,
+    globalBrakingStrength: undefined as number | undefined,
+    globalBrakingStart: undefined as number | undefined,
+    globalNoDeceleration: false as boolean | undefined,
+  });
+
   // Watch STORE -> SIDEBAR (Sync only when store changes externally)
   $effect(() => {
     // Watch these from the line prop (store)
@@ -241,6 +249,11 @@
     const gtx = line.globalTargetX;
     const gty = line.globalTargetY;
     const gsegs = line.globalSegments;
+
+    const gDec = line.globalDeceleration;
+    const gBrakingStr = line.globalBrakingStrength;
+    const gBrakingStart = line.globalBrakingStart;
+    const gNoDec = line.globalNoDeceleration;
 
     untrack(() => {
       // Apply to our local pseudo-object for the UI
@@ -262,6 +275,11 @@
         }
         pseudoGlobalEndPoint.segments = nextSegs;
       }
+
+      pseudoGlobalDeceleration.globalDeceleration = gDec;
+      pseudoGlobalDeceleration.globalBrakingStrength = gBrakingStr;
+      pseudoGlobalDeceleration.globalBrakingStart = gBrakingStart;
+      pseudoGlobalDeceleration.globalNoDeceleration = gNoDec;
     });
   });
 
@@ -277,6 +295,13 @@
     targetLine.globalTargetX = pseudoGlobalEndPoint.targetX;
     targetLine.globalTargetY = pseudoGlobalEndPoint.targetY;
     targetLine.globalSegments = $state.snapshot(pseudoGlobalEndPoint.segments);
+
+    targetLine.globalDeceleration = pseudoGlobalDeceleration.globalDeceleration;
+    targetLine.globalBrakingStrength =
+      pseudoGlobalDeceleration.globalBrakingStrength;
+    targetLine.globalBrakingStart = pseudoGlobalDeceleration.globalBrakingStart;
+    targetLine.globalNoDeceleration =
+      pseudoGlobalDeceleration.globalNoDeceleration;
 
     lines[targetIdx] = { ...targetLine };
     lines = [...lines];
@@ -668,6 +693,11 @@
                       targetLine.globalStartDeg = line.endPoint.startDeg;
                     if (line.endPoint.endDeg !== undefined)
                       targetLine.globalEndDeg = line.endPoint.endDeg;
+
+                    targetLine.globalDeceleration = false;
+                    targetLine.globalBrakingStrength = 1.0;
+                    targetLine.globalBrakingStart = undefined;
+                    targetLine.globalNoDeceleration = false;
                     if (
                       line.endPoint.segments &&
                       line.endPoint.segments.length > 0
@@ -687,6 +717,10 @@
                     }
                   } else {
                     targetLine.globalHeading = undefined;
+                    targetLine.globalDeceleration = undefined;
+                    targetLine.globalBrakingStrength = undefined;
+                    targetLine.globalBrakingStart = undefined;
+                    targetLine.globalNoDeceleration = undefined;
                   }
                   if (targetIdx === 0) {
                     startPointStore.update((s) => {
@@ -735,6 +769,28 @@
                 />
               </div>
             {/if}
+          </div>
+        {/if}
+
+        {#if isChainRoot}
+          <div
+            class="space-y-2 col-span-1 border-t border-neutral-100 dark:border-neutral-700 pt-2"
+            class:col-span-3={!isNarrow}
+          >
+            <span
+              class="text-xs font-semibold text-neutral-700 dark:text-neutral-300 uppercase tracking-wide block"
+            >
+              Chain Deceleration
+            </span>
+            <DecelerationControls
+              bind:line={pseudoGlobalDeceleration}
+              locked={line.locked}
+              onchange={handleGlobalChange}
+              oncommit={() => {
+                handleGlobalChange();
+                if (recordChange) recordChange("Update Global Deceleration");
+              }}
+            />
           </div>
         {/if}
       </div>
