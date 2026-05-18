@@ -15,7 +15,11 @@ export function calculateDrivetrainSpeeds(
   settings: any,
   showRobot: boolean,
 ): WheelSpeeds | null {
-  if (!showRobot || (settings.robotImage !== "none" && settings.robotImage !== "turtle")) return null;
+  if (
+    !showRobot ||
+    (settings.robotImage !== "none" && settings.robotImage !== "turtle")
+  )
+    return null;
 
   if (!timePrediction?.timeline || timePrediction.timeline.length === 0) {
     return { frontLeft: 0, backLeft: 0, frontRight: 0, backRight: 0 };
