@@ -182,6 +182,7 @@
 
       <!-- Close Button -->
       <button
+        title="Close"
         onclick={close}
         class="absolute top-4 right-4 p-2 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-all z-10"
         aria-label="Close"

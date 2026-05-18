@@ -247,6 +247,7 @@
           Export Image
         </h2>
         <button
+          title="Close"
           class="text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300"
           onclick={close}
           aria-label="Close"

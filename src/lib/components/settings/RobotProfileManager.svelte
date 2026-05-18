@@ -414,6 +414,7 @@
 
             <!-- Export Button -->
             <button
+              aria-label="Export Profile"
               onclick={handleExportProfile}
               class="ml-1 p-1.5 rounded-md transition-all duration-200 flex items-center justify-center hover:bg-neutral-100 dark:hover:bg-neutral-700 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 w-8"
               title="Export Profile"

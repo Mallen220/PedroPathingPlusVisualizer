@@ -518,6 +518,7 @@
                 {/if}
               </span>
               <button
+                title="Previous match"
                 onclick={prevMatch}
                 disabled={searchMatches.length === 0}
                 class="p-1 hover:bg-neutral-200 dark:hover:bg-neutral-700 rounded text-neutral-600 dark:text-neutral-400 disabled:opacity-30"
@@ -526,6 +527,7 @@
                 <ChevronUpIcon strokeWidth={2} className="size-4" />
               </button>
               <button
+                title="Next match"
                 onclick={nextMatch}
                 disabled={searchMatches.length === 0}
                 class="p-1 hover:bg-neutral-200 dark:hover:bg-neutral-700 rounded text-neutral-600 dark:text-neutral-400 disabled:opacity-30"

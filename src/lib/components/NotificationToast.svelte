@@ -114,6 +114,7 @@
         </button>
       {/if}
       <button
+        title="Close notification"
         onclick={close}
         class="shrink-0 ml-3 p-1 rounded-md hover:bg-black/10 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-neutral-500"
         aria-label="Close notification"

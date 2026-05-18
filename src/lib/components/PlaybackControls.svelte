@@ -631,7 +631,7 @@
       <!-- Split Path -->
       <button
         title="Split Path Here"
-        aria-label="Split path here"
+        aria-label="Split Path Here"
         onclick={splitPath}
         class="p-1 rounded-md text-neutral-400 hover:text-neutral-600 dark:text-neutral-500 dark:hover:text-neutral-300 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500"
       >

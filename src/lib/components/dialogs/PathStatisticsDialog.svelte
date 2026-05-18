@@ -671,6 +671,7 @@
           <ClipboardIcon className="size-5" />
         </button>
         <button
+          title="Close"
           onclick={onClose}
           class="p-2 text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300 rounded-lg hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
           aria-label="Close"

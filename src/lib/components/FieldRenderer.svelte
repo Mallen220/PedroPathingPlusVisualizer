@@ -346,14 +346,20 @@
     const dt = (now - lastTurtleTime) / 1000;
     lastTurtleTime = now;
 
-    if ($playingStore && $showRobot && settings.robotImage === "turtle" && mecanumSpeeds) {
+    if (
+      $playingStore &&
+      $showRobot &&
+      settings.robotImage === "turtle" &&
+      mecanumSpeeds
+    ) {
       const fl = mecanumSpeeds.frontLeft || 0;
       const fr = mecanumSpeeds.frontRight || 0;
       const bl = mecanumSpeeds.backLeft || 0;
       const br = mecanumSpeeds.backRight || 0;
-      const total = (Math.abs(fl) + Math.abs(fr) + Math.abs(bl) + Math.abs(br)) / 4;
+      const total =
+        (Math.abs(fl) + Math.abs(fr) + Math.abs(bl) + Math.abs(br)) / 4;
       const WIGGLE_SPEED = 25;
-      
+
       turtlePhases.fl += dt * Math.abs(fr) * WIGGLE_SPEED;
       turtlePhases.fr += dt * Math.abs(fl) * WIGGLE_SPEED;
       turtlePhases.bl += dt * Math.abs(br) * WIGGLE_SPEED * 1.3;
@@ -2929,40 +2935,64 @@
           style={`position: absolute; top: ${y(robotXY.y)}px; left: ${x(robotXY.x)}px; transform: translate(-50%, -50%) rotate(${robotHeading}deg); z-index: 20; width: ${Math.abs(x(settings.rLength || DEFAULT_ROBOT_LENGTH) - x(0))}px; height: ${Math.abs(x(settings.rWidth || DEFAULT_ROBOT_WIDTH) - x(0))}px; pointer-events: none;`}
         >
           <!-- Turtle Parts Container -->
-          <div class="relative w-full h-full" style="transform: rotate(90deg) scale(1.2);">
+          <div
+            class="relative w-full h-full"
+            style="transform: rotate(90deg) scale(1.2);"
+          >
             <!-- Tail -->
-            <img 
-              src="/BodyParts/tail.webp" alt="Tail" 
-              class="absolute w-[10%] h-[12%] bottom-[-4%] left-[45%] object-fill" 
-              style={`transform: rotate(${Math.sin(turtlePhases.tail) * 8}deg); transform-origin: top center;`} 
+            <img
+              src="/BodyParts/tail.webp"
+              alt="Tail"
+              class="absolute w-[10%] h-[12%] bottom-[-4%] left-[45%] object-fill"
+              style={`transform: rotate(${Math.sin(turtlePhases.tail) * 8}deg); transform-origin: top center;`}
             />
-            
+
             <!-- Back Left Leg -->
-            <img 
-              src="/BodyParts/backleft.webp" alt="Back Left" 
-              class="absolute w-[15%] h-[27%] bottom-[-5%] left-[20%] object-fill" 
-              style={`transform: rotate(${Math.cos(turtlePhases.bl) * 10}deg); transform-origin: top center;`} 
+            <img
+              src="/BodyParts/backleft.webp"
+              alt="Back Left"
+              class="absolute w-[15%] h-[27%] bottom-[-5%] left-[20%] object-fill"
+              style={`transform: rotate(${Math.cos(turtlePhases.bl) * 10}deg); transform-origin: top center;`}
             />
-            
+
             <!-- Back Right Leg -->
-            <img 
-              src="/BodyParts/backright.webp" alt="Back Right" 
-              class="absolute w-[15%] h-[27%] bottom-[-5%] right-[20%] object-fill" 
-              style={`transform: rotate(${Math.sin(turtlePhases.br) * 10}deg); transform-origin: top center;`} 
+            <img
+              src="/BodyParts/backright.webp"
+              alt="Back Right"
+              class="absolute w-[15%] h-[27%] bottom-[-5%] right-[20%] object-fill"
+              style={`transform: rotate(${Math.sin(turtlePhases.br) * 10}deg); transform-origin: top center;`}
             />
-            
+
             <!-- Front Left Leg -->
-            <div class="w-full h-full absolute inset-0" style={`transform: rotate(${Math.sin(turtlePhases.fl) * 20}deg);`}>
-              <img src="/BodyParts/frontLeft.webp" alt="Front Left" class="absolute w-[46%] h-[26%] top-[30%] left-[0%] object-fill" />
+            <div
+              class="w-full h-full absolute inset-0"
+              style={`transform: rotate(${Math.sin(turtlePhases.fl) * 20}deg);`}
+            >
+              <img
+                src="/BodyParts/frontLeft.webp"
+                alt="Front Left"
+                class="absolute w-[46%] h-[26%] top-[30%] left-[0%] object-fill"
+              />
             </div>
-            
+
             <!-- Front Right Leg -->
-            <div class="w-full h-full absolute inset-0" style={`transform: rotate(${Math.cos(turtlePhases.fr) * 20}deg);`}>
-              <img src="/BodyParts/FrontRight.webp" alt="Front Right" class="absolute w-[46%] h-[26%] top-[30%] right-[0%] object-fill" />
+            <div
+              class="w-full h-full absolute inset-0"
+              style={`transform: rotate(${Math.cos(turtlePhases.fr) * 20}deg);`}
+            >
+              <img
+                src="/BodyParts/FrontRight.webp"
+                alt="Front Right"
+                class="absolute w-[46%] h-[26%] top-[30%] right-[0%] object-fill"
+              />
             </div>
 
             <!-- Body -->
-            <img src="/BodyParts/body.webp" alt="Body" class="absolute w-[58%] h-[93%] left-[21%] top-[3.5%] object-fill z-10" />
+            <img
+              src="/BodyParts/body.webp"
+              alt="Body"
+              class="absolute w-[58%] h-[93%] left-[21%] top-[3.5%] object-fill z-10"
+            />
           </div>
         </div>
       {:else}
@@ -3020,25 +3050,55 @@
             style="background-color: rgba(107, 114, 128, 0.3);"
           ></div>
         {:else if settings.robotImage === "turtle"}
-          <div class="relative w-full h-full grayscale opacity-50" style="transform: rotate(90deg) scale(1.2);">
+          <div
+            class="relative w-full h-full grayscale opacity-50"
+            style="transform: rotate(90deg) scale(1.2);"
+          >
             <!-- Tail -->
-            <img src="/BodyParts/tail.webp" alt="Ghost Tail" class="absolute w-[10%] h-[12%] bottom-[-4%] left-[45%] object-fill" style="transform-origin: top center;" />
-            
+            <img
+              src="/BodyParts/tail.webp"
+              alt="Ghost Tail"
+              class="absolute w-[10%] h-[12%] bottom-[-4%] left-[45%] object-fill"
+              style="transform-origin: top center;"
+            />
+
             <!-- Back Left Leg -->
-            <img src="/BodyParts/backleft.webp" alt="Ghost Back Left" class="absolute w-[15%] h-[27%] bottom-[-5%] left-[20%] object-fill" style="transform-origin: top center;" />
-            
+            <img
+              src="/BodyParts/backleft.webp"
+              alt="Ghost Back Left"
+              class="absolute w-[15%] h-[27%] bottom-[-5%] left-[20%] object-fill"
+              style="transform-origin: top center;"
+            />
+
             <!-- Back Right Leg -->
-            <img src="/BodyParts/backright.webp" alt="Ghost Back Right" class="absolute w-[15%] h-[27%] bottom-[-5%] right-[20%] object-fill" style="transform-origin: top center;" />
+            <img
+              src="/BodyParts/backright.webp"
+              alt="Ghost Back Right"
+              class="absolute w-[15%] h-[27%] bottom-[-5%] right-[20%] object-fill"
+              style="transform-origin: top center;"
+            />
             <!-- Front Left Leg -->
             <div class="w-full h-full absolute inset-0">
-              <img src="/BodyParts/frontLeft.webp" alt="Ghost Front Left" class="absolute w-[46%] h-[26%] top-[30%] left-[0%] object-fill" />
+              <img
+                src="/BodyParts/frontLeft.webp"
+                alt="Ghost Front Left"
+                class="absolute w-[46%] h-[26%] top-[30%] left-[0%] object-fill"
+              />
             </div>
             <!-- Front Right Leg -->
             <div class="w-full h-full absolute inset-0">
-              <img src="/BodyParts/FrontRight.webp" alt="Ghost Front Right" class="absolute w-[46%] h-[26%] top-[30%] right-[0%] object-fill" />
+              <img
+                src="/BodyParts/FrontRight.webp"
+                alt="Ghost Front Right"
+                class="absolute w-[46%] h-[26%] top-[30%] right-[0%] object-fill"
+              />
             </div>
             <!-- Body -->
-            <img src="/BodyParts/body.webp" alt="Ghost Body" class="absolute w-[58%] h-[93%] left-[21%] top-[3.5%] object-fill z-10" />
+            <img
+              src="/BodyParts/body.webp"
+              alt="Ghost Body"
+              class="absolute w-[58%] h-[93%] left-[21%] top-[3.5%] object-fill z-10"
+            />
           </div>
         {:else}
           <img

@@ -217,6 +217,7 @@
           Enjoying Turtle Tracer?
         </h2>
         <button
+          aria-label="Close dialog"
           onclick={closeDialog}
           disabled={isSubmitting}
           class="text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-200 transition-colors disabled:opacity-50"

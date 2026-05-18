@@ -167,6 +167,7 @@
               placeholder="GeneratedCode"
             />
             <button
+              aria-label="Browse Directory"
               onclick={handleBrowse}
               class="px-3 py-2 bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 border border-neutral-300 dark:border-neutral-600 rounded-md text-neutral-700 dark:text-neutral-300 transition-colors"
               title="Browse Directory"

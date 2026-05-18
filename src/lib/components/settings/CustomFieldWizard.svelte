@@ -256,6 +256,7 @@
           Custom Field Map Wizard
         </h2>
         <button
+          title="Close"
           onclick={handleClose}
           aria-label="Close"
           class="text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded"

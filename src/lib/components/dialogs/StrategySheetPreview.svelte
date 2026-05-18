@@ -530,6 +530,7 @@
             Download PDF
           </button>
           <button
+            title="Close"
             onclick={handleClose}
             aria-label="Close"
             class="p-2 rounded-lg text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
