@@ -1936,6 +1936,7 @@
             type="button"
             class="absolute inset-0 opacity-0 pointer-events-none"
             aria-label="Field workspace tutorial target"
+            title="Field workspace tutorial target"
             tabindex={$startTutorial ? 0 : -1}
           ></button>
           <SvelteComponent_1
