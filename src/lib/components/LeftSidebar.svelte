@@ -1542,6 +1542,7 @@
     <button
       type="button"
       role="slider"
+      title="Resize sidebar"
       aria-label="Resize sidebar"
       aria-valuenow={sidebarWidth}
       aria-valuemin={160}

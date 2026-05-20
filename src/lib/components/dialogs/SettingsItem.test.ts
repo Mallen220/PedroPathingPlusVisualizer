@@ -47,7 +47,7 @@ describe("SettingsItem", () => {
       isModified: true,
     });
 
-    const resetBtn = getByRole("button", { name: "Reset My Setting" });
+    const resetBtn = getByRole("button", { name: "Reset to default" });
     await fireEvent.click(resetBtn);
     expect(onReset).toHaveBeenCalled();
   });

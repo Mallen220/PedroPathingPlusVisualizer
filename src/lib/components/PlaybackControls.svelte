@@ -641,7 +641,7 @@
       <!-- Skip to Start -->
       <button
         title="Skip to Start"
-        aria-label="Skip to start"
+        aria-label="Skip to Start"
         onclick={() => handleSeek(0)}
         class="p-1 rounded-md text-neutral-400 hover:text-neutral-600 dark:text-neutral-500 dark:hover:text-neutral-300 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500"
       >
@@ -651,7 +651,7 @@
       <!-- Step Back -->
       <button
         title="Step Back"
-        aria-label="Step back"
+        aria-label="Step Back"
         onclick={() => step(-0.5)}
         class="p-1 rounded-md text-neutral-400 hover:text-neutral-600 dark:text-neutral-500 dark:hover:text-neutral-300 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500"
       >
@@ -687,7 +687,7 @@
       <!-- Step Forward -->
       <button
         title="Step Forward"
-        aria-label="Step forward"
+        aria-label="Step Forward"
         onclick={() => step(0.5)}
         class="p-1 rounded-md text-neutral-400 hover:text-neutral-600 dark:text-neutral-500 dark:hover:text-neutral-300 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500"
       >
@@ -697,7 +697,7 @@
       <!-- Skip to End -->
       <button
         title="Skip to End"
-        aria-label="Skip to end"
+        aria-label="Skip to End"
         onclick={() => handleSeek(100)}
         class="p-1 rounded-md text-neutral-400 hover:text-neutral-600 dark:text-neutral-500 dark:hover:text-neutral-300 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500"
       >

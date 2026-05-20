@@ -522,6 +522,7 @@
           <button
             onclick={resetAllBindings}
             title="Reset all key bindings to defaults"
+            aria-label="Reset all key bindings to defaults"
             class="px-3 py-1.5 text-sm rounded-md bg-red-50 dark:bg-red-900/20 text-red-600 hover:bg-red-100 dark:hover:bg-red-800 transition-colors"
           >
             Reset All

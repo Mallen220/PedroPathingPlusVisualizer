@@ -805,6 +805,7 @@
               class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-neutral-700 dark:text-neutral-200 bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 rounded-lg transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-neutral-500"
               onclick={handleSaveFile}
               title="Save the generated content to a file"
+              aria-label="Save the generated content to a file"
             >
               <DownloadIcon className="size-4" />
               Save to File

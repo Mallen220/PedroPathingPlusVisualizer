@@ -611,7 +611,7 @@
             <!-- Kebab menu overlay (visible on hover) -->
             <button
               class="absolute top-1 right-1 p-1 rounded-full bg-white/80 dark:bg-neutral-800/80 shadow-sm opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity"
-              aria-label="File actions"
+              aria-label="More actions"
               onclick={(e) => {
                 e.stopPropagation();
                 openContextMenuFromEvent(e, file);

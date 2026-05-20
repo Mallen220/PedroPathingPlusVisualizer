@@ -289,6 +289,7 @@
             <div class="flex items-center gap-2">
               <button
                 onclick={handleSkip}
+                title="Skip this version"
                 aria-label="Skip this version"
                 class="px-3 py-1.5 text-sm font-medium rounded-md bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 hover:bg-amber-100 dark:hover:bg-amber-900/30 border border-amber-200 dark:border-amber-800/30 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500/20"
               >
@@ -297,6 +298,7 @@
 
               <button
                 onclick={handleOpenReleases}
+                title="Open releases page"
                 aria-label="Open releases page"
                 class="px-3 py-1.5 text-sm font-medium rounded-md bg-gray-50 dark:bg-gray-900/20 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-900/30 border border-gray-200 dark:border-gray-800/30 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-500/20"
               >
@@ -306,6 +308,7 @@
 
             <button
               onclick={close}
+              title="Remind me later"
               aria-label="Remind me later"
               class="px-3 py-1.5 text-sm font-medium rounded-md bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400 hover:bg-purple-100 dark:hover:bg-purple-900/30 border border-purple-200 dark:border-purple-800/30 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500/20"
             >

@@ -180,6 +180,7 @@
       {#if settings.customMaps?.some((m) => m.id === settings.fieldMap)}
         <button
           title="Delete Custom Map"
+          aria-label="Delete Custom Map"
           class="p-2 text-neutral-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded transition-colors"
           onclick={() => handleDeleteCustomMap(settings.fieldMap)}
         >
