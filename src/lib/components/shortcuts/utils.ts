@@ -99,7 +99,11 @@ export function shouldBlockShortcut(
     actionId === "copy-table" ||
     actionId === "docs" ||
     actionId === "focus-name" ||
-    actionId === "confirm-dialog"
+    actionId === "confirm-dialog" ||
+    // Allow Undo/Redo even when text inputs are focused so users can undo accidental text deletions
+    // or sequence changes without losing form focus.
+    actionId === "undo" ||
+    actionId === "redo"
   )
     return false;
   if (e.key === "Escape") return false;
