@@ -1,5 +1,9 @@
 <!-- Copyright 2026 Matthew Allen. Licensed under the Modified Apache License, Version 2.0. -->
 <script lang="ts">
+  import {
+    hoverRobotXYStore,
+    hoverRobotHeadingStore,
+  } from "../../lib/projectStore";
   import { onMount, onDestroy } from "svelte";
   import { get } from "svelte/store";
   import Two from "two.js";
@@ -173,6 +177,8 @@
   let isDown = false;
   let isPanning = false;
   let isDrawing = false;
+  let hoverRobotXY = $derived($hoverRobotXYStore);
+  let hoverRobotHeading = $derived($hoverRobotHeadingStore);
 
   // Box Selection State
   let tooltipVisible = $state(false);
@@ -3037,6 +3043,54 @@
           style={`position: absolute; top: ${y(committedRobotState.y)}px; left: ${x(committedRobotState.x)}px; transform: translate(-50%, -50%) rotate(${committedRobotState.heading}deg); z-index: 20; width: ${Math.abs(x(settings.rLength || DEFAULT_ROBOT_LENGTH) - x(0))}px; height: ${Math.abs(x(settings.rWidth || DEFAULT_ROBOT_WIDTH) - x(0))}px; pointer-events: none; background-color: rgba(239, 68, 68, 0.5); border: 2px solid #dc2626;`}
         ></div>
       {/if}
+    {/if}
+
+    <!-- Timeline Hover Ghost Robot -->
+    {#if hoverRobotXY && hoverRobotHeading !== null && $showRobot && settings.robotImage !== "none"}
+      <div
+        class="field-element transition-all duration-[20ms] ease-linear pointer-events-none"
+        style={`position: absolute; top: ${y(hoverRobotXY.y)}px; left: ${x(hoverRobotXY.x)}px; transform: translate(-50%, -50%) rotate(${hoverRobotHeading}deg); z-index: 21; width: ${Math.abs(x(settings.rLength || DEFAULT_ROBOT_LENGTH) - x(0))}px; height: ${Math.abs(x(settings.rWidth || DEFAULT_ROBOT_WIDTH) - x(0))}px; opacity: 0.5;`}
+      >
+        <img
+          src={settings.robotImage || "/robot.png"}
+          alt="Hover Ghost Robot"
+          class="w-full h-full object-contain pointer-events-none"
+          draggable="false"
+          style={`filter: drop-shadow(0px 2px 8px rgba(0,0,0,0.4)) ${
+            settings.robotImage === "/robot.png"
+              ? ""
+              : "drop-shadow(0px 0px 4px rgba(255,255,255,0.6))"
+          };`}
+        />
+        {#if settings.showFakeHeadingArrow && settings.robotImage !== "/robot.png"}
+          <!-- heading arrow indicator for custom robot image -->
+          <div
+            class="absolute pointer-events-none"
+            style="left: 100%; top: 50%; transform: translate(-10%, -50%);"
+          >
+            <div
+              class="w-0 h-0"
+              style="border-top: 6px solid transparent; border-bottom: 6px solid transparent; border-left: 10px solid #16a34a;"
+            ></div>
+          </div>
+        {/if}
+      </div>
+    {:else if hoverRobotXY && hoverRobotHeading !== null && $showRobot && settings.robotImage === "none"}
+      <div
+        class="field-element transition-all duration-[20ms] ease-linear pointer-events-none"
+        style={`position: absolute; top: ${y(hoverRobotXY.y)}px; left: ${x(hoverRobotXY.x)}px; transform: translate(-50%, -50%) rotate(${hoverRobotHeading}deg); z-index: 21; width: ${Math.abs(x(settings.rLength || DEFAULT_ROBOT_LENGTH) - x(0))}px; height: ${Math.abs(x(settings.rWidth || DEFAULT_ROBOT_WIDTH) - x(0))}px; background-color: rgba(100, 116, 139, 0.3); border: 2px dashed #94a3b8; border-radius: 8px;`}
+      >
+        <!-- heading arrow indicator for no-image robot -->
+        <div
+          class="absolute pointer-events-none"
+          style="left: 100%; top: 50%; transform: translate(-10%, -50%);"
+        >
+          <div
+            class="w-0 h-0"
+            style="border-top: 8px solid transparent; border-bottom: 8px solid transparent; border-left: 12px solid #94a3b8;"
+          ></div>
+        </div>
+      </div>
     {/if}
 
     <!-- Telemetry Ghost Robot -->

@@ -6,7 +6,11 @@
   import { menuNavigation } from "../actions/menuNavigation";
   import { formatTime, getShortcutFromSettings } from "../../utils";
   import { onMount, onDestroy } from "svelte";
-  import { loopRangeActiveStore, loopRangeStore } from "../../lib/projectStore";
+  import {
+    loopRangeActiveStore,
+    loopRangeStore,
+    hoverPercentStore,
+  } from "../../lib/projectStore";
   import ContextMenu from "./tools/ContextMenu.svelte";
   import {
     ArrowCircleIcon,
@@ -72,6 +76,8 @@
 
   // Drag State
   let draggingMarkerIndex: number | null = $state(null);
+  let hoverX = $state<number | null>(null);
+  let hoverPercentRaw = $state<number | null>(null);
   let draggingMarkerId: string | null = null;
   let draggingMarkerPercent: number = $state(0);
   let wasPlayingBeforeDrag: boolean = false;
@@ -161,6 +167,23 @@
     let newPercent = percent + amount;
     newPercent = Math.max(0, Math.min(100, newPercent));
     handleSeek(newPercent);
+  }
+
+  function handleSliderMouseMove(e: MouseEvent) {
+    if (draggingMarkerIndex !== null) return;
+    const target = e.currentTarget as HTMLElement;
+    const rect = target.getBoundingClientRect();
+    const x = Math.max(0, Math.min(e.clientX - rect.left, rect.width));
+    const p = (x / rect.width) * 100;
+    hoverX = x;
+    hoverPercentRaw = p;
+    hoverPercentStore.set(p);
+  }
+
+  function handleSliderMouseLeave() {
+    hoverX = null;
+    hoverPercentRaw = null;
+    hoverPercentStore.set(null);
   }
 
   function handleSeekInput(e: Event) {
@@ -483,6 +506,24 @@
       </div>
     {/if}
 
+    <!-- Hover Tooltip -->
+    {#if hoverX !== null && hoverPercentRaw !== null && draggingMarkerIndex === null}
+      <div
+        class="absolute z-30 bottom-full mb-2 -ml-6 w-12 text-center pointer-events-none"
+        style="left: {hoverPercentRaw}%;"
+      >
+        <div
+          class="px-2 py-1 bg-neutral-800 dark:bg-neutral-200 text-neutral-100 dark:text-neutral-800 text-[10px] font-mono rounded shadow-lg"
+        >
+          {formatTime(((hoverPercentRaw / 100) * totalSeconds) / 1000)}
+        </div>
+        <!-- Little triangle arrow -->
+        <div
+          class="w-0 h-0 border-l-[4px] border-l-transparent border-r-[4px] border-r-transparent border-t-[4px] border-t-neutral-800 dark:border-t-neutral-200 mx-auto"
+        ></div>
+      </div>
+    {/if}
+
     <!-- The Slider -->
     <input
       id="timeline-slider"
@@ -496,6 +537,8 @@
       style={draggingMarkerIndex === null ? "" : "pointer-events: none;"}
       oninput={handleSeekInput}
       onkeydown={handleSliderKeydown}
+      onmousemove={handleSliderMouseMove}
+      onmouseleave={handleSliderMouseLeave}
     />
 
     <!-- Event Markers Layer (Top, Map Pins) -->
