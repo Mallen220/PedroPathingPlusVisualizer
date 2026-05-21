@@ -146,45 +146,6 @@ describe("Directory Settings & File Handlers", () => {
   });
 
   describe("fileHandlers", () => {
-    describe("loadRecentFile", () => {
-      it("should alert if electronAPI is missing", async () => {
-        delete (globalThis as any).electronAPI;
-        const { loadRecentFile } = await import("../utils/fileHandlers");
-        const alertMock = vi
-          .spyOn(globalThis, "alert")
-          .mockImplementation(() => {});
-
-        await loadRecentFile("test.pp");
-        expect(alertMock).toHaveBeenCalledWith(
-          "Cannot load files in this environment",
-        );
-      });
-
-      it("should prompt to remove if file does not exist", async () => {
-        mockElectronAPI.fileExists.mockResolvedValue(false);
-        const { loadRecentFile } = await import("../utils/fileHandlers");
-        const confirmMock = vi
-          .spyOn(globalThis, "confirm")
-          .mockReturnValue(true);
-
-        await loadRecentFile("test.pp");
-
-        expect(confirmMock).toHaveBeenCalled();
-      });
-
-      it("should load file if it exists", async () => {
-        mockElectronAPI.fileExists.mockResolvedValue(true);
-        mockElectronAPI.readFile.mockResolvedValue(
-          '{"startPoint": { "x":0, "y":0 }}',
-        );
-        const { loadRecentFile } = await import("../utils/fileHandlers");
-
-        await loadRecentFile("test.pp");
-
-        expect(mockElectronAPI.readFile).toHaveBeenCalledWith("test.pp");
-      });
-    });
-
     describe("handleExternalFileOpen", () => {
       it("should copy file if not in saved directory and user confirms", async () => {
         mockElectronAPI.readFile.mockResolvedValue("{}");

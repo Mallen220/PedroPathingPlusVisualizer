@@ -13,6 +13,18 @@ describe("PathStatisticsDialog", () => {
   let defaultSequence: SequenceItem[];
   let defaultSettings: Settings;
 
+  const renderDialog = (overrides = {}) => {
+    return render(PathStatisticsDialog, {
+      startPoint: defaultStartPoint,
+      lines: defaultLines,
+      sequence: defaultSequence,
+      settings: defaultSettings,
+      isOpen: true,
+      onClose: vi.fn(),
+      ...overrides,
+    });
+  };
+
   beforeEach(() => {
     // Ensure core actions registered for stable test kinds
     actionRegistry.reset();
@@ -44,28 +56,14 @@ describe("PathStatisticsDialog", () => {
   });
 
   it("renders summary stats correctly", () => {
-    const { getByText, getAllByText } = render(PathStatisticsDialog, {
-      startPoint: defaultStartPoint,
-      lines: defaultLines,
-      sequence: defaultSequence,
-      settings: defaultSettings,
-      isOpen: true,
-      onClose: vi.fn(),
-    });
+    const { getByText, getAllByText } = renderDialog();
 
     expect(getByText("Path Statistics")).toBeTruthy();
     expect(getAllByText("Total Time").length).toBeGreaterThan(0);
   });
 
   it("switches to graphs tab", async () => {
-    const { getByText, getAllByText } = render(PathStatisticsDialog, {
-      startPoint: defaultStartPoint,
-      lines: defaultLines,
-      sequence: defaultSequence,
-      settings: defaultSettings,
-      isOpen: true,
-      onClose: vi.fn(),
-    });
+    const { getByText, getAllByText } = renderDialog();
 
     const graphsTab = getByText("Graphs");
     expect(graphsTab).toBeTruthy();
@@ -77,13 +75,8 @@ describe("PathStatisticsDialog", () => {
   });
 
   it("shows acceleration graphs and insights tab", async () => {
-    const { getByText, getAllByText } = render(PathStatisticsDialog, {
-      startPoint: defaultStartPoint,
-      lines: defaultLines,
-      sequence: defaultSequence,
-      settings: { ...defaultSettings, kFriction: 0.5 },
-      isOpen: true,
-      onClose: vi.fn(),
+    const { getByText, getAllByText } = renderDialog({
+      settings: { ...defaultSettings, kFriction: 0.5 }
     });
 
     // Check Graphs
