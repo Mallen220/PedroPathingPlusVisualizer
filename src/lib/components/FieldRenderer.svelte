@@ -3046,7 +3046,7 @@
     {/if}
 
     <!-- Timeline Hover Ghost Robot -->
-    {#if hoverRobotXY && hoverRobotHeading !== null && $showRobot && settings.robotImage !== "none"}
+    {#if hoverRobotXY && hoverRobotHeading !== null && $showRobot && settings.robotImage !== "none" && settings.robotImage !== "turtle"}
       <div
         class="field-element transition-all duration-[20ms] ease-linear pointer-events-none"
         style={`position: absolute; top: ${y(hoverRobotXY.y)}px; left: ${x(hoverRobotXY.x)}px; transform: translate(-50%, -50%) rotate(${hoverRobotHeading}deg); z-index: 21; width: ${Math.abs(x(settings.rLength || DEFAULT_ROBOT_LENGTH) - x(0))}px; height: ${Math.abs(x(settings.rWidth || DEFAULT_ROBOT_WIDTH) - x(0))}px; opacity: 0.5;`}
@@ -3075,7 +3075,7 @@
           </div>
         {/if}
       </div>
-    {:else if hoverRobotXY && hoverRobotHeading !== null && $showRobot && settings.robotImage === "none"}
+    {:else if hoverRobotXY && hoverRobotHeading !== null && $showRobot && (settings.robotImage === "none" || settings.robotImage === "turtle")}
       <div
         class="field-element transition-all duration-[20ms] ease-linear pointer-events-none"
         style={`position: absolute; top: ${y(hoverRobotXY.y)}px; left: ${x(hoverRobotXY.x)}px; transform: translate(-50%, -50%) rotate(${hoverRobotHeading}deg); z-index: 21; width: ${Math.abs(x(settings.rLength || DEFAULT_ROBOT_LENGTH) - x(0))}px; height: ${Math.abs(x(settings.rWidth || DEFAULT_ROBOT_WIDTH) - x(0))}px; background-color: rgba(100, 116, 139, 0.3); border: 2px dashed #94a3b8; border-radius: 8px;`}

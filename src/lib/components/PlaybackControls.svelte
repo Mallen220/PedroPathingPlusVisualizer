@@ -515,7 +515,7 @@
         <div
           class="px-2 py-1 bg-neutral-800 dark:bg-neutral-200 text-neutral-100 dark:text-neutral-800 text-[10px] font-mono rounded shadow-lg"
         >
-          {formatTime(((hoverPercentRaw / 100) * totalSeconds) / 1000)}
+          {formatTime((hoverPercentRaw / 100) * totalSeconds)}
         </div>
         <!-- Little triangle arrow -->
         <div
