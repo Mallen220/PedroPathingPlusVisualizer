@@ -80,6 +80,9 @@
     robotXYStore,
     robotHeadingStore,
     percentStore,
+    hoverPercentStore,
+    hoverRobotXYStore,
+    hoverRobotHeadingStore,
     playingStore,
     loopAnimationStore,
     playbackSpeedStore,
@@ -1299,6 +1302,7 @@
   let sequence = $derived($sequenceStore);
   let macros = $derived($macrosStore);
   let percent = $derived($percentStore);
+  let hoverPercent = $derived($hoverPercentStore);
   let playing = $derived($playingStore);
   let loopAnimation = $derived($loopAnimationStore);
   let playbackSpeed = $derived($playbackSpeedStore);
@@ -1511,6 +1515,34 @@
       // Tangential defaults to 0 if no lines
       robotHeadingStore.set(h);
       committedRobotState = null;
+    }
+  });
+
+  $effect(() => {
+    if (
+      hoverPercent !== null &&
+      timePrediction?.timeline &&
+      (lines.length > 0 || sequence.length > 0)
+    ) {
+      const globalTime = (hoverPercent / 100) * effectiveDuration;
+      let currentPercent = 0;
+      if (currentTotalTime > 0) {
+        currentPercent = (globalTime / currentTotalTime) * 100;
+        if (currentPercent > 100) currentPercent = 100;
+      }
+      const state = calculateRobotState(
+        currentPercent,
+        timePrediction.timeline,
+        lines,
+        startPoint,
+        IDENTITY_SCALE,
+        IDENTITY_SCALE,
+      );
+      hoverRobotXYStore.set({ x: state.x, y: state.y });
+      hoverRobotHeadingStore.set(state.heading);
+    } else {
+      hoverRobotXYStore.set(null);
+      hoverRobotHeadingStore.set(null);
     }
   });
   $effect(() => {

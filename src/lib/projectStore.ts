@@ -135,6 +135,11 @@ const loadingMacros = new Set<string>();
 
 // Animation state
 export const percentStore = writable(0);
+export const hoverPercentStore = writable<number | null>(null);
+export const hoverRobotXYStore = writable<{ x: number; y: number } | null>(
+  null,
+);
+export const hoverRobotHeadingStore = writable<number | null>(null);
 export const playingStore = writable(false);
 export const playbackSpeedStore = writable(1);
 export const loopAnimationStore = writable(true);
