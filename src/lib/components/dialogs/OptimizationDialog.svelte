@@ -442,6 +442,9 @@
               title={isRunning
                 ? "Optimization already running"
                 : "Retry optimization with current path"}
+              aria-label={isRunning
+                ? "Optimization already running"
+                : "Retry optimization with current path"}
             >
               Retry Optimization
             </button>

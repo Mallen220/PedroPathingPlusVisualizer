@@ -609,6 +609,7 @@
             >
               <button
                 title={locked ? "Locked" : "Move up"}
+                aria-label={locked ? "Locked" : "Move up"}
                 onclick={(e) => {
                   e.stopPropagation();
                   moveSegment(i, -1);
@@ -624,6 +625,7 @@
               ></div>
               <button
                 title={locked ? "Locked" : "Move down"}
+                aria-label={locked ? "Locked" : "Move down"}
                 onclick={(e) => {
                   e.stopPropagation();
                   moveSegment(i, 1);
