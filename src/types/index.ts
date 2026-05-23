@@ -333,7 +333,6 @@ export interface Settings {
   sidebarIconSize?: number;
 }
 
-
 export interface RobotFeature {
   id: string;
   name?: string;

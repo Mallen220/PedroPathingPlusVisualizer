@@ -305,26 +305,6 @@
     />
   </SettingsItem>
 
-
-  <SettingsItem
-    label="Robot Features"
-    isModified={settings.robotFeatures !== undefined && settings.robotFeatures.length > 0}
-    onReset={() => {
-      settings.robotFeatures = [];
-      settings = { ...settings };
-    }}
-    description="Add custom shapes (intakes, trajectories, etc.) to your robot"
-    {searchQuery}
-    section
-  >
-    <div class="mt-2">
-      <RobotFeaturesEditor
-        {settings}
-        onSettingsChange={() => (settings = { ...settings })}
-      />
-    </div>
-  </SettingsItem>
-
   <SettingsItem
     label="Robot Image"
     isModified={settings.robotImage !== DEFAULT_SETTINGS.robotImage ||
@@ -523,6 +503,26 @@
           />
         </div>
       {/if}
+    </div>
+  </SettingsItem>
+
+  <SettingsItem
+    label="Robot Features"
+    isModified={settings.robotFeatures !== undefined &&
+      settings.robotFeatures.length > 0}
+    onReset={() => {
+      settings.robotFeatures = [];
+      settings = { ...settings };
+    }}
+    description="Add custom shapes (intakes, trajectories, etc.) to your robot"
+    {searchQuery}
+    section
+  >
+    <div class="mt-2">
+      <RobotFeaturesEditor
+        {settings}
+        onSettingsChange={() => (settings = { ...settings })}
+      />
     </div>
   </SettingsItem>
 
