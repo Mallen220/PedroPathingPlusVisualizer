@@ -117,11 +117,9 @@
   class="flex flex-col md:flex-row gap-6 mt-2 p-4 bg-neutral-50 dark:bg-neutral-800/30 border border-neutral-200 dark:border-neutral-700 rounded-lg"
 >
   <!-- Left Side: Preview Canvas -->
-  <div class="flex flex-col gap-2 w-full md:w-1/2 items-center">
-    <div class="text-xs font-medium text-neutral-500 uppercase">Preview</div>
-
+  <div class="flex flex-col w-full md:w-[260px] shrink-0 items-center">
     <div
-      class="relative border border-neutral-300 dark:border-neutral-700 rounded-md bg-white dark:bg-neutral-900 overflow-hidden shadow-inner touch-none"
+      class="relative border border-neutral-200 dark:border-neutral-700/50 rounded-md bg-transparent overflow-hidden touch-none"
       style="width: {PREVIEW_SIZE}px; height: {PREVIEW_SIZE}px;"
     >
       <svg width={PREVIEW_SIZE} height={PREVIEW_SIZE} class="w-full h-full">
@@ -282,7 +280,9 @@
         </g>
       </svg>
     </div>
-    <div class="text-xs text-neutral-500 text-center w-full max-w-[250px]">
+    <div
+      class="text-[10px] text-neutral-400 dark:text-neutral-500 text-center w-full mt-1"
+    >
       Drag features to move them, or edit properties below. Shift-drag to snap.
     </div>
 
@@ -310,7 +310,7 @@
   </div>
 
   <!-- Right Side: Properties Editor -->
-  <div class="flex flex-col gap-2 w-full md:w-1/2">
+  <div class="flex flex-col w-full min-w-0 flex-1">
     <div
       class="text-xs font-medium text-neutral-500 uppercase flex justify-between items-center"
     >
