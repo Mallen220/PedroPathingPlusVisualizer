@@ -108,10 +108,10 @@ describe("calculateDrivetrainSpeeds", () => {
     );
     // vx = 20, vy = 0. maxV = 100. normalizedForward = 20/100 = 0.20.
     expect(speeds).toBeTruthy();
-    expect(speeds?.frontLeft).toBeCloseTo(0.2);
-    expect(speeds?.backLeft).toBeCloseTo(0.2);
-    expect(speeds?.frontRight).toBeCloseTo(0.2);
-    expect(speeds?.backRight).toBeCloseTo(0.2);
+    expect(speeds?.frontLeft).toBeCloseTo(0.20);
+    expect(speeds?.backLeft).toBeCloseTo(0.20);
+    expect(speeds?.frontRight).toBeCloseTo(0.20);
+    expect(speeds?.backRight).toBeCloseTo(0.20);
   });
 
   it("should calculate correct angles for swerve", () => {

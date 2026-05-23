@@ -2896,65 +2896,57 @@
       />
     {/if}
 
-    <!-- Robot Features helper for reuse inside different robot representations -->
-    {#snippet renderRobotFeatures(
-      features: any[] | undefined,
-      baseWidth: number,
-      baseHeight: number,
-      snippetPpI: number,
-    )}
+<!-- Robot Features helper for reuse inside different robot representations -->
+    {#snippet renderRobotFeatures(features: any[] | undefined, baseWidth: number, baseHeight: number, snippetPpI: number)}
       {#if features && features.length > 0}
-        <div
-          class="absolute inset-0 pointer-events-none"
-          style="width: 100%; height: 100%; top: 0; left: 0;"
-        >
-          <svg
-            class="w-full h-full overflow-visible"
-            viewBox="0 0 {baseWidth} {baseHeight}"
-          >
+        <div class="absolute inset-0 pointer-events-none" style="width: 100%; height: 100%; top: 0; left: 0;">
+          <svg class="w-full h-full overflow-visible" viewBox="0 0 {baseWidth} {baseHeight}">
             {#each features as feature}
-              {@const px = -feature.y * snippetPpI}
-              {@const py = feature.x * snippetPpI}
+              {#if feature.visible !== false}
+              {@const px = feature.x * snippetPpI}
+              {@const py = feature.y * snippetPpI}
               {@const cx = baseWidth / 2 + px}
               {@const cy = baseHeight / 2 + py}
-              {@const fill = feature.filled ? feature.color : "transparent"}
+              {@const fill = feature.filled ? feature.color : 'transparent'}
               {@const stroke = feature.color}
 
-              {#if feature.type === "rectangle"}
+              {#if feature.visible !== false}
+              {#if feature.type === 'rectangle'}
                 <rect
-                  x={cx - ((feature.height || 4) * snippetPpI) / 2}
-                  y={cy - ((feature.width || 4) * snippetPpI) / 2}
-                  width={(feature.height || 4) * snippetPpI}
-                  height={(feature.width || 4) * snippetPpI}
-                  {fill}
-                  {stroke}
+                  x={cx - (feature.width || 4) * snippetPpI / 2}
+                  y={cy - (feature.height || 4) * snippetPpI / 2}
+                  width={(feature.width || 4) * snippetPpI}
+                  height={(feature.height || 4) * snippetPpI}
+                  fill={fill}
+                  stroke={stroke}
                   stroke-width={2}
                   opacity="0.8"
                 />
-              {:else if feature.type === "circle"}
+              {:else if feature.type === 'circle'}
                 <circle
-                  {cx}
-                  {cy}
+                  cx={cx}
+                  cy={cy}
                   r={(feature.radius || 2) * snippetPpI}
-                  {fill}
-                  {stroke}
+                  fill={fill}
+                  stroke={stroke}
                   stroke-width={2}
                   opacity="0.8"
                 />
-              {:else if feature.type === "line"}
-                {@const angleRad =
-                  (((feature.angle || 0) + 90) * Math.PI) / 180}
+              {:else if feature.type === 'line'}
+                {@const angleRad = ((feature.angle || 0) * Math.PI) / 180}
                 {@const len = (feature.length || 6) * snippetPpI}
                 <line
                   x1={cx}
                   y1={cy}
                   x2={cx + Math.cos(angleRad) * len}
                   y2={cy + Math.sin(angleRad) * len}
-                  {stroke}
+                  stroke={stroke}
                   stroke-width={(feature.thickness || 1) * snippetPpI}
                   stroke-linecap="round"
                   opacity="0.8"
                 />
+              {/if}
+              {/if}
               {/if}
             {/each}
           </svg>

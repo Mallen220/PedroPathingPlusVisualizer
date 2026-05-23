@@ -1,7 +1,8 @@
 <!-- Copyright 2026 Matthew Allen. Licensed under the Modified Apache License, Version 2.0. -->
 <script lang="ts">
   import type { Settings, RobotFeature } from "../../../types/index";
-  import { PlusIcon, CloseIcon } from "../icons";
+  import { PlusIcon, CloseIcon, EyeIcon, EyeSlashIcon } from "../icons";
+  import ColorPicker from "../tools/ColorPicker.svelte";
 
   interface Props {
     settings: Settings;
@@ -25,6 +26,7 @@
       y: 0,
       color: "#3b82f6",
       filled: true,
+      visible: true,
     };
 
     if (type === "rectangle") {
@@ -46,26 +48,22 @@
 
   function removeFeature(id: string) {
     if (!settings.robotFeatures) return;
-    settings.robotFeatures = settings.robotFeatures.filter((f) => f.id !== id);
+    settings.robotFeatures = settings.robotFeatures.filter(f => f.id !== id);
     if (selectedFeatureId === id) selectedFeatureId = null;
     onSettingsChange();
   }
 
   function updateFeature(id: string, updates: Partial<RobotFeature>) {
     if (!settings.robotFeatures) return;
-    settings.robotFeatures = settings.robotFeatures.map((f) =>
-      f.id === id ? { ...f, ...updates } : f,
+    settings.robotFeatures = settings.robotFeatures.map(f =>
+      f.id === id ? { ...f, ...updates } : f
     );
     onSettingsChange();
   }
 
   // --- Rendering logic for the preview canvas ---
-  // The canvas displays the robot and features, scaled up for visibility
   const PREVIEW_SIZE = 250;
-  // Let's assume standard robot sizes are around 18 inches. We map inches to pixels.
-  let maxDim = $derived(
-    Math.max(settings.rLength || 18, settings.rWidth || 18),
-  );
+  let maxDim = $derived(Math.max(settings.rLength || 18, settings.rWidth || 18));
   let scale = $derived(PREVIEW_SIZE / (maxDim * 1.5)); // Provide 50% margin
   let centerX = PREVIEW_SIZE / 2;
   let centerY = PREVIEW_SIZE / 2;
@@ -76,10 +74,7 @@
   let activeDragId: string | null = null;
 
   function handlePointerDown(e: PointerEvent, feature: RobotFeature) {
-    // Only drag on left click
     if (e.button !== 0) return;
-
-    // Prevent default to avoid scrolling/selection while dragging
     e.preventDefault();
     (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
 
@@ -92,21 +87,17 @@
 
   function handlePointerMove(e: PointerEvent) {
     if (!isDragging || !activeDragId) return;
-
-    // Calculate delta in screen pixels, then convert back to inches
     const dx = e.clientX - dragStartMouse.x;
     const dy = e.clientY - dragStartMouse.y;
 
+    // In Right-Facing coordinate space, dx maps to X (forward/back), dy maps to Y (left/right)
     const inchX = dragStartFeature.x + dx / scale;
-    // Y is usually flipped in canvas/SVG compared to math coordinates,
-    // but let's assume y increases downwards in our SVG space to match standard web
     const inchY = dragStartFeature.y + dy / scale;
 
-    // Optional snapping
     const snap = e.shiftKey ? 0.5 : 0.1;
     updateFeature(activeDragId, {
       x: Math.round(inchX / snap) * snap,
-      y: Math.round(inchY / snap) * snap,
+      y: Math.round(inchY / snap) * snap
     });
   }
 
@@ -119,9 +110,7 @@
   }
 </script>
 
-<div
-  class="flex flex-col md:flex-row gap-6 mt-2 p-4 bg-neutral-50 dark:bg-neutral-800/30 border border-neutral-200 dark:border-neutral-700 rounded-lg"
->
+<div class="flex flex-col md:flex-row gap-6 mt-2 p-4 bg-neutral-50 dark:bg-neutral-800/30 border border-neutral-200 dark:border-neutral-700 rounded-lg">
   <!-- Left Side: Preview Canvas -->
   <div class="flex flex-col gap-2 w-full md:w-1/2 items-center">
     <div class="text-xs font-medium text-neutral-500 uppercase">Preview</div>
@@ -130,85 +119,64 @@
       class="relative border border-neutral-300 dark:border-neutral-700 rounded-md bg-white dark:bg-neutral-900 overflow-hidden shadow-inner touch-none"
       style="width: {PREVIEW_SIZE}px; height: {PREVIEW_SIZE}px;"
     >
-      <svg width={PREVIEW_SIZE} height={PREVIEW_SIZE} class="w-full h-full">
+      <svg
+        width={PREVIEW_SIZE}
+        height={PREVIEW_SIZE}
+        class="w-full h-full"
+      >
         <!-- Center guidelines -->
-        <line
-          x1="0"
-          y1={centerY}
-          x2={PREVIEW_SIZE}
-          y2={centerY}
-          stroke="#e5e5e5"
-          class="dark:stroke-neutral-800"
-          stroke-width="1"
-          stroke-dasharray="4 4"
-        />
-        <line
-          x1={centerX}
-          y1="0"
-          x2={centerX}
-          y2={PREVIEW_SIZE}
-          stroke="#e5e5e5"
-          class="dark:stroke-neutral-800"
-          stroke-width="1"
-          stroke-dasharray="4 4"
-        />
+        <line x1="0" y1={centerY} x2={PREVIEW_SIZE} y2={centerY} stroke="#e5e5e5" class="dark:stroke-neutral-800" stroke-width="1" stroke-dasharray="4 4" />
+        <line x1={centerX} y1="0" x2={centerX} y2={PREVIEW_SIZE} stroke="#e5e5e5" class="dark:stroke-neutral-800" stroke-width="1" stroke-dasharray="4 4" />
 
         <!-- Actual Robot Image (if not none/turtle) -->
         {#if settings.robotImage && settings.robotImage !== "none" && settings.robotImage !== "turtle"}
+          <!-- The image is natively oriented facing right. To make it face right, we just use it normally -->
           <image
-            href={settings.robotImage === "/robot.png"
-              ? "/robot.png"
-              : settings.robotImage}
-            x={centerX - ((settings.rWidth || 18) * scale) / 2}
-            y={centerY - ((settings.rLength || 18) * scale) / 2}
-            width={(settings.rWidth || 18) * scale}
-            height={(settings.rLength || 18) * scale}
+            href={settings.robotImage === "/robot.png" ? "/robot.png" : settings.robotImage}
+            x={centerX - (settings.rLength || 18) * scale / 2}
+            y={centerY - (settings.rWidth || 18) * scale / 2}
+            width={(settings.rLength || 18) * scale}
+            height={(settings.rWidth || 18) * scale}
             preserveAspectRatio="xMidYMid meet"
             opacity="0.8"
           />
         {/if}
 
         <!-- Robot Base Boundary -->
+        <!-- X is length, Y is width -->
         <rect
-          x={centerX - ((settings.rWidth || 18) * scale) / 2}
-          y={centerY - ((settings.rLength || 18) * scale) / 2}
-          width={(settings.rWidth || 18) * scale}
-          height={(settings.rLength || 18) * scale}
+          x={centerX - (settings.rLength || 18) * scale / 2}
+          y={centerY - (settings.rWidth || 18) * scale / 2}
+          width={(settings.rLength || 18) * scale}
+          height={(settings.rWidth || 18) * scale}
           fill="none"
           stroke="#16a34a"
           stroke-width="1.5"
           stroke-dasharray="4 4"
-          opacity={settings.robotImage && settings.robotImage !== "none"
-            ? "0.5"
-            : "1"}
+          opacity={settings.robotImage && settings.robotImage !== "none" ? "0.5" : "1"}
         />
 
-        <!-- Forward indicator -->
+        <!-- Forward indicator (Right-facing) -->
         <polygon
-          points="{centerX},{centerY -
-            ((settings.rLength || 18) * scale) / 2 -
-            8} {centerX - 5},{centerY -
-            ((settings.rLength || 18) * scale) / 2 +
-            2} {centerX + 5},{centerY -
-            ((settings.rLength || 18) * scale) / 2 +
-            2}"
+          points="{centerX + (settings.rLength || 18) * scale / 2 + 8},{centerY} {centerX + (settings.rLength || 18) * scale / 2 - 2},{centerY - 5} {centerX + (settings.rLength || 18) * scale / 2 - 2},{centerY + 5}"
           fill="#16a34a"
-          opacity={settings.robotImage && settings.robotImage !== "none"
-            ? "0.8"
-            : "1"}
+          opacity={settings.robotImage && settings.robotImage !== "none" ? "0.8" : "1"}
         />
 
         <!-- Features -->
         {#if settings.robotFeatures}
           {#each settings.robotFeatures as feature (feature.id)}
             {@const isSelected = selectedFeatureId === feature.id}
+            {@const isVisible = feature.visible !== false}
+            <!-- X is forward/back, Y is left/right -->
             {@const fx = centerX + feature.x * scale}
             {@const fy = centerY + feature.y * scale}
-            {@const strokeColor = isSelected ? "#ef4444" : feature.color}
+            {@const strokeColor = isSelected ? '#ef4444' : feature.color}
             {@const strokeWidth = isSelected ? 3 : 1}
-            {@const fill = feature.filled ? feature.color : "transparent"}
-            {@const opacity = feature.filled ? (isSelected ? 0.9 : 0.7) : 1}
+            {@const fill = feature.filled ? feature.color : 'transparent'}
+            {@const opacity = !isVisible ? 0.3 : (feature.filled ? (isSelected ? 0.9 : 0.7) : 1)}
 
+            {#if isVisible || isSelected}
             <g
               role="img"
               aria-label="Robot feature"
@@ -219,28 +187,28 @@
               class="cursor-move"
               style="outline: none;"
             >
-              {#if feature.type === "rectangle"}
+              {#if feature.type === 'rectangle'}
                 <rect
-                  x={fx - ((feature.width || 4) * scale) / 2}
-                  y={fy - ((feature.height || 4) * scale) / 2}
+                  x={fx - (feature.width || 4) * scale / 2}
+                  y={fy - (feature.height || 4) * scale / 2}
                   width={(feature.width || 4) * scale}
                   height={(feature.height || 4) * scale}
-                  {fill}
+                  fill={fill}
                   stroke={strokeColor}
                   stroke-width={strokeWidth}
                   {opacity}
                 />
-              {:else if feature.type === "circle"}
+              {:else if feature.type === 'circle'}
                 <circle
                   cx={fx}
                   cy={fy}
                   r={(feature.radius || 2) * scale}
-                  {fill}
+                  fill={fill}
                   stroke={strokeColor}
                   stroke-width={strokeWidth}
                   {opacity}
                 />
-              {:else if feature.type === "line"}
+              {:else if feature.type === 'line'}
                 {@const angleRad = ((feature.angle || 0) * Math.PI) / 180}
                 {@const len = (feature.length || 6) * scale}
                 {@const endX = fx + Math.cos(angleRad) * len}
@@ -270,6 +238,7 @@
                 {/if}
               {/if}
             </g>
+            {/if}
           {/each}
         {/if}
       </svg>
@@ -303,237 +272,142 @@
 
   <!-- Right Side: Properties Editor -->
   <div class="flex flex-col gap-2 w-full md:w-1/2">
-    <div
-      class="text-xs font-medium text-neutral-500 uppercase flex justify-between items-center"
-    >
+    <div class="text-xs font-medium text-neutral-500 uppercase flex justify-between items-center">
       <span>Properties</span>
       {#if settings.robotFeatures && settings.robotFeatures.length > 0}
-        <span class="text-[10px]">{settings.robotFeatures.length} features</span
-        >
+        <span class="text-[10px]">{settings.robotFeatures.length} features</span>
       {/if}
     </div>
 
     {#if !settings.robotFeatures || settings.robotFeatures.length === 0}
-      <div
-        class="flex flex-col items-center justify-center h-[250px] border border-dashed border-neutral-300 dark:border-neutral-700 rounded-md text-sm text-neutral-500 bg-neutral-50 dark:bg-neutral-800/50 p-4 text-center"
-      >
-        <div class="mb-2 opacity-50">
-          <PlusIcon className="w-8 h-8 mx-auto" />
-        </div>
-        <p class="font-medium text-neutral-600 dark:text-neutral-400">
-          No custom features set
-        </p>
-        <p class="text-xs mt-1">
-          Add features to represent intakes or scoring mechanisms.
-        </p>
-        No features added yet.
+      <div class="flex flex-col items-center justify-center h-[250px] border border-dashed border-neutral-300 dark:border-neutral-700 rounded-md text-sm text-neutral-500 bg-neutral-50 dark:bg-neutral-800/50 p-4 text-center">
+        <div class="mb-2 opacity-50"><PlusIcon className="w-8 h-8 mx-auto" /></div>
+        <p class="font-medium text-neutral-600 dark:text-neutral-400">No custom features set</p>
+        <p class="text-xs mt-1">Add features to represent intakes or scoring mechanisms.</p>
       </div>
     {:else}
-      <div
-        class="flex flex-col h-[250px] overflow-y-auto pr-1 gap-2 custom-scrollbar"
-      >
+      <div class="flex flex-col h-[250px] overflow-y-auto pr-1 gap-2 custom-scrollbar">
         {#each settings.robotFeatures as feature (feature.id)}
           <div
             role="button"
             tabindex="0"
-            onkeydown={(e) => {
-              if (e.key === "Enter" || e.key === " ")
-                selectedFeatureId = feature.id;
-            }}
-            class="flex flex-col gap-2 p-3 rounded-md border {selectedFeatureId ===
-            feature.id
-              ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
-              : 'border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800'}"
-            onclick={() => (selectedFeatureId = feature.id)}
+            onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') selectedFeatureId = feature.id; }}
+            class="flex flex-col gap-2 p-3 rounded-md border {selectedFeatureId === feature.id ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20' : 'border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800'}"
+            onclick={() => selectedFeatureId = feature.id}
           >
             <div class="flex justify-between items-center">
               <input
                 type="text"
                 value={feature.name}
-                oninput={(e) =>
-                  updateFeature(feature.id, { name: e.currentTarget.value })}
+                oninput={(e) => updateFeature(feature.id, { name: e.currentTarget.value })}
                 class="text-sm font-medium bg-transparent border-none focus:ring-1 focus:ring-blue-500 rounded px-1 -ml-1 w-2/3 text-neutral-800 dark:text-neutral-200"
               />
-              <button
-                class="text-neutral-400 hover:text-red-500 transition-colors p-1"
-                onclick={(e) => {
-                  e.stopPropagation();
-                  removeFeature(feature.id);
-                }}
-                title="Remove Feature"
-              >
-                <CloseIcon className="w-4 h-4" />
-              </button>
+              <div class="flex items-center gap-1">
+                <button
+                  class="text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors p-1"
+                  onclick={(e) => { e.stopPropagation(); updateFeature(feature.id, { visible: feature.visible === false ? true : false }); }}
+                  title={feature.visible === false ? "Show Feature" : "Hide Feature"}
+                >
+                  {#if feature.visible === false}
+                    <EyeSlashIcon className="w-4 h-4" />
+                  {:else}
+                    <EyeIcon className="w-4 h-4" />
+                  {/if}
+                </button>
+                <button
+                  class="text-neutral-400 hover:text-red-500 transition-colors p-1"
+                  onclick={(e) => { e.stopPropagation(); removeFeature(feature.id); }}
+                  title="Remove Feature"
+                >
+                  <CloseIcon className="w-4 h-4" />
+                </button>
+              </div>
             </div>
 
             <div class="grid grid-cols-2 gap-2 mt-1">
               <!-- Common Properties -->
               <div class="flex flex-col">
-                <label
-                  for="feature-{feature.id}-x"
-                  class="text-[10px] text-neutral-500 uppercase"
-                  >X Offset (in)</label
-                >
-                <input
-                  id="feature-{feature.id}-x"
+                <label for="feature-{feature.id}-x" class="text-[10px] text-neutral-500 uppercase">X Offset (in)</label>
+                <input id="feature-{feature.id}-x"
                   type="number"
                   value={feature.x}
-                  oninput={(e) =>
-                    updateFeature(feature.id, {
-                      x: Number.parseFloat(e.currentTarget.value) || 0,
-                    })}
+                  oninput={(e) => updateFeature(feature.id, { x: Number.parseFloat(e.currentTarget.value) || 0 })}
                   step="0.5"
                   class="w-full px-2 py-1 text-sm rounded border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-900 focus:outline-none focus:ring-1 focus:ring-blue-500"
                 />
               </div>
               <div class="flex flex-col">
-                <label
-                  for="feature-{feature.id}-y"
-                  class="text-[10px] text-neutral-500 uppercase"
-                  >Y Offset (in)</label
-                >
-                <input
-                  id="feature-{feature.id}-y"
+                <label for="feature-{feature.id}-y" class="text-[10px] text-neutral-500 uppercase">Y Offset (in)</label>
+                <input id="feature-{feature.id}-y"
                   type="number"
                   value={feature.y}
-                  oninput={(e) =>
-                    updateFeature(feature.id, {
-                      y: Number.parseFloat(e.currentTarget.value) || 0,
-                    })}
+                  oninput={(e) => updateFeature(feature.id, { y: Number.parseFloat(e.currentTarget.value) || 0 })}
                   step="0.5"
                   class="w-full px-2 py-1 text-sm rounded border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-900 focus:outline-none focus:ring-1 focus:ring-blue-500"
                 />
               </div>
 
               <!-- Shape-specific Properties -->
-              {#if feature.type === "rectangle"}
+              {#if feature.type === 'rectangle'}
                 <div class="flex flex-col">
-                  <label
-                    for="feature-{feature.id}-width"
-                    class="text-[10px] text-neutral-500 uppercase"
-                    >Width (in)</label
-                  >
-                  <input
-                    id="feature-{feature.id}-width"
+                  <label for="feature-{feature.id}-width" class="text-[10px] text-neutral-500 uppercase">Width (in)</label>
+                  <input id="feature-{feature.id}-width"
                     type="number"
                     value={feature.width}
-                    oninput={(e) =>
-                      updateFeature(feature.id, {
-                        width: Math.max(
-                          0.1,
-                          Number.parseFloat(e.currentTarget.value) || 4,
-                        ),
-                      })}
-                    min="0.1"
-                    step="0.5"
+                    oninput={(e) => updateFeature(feature.id, { width: Math.max(0.1, Number.parseFloat(e.currentTarget.value) || 4) })}
+                    min="0.1" step="0.5"
                     class="w-full px-2 py-1 text-sm rounded border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-900 focus:outline-none focus:ring-1 focus:ring-blue-500"
                   />
                 </div>
                 <div class="flex flex-col">
-                  <label
-                    for="feature-{feature.id}-height"
-                    class="text-[10px] text-neutral-500 uppercase"
-                    >Height (in)</label
-                  >
-                  <input
-                    id="feature-{feature.id}-height"
+                  <label for="feature-{feature.id}-height" class="text-[10px] text-neutral-500 uppercase">Height (in)</label>
+                  <input id="feature-{feature.id}-height"
                     type="number"
                     value={feature.height}
-                    oninput={(e) =>
-                      updateFeature(feature.id, {
-                        height: Math.max(
-                          0.1,
-                          Number.parseFloat(e.currentTarget.value) || 4,
-                        ),
-                      })}
-                    min="0.1"
-                    step="0.5"
+                    oninput={(e) => updateFeature(feature.id, { height: Math.max(0.1, Number.parseFloat(e.currentTarget.value) || 4) })}
+                    min="0.1" step="0.5"
                     class="w-full px-2 py-1 text-sm rounded border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-900 focus:outline-none focus:ring-1 focus:ring-blue-500"
                   />
                 </div>
-              {:else if feature.type === "circle"}
+              {:else if feature.type === 'circle'}
                 <div class="flex flex-col">
-                  <label
-                    for="feature-{feature.id}-radius"
-                    class="text-[10px] text-neutral-500 uppercase"
-                    >Radius (in)</label
-                  >
-                  <input
-                    id="feature-{feature.id}-radius"
+                  <label for="feature-{feature.id}-radius" class="text-[10px] text-neutral-500 uppercase">Radius (in)</label>
+                  <input id="feature-{feature.id}-radius"
                     type="number"
                     value={feature.radius}
-                    oninput={(e) =>
-                      updateFeature(feature.id, {
-                        radius: Math.max(
-                          0.1,
-                          Number.parseFloat(e.currentTarget.value) || 2,
-                        ),
-                      })}
-                    min="0.1"
-                    step="0.5"
+                    oninput={(e) => updateFeature(feature.id, { radius: Math.max(0.1, Number.parseFloat(e.currentTarget.value) || 2) })}
+                    min="0.1" step="0.5"
                     class="w-full px-2 py-1 text-sm rounded border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-900 focus:outline-none focus:ring-1 focus:ring-blue-500"
                   />
                 </div>
-              {:else if feature.type === "line"}
+              {:else if feature.type === 'line'}
                 <div class="flex flex-col">
-                  <label
-                    for="feature-{feature.id}-length"
-                    class="text-[10px] text-neutral-500 uppercase"
-                    >Length (in)</label
-                  >
-                  <input
-                    id="feature-{feature.id}-length"
+                  <label for="feature-{feature.id}-length" class="text-[10px] text-neutral-500 uppercase">Length (in)</label>
+                  <input id="feature-{feature.id}-length"
                     type="number"
                     value={feature.length}
-                    oninput={(e) =>
-                      updateFeature(feature.id, {
-                        length: Math.max(
-                          0.1,
-                          Number.parseFloat(e.currentTarget.value) || 6,
-                        ),
-                      })}
-                    min="0.1"
-                    step="0.5"
+                    oninput={(e) => updateFeature(feature.id, { length: Math.max(0.1, Number.parseFloat(e.currentTarget.value) || 6) })}
+                    min="0.1" step="0.5"
                     class="w-full px-2 py-1 text-sm rounded border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-900 focus:outline-none focus:ring-1 focus:ring-blue-500"
                   />
                 </div>
                 <div class="flex flex-col">
-                  <label
-                    for="feature-{feature.id}-angle"
-                    class="text-[10px] text-neutral-500 uppercase"
-                    >Angle (deg)</label
-                  >
-                  <input
-                    id="feature-{feature.id}-angle"
+                  <label for="feature-{feature.id}-angle" class="text-[10px] text-neutral-500 uppercase">Angle (deg)</label>
+                  <input id="feature-{feature.id}-angle"
                     type="number"
                     value={feature.angle}
-                    oninput={(e) =>
-                      updateFeature(feature.id, {
-                        angle: Number.parseFloat(e.currentTarget.value) || 0,
-                      })}
+                    oninput={(e) => updateFeature(feature.id, { angle: Number.parseFloat(e.currentTarget.value) || 0 })}
                     step="5"
                     class="w-full px-2 py-1 text-sm rounded border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-900 focus:outline-none focus:ring-1 focus:ring-blue-500"
                   />
                 </div>
                 <div class="flex flex-col col-span-2">
-                  <label
-                    for="feature-{feature.id}-thickness"
-                    class="text-[10px] text-neutral-500 uppercase"
-                    >Thickness (in)</label
-                  >
-                  <input
-                    id="feature-{feature.id}-thickness"
+                  <label for="feature-{feature.id}-thickness" class="text-[10px] text-neutral-500 uppercase">Thickness (in)</label>
+                  <input id="feature-{feature.id}-thickness"
                     type="number"
                     value={feature.thickness}
-                    oninput={(e) =>
-                      updateFeature(feature.id, {
-                        thickness: Math.max(
-                          0.1,
-                          Number.parseFloat(e.currentTarget.value) || 1,
-                        ),
-                      })}
-                    min="0.1"
-                    step="0.5"
+                    oninput={(e) => updateFeature(feature.id, { thickness: Math.max(0.1, Number.parseFloat(e.currentTarget.value) || 1) })}
+                    min="0.1" step="0.5"
                     class="w-full px-2 py-1 text-sm rounded border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-900 focus:outline-none focus:ring-1 focus:ring-blue-500"
                   />
                 </div>
@@ -541,43 +415,26 @@
 
               <!-- Color -->
               <div class="flex flex-col col-span-1">
-                <label
-                  for="feature-{feature.id}-color"
-                  class="text-[10px] text-neutral-500 uppercase">Color</label
-                >
-                <div class="flex items-center gap-2">
-                  <input
-                    id="feature-{feature.id}-color"
-                    type="color"
-                    value={feature.color}
-                    oninput={(e) =>
-                      updateFeature(feature.id, {
-                        color: e.currentTarget.value,
-                      })}
-                    class="w-8 h-8 p-0 rounded border border-neutral-300 dark:border-neutral-600 cursor-pointer"
+                <label for="feature-{feature.id}-color" class="text-[10px] text-neutral-500 uppercase">Color</label>
+                <div class="flex items-center gap-2 mt-1">
+                  <ColorPicker
+                    color={feature.color}
+                    onchange={(e) => updateFeature(feature.id, { color: (e.currentTarget as HTMLInputElement).value })}
                   />
                 </div>
               </div>
 
-              {#if feature.type !== "line"}
+              {#if feature.type !== 'line'}
                 <div class="flex flex-col justify-end col-span-1">
-                  <label
-                    for="feature-{feature.id}-filled"
-                    class="flex items-center gap-2 text-sm cursor-pointer"
-                  >
+                  <label for="feature-{feature.id}-filled" class="flex items-center gap-2 text-sm cursor-pointer">
                     <input
                       id="feature-{feature.id}-filled"
                       type="checkbox"
                       checked={feature.filled}
-                      onchange={(e) =>
-                        updateFeature(feature.id, {
-                          filled: e.currentTarget.checked,
-                        })}
+                      onchange={(e) => updateFeature(feature.id, { filled: e.currentTarget.checked })}
                       class="rounded text-blue-500 focus:ring-blue-500"
                     />
-                    <span class="text-neutral-700 dark:text-neutral-300"
-                      >Filled</span
-                    >
+                    <span class="text-neutral-700 dark:text-neutral-300">Filled</span>
                   </label>
                 </div>
               {/if}

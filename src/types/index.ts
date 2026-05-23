@@ -347,6 +347,7 @@ export interface RobotFeature {
   angle?: number;
   thickness?: number;
   filled?: boolean;
+  visible?: boolean;
 }
 
 export interface RobotProfile {

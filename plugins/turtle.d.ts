@@ -354,6 +354,7 @@ interface RobotFeature {
   angle?: number;
   thickness?: number;
   filled?: boolean;
+  visible?: boolean;
 }
 
 interface RobotProfile {
