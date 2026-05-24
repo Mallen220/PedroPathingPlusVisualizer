@@ -585,16 +585,21 @@
         </div>
       {:else if item.type === "dot"}
         <div
-          class="absolute z-20 group ring-2 ring-black/5 dark:ring-white/20 rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-1 dark:focus-visible:ring-offset-neutral-900"
+          class="absolute z-20 group rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-1 dark:focus-visible:ring-offset-neutral-900 flex items-center justify-center"
           role="button"
           tabindex="0"
           onclick={() => handleSeek(item.percent)}
           onkeydown={(e) => {
             if (e.key === "Enter" || e.key === " ") handleSeek(item.percent);
           }}
-          style={`left: ${item.percent}%; top: 50%; transform: translate(-50%, -50%); width: 14px; height: 14px; background: ${item.color}; cursor: pointer;`}
+          style={`left: ${item.percent}%; top: 50%; transform: translate(-50%, -50%); width: 24px; height: 24px; cursor: pointer;`}
           aria-label={item.name}
         >
+          <!-- Visual Dot (14x14px) to preserve exact original look -->
+          <div
+            class="rounded-full ring-2 ring-black/5 dark:ring-white/20"
+            style={`width: 14px; height: 14px; background: ${item.color};`}
+          ></div>
           <!-- Tooltip (CSS Hover) -->
           <div
             class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded shadow-lg text-xs text-neutral-800 dark:text-neutral-100 z-[100] pointer-events-none whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200"
