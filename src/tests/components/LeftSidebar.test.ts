@@ -46,7 +46,10 @@ describe("LeftSidebar", () => {
 
     const link = getByLabelText("GitHub Repository");
     expect(link).toBeInTheDocument();
-    expect(link).toHaveAttribute("href", "https://github.com/Mallen220/TurtleTracer");
+    expect(link).toHaveAttribute(
+      "href",
+      "https://github.com/Mallen220/TurtleTracer",
+    );
     expect(link).toHaveAttribute("target", "_blank");
   });
 });

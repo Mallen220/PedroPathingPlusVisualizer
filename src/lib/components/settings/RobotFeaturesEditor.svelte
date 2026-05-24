@@ -287,8 +287,6 @@
     >
       Drag features to move them, or edit properties below. Shift-drag to snap.
     </div>
-
-
   </div>
 
   <!-- Right Side: Properties Editor -->
@@ -335,7 +333,6 @@
         <p class="font-medium text-neutral-600 dark:text-neutral-400">
           No custom features set
         </p>
-
       </div>
     {:else}
       <div

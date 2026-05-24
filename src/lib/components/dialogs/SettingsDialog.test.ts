@@ -67,7 +67,10 @@ describe("SettingsDialog", () => {
 
     const link = getByLabelText("View Source Repository on GitHub");
     expect(link).toBeInTheDocument();
-    expect(link).toHaveAttribute("href", "https://github.com/Mallen220/TurtleTracer");
+    expect(link).toHaveAttribute(
+      "href",
+      "https://github.com/Mallen220/TurtleTracer",
+    );
     expect(link).toHaveAttribute("target", "_blank");
     expect(link).toHaveAttribute("rel", "noopener noreferrer");
   });
