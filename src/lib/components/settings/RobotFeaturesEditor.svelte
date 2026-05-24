@@ -92,10 +92,10 @@
     const dx = e.clientX - dragStartMouse.x;
     const dy = e.clientY - dragStartMouse.y;
 
-    // In Right-Facing coordinate space, dx maps to X (forward/back), dy maps to Y (left/right)
-    // SVG faces right (X=forward, Y=width). Screen +X is right (forward), Screen +Y is down (width).
-    const inchX = dragStartFeature.x + dx / scale;
-    const inchY = dragStartFeature.y + dy / scale;
+    // The entire preview group is rotated -90 degrees (facing up).
+    // Screen up (-dy) maps to local +X (forward). Screen right (+dx) maps to local +Y (left/right).
+    const inchX = dragStartFeature.x - dy / scale;
+    const inchY = dragStartFeature.y + dx / scale;
 
     const snap = e.shiftKey ? 0.5 : 0.01;
     updateFeature(activeDragId, {
@@ -146,137 +146,139 @@
             stroke-dasharray="4 4"
           />
 
-          <!-- Actual Robot Image (if not none/turtle) -->
-          {#if settings.robotImage && settings.robotImage !== "none" && settings.robotImage !== "turtle"}
-            <!-- The image is natively oriented facing right. To make it face right, we just use it normally -->
-            <image
-              href={settings.robotImage === "/robot.png"
-                ? "/robot.png"
-                : settings.robotImage}
+          <g transform="rotate(-90, {centerX}, {centerY})">
+            <!-- Actual Robot Image (if not none/turtle) -->
+            {#if settings.robotImage && settings.robotImage !== "none" && settings.robotImage !== "turtle"}
+              <!-- The image is natively oriented facing right. To make it face right, we just use it normally -->
+              <image
+                href={settings.robotImage === "/robot.png"
+                  ? "/robot.png"
+                  : settings.robotImage}
+                x={centerX - ((settings.rLength || 18) * scale) / 2}
+                y={centerY - ((settings.rWidth || 18) * scale) / 2}
+                width={(settings.rLength || 18) * scale}
+                height={(settings.rWidth || 18) * scale}
+                preserveAspectRatio="xMidYMid meet"
+                opacity="0.8"
+              />
+            {/if}
+
+            <!-- Robot Base Boundary -->
+            <!-- X is length, Y is width -->
+            <rect
               x={centerX - ((settings.rLength || 18) * scale) / 2}
               y={centerY - ((settings.rWidth || 18) * scale) / 2}
               width={(settings.rLength || 18) * scale}
               height={(settings.rWidth || 18) * scale}
-              preserveAspectRatio="xMidYMid meet"
-              opacity="0.8"
+              fill="none"
+              stroke="#16a34a"
+              stroke-width="1.5"
+              stroke-dasharray="4 4"
+              opacity={settings.robotImage && settings.robotImage !== "none"
+                ? "0.5"
+                : "1"}
             />
-          {/if}
 
-          <!-- Robot Base Boundary -->
-          <!-- X is length, Y is width -->
-          <rect
-            x={centerX - ((settings.rLength || 18) * scale) / 2}
-            y={centerY - ((settings.rWidth || 18) * scale) / 2}
-            width={(settings.rLength || 18) * scale}
-            height={(settings.rWidth || 18) * scale}
-            fill="none"
-            stroke="#16a34a"
-            stroke-width="1.5"
-            stroke-dasharray="4 4"
-            opacity={settings.robotImage && settings.robotImage !== "none"
-              ? "0.5"
-              : "1"}
-          />
+            <!-- Forward indicator (Right-facing) -->
+            <polygon
+              points="{centerX +
+                ((settings.rLength || 18) * scale) / 2 +
+                8},{centerY} {centerX +
+                ((settings.rLength || 18) * scale) / 2 -
+                2},{centerY - 5} {centerX +
+                ((settings.rLength || 18) * scale) / 2 -
+                2},{centerY + 5}"
+              fill="#16a34a"
+              opacity={settings.robotImage && settings.robotImage !== "none"
+                ? "0.8"
+                : "1"}
+            />
 
-          <!-- Forward indicator (Right-facing) -->
-          <polygon
-            points="{centerX +
-              ((settings.rLength || 18) * scale) / 2 +
-              8},{centerY} {centerX +
-              ((settings.rLength || 18) * scale) / 2 -
-              2},{centerY - 5} {centerX +
-              ((settings.rLength || 18) * scale) / 2 -
-              2},{centerY + 5}"
-            fill="#16a34a"
-            opacity={settings.robotImage && settings.robotImage !== "none"
-              ? "0.8"
-              : "1"}
-          />
+            <!-- Features -->
+            {#if settings.robotFeatures}
+              {#each settings.robotFeatures as feature (feature.id)}
+                {@const isSelected = selectedFeatureId === feature.id}
+                {@const isVisible = feature.visible !== false}
+                <!-- X is forward/back, Y is left/right -->
+                {@const fx = centerX + feature.x * scale}
+                {@const fy = centerY + feature.y * scale}
+                {@const strokeColor = isSelected ? "#ef4444" : feature.color}
+                {@const strokeWidth = isSelected ? 3 : 1}
+                {@const fill = feature.filled ? feature.color : "transparent"}
+                {@const opacity = !isVisible
+                  ? 0.3
+                  : feature.filled
+                    ? isSelected
+                      ? 0.9
+                      : 0.7
+                    : 1}
 
-          <!-- Features -->
-          {#if settings.robotFeatures}
-            {#each settings.robotFeatures as feature (feature.id)}
-              {@const isSelected = selectedFeatureId === feature.id}
-              {@const isVisible = feature.visible !== false}
-              <!-- X is forward/back, Y is left/right -->
-              {@const fx = centerX + feature.x * scale}
-              {@const fy = centerY + feature.y * scale}
-              {@const strokeColor = isSelected ? "#ef4444" : feature.color}
-              {@const strokeWidth = isSelected ? 3 : 1}
-              {@const fill = feature.filled ? feature.color : "transparent"}
-              {@const opacity = !isVisible
-                ? 0.3
-                : feature.filled
-                  ? isSelected
-                    ? 0.9
-                    : 0.7
-                  : 1}
-
-              {#if isVisible || isSelected}
-                <g
-                  role="img"
-                  aria-label="Robot feature"
-                  onpointerdown={(e) => handlePointerDown(e, feature)}
-                  onpointermove={handlePointerMove}
-                  onpointerup={handlePointerUp}
-                  onpointercancel={handlePointerUp}
-                  class="cursor-move"
-                  style="outline: none;"
-                >
-                  {#if feature.type === "rectangle"}
-                    <rect
-                      x={fx - ((feature.width || 4) * scale) / 2}
-                      y={fy - ((feature.height || 4) * scale) / 2}
-                      width={(feature.width || 4) * scale}
-                      height={(feature.height || 4) * scale}
-                      {fill}
-                      stroke={strokeColor}
-                      stroke-width={strokeWidth}
-                      {opacity}
-                    />
-                  {:else if feature.type === "circle"}
-                    <circle
-                      cx={fx}
-                      cy={fy}
-                      r={(feature.radius || 2) * scale}
-                      {fill}
-                      stroke={strokeColor}
-                      stroke-width={strokeWidth}
-                      {opacity}
-                    />
-                  {:else if feature.type === "line"}
-                    {@const angleRad = ((feature.angle || 0) * Math.PI) / 180}
-                    {@const len = (feature.length || 6) * scale}
-                    {@const endX = fx + Math.cos(angleRad) * len}
-                    {@const endY = fy + Math.sin(angleRad) * len}
-                    <line
-                      x1={fx}
-                      y1={fy}
-                      x2={endX}
-                      y2={endY}
-                      stroke={feature.color}
-                      stroke-width={(feature.thickness || 1) * scale}
-                      {opacity}
-                    />
-                    {#if isSelected}
-                      <!-- Selection highlight for line -->
+                {#if isVisible || isSelected}
+                  <g
+                    role="img"
+                    aria-label="Robot feature"
+                    onpointerdown={(e) => handlePointerDown(e, feature)}
+                    onpointermove={handlePointerMove}
+                    onpointerup={handlePointerUp}
+                    onpointercancel={handlePointerUp}
+                    class="cursor-move"
+                    style="outline: none;"
+                  >
+                    {#if feature.type === "rectangle"}
+                      <rect
+                        x={fx - ((feature.width || 4) * scale) / 2}
+                        y={fy - ((feature.height || 4) * scale) / 2}
+                        width={(feature.width || 4) * scale}
+                        height={(feature.height || 4) * scale}
+                        {fill}
+                        stroke={strokeColor}
+                        stroke-width={strokeWidth}
+                        {opacity}
+                      />
+                    {:else if feature.type === "circle"}
+                      <circle
+                        cx={fx}
+                        cy={fy}
+                        r={(feature.radius || 2) * scale}
+                        {fill}
+                        stroke={strokeColor}
+                        stroke-width={strokeWidth}
+                        {opacity}
+                      />
+                    {:else if feature.type === "line"}
+                      {@const angleRad = ((feature.angle || 0) * Math.PI) / 180}
+                      {@const len = (feature.length || 6) * scale}
+                      {@const endX = fx + Math.cos(angleRad) * len}
+                      {@const endY = fy + Math.sin(angleRad) * len}
                       <line
                         x1={fx}
                         y1={fy}
                         x2={endX}
                         y2={endY}
-                        stroke="#ef4444"
-                        stroke-width={(feature.thickness || 1) * scale + 4}
-                        opacity="0.3"
+                        stroke={feature.color}
+                        stroke-width={(feature.thickness || 1) * scale}
+                        {opacity}
                       />
-                      <!-- Anchor point marker -->
-                      <circle cx={fx} cy={fy} r="4" fill="#ef4444" />
+                      {#if isSelected}
+                        <!-- Selection highlight for line -->
+                        <line
+                          x1={fx}
+                          y1={fy}
+                          x2={endX}
+                          y2={endY}
+                          stroke="#ef4444"
+                          stroke-width={(feature.thickness || 1) * scale + 4}
+                          opacity="0.3"
+                        />
+                        <!-- Anchor point marker -->
+                        <circle cx={fx} cy={fy} r="4" fill="#ef4444" />
+                      {/if}
                     {/if}
-                  {/if}
-                </g>
-              {/if}
-            {/each}
-          {/if}
+                  </g>
+                {/if}
+              {/each}
+            {/if}
+          </g>
         </g>
       </svg>
     </div>
@@ -286,8 +288,23 @@
       Drag features to move them, or edit properties below. Shift-drag to snap.
     </div>
 
+
+  </div>
+
+  <!-- Right Side: Properties Editor -->
+  <div class="flex flex-col w-full min-w-0 flex-1">
+    <div
+      class="text-xs font-medium text-neutral-500 uppercase flex justify-between items-center mb-2"
+    >
+      <span>Properties</span>
+      {#if settings.robotFeatures && settings.robotFeatures.length > 0}
+        <span class="text-[10px]">{settings.robotFeatures.length} features</span
+        >
+      {/if}
+    </div>
+
     <!-- Add Buttons -->
-    <div class="flex gap-2 mt-2">
+    <div class="flex gap-2 mb-3">
       <button
         class="px-2 py-1 text-xs bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-300 rounded border border-neutral-300 dark:border-neutral-600 transition-colors flex items-center gap-1"
         onclick={() => addFeature("rectangle")}
@@ -307,19 +324,6 @@
         <PlusIcon className="w-3 h-3" /> Line
       </button>
     </div>
-  </div>
-
-  <!-- Right Side: Properties Editor -->
-  <div class="flex flex-col w-full min-w-0 flex-1">
-    <div
-      class="text-xs font-medium text-neutral-500 uppercase flex justify-between items-center"
-    >
-      <span>Properties</span>
-      {#if settings.robotFeatures && settings.robotFeatures.length > 0}
-        <span class="text-[10px]">{settings.robotFeatures.length} features</span
-        >
-      {/if}
-    </div>
 
     {#if !settings.robotFeatures || settings.robotFeatures.length === 0}
       <div
@@ -331,9 +335,7 @@
         <p class="font-medium text-neutral-600 dark:text-neutral-400">
           No custom features set
         </p>
-        <p class="text-xs mt-1">
-          Add features to represent intakes or scoring mechanisms.
-        </p>
+
       </div>
     {:else}
       <div

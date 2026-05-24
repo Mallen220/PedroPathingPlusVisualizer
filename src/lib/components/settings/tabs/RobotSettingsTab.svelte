@@ -437,22 +437,6 @@
         </button>
       </div>
 
-      <div
-        class="w-full mt-4 pt-4 border-t border-neutral-200 dark:border-neutral-700"
-      >
-        <p
-          class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1"
-        >
-          Robot Features
-        </p>
-        <p class="text-xs text-neutral-500 dark:text-neutral-400 mb-2">
-          Add custom shapes to represent intakes or scoring mechanisms.
-        </p>
-        <RobotFeaturesEditor
-          {settings}
-          onSettingsChange={() => (settings = { ...settings })}
-        />
-      </div>
       {#if settings.robotImage === "none" || !settings.robotImage}
         <div
           class="w-full border-t border-neutral-300 dark:border-neutral-700 pt-3 mt-1"
@@ -519,6 +503,23 @@
           />
         </div>
       {/if}
+
+      <div
+        class="w-full mt-4 pt-4 border-t border-neutral-200 dark:border-neutral-700"
+      >
+        <p
+          class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1"
+        >
+          Robot Features
+        </p>
+        <p class="text-xs text-neutral-500 dark:text-neutral-400 mb-2">
+          Add custom shapes to represent intakes or scoring mechanisms.
+        </p>
+        <RobotFeaturesEditor
+          {settings}
+          onSettingsChange={() => (settings = { ...settings })}
+        />
+      </div>
     </div>
   </SettingsItem>
 
