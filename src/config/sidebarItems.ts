@@ -20,6 +20,7 @@ import {
   LockIcon,
   FeedbackIcon,
   GithubIcon,
+  DiscordIcon,
   ShowRobotIcon,
   ShowFakeHeadingArrowIcon,
   ValidateFieldBoundariesIcon,
@@ -161,6 +162,12 @@ export const SIDEBAR_ITEMS: SidebarItemConfig[] = [
     label: "Feedback",
     type: "system",
     iconComponent: FeedbackIcon,
+  },
+  {
+    id: "discord",
+    label: "Discord Server",
+    type: "system",
+    iconComponent: DiscordIcon,
   },
   {
     id: "github",

@@ -212,7 +212,7 @@ export const DEFAULT_SETTINGS: Settings = {
     "separator",
     "settings",
     "feedback",
-    "github",
+    "discord",
   ],
   customSidebarItems: [],
   sidebarExpanded: false,

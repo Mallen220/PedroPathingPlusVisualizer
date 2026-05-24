@@ -13,4 +13,40 @@ describe("LeftSidebar", () => {
     });
     expect(container).toBeTruthy();
   });
+
+  it("renders the Discord link in the sidebar", () => {
+    const { getByLabelText } = render(LeftSidebar, {
+      props: {
+        settings: {
+          sidebarItems: ["discord"],
+          customSidebarItems: [],
+          sidebarExpanded: true,
+          sidebarWidth: 240,
+        } as any,
+      } as any,
+    });
+
+    const link = getByLabelText("Discord Server Invite");
+    expect(link).toBeInTheDocument();
+    expect(link).toHaveAttribute("href", "https://discord.gg/chHSzS4ewF");
+    expect(link).toHaveAttribute("target", "_blank");
+  });
+
+  it("renders the GitHub link in the sidebar", () => {
+    const { getByLabelText } = render(LeftSidebar, {
+      props: {
+        settings: {
+          sidebarItems: ["github"],
+          customSidebarItems: [],
+          sidebarExpanded: true,
+          sidebarWidth: 240,
+        } as any,
+      } as any,
+    });
+
+    const link = getByLabelText("GitHub Repository");
+    expect(link).toBeInTheDocument();
+    expect(link).toHaveAttribute("href", "https://github.com/Mallen220/TurtleTracer");
+    expect(link).toHaveAttribute("target", "_blank");
+  });
 });

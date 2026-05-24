@@ -58,4 +58,17 @@ describe("SettingsDialog", () => {
     const saveBtn = getByText("Save");
     await fireEvent.click(saveBtn);
   });
+
+  it("renders the GitHub link with correct attributes next to the Settings title", () => {
+    const { getByLabelText } = render(SettingsDialog, {
+      isOpen: true,
+      settings: DEFAULT_SETTINGS,
+    });
+
+    const link = getByLabelText("View Source Repository on GitHub");
+    expect(link).toBeInTheDocument();
+    expect(link).toHaveAttribute("href", "https://github.com/Mallen220/TurtleTracer");
+    expect(link).toHaveAttribute("target", "_blank");
+    expect(link).toHaveAttribute("rel", "noopener noreferrer");
+  });
 });

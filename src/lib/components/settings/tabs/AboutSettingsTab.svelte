@@ -50,6 +50,15 @@
           target="_blank"
           class="text-blue-600 dark:text-blue-400 hover:underline">GitHub</a
         >
+        <DotIcon
+              className="-mx-1 text-neutral-300 dark:text-neutral-600 shrink-0"
+            />
+            <a
+              href="https://discord.gg/chHSzS4ewF"
+              target="_blank"
+              class="text-blue-600 dark:text-blue-400 hover:underline"
+              >Discord</a
+            >
       </div>
 
       <div
@@ -60,9 +69,9 @@
           <ul
             class="list-disc pl-4 space-y-1 text-neutral-600 dark:text-neutral-400 text-xs"
           >
-            <li>#16166 Watt's Up - Inspiration</li>
-            <li>Pedro Pathing Developers</li>
-            <li>FIRST Community</li>
+            <li>#16166 Watt's Up - Inspiration for the original Visualizer</li>
+            <li>Pedro Pathing Developers - Inspiration for their library and extended visualizer</li>
+            <li>FIRST Community - Support, inspiration, and endless testing</li>
           </ul>
         </div>
         <div>
@@ -125,15 +134,6 @@
               target="_blank"
               class="text-blue-600 dark:text-blue-400 hover:underline"
               >Security</a
-            >
-            <DotIcon
-              className="-mx-1 text-neutral-300 dark:text-neutral-600 shrink-0"
-            />
-            <a
-              href="https://discord.gg/chHSzS4ewF"
-              target="_blank"
-              class="text-blue-600 dark:text-blue-400 hover:underline"
-              >Discord</a
             >
           </div>
         </div>

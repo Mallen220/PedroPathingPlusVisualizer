@@ -17,6 +17,7 @@
     CogIcon,
     FeedbackIcon,
     GithubIcon,
+    DiscordIcon,
     SidebarCollapseIcon,
   } from "./icons";
 
@@ -1229,6 +1230,45 @@
                 >
               {/if}
             </button>
+          </div>
+        {:else if item.id === "discord"}
+          <!-- Discord Server Invite Link -->
+          <div
+            draggable={sidebarExpanded}
+            ondragstart={(e) => handleDragStart(e, idx)}
+            ondragover={(e) => handleDragOver(e, idx)}
+            ondragleave={() => handleDragLeave(idx)}
+            ondrop={(e) => handleDrop(e, idx)}
+            ondragend={handleDragEnd}
+            role="listitem"
+            class="w-full flex justify-center transition-all {dragOverIndex ===
+              idx && dragSourceIndex !== idx
+              ? 'ring-2 ring-blue-400 dark:ring-blue-500 bg-blue-50 dark:bg-blue-900/20'
+              : ''} {dragSourceIndex === idx ? 'opacity-30 scale-95' : ''}"
+          >
+            <a
+              target="_blank"
+              rel="noreferrer"
+              title="Discord Server"
+              aria-label="Discord Server Invite"
+              href="https://discord.gg/chHSzS4ewF"
+              class="p-1.5 rounded-md text-neutral-600 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-800 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 flex items-center {sidebarExpanded
+                ? 'w-[calc(100%-1.1rem)] px-3'
+                : 'justify-center'}"
+            >
+              <div
+                class="sidebar-icon flex-none flex items-center justify-center"
+              >
+                <DiscordIcon
+                  className="sidebar-icon-small flex-none dark:fill-white"
+                />
+              </div>
+              {#if sidebarExpanded}
+                <span class="ml-3 text-sm font-medium truncate"
+                  >{item.label}</span
+                >
+              {/if}
+            </a>
           </div>
         {:else if item.id === "github"}
           <!-- GitHub Repo Link -->
