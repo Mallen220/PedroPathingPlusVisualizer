@@ -1,40 +1,49 @@
 // Copyright 2026 Matthew Allen. Licensed under the Modified Apache License, Version 2.0.
-
-export async function checkLibraryVersion(directory: string, electronAPI: any, notificationSet: any) {
+export async function checkLibraryVersion(
+  directory: string,
+  electronAPI: any,
+  notificationSet: any,
+) {
   if (!electronAPI || !electronAPI.readFile || !electronAPI.fileExists) return;
 
   try {
     // 1. Fetch latest version from GitHub
-    const res = await fetch("https://api.github.com/repos/Mallen220/TurtleTracerLib/releases/latest");
+    const res = await fetch(
+      "https://api.github.com/repos/Mallen220/TurtleTracerLib/releases/latest",
+    );
     if (!res.ok) return;
     const data = await res.json();
     let latestVersion = data.tag_name as string;
-    if (latestVersion && latestVersion.startsWith('v')) latestVersion = latestVersion.substring(1);
+    if (latestVersion && latestVersion.startsWith("v"))
+      latestVersion = latestVersion.substring(1);
 
     // 2. Scan gradle files for local version
     const filesToCheck = [
       "build.dependencies.gradle",
       "TeamCode/build.gradle",
-      "build.gradle"
+      "build.gradle",
     ];
 
     let localVersion: string | null = null;
     let projectRoot = directory;
 
     // Normalize path to handle both Windows and Unix slashes
-    const normalizedDir = directory.replace(/\\/g, '/');
-    const parts = normalizedDir.split('/');
+    const normalizedDir = directory.replace(/\\/g, "/");
+    const parts = normalizedDir.split("/");
     const teamCodeIndex = parts.indexOf("TeamCode");
 
-    const resolve = (dir: string, file: string) => dir + (dir.endsWith('/') ? '' : '/') + file;
+    const resolve = (dir: string, file: string) =>
+      dir + (dir.endsWith("/") ? "" : "/") + file;
 
     if (teamCodeIndex > 0) {
       // The user is inside TeamCode or a subdirectory of it
       // The project root is everything before TeamCode
-      projectRoot = parts.slice(0, teamCodeIndex).join('/');
+      projectRoot = parts.slice(0, teamCodeIndex).join("/");
     } else {
       // The user might be directly at the project root. Check if TeamCode exists here.
-      const teamCodeExists = await electronAPI.fileExists(resolve(directory, "TeamCode"));
+      const teamCodeExists = await electronAPI.fileExists(
+        resolve(directory, "TeamCode"),
+      );
       if (!teamCodeExists) {
         return; // Not an FTC project, do nothing
       }
@@ -63,8 +72,10 @@ export async function checkLibraryVersion(directory: string, electronAPI: any, n
           timeout: 10000,
           actionLabel: "github",
           action: () => {
-            electronAPI.openExternal("https://github.com/Mallen220/TurtleTracerLib");
-          }
+            electronAPI.openExternal(
+              "https://github.com/Mallen220/TurtleTracerLib",
+            );
+          },
         });
       }
     } else {
@@ -75,19 +86,20 @@ export async function checkLibraryVersion(directory: string, electronAPI: any, n
         timeout: 10000,
         actionLabel: "github",
         action: () => {
-          electronAPI.openExternal("https://github.com/Mallen220/TurtleTracerLib");
-        }
+          electronAPI.openExternal(
+            "https://github.com/Mallen220/TurtleTracerLib",
+          );
+        },
       });
     }
-
   } catch (e) {
     console.warn("Failed to check library version", e);
   }
 }
 
 function compareVersions(v1: string, v2: string) {
-  const p1 = v1.split('.').map(Number);
-  const p2 = v2.split('.').map(Number);
+  const p1 = v1.split(".").map(Number);
+  const p2 = v2.split(".").map(Number);
   for (let i = 0; i < Math.max(p1.length, p2.length); i++) {
     const num1 = p1[i] || 0;
     const num2 = p2[i] || 0;

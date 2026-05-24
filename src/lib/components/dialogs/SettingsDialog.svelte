@@ -9,6 +9,7 @@
     TriangleWarningIcon,
     DotIcon,
     GithubIcon,
+    DiscordIcon,
   } from "../icons/index";
   import { fade, fly } from "svelte/transition";
   import { resetSettings } from "../../../utils/settingsPersistence";
@@ -303,16 +304,28 @@
               >
                 Settings
               </h2>
-              <a
-                href="https://github.com/Mallen220/TurtleTracer"
-                target="_blank"
-                rel="noopener noreferrer"
-                class="text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white transition-all duration-200 hover:scale-105 active:scale-95"
-                title="View Source Repository"
-                aria-label="View Source Repository on GitHub"
-              >
-                <GithubIcon className="size-5" />
-              </a>
+              <div class="flex items-center gap-2">
+                <a
+                  href="https://discord.gg/chHSzS4ewF"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="text-neutral-500 hover:text-indigo-500 dark:text-neutral-400 dark:hover:text-indigo-400 transition-all duration-200 hover:scale-105 active:scale-95"
+                  title="Join Discord Server"
+                  aria-label="Join Discord Server"
+                >
+                  <DiscordIcon className="size-5" />
+                </a>
+                <a
+                  href="https://github.com/Mallen220/TurtleTracer"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-white transition-all duration-200 hover:scale-105 active:scale-95"
+                  title="View Source Repository"
+                  aria-label="View Source Repository on GitHub"
+                >
+                  <GithubIcon className="size-5" />
+                </a>
+              </div>
             </div>
             <div
               class="flex items-center gap-2 mb-4 pl-1 text-xs font-medium text-neutral-500 dark:text-neutral-400"

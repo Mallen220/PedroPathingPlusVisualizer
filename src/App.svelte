@@ -286,7 +286,7 @@
     gitRefreshUnsub = currentDirectoryStore.subscribe(() => {
       fetchGitStatus();
     });
-    
+
     libraryCheckUnsub = currentDirectoryStore.subscribe((dir) => {
       if (dir) {
         checkLibraryVersion(dir, electronAPI, notification.set);
