@@ -56,8 +56,7 @@
     fieldPan.set({ x: 0, y: 0 });
   }
 
-  function handleCustomFieldSave(e: CustomEvent<CustomFieldConfig>) {
-    const newConfig = e.detail;
+  function handleCustomFieldSave(newConfig: CustomFieldConfig) {
     if (!settings.customMaps) settings.customMaps = [];
 
     const index = settings.customMaps.findIndex((m) => m.id === newConfig.id);
@@ -181,6 +180,7 @@
       {#if settings.customMaps?.some((m) => m.id === settings.fieldMap)}
         <button
           title="Delete Custom Map"
+          aria-label="Delete Custom Map"
           class="p-2 text-neutral-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded transition-colors"
           onclick={() => handleDeleteCustomMap(settings.fieldMap)}
         >
@@ -413,6 +413,29 @@
   </SettingsItem>
 
   <SettingsItem
+    label="Velocity Tooltips"
+    isModified={settings.showVelocityTooltip !==
+      DEFAULT_SETTINGS.showVelocityTooltip}
+    onReset={() => {
+      settings.showVelocityTooltip = DEFAULT_SETTINGS.showVelocityTooltip;
+      settings = { ...settings };
+    }}
+    description="Show velocity and elapsed time on hover"
+    {searchQuery}
+    layout="row"
+  >
+    <input
+      type="checkbox"
+      checked={settings.showVelocityTooltip}
+      onchange={(e) => {
+        settings.showVelocityTooltip = e.currentTarget.checked;
+        settings = { ...settings };
+      }}
+      class="w-5 h-5 rounded border-neutral-300 dark:border-neutral-600 text-emerald-500 focus:ring-2 focus:ring-emerald-500 cursor-pointer"
+    />
+  </SettingsItem>
+
+  <SettingsItem
     label="Lock Field View"
     isModified={settings.lockFieldView !== DEFAULT_SETTINGS.lockFieldView}
     onReset={() => {
@@ -466,6 +489,6 @@
 <CustomFieldWizard
   bind:isOpen={isCustomFieldWizardOpen}
   currentConfig={editingCustomConfig}
-  on:save={handleCustomFieldSave}
-  on:close={() => (isCustomFieldWizardOpen = false)}
+  onsave={handleCustomFieldSave}
+  onclose={() => (isCustomFieldWizardOpen = false)}
 />

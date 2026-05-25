@@ -1,10 +1,7 @@
 <!-- Copyright 2026 Matthew Allen. Licensed under the Modified Apache License, Version 2.0. -->
 <!-- src/lib/components/filemanager/FileGrid.svelte -->
 <script lang="ts">
-  import { run, stopPropagation, createBubbler } from "svelte/legacy";
-
-  const bubble = createBubbler();
-  import { createEventDispatcher, tick, onMount, onDestroy } from "svelte";
+  import { tick, onMount, onDestroy } from "svelte";
   import type { FileInfo, Point, Line } from "../../../types";
   import FileContextMenu from "./FileContextMenu.svelte";
   import PathPreview from "./PathPreview.svelte";
@@ -24,6 +21,13 @@
     renamingFile?: FileInfo | null;
     fieldImage?: string | null;
     showGitStatus?: boolean;
+    onselect?: (file: FileInfo) => void;
+    onopen?: (file: FileInfo) => void;
+    onrenameStart?: (file: FileInfo) => void;
+    onrenameSave?: (name: string) => void;
+    onrenameCancel?: () => void;
+    onmoveFile?: (data: { sourceFile: FileInfo; targetDir: FileInfo }) => void;
+    onmenuAction?: (data: { action: string; file: FileInfo }) => void;
   }
 
   let {
@@ -33,17 +37,14 @@
     renamingFile = null,
     fieldImage = null,
     showGitStatus = true,
+    onselect,
+    onopen,
+    onrenameStart,
+    onrenameSave,
+    onrenameCancel,
+    onmoveFile,
+    onmenuAction,
   }: Props = $props();
-
-  const dispatch = createEventDispatcher<{
-    select: FileInfo;
-    open: FileInfo;
-    "rename-start": FileInfo;
-    "rename-save": string;
-    "rename-cancel": void;
-    "menu-action": { action: string; file: FileInfo };
-    "move-file": { sourceFile: FileInfo; targetDir: FileInfo };
-  }>();
 
   let contextMenu: { x: number; y: number; file: FileInfo } | null =
     $state(null);
@@ -259,7 +260,7 @@
   function handleContextMenu(event: MouseEvent, file: FileInfo) {
     event.preventDefault();
     contextMenu = { x: event.clientX, y: event.clientY, file };
-    dispatch("select", file);
+    onselect?.(file);
   }
 
   // Open context menu anchored to an element (used by the kebab menu button)
@@ -271,7 +272,7 @@
       y: Math.round(rect.top + 8),
       file,
     };
-    dispatch("select", file);
+    onselect?.(file);
   }
 
   // Wrapper that accepts an Event from the template and forwards a typed element to the anchor
@@ -287,9 +288,9 @@
 
     // Map rename context action to local event
     if (action === "rename") {
-      dispatch("rename-start", file);
+      onrenameStart?.(file);
     } else {
-      dispatch("menu-action", { action, file });
+      onmenuAction?.({ action, file });
     }
   }
 
@@ -429,14 +430,14 @@
       if (data) {
         const sourceFile = JSON.parse(data) as FileInfo;
         if (sourceFile.path !== file.path) {
-          dispatch("move-file", { sourceFile, targetDir: file });
+          onmoveFile?.({ sourceFile, targetDir: file });
         }
       }
     } catch (err) {
       // Ignored
     }
   }
-  run(() => {
+  $effect(() => {
     if (renamingFile) {
       if (renamingFile.path !== lastRenamingPath) {
         renameInput = renamingFile.name.replaceAll(/\.(pp|turt)$/gi, "");
@@ -451,7 +452,7 @@
     sortMode === "date" ? groupFilesByDate(files) : [{ title: "Files", files }],
   );
   // When files change, proactively load previews for recently modified files (e.g., today)
-  run(() => {
+  $effect(() => {
     if (files && files.length) {
       // Preload top N files proactively
       files.slice(0, PRELOAD_COUNT).forEach((f) => {
@@ -477,7 +478,7 @@
     }
   });
   // If the field image or other settings change, retry any previously-failed previews
-  run(() => {
+  $effect(() => {
     if (fieldImage !== undefined) {
       Object.keys(previews).forEach((p) => {
         if (previews[p] && previews[p]!.startPoint == null) {
@@ -518,8 +519,8 @@
           {dragOverTarget === file.path
             ? 'bg-blue-100 dark:bg-blue-900 ring-2 ring-blue-500'
             : ''}"
-          onclick={() => dispatch("select", file)}
-          ondblclick={() => dispatch("open", file)}
+          onclick={() => onselect?.(file)}
+          ondblclick={() => onopen?.(file)}
           oncontextmenu={(e) => handleContextMenu(e, file)}
           role="button"
           tabindex="0"
@@ -531,7 +532,7 @@
           ondragleave={(e) => handleDragLeave(e, file)}
           ondrop={(e) => handleDrop(e, file)}
           onkeydown={(e) => {
-            if (e.key === "Enter") dispatch("open", file);
+            if (e.key === "Enter") onopen?.(file);
           }}
         >
           <!-- Icon / Preview -->
@@ -610,10 +611,11 @@
             <!-- Kebab menu overlay (visible on hover) -->
             <button
               class="absolute top-1 right-1 p-1 rounded-full bg-white/80 dark:bg-neutral-800/80 shadow-sm opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity"
-              aria-label="File actions"
-              onclick={stopPropagation((e) =>
-                openContextMenuFromEvent(e, file),
-              )}
+              aria-label="More actions"
+              onclick={(e) => {
+                e.stopPropagation();
+                openContextMenuFromEvent(e, file);
+              }}
               title="More actions"
             >
               <EllipsisHorizontalIcon
@@ -630,14 +632,16 @@
                   type="text"
                   bind:value={renameInput}
                   use:focusInput
-                  onclick={stopPropagation(bubble("click"))}
+                  onclick={(e) => {
+                    e.stopPropagation();
+                  }}
                   class="w-full text-xs text-center border border-blue-400 rounded focus:outline-none dark:bg-neutral-700 py-0.5"
                   onkeydown={(e: KeyboardEvent) => {
                     e.stopPropagation();
-                    if (e.key === "Enter") dispatch("rename-save", renameInput);
-                    if (e.key === "Escape") dispatch("rename-cancel");
+                    if (e.key === "Enter") onrenameSave?.(renameInput);
+                    if (e.key === "Escape") onrenameCancel?.();
                   }}
-                  onblur={() => dispatch("rename-cancel")}
+                  onblur={() => onrenameCancel?.()}
                 />
               </div>
             {:else}
@@ -673,7 +677,7 @@
     y={contextMenu.y}
     fileName={contextMenu.file.name}
     isDirectory={contextMenu.file.isDirectory}
-    on:close={() => (contextMenu = null)}
-    on:action={(e) => handleMenuAction(e.detail)}
+    onclose={() => (contextMenu = null)}
+    onaction={(action) => handleMenuAction(action)}
   />
 {/if}

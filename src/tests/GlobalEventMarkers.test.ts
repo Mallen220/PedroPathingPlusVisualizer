@@ -2,12 +2,7 @@
 import { render, screen } from "@testing-library/svelte";
 import { describe, it, expect, vi } from "vitest";
 import GlobalEventMarkers from "../lib/components/GlobalEventMarkers.svelte";
-import type {
-  SequenceItem,
-  Line,
-  SequencePathItem,
-  SequenceMacroItem,
-} from "../types";
+import type { SequenceItem, Line } from "../types";
 import { registerCoreUI } from "../lib/coreRegistrations";
 import { pathKind, macroKind } from "./testUtils";
 
@@ -68,7 +63,7 @@ describe("GlobalEventMarkers", () => {
     // Line 2 is index 1.
     // Marker on Line 2 at 0.5 should be at 1.5.
 
-    expect(screen.getByText("Global: 1.50")).toBeTruthy();
+    expect(screen.getByText("Global Index: 1.50")).toBeTruthy();
   });
 
   it("calculates correctly without macros", () => {
@@ -87,6 +82,6 @@ describe("GlobalEventMarkers", () => {
     // Line 2 is index 1.
     // Marker on Line 2 at 0.5 should be at 1.5.
 
-    expect(screen.getByText("Global: 1.50")).toBeTruthy();
+    expect(screen.getByText("Global Index: 1.50")).toBeTruthy();
   });
 });

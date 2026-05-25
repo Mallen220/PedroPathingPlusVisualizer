@@ -1,7 +1,5 @@
 <!-- Copyright 2026 Matthew Allen. Licensed under the Modified Apache License, Version 2.0. -->
 <script lang="ts">
-  import { run } from "svelte/legacy";
-
   import {
     showRuler,
     showProtractor,
@@ -17,7 +15,6 @@
     startPointStore,
     shapesStore,
   } from "./projectStore";
-  import { toUser } from "../utils/coordinates";
   import { FIELD_SIZE } from "../config/defaults";
   import type * as d3 from "d3";
   import type { Point } from "../types";
@@ -236,10 +233,10 @@
   let spacing = $state(12);
   let gridPositions: number[] = $state([]);
 
-  run(() => {
+  $effect(() => {
     spacing = Math.max(1, $gridSize || 12);
   });
-  run(() => {
+  $effect(() => {
     gridPositions = (() => {
       const positions: number[] = [];
       for (let pos = 0; pos <= FIELD_SIZE; pos += spacing) {
@@ -483,12 +480,12 @@
           aria-label="Drag to rotate radius line"
           onmousedown={(e) => handleMouseDown(e, "protractor-rotate")}
         />
-        <text
-          x={protractorRadius}
-          y="4"
-          class="fill-white text-xs font-bold pointer-events-none"
-          text-anchor="middle">➜</text
-        >
+        <path
+          d="M-3.5 -3.5 L3.5 0 L-3.5 3.5 Z"
+          fill="white"
+          transform="translate({protractorRadius}, 0)"
+          class="pointer-events-none"
+        />
       </g>
 
       <!-- Angle display -->
@@ -516,14 +513,14 @@
           aria-label="Drag to resize protractor"
           onmousedown={(e) => handleMouseDown(e, "protractor-resize")}
         />
-        <text
-          x={resizeHandlePosition.x}
-          y={resizeHandlePosition.y + 4}
-          class="fill-white text-xs font-bold pointer-events-none"
-          text-anchor="middle"
-        >
-          ↔
-        </text>
+        <path
+          d="M-5 0 L5 0 M-5 0 L-2 -3 M-5 0 L-2 3 M5 0 L2 -3 M5 0 L2 3"
+          stroke="white"
+          stroke-width="1.5"
+          fill="none"
+          transform="translate({resizeHandlePosition.x}, {resizeHandlePosition.y})"
+          class="pointer-events-none"
+        />
       </g>
 
       <!-- Center move handle / lock indicator -->

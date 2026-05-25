@@ -2,13 +2,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, fireEvent } from "@testing-library/svelte";
 import PathStatisticsDialog from "../lib/components/dialogs/PathStatisticsDialog.svelte";
-import type {
-  Point,
-  Line,
-  SequenceItem,
-  Settings,
-  SequencePathItem,
-} from "../types/index";
+import type { Point, Line, SequenceItem, Settings } from "../types/index";
 import { actionRegistry } from "../lib/actionRegistry";
 import { registerCoreUI } from "../lib/coreRegistrations";
 import { pathKind } from "./testUtils";
@@ -18,6 +12,18 @@ describe("PathStatisticsDialog", () => {
   let defaultLines: Line[];
   let defaultSequence: SequenceItem[];
   let defaultSettings: Settings;
+
+  const renderDialog = (overrides = {}) => {
+    return render(PathStatisticsDialog, {
+      startPoint: defaultStartPoint,
+      lines: defaultLines,
+      sequence: defaultSequence,
+      settings: defaultSettings,
+      isOpen: true,
+      onClose: vi.fn(),
+      ...overrides,
+    });
+  };
 
   beforeEach(() => {
     // Ensure core actions registered for stable test kinds
@@ -50,31 +56,14 @@ describe("PathStatisticsDialog", () => {
   });
 
   it("renders summary stats correctly", () => {
-    const { getByText, getAllByText } = render(PathStatisticsDialog, {
-      startPoint: defaultStartPoint,
-      lines: defaultLines,
-      sequence: defaultSequence,
-      settings: defaultSettings,
-      isOpen: true,
-      onClose: vi.fn(),
-    });
+    const { getByText, getAllByText } = renderDialog();
 
     expect(getByText("Path Statistics")).toBeTruthy();
     expect(getAllByText("Total Time").length).toBeGreaterThan(0);
   });
 
   it("switches to graphs tab", async () => {
-    const { getByText, getAllByText, container } = render(
-      PathStatisticsDialog,
-      {
-        startPoint: defaultStartPoint,
-        lines: defaultLines,
-        sequence: defaultSequence,
-        settings: defaultSettings,
-        isOpen: true,
-        onClose: vi.fn(),
-      },
-    );
+    const { getByText, getAllByText } = renderDialog();
 
     const graphsTab = getByText("Graphs");
     expect(graphsTab).toBeTruthy();
@@ -86,13 +75,8 @@ describe("PathStatisticsDialog", () => {
   });
 
   it("shows acceleration graphs and insights tab", async () => {
-    const { getByText } = render(PathStatisticsDialog, {
-      startPoint: defaultStartPoint,
-      lines: defaultLines,
-      sequence: defaultSequence,
+    const { getByText, getAllByText } = renderDialog({
       settings: { ...defaultSettings, kFriction: 0.5 },
-      isOpen: true,
-      onClose: vi.fn(),
     });
 
     // Check Graphs

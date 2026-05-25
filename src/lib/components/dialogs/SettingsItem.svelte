@@ -63,7 +63,7 @@
           class="p-1 rounded-md text-neutral-400 hover:text-neutral-600 hover:bg-neutral-100 dark:hover:text-neutral-200 dark:hover:bg-neutral-700 transition-colors"
           title="Reset to default"
           onclick={onReset}
-          aria-label="Reset {label}"
+          aria-label="Reset to default"
         >
           <ResetIcon className="w-4 h-4" />
         </button>
@@ -88,7 +88,7 @@
               class="p-1 rounded-md text-neutral-400 hover:text-neutral-600 hover:bg-neutral-100 dark:hover:text-neutral-200 dark:hover:bg-neutral-700 transition-colors flex-shrink-0"
               title="Reset to default"
               onclick={onReset}
-              aria-label="Reset {label}"
+              aria-label="Reset to default"
             >
               <ResetIcon className="w-4 h-4" />
             </button>

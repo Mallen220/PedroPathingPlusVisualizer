@@ -5,13 +5,30 @@ import { sequenceStore } from "../../projectStore";
 import { actionRegistry } from "../../actionRegistry";
 
 export function isInputFocused(): boolean {
-  const el = document.activeElement as HTMLElement | null;
+  const el = document.activeElement as HTMLInputElement | null;
   if (!el) return false;
   const tag = el.tagName;
-  return (
-    ["INPUT", "TEXTAREA", "SELECT"].includes(tag) ||
-    (el as any).isContentEditable
-  );
+
+  if (tag === "INPUT") {
+    const type = el.type ? el.type.toLowerCase() : "text";
+    const nonTextTypes = [
+      "checkbox",
+      "radio",
+      "range",
+      "button",
+      "submit",
+      "reset",
+      "color",
+      "file",
+      "image",
+    ];
+    if (nonTextTypes.includes(type)) {
+      return false;
+    }
+    return true;
+  }
+
+  return ["TEXTAREA", "SELECT"].includes(tag) || (el as any).isContentEditable;
 }
 
 export function isUIElementFocused(): boolean {
@@ -19,10 +36,27 @@ export function isUIElementFocused(): boolean {
 }
 
 export function isButtonFocused(): boolean {
-  const el = document.activeElement as HTMLElement | null;
+  const el = document.activeElement as HTMLInputElement | null;
   if (!el) return false;
   const tag = el.tagName;
-  return tag === "BUTTON" || el.getAttribute("role") === "button";
+
+  if (tag === "INPUT") {
+    const type = el.type ? el.type.toLowerCase() : "text";
+    const buttonTypes = [
+      "checkbox",
+      "radio",
+      "range",
+      "button",
+      "submit",
+      "reset",
+    ];
+    if (buttonTypes.includes(type)) return true;
+  }
+
+  const role = el.getAttribute("role");
+  const buttonRoles = ["button", "slider", "switch", "checkbox", "radio"];
+
+  return tag === "BUTTON" || (role !== null && buttonRoles.includes(role));
 }
 
 export function shouldBlockShortcut(
@@ -40,10 +74,32 @@ export function shouldBlockShortcut(
     actionId === "select-table-tab" ||
     actionId === "save-project" ||
     actionId === "save-file-as" ||
-    actionId === "undo" ||
-    actionId === "redo" ||
     actionId === "open-settings" ||
-    actionId === "toggle-sidebar"
+    actionId === "toggle-sidebar" ||
+    actionId === "zoom-in" ||
+    actionId === "zoom-out" ||
+    actionId === "zoom-reset" ||
+    actionId === "toggle-lock-view" ||
+    actionId === "pan-view-up" ||
+    actionId === "pan-view-down" ||
+    actionId === "pan-view-left" ||
+    actionId === "pan-view-right" ||
+    actionId === "toggle-lock-field-view" ||
+    actionId === "toggle-continuous-validation" ||
+    actionId === "new-file" ||
+    actionId === "open-file" ||
+    actionId === "export-java" ||
+    actionId === "export-points" ||
+    actionId === "export-sequential" ||
+    actionId === "export-pp" ||
+    actionId === "export-gif" ||
+    actionId === "export-image" ||
+    actionId === "download-java" ||
+    actionId === "copy-code" ||
+    actionId === "copy-table" ||
+    actionId === "docs" ||
+    actionId === "focus-name" ||
+    actionId === "confirm-dialog"
   )
     return false;
   if (e.key === "Escape") return false;

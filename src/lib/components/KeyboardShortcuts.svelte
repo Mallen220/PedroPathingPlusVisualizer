@@ -1,7 +1,5 @@
 <!-- Copyright 2026 Matthew Allen. Licensed under the Modified Apache License, Version 2.0. -->
 <script lang="ts">
-  import { run } from "svelte/legacy";
-
   import { get } from "svelte/store";
   import hotkeys from "hotkeys-js";
 
@@ -34,6 +32,8 @@
     showTransformDialog,
     protractorLockToRobot,
     showExportGif,
+    showExportImage,
+    showWhatsNew,
     notification,
     showUpdateAvailableDialog as _showUpdateAvailableDialog,
     showFeedbackDialog,
@@ -219,7 +219,7 @@
     }
   }
 
-  run(() => {
+  $effect(() => {
     if (showCommandPalette) {
       fetchFiles();
     }
@@ -411,6 +411,45 @@
         focusRequest.set({ field: "x", timestamp: Date.now(), id: sel });
       }
     },
+    selectAll: () => {
+      if (
+        document.activeElement &&
+        ["INPUT", "TEXTAREA", "SELECT"].includes(document.activeElement.tagName)
+      ) {
+        return;
+      }
+
+      if ($linesStore.length === 0) return;
+
+      const allLineIds = $linesStore.map((l) => l.id as string).filter(Boolean);
+      const allPointIds: string[] = [];
+
+      $linesStore.forEach((l, i) => {
+        const lineNum = i + 1;
+        // Include start point if it's the very first line
+        if (i === 0) {
+          allPointIds.push("point-0-0");
+        }
+        // Points are actually represented by the line's endPoint and controlPoints.
+        // There is 1 endPoint at index 0, and controlPoints at 1..N.
+        const numPoints = 1 + (l.controlPoints ? l.controlPoints.length : 0);
+        for (let pIdx = 0; pIdx < numPoints; pIdx++) {
+          allPointIds.push(`point-${lineNum}-${pIdx}`);
+        }
+      });
+
+      multiSelectedLineIds.set(allLineIds);
+      multiSelectedPointIds.set(allPointIds);
+
+      // Focus the last element
+      const lastLine = $linesStore[$linesStore.length - 1];
+      if (lastLine) {
+        const numPoints =
+          1 + (lastLine.controlPoints ? lastLine.controlPoints.length : 0);
+        selectedLineId.set(lastLine.id || null);
+        selectedPointId.set(`point-${$linesStore.length}-${numPoints - 1}`);
+      }
+    },
     deselectAll: () => {
       if ($showSettings) {
         showSettings.set(false);
@@ -426,6 +465,14 @@
       }
       if ($showShortcuts) {
         showShortcuts.set(false);
+        return;
+      }
+      if ($showExportImage) {
+        showExportImage.set(false);
+        return;
+      }
+      if ($showWhatsNew) {
+        showWhatsNew.set(false);
         return;
       }
       if ($showExportGif) {
@@ -477,10 +524,24 @@
         (document.activeElement as HTMLElement).blur();
       }
     },
-    focusX: () => focusRequest.set({ field: "x", timestamp: Date.now() }),
-    focusY: () => focusRequest.set({ field: "y", timestamp: Date.now() }),
+    focusX: () =>
+      focusRequest.set({
+        field: "x",
+        timestamp: Date.now(),
+        id: $selectedPointId || undefined,
+      }),
+    focusY: () =>
+      focusRequest.set({
+        field: "y",
+        timestamp: Date.now(),
+        id: $selectedPointId || undefined,
+      }),
     focusHeading: () =>
-      focusRequest.set({ field: "heading", timestamp: Date.now() }),
+      focusRequest.set({
+        field: "heading",
+        timestamp: Date.now(),
+        id: $selectedPointId || undefined,
+      }),
     togglePlay: () => {
       if (playing) pause();
       else play();
@@ -769,6 +830,12 @@
         return { ...s, lockFieldView: newVal };
       });
     },
+    toggleVelocityTooltip: () => {
+      settingsStore.update((s) => ({
+        ...s,
+        showVelocityTooltip: !s.showVelocityTooltip,
+      }));
+    },
     focusPathList: () => {
       activeControlTab = "path";
       setTimeout(() => {
@@ -785,6 +852,8 @@
       if ($showSettings) showSettings.set(false);
       else if ($showFileManager) showFileManager.set(false);
       else if ($showPluginManager) showPluginManager.set(false);
+      else if ($showExportImage) showExportImage.set(false);
+      else if ($showWhatsNew) showWhatsNew.set(false);
       else if ($showExportGif) showExportGif.set(false);
       else if ($exportDialogState.isOpen)
         exportDialogState.update((s) => ({ ...s, isOpen: false }));
@@ -909,11 +978,11 @@
     ...eventCommands,
   ]);
 
-  run(() => {
+  $effect(() => {
     availableCommands.set(paletteCommands);
   });
 
-  run(() => {
+  $effect(() => {
     if ($executeCommandBus) {
       const cmdId = $executeCommandBus;
       executeCommandBus.set(null);
@@ -922,7 +991,7 @@
     }
   });
 
-  run(() => {
+  $effect(() => {
     if (settings?.keyBindings) {
       hotkeys.unbind();
 

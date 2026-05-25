@@ -15,6 +15,9 @@
     <a href="https://github.com/Mallen220/TurtleTracer/releases">
       <img src="https://img.shields.io/github/v/release/Mallen220/TurtleTracer?style=for-the-badge&color=007AFF" alt="Latest Release" height="28">
     </a>
+    <a href="https://github.com/Mallen220/TurtleTracer/releases">
+      <img src="https://img.shields.io/github/downloads/Mallen220/TurtleTracer/total?style=for-the-badge&color=4c1" alt="Total Downloads" height="28">
+    </a>
     <a href="LICENSE">
       <img src="README_Content/Modified-License-Apache_2.0.svg" alt="License" height="28">
     </a>
@@ -30,12 +33,10 @@
     <img src="https://sonarcloud.io/api/project_badges/measure?project=Mallen220_TurtleTracer&metric=bugs"/>
 </p>
 <p>
-  
-  
-  
+
   <!-- COVERAGE_BADGE_START -->
   <a href="coverage/index.html">
-    <img src="README_Content/coverage-badge.svg" alt="Function Coverage: 55.63%" height="20">
+    <img src="README_Content/coverage-badge.svg" alt="Branch Coverage: 73.48%" height="20">
   </a>
   <!-- COVERAGE_BADGE_END -->
 </p>
@@ -54,7 +55,7 @@
       <img src="README_Content/lighthouse-badges/lighthouse_seo.svg" alt="Lighthouse SEO Badge">
     </a>
   </p>
-  <p><sub>Lighthouse badges generated for v2.1.2</sub></p>
+  <p><sub>Lighthouse badges generated for v2.2.0</sub></p>
   <!-- LIGHTHOUSE_BADGES_END -->
 
   <a href="https://apps.microsoft.com/detail/9nk0b4fdj3zw?referrer=appbadge&mode=full" target="_blank" rel="noopener noreferrer">
@@ -64,7 +65,7 @@
 
 <br/>
 
-> **⚠️ Rapid Development Notice**
+> **Rapid Development Notice**
 > This project is currently undergoing rapid updates. Please check back regularly for bug fixes and new features. If you find an error, please report it via the [Issues tab](https://github.com/Mallen220/TurtleTracer/issues) and revert to a previous version.
 
 ---
@@ -257,7 +258,7 @@ This project is open-source and released under a [Modified Apache 2.0 License](L
 
 Your privacy is important to us. Turtle Tracer runs locally and does not collect personal data. Review our full [Privacy Policy](PRIVACY.md).
 
-## 🙏 Acknowledgments
+## Acknowledgments
 
 - **#16166 Watt's Up**: For the initial concept, development, and inspiration.
 - **Pedro Pathing Developers**: For the underlying library this visualizer supports.

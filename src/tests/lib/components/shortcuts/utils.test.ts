@@ -4,7 +4,6 @@ import {
   isInputFocused,
   isButtonFocused,
   shouldBlockShortcut,
-  getSelectedSequenceIndex,
 } from "../../../../lib/components/shortcuts/utils";
 
 describe("shortcuts utils", () => {
@@ -66,7 +65,19 @@ describe("shortcuts utils", () => {
       expect(!!shouldBlockShortcut({} as KeyboardEvent, "save-project")).toBe(
         false,
       );
-      expect(!!shouldBlockShortcut({} as KeyboardEvent, "undo")).toBe(false);
+
+      const viewActions = [
+        "zoom-in",
+        "zoom-out",
+        "zoom-reset",
+        "pan-view-up",
+        "pan-view-down",
+        "pan-view-left",
+        "pan-view-right",
+      ];
+      viewActions.forEach((action) => {
+        expect(!!shouldBlockShortcut({} as KeyboardEvent, action)).toBe(false);
+      });
     });
   });
 });

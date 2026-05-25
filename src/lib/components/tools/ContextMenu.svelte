@@ -1,6 +1,6 @@
 <!-- Copyright 2026 Matthew Allen. Licensed under the Modified Apache License, Version 2.0. -->
 <script lang="ts">
-  import { createEventDispatcher, onMount, tick } from "svelte";
+  import { onMount, tick } from "svelte";
   import { fade } from "svelte/transition";
   import { menuNavigation } from "../../actions/menuNavigation";
 
@@ -17,20 +17,17 @@
       disabled?: boolean;
       shortcut?: string;
     }[];
+    onclose?: () => void;
+    onaction?: (action: string) => void;
   }
 
-  let { x, y, items = [] }: Props = $props();
-
-  const dispatch = createEventDispatcher<{
-    close: void;
-    action: string; // fallback if onClick is not provided
-  }>();
+  let { x, y, items = [], onclose, onaction }: Props = $props();
 
   let menuElement: HTMLDivElement | undefined = $state();
 
   function handleClickOutside(event: MouseEvent) {
     if (menuElement && !menuElement.contains(event.target as Node)) {
-      dispatch("close");
+      onclose?.();
     }
   }
 
@@ -93,16 +90,16 @@
     if (item.onClick) {
       item.onClick();
     } else if (item.action) {
-      dispatch("action", item.action);
+      onaction?.(item.action);
     }
-    dispatch("close");
+    onclose?.();
   }
 </script>
 
 <div
   use:portal
   use:menuNavigation
-  onclose={() => dispatch("close")}
+  onclose={() => onclose?.()}
   bind:this={menuElement}
   class="fixed z-[9999] min-w-[180px] py-1 bg-white dark:bg-neutral-800 rounded-lg shadow-xl border border-neutral-200 dark:border-neutral-700 text-sm select-none"
   style="top: {adjustedY}px; left: {adjustedX}px;"

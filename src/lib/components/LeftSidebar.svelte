@@ -1,7 +1,5 @@
 <!-- Copyright 2026 Matthew Allen. Licensed under the Modified Apache License, Version 2.0. -->
 <script lang="ts">
-  import { run } from "svelte/legacy";
-
   import type { Component } from "svelte";
   import {
     UndoIcon,
@@ -19,6 +17,7 @@
     CogIcon,
     FeedbackIcon,
     GithubIcon,
+    DiscordIcon,
     SidebarCollapseIcon,
   } from "./icons";
 
@@ -27,6 +26,7 @@
     showFeedbackDialog,
     showSettings,
     showHistory,
+    showShortcuts,
     isDrawingMode,
     showRuler,
     showProtractor,
@@ -71,6 +71,7 @@
     PhotoIcon,
     ExportGifIcon,
     PuzzleIcon,
+    SearchIcon,
   } from "./icons";
   import * as ICONS from "./icons";
   import {
@@ -258,7 +259,7 @@
   let historyStore = $derived(history?.historyStore);
   let undoDescription = $derived(history?.undoDescriptionStore);
   let redoDescription = $derived(history?.redoDescriptionStore);
-  run(() => {
+  $effect(() => {
     activeSidebarItems = (
       settings.sidebarItems || SIDEBAR_ITEMS.map((i) => i.id)
     )
@@ -464,6 +465,85 @@
                 {:else}
                   <FolderIcon className="sidebar-icon flex-none" />
                 {/if}
+              </div>
+              {#if sidebarExpanded}
+                <span class="ml-3 text-sm font-medium truncate"
+                  >{item.label}</span
+                >
+              {/if}
+            </button>
+          </div>
+        {:else if item.id === "keyboardShortcuts"}
+          <!-- Keyboard Shortcuts -->
+          <div
+            draggable={sidebarExpanded}
+            ondragstart={(e) => handleDragStart(e, idx)}
+            ondragover={(e) => handleDragOver(e, idx)}
+            ondragleave={() => handleDragLeave(idx)}
+            ondrop={(e) => handleDrop(e, idx)}
+            ondragend={handleDragEnd}
+            role="listitem"
+            class="w-full flex justify-center transition-all {dragOverIndex ===
+              idx && dragSourceIndex !== idx
+              ? 'ring-2 ring-blue-400 dark:ring-blue-500 bg-blue-50 dark:bg-blue-900/20'
+              : ''} {dragSourceIndex === idx ? 'opacity-30 scale-95' : ''}"
+          >
+            <button
+              title={item.shortcutKey && settings.keyBindings
+                ? `${item.label} (${getShortcutFromSettings(settings, item.shortcutKey)})`
+                : item.label}
+              aria-label={item.label}
+              onclick={() => showShortcuts.set(true)}
+              class="p-1.5 rounded-md transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 flex items-center {sidebarExpanded
+                ? 'w-[calc(100%-1.1rem)] px-3'
+                : 'justify-center'} text-neutral-600 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-800"
+            >
+              <div
+                class="sidebar-icon flex-none flex items-center justify-center"
+              >
+                {#if item.iconComponent}
+                  <item.iconComponent
+                    className="sidebar-icon-small flex-none"
+                  />
+                {/if}
+              </div>
+              {#if sidebarExpanded}
+                <span class="ml-3 text-sm font-medium truncate"
+                  >{item.label}</span
+                >
+              {/if}
+            </button>
+          </div>
+        {:else if item.id === "commandPalette"}
+          <!-- Command Palette -->
+          <div
+            draggable={sidebarExpanded}
+            ondragstart={(e) => handleDragStart(e, idx)}
+            ondragover={(e) => handleDragOver(e, idx)}
+            ondragleave={() => handleDragLeave(idx)}
+            ondrop={(e) => handleDrop(e, idx)}
+            ondragend={handleDragEnd}
+            role="listitem"
+            class="w-full flex justify-center transition-all {dragOverIndex ===
+              idx && dragSourceIndex !== idx
+              ? 'ring-2 ring-blue-400 dark:ring-blue-500 bg-blue-50 dark:bg-blue-900/20'
+              : ''} {dragSourceIndex === idx ? 'opacity-30 scale-95' : ''}"
+          >
+            <button
+              title={item.label}
+              aria-label={item.label}
+              onclick={() => executeCommandBus.set("toggle-command-palette")}
+              class="p-1.5 rounded-md text-neutral-600 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-800 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 flex items-center {sidebarExpanded
+                ? 'w-[calc(100%-1.1rem)] px-3'
+                : 'justify-center'}"
+            >
+              <div
+                class="sidebar-icon flex-none flex items-center justify-center"
+              >
+                <SearchIcon
+                  className="sidebar-icon-small flex-none"
+                  strokeWidth={2}
+                />
               </div>
               {#if sidebarExpanded}
                 <span class="ml-3 text-sm font-medium truncate"
@@ -1004,6 +1084,43 @@
               {/if}
             </button>
           </div>
+        {:else if item.id === "lockView"}
+          <!-- Lock View -->
+          <div
+            class="w-full flex justify-center {sidebarExpanded ? 'px-2' : ''}"
+          >
+            <button
+              title={`Toggle Field View Lock${getShortcutFromSettings(settings, "toggle-lock-view")}`}
+              aria-label="Toggle Field View Lock"
+              aria-pressed={settings.lockFieldView}
+              onclick={() => {
+                settingsStore.update((s) => ({
+                  ...s,
+                  lockFieldView: !s.lockFieldView,
+                }));
+              }}
+              class="p-1.5 rounded-md transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 flex items-center {sidebarExpanded
+                ? 'w-[calc(100%-1.1rem)] px-3'
+                : 'justify-center'} {settings.lockFieldView
+                ? 'text-blue-500 bg-blue-50 dark:bg-blue-900/20'
+                : 'text-neutral-500 dark:text-neutral-400 hover:bg-neutral-200 dark:hover:bg-neutral-800'}"
+            >
+              <div
+                class="sidebar-icon flex-none flex items-center justify-center"
+              >
+                {#if settings.lockFieldView}
+                  <LockIcon className="sidebar-icon-small flex-none" />
+                {:else}
+                  <UnlockIcon className="sidebar-icon-small flex-none" />
+                {/if}
+              </div>
+              {#if sidebarExpanded}
+                <span class="ml-3 text-sm font-medium truncate"
+                  >{item.label}</span
+                >
+              {/if}
+            </button>
+          </div>
         {:else if item.id === "newPath"}
           <!-- New Path -->
           <div
@@ -1113,6 +1230,45 @@
                 >
               {/if}
             </button>
+          </div>
+        {:else if item.id === "discord"}
+          <!-- Discord Server Invite Link -->
+          <div
+            draggable={sidebarExpanded}
+            ondragstart={(e) => handleDragStart(e, idx)}
+            ondragover={(e) => handleDragOver(e, idx)}
+            ondragleave={() => handleDragLeave(idx)}
+            ondrop={(e) => handleDrop(e, idx)}
+            ondragend={handleDragEnd}
+            role="listitem"
+            class="w-full flex justify-center transition-all {dragOverIndex ===
+              idx && dragSourceIndex !== idx
+              ? 'ring-2 ring-blue-400 dark:ring-blue-500 bg-blue-50 dark:bg-blue-900/20'
+              : ''} {dragSourceIndex === idx ? 'opacity-30 scale-95' : ''}"
+          >
+            <a
+              target="_blank"
+              rel="noreferrer"
+              title="Discord Server"
+              aria-label="Discord Server Invite"
+              href="https://discord.gg/chHSzS4ewF"
+              class="p-1.5 rounded-md text-neutral-600 dark:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-800 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 flex items-center {sidebarExpanded
+                ? 'w-[calc(100%-1.1rem)] px-3'
+                : 'justify-center'}"
+            >
+              <div
+                class="sidebar-icon flex-none flex items-center justify-center"
+              >
+                <DiscordIcon
+                  className="sidebar-icon-small flex-none dark:fill-white"
+                />
+              </div>
+              {#if sidebarExpanded}
+                <span class="ml-3 text-sm font-medium truncate"
+                  >{item.label}</span
+                >
+              {/if}
+            </a>
           </div>
         {:else if item.id === "github"}
           <!-- GitHub Repo Link -->
@@ -1426,6 +1582,7 @@
     <button
       type="button"
       role="slider"
+      title="Resize sidebar"
       aria-label="Resize sidebar"
       aria-valuenow={sidebarWidth}
       aria-valuemin={160}

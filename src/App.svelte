@@ -5,10 +5,6 @@
   import * as d3 from "d3";
   import debounce from "lodash/debounce";
 
-  // ⚡ Bolt Optimization:
-  // Caching d3.scaleLinear() avoids repeated expensive instantiations during
-  // highly frequent operations (e.g. calculateRobotState called on every animation frame)
-  // This reduces garbage collection pressure and makes the timeline/simulation significantly faster
   const IDENTITY_SCALE = d3.scaleLinear();
 
   // Components
@@ -69,6 +65,7 @@
     ratingDialogAutoOpened,
     gitStatusStore,
     showTransformDialog,
+    notification,
   } from "./stores";
 
   // keep a locally-named binding for the watchers and template
@@ -83,6 +80,9 @@
     robotXYStore,
     robotHeadingStore,
     percentStore,
+    hoverPercentStore,
+    hoverRobotXYStore,
+    hoverRobotHeadingStore,
     playingStore,
     loopAnimationStore,
     playbackSpeedStore,
@@ -116,6 +116,7 @@
   } from "./utils/fileHandlers";
   import { splitPathAtPercent } from "./utils/pathEditing";
   import { scanEventsInDirectory } from "./utils/eventScanner";
+  import { checkLibraryVersion } from "./utils/libraryVersionChecker";
   import { PluginManager } from "./lib/pluginManager";
   import { isBrowser } from "./utils/platform";
   import { themesStore } from "./lib/pluginsStore";
@@ -160,6 +161,7 @@
     gitShow?: (filePath: string) => Promise<string | null>;
     isWindowsStore?: () => Promise<boolean>;
     onUpdateAvailable?: (callback: (data: any) => void) => void;
+    onStoreUpdateAvailable?: (callback: (data: any) => void) => void;
     downloadUpdate?: (version: string, url: string) => void;
     skipUpdate?: (version: string) => void;
   }
@@ -250,6 +252,23 @@
       });
     }
 
+    if (electronAPI && electronAPI.onStoreUpdateAvailable) {
+      electronAPI.onStoreUpdateAvailable((data: any) => {
+        notification.set({
+          message: `Update ${data.version} is available in the Microsoft Store.`,
+          type: "info",
+          timeout: 0,
+          actionLabel: "Open Store",
+          action: () => {
+            if (electronAPI.openExternal)
+              electronAPI.openExternal(
+                "https://apps.microsoft.com/store/detail/9NK0B4FDJ3ZW?cid=DevShareMCLPCS",
+              );
+          },
+        });
+      });
+    }
+
     // Rating dialog interval logic
     const ratingInterval = setInterval(tryShowRatingDialog, 10 * 60 * 1000); // Check every 10 minutes
 
@@ -262,10 +281,21 @@
 
   // Automatically refresh git status when directory or file changes
   let gitRefreshUnsub: () => void;
+  let libraryCheckUnsub: () => void;
   onMount(() => {
     gitRefreshUnsub = currentDirectoryStore.subscribe(() => {
       fetchGitStatus();
     });
+
+    libraryCheckUnsub = currentDirectoryStore.subscribe((dir) => {
+      if (dir) {
+        checkLibraryVersion(dir, electronAPI, notification.set);
+      }
+    });
+
+    return () => {
+      if (libraryCheckUnsub) libraryCheckUnsub();
+    };
   });
 
   $effect(() => {
@@ -1089,10 +1119,6 @@
     previewOptimizedLines = newLines;
   }
 
-  function handleNavbarPreviewChange(e: CustomEvent) {
-    previewOptimizedLines = e.detail;
-  }
-
   function stepForward() {
     const p = Math.min(100, percent + 1);
     percentStore.set(p);
@@ -1288,6 +1314,7 @@
   let sequence = $derived($sequenceStore);
   let macros = $derived($macrosStore);
   let percent = $derived($percentStore);
+  let hoverPercent = $derived($hoverPercentStore);
   let playing = $derived($playingStore);
   let loopAnimation = $derived($loopAnimationStore);
   let playbackSpeed = $derived($playbackSpeedStore);
@@ -1500,6 +1527,34 @@
       // Tangential defaults to 0 if no lines
       robotHeadingStore.set(h);
       committedRobotState = null;
+    }
+  });
+
+  $effect(() => {
+    if (
+      hoverPercent !== null &&
+      timePrediction?.timeline &&
+      (lines.length > 0 || sequence.length > 0)
+    ) {
+      const globalTime = (hoverPercent / 100) * effectiveDuration;
+      let currentPercent = 0;
+      if (currentTotalTime > 0) {
+        currentPercent = (globalTime / currentTotalTime) * 100;
+        if (currentPercent > 100) currentPercent = 100;
+      }
+      const state = calculateRobotState(
+        currentPercent,
+        timePrediction.timeline,
+        lines,
+        startPoint,
+        IDENTITY_SCALE,
+        IDENTITY_SCALE,
+      );
+      hoverRobotXYStore.set({ x: state.x, y: state.y });
+      hoverRobotHeadingStore.set(state.heading);
+    } else {
+      hoverRobotXYStore.set(null);
+      hoverRobotHeadingStore.set(null);
     }
   });
   $effect(() => {
@@ -1724,7 +1779,7 @@
     robotStateFunction={(p) =>
       calculateRobotState(p, timePrediction.timeline, lines, startPoint, x, y)}
     {electronAPI}
-    on:close={() => showExportGif.set(false)}
+    onclose={() => showExportGif.set(false)}
   />
 {/if}
 
@@ -1750,7 +1805,7 @@
       ).heading,
     }}
     {electronAPI}
-    on:close={() => showExportImage.set(false)}
+    onclose={() => showExportImage.set(false)}
   />
 {/if}
 
@@ -1786,7 +1841,7 @@
   whatsNewOpen={$showWhatsNew}
   setupDialogOpen={setupMode}
   {isLoaded}
-  on:tutorialComplete={() => showWhatsNew.set(true)}
+  ontutorialComplete={() => showWhatsNew.set(true)}
 />
 
 <SaveNameDialog
@@ -1882,7 +1937,6 @@
         {canUndo}
         {canRedo}
         {history}
-        on:previewOptimizedLines={handleNavbarPreviewChange}
       />
     </div>
   {/if}

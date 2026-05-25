@@ -3,14 +3,6 @@
 </script>
 
 <script lang="ts">
-  import {
-    run,
-    createBubbler,
-    preventDefault,
-    stopPropagation,
-  } from "svelte/legacy";
-
-  const bubble = createBubbler();
   import { onMount } from "svelte";
   import { fade } from "svelte/transition";
   import { get } from "svelte/store";
@@ -418,8 +410,7 @@
   }
 
   // Handle directory change (manual input)
-  async function changeDirectoryManual(e: CustomEvent<string>) {
-    const newDir = e.detail;
+  async function changeDirectoryManual(newDir: string) {
     if (!newDir) return;
 
     try {
@@ -547,10 +538,11 @@
   }
 
   // File Operations
-  async function handleMoveFile(
-    e: CustomEvent<{ sourceFile: FileInfo; targetDir: FileInfo }>,
-  ) {
-    const { sourceFile, targetDir } = e.detail;
+  async function handleMoveFile(data: {
+    sourceFile: FileInfo;
+    targetDir: FileInfo;
+  }) {
+    const { sourceFile, targetDir } = data;
     if (!targetDir.isDirectory) return;
     if (sourceFile.path === targetDir.path) return;
     if (sourceFile.name === "..") return; // cannot move the .. directory itself
@@ -1034,9 +1026,8 @@
   }
 
   // Event handlers for child components
-  function handleMenuAction(e: any) {
-    // If called from template with detail extracted or raw event
-    const { action, file } = e.detail || e;
+  function handleMenuAction(data: { action: string; file: FileInfo }) {
+    const { action, file } = data;
     switch (action) {
       case "open":
         handleOpen(file);
@@ -1088,34 +1079,34 @@
       return parts.join("/") || "/";
     },
   };
-  run(() => {
+  $effect(() => {
     if ($fileManagerNewFileMode) {
       creatingNewFile = true;
       fileManagerNewFileMode.set(false);
     }
   });
-  run(() => {
+  $effect(() => {
     if (creatingNewFile) {
       // Focus the input after it renders
       tick().then(() => newFileInput?.focus());
     }
   });
-  run(() => {
+  $effect(() => {
     if (creatingNewFolder) {
       tick().then(() => newFolderInput?.focus());
     }
   });
-  run(() => {
+  $effect(() => {
     if (currentDirectory) {
       currentDirectoryStore.set(currentDirectory);
     }
   });
   // Persist session state when changed
-  run(() => {
+  $effect(() => {
     fileManagerSessionState.set({ searchQuery, viewMode, sortMode });
   });
   // Sync sortMode to settings only after initialization and persist it
-  run(() => {
+  $effect(() => {
     if (sortModeInitialized && settings && sortMode) {
       if (settings.fileManagerSortMode !== sortMode) {
         settings.fileManagerSortMode = sortMode;
@@ -1133,7 +1124,7 @@
     }
   });
   // Update filtered files whenever files or searchQuery changes
-  run(() => {
+  $effect(() => {
     if (searchQuery) {
       const q = searchQuery.toLowerCase();
       filteredFiles = files.filter((f) => f.name.toLowerCase().includes(q));
@@ -1141,7 +1132,7 @@
       filteredFiles = [...files];
     }
   });
-  run(() => {
+  $effect(() => {
     if (sortMode) {
       sortFiles();
     }
@@ -1197,8 +1188,14 @@
     role="presentation"
     ondragstart={() => (isDraggingPath = true)}
     ondragend={() => (isDraggingPath = false)}
-    ondragover={stopPropagation(preventDefault(bubble("dragover")))}
-    ondrop={stopPropagation(preventDefault(bubble("drop")))}
+    ondragover={(e) => {
+      e.stopPropagation();
+      e.preventDefault();
+    }}
+    ondrop={(e) => {
+      e.stopPropagation();
+      e.preventDefault();
+    }}
   >
     <!-- Resizer Handle -->
     <button
@@ -1233,10 +1230,10 @@
         {searchQuery}
         {sortMode}
         {viewMode}
-        on:search={(e) => (searchQuery = e.detail)}
-        on:sort-change={(e) => (sortMode = e.detail)}
-        on:view-change={(e) => {
-          viewMode = e.detail;
+        onsearch={(val) => (searchQuery = val)}
+        onsortchange={(val) => (sortMode = val)}
+        onviewchange={(val) => {
+          viewMode = val;
           // If switching to list/grid view, retry any previously failed previews so icons repopulate reliably
           if (viewMode === "list") {
             fileList?.refreshAllFailed?.();
@@ -1253,9 +1250,9 @@
     <FileManagerBreadcrumbs
       currentPath={currentDirectory}
       isAtBase={currentDirectory === baseDirectory}
-      on:change-dir={changeDirectoryManual}
-      on:change-dir-dialog={changeDirectoryDialog}
-      on:go-up={goUpDirectory}
+      onchangeDir={changeDirectoryManual}
+      onchangeDirDialog={changeDirectoryDialog}
+      ongoUp={goUpDirectory}
     />
 
     <!-- Error Display -->
@@ -1466,14 +1463,14 @@
           {sortMode}
           fieldImage={settings.fieldMap}
           {renamingFile}
-          on:select={(e) => (selectedFile = e.detail)}
-          on:open={(e) => handleOpen(e.detail)}
-          on:rename-start={(e) => (renamingFile = e.detail)}
-          on:rename-save={(e) =>
-            renamingFile && renameFile(renamingFile, e.detail)}
-          on:rename-cancel={() => (renamingFile = null)}
-          on:menu-action={handleMenuAction}
-          on:move-file={handleMoveFile}
+          onselect={(file) => (selectedFile = file)}
+          onopen={(file) => handleOpen(file)}
+          onrenameStart={(file) => (renamingFile = file)}
+          onrenameSave={(name) =>
+            renamingFile && renameFile(renamingFile, name)}
+          onrenameCancel={() => (renamingFile = null)}
+          onmenuAction={handleMenuAction}
+          onmoveFile={handleMoveFile}
         />
       {:else}
         <FileGrid
@@ -1484,14 +1481,14 @@
           fieldImage={settings.fieldMap}
           showGitStatus={settings.gitIntegration}
           {renamingFile}
-          on:select={(e) => (selectedFile = e.detail)}
-          on:open={(e) => handleOpen(e.detail)}
-          on:rename-start={(e) => (renamingFile = e.detail)}
-          on:rename-save={(e) =>
-            renamingFile && renameFile(renamingFile, e.detail)}
-          on:rename-cancel={() => (renamingFile = null)}
-          on:menu-action={handleMenuAction}
-          on:move-file={handleMoveFile}
+          onselect={(file) => (selectedFile = file)}
+          onopen={(file) => handleOpen(file)}
+          onrenameStart={(file) => (renamingFile = file)}
+          onrenameSave={(name) =>
+            renamingFile && renameFile(renamingFile, name)}
+          onrenameCancel={() => (renamingFile = null)}
+          onmenuAction={handleMenuAction}
+          onmoveFile={handleMoveFile}
         />
       {/if}
     </div>

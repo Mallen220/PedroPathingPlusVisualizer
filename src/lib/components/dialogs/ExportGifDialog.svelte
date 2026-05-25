@@ -1,14 +1,12 @@
 <!-- Copyright 2026 Matthew Allen. Licensed under the Modified Apache License, Version 2.0. -->
 <script lang="ts">
-  import { untrack, onMount, onDestroy, createEventDispatcher } from "svelte";
+  import { untrack, onMount, onDestroy } from "svelte";
   import { scale } from "svelte/transition";
   import {
     exportPathToGif,
     exportPathToApng,
   } from "../../../utils/exportAnimation";
   import { CloseIcon, PhotoIcon } from "../icons";
-
-  const dispatch = createEventDispatcher();
 
   let format: "gif" | "apng" = $state("gif");
   let fps = $state(15);
@@ -64,7 +62,7 @@
         console.warn("Abort threw", e);
       }
 
-      dispatch("close");
+      onclose?.();
       return;
     }
 
@@ -75,7 +73,7 @@
     previewBlob = null;
     status = "idle";
     progress = 0;
-    dispatch("close");
+    onclose?.();
   }
 
   function handleCancel() {
@@ -213,6 +211,7 @@
       heading: number;
     };
     electronAPI: any;
+    onclose?: () => void;
   }
 
   let {
@@ -224,6 +223,7 @@
     robotWidthPx,
     robotStateFunction,
     electronAPI,
+    onclose,
   }: Props = $props();
 
   onMount(() => {
@@ -291,6 +291,7 @@
           Export Animation
         </h2>
         <button
+          title="Close"
           class="text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300"
           onclick={close}
           aria-label="Close"

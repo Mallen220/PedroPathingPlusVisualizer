@@ -104,10 +104,20 @@ export type Point = BasePoint &
 
 export type ControlPoint = BasePoint;
 
+export type EventMarkerType = "parametric" | "temporal" | "pose";
+
 export interface EventMarker {
   id: string;
   name: string;
-  position: number; // 0-1 within the path segment
+  type?: EventMarkerType; // Defaults to "parametric" if missing
+  position: number; // 0-1 within the path segment (for parametric)
+  time?: number; // milliseconds (for temporal, legacy)
+  endTime?: number; // milliseconds (for temporal, absolute time from start)
+  poseX?: number; // for pose
+  poseY?: number; // for pose
+  poseHeading?: number; // degrees, for pose
+  poseGuess?: number; // 0-1, initial guess for parametric t-value of closest point (for pose)
+
   // For path-based markers, the index of the line in `lines`
   lineIndex?: number;
   // For wait-based markers, the id of the wait in `sequence`
@@ -265,6 +275,7 @@ export interface Settings {
   robotDriveType?: "holonomic" | "swerve"; // Drive train type for visualization
   showRobotArrows?: boolean; // Whether to display drive train direction arrows
   showFakeHeadingArrow?: boolean;
+  robotFeatures?: RobotFeature[];
   fakeHeadingArrowColor?: string;
   javaPackageName?: string;
   theme: "light" | "dark" | "auto" | string;
@@ -272,6 +283,7 @@ export interface Settings {
   autosaveMode?: "time" | "change" | "close" | "never";
   autosaveInterval?: number; // minutes
   showVelocityHeatmap?: boolean; // Show velocity heatmap overlay
+  showVelocityTooltip?: boolean; // Show velocity tooltip on hover
   showOnionLayers?: boolean; // Show robot body at intervals along the path
   onionSkinCurrentPathOnly?: boolean; // Show onion layers only on the current path
   onionLayerSpacing?: number; // Distance in inches between onion layers
@@ -321,6 +333,23 @@ export interface Settings {
   sidebarIconSize?: number;
 }
 
+export interface RobotFeature {
+  id: string;
+  name?: string;
+  type: "rectangle" | "circle" | "line";
+  x: number;
+  y: number;
+  color: string;
+  width?: number;
+  height?: number;
+  radius?: number;
+  length?: number;
+  angle?: number;
+  thickness?: number;
+  filled?: boolean;
+  visible?: boolean;
+}
+
 export interface RobotProfile {
   id: string;
   name: string;
@@ -339,6 +368,7 @@ export interface RobotProfile {
   showRobotArrows?: boolean;
   showFakeHeadingArrow?: boolean;
   fakeHeadingArrowColor?: string;
+  robotFeatures?: RobotFeature[];
 }
 
 export interface Shape {

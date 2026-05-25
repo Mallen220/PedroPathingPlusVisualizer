@@ -18,14 +18,6 @@ class AppUpdater {
 
   async checkForUpdates(manual = false) {
     try {
-      // Check if running in Microsoft Store context
-      if (process.windowsStore) {
-        console.log(
-          "Running in Microsoft Store context. Skipping GitHub update check.",
-        );
-        return { updateAvailable: false, reason: "store" };
-      }
-
       console.log("Checking for updates...");
 
       // GitHub API URL for your repository releases
@@ -53,7 +45,15 @@ class AppUpdater {
       }
 
       if (this.isNewerVersion(latestVersion, this.currentVersion)) {
-        this.showUpdateAvailableDialog(releaseData, manual ? 0 : 3000);
+        if (process.windowsStore) {
+          if (this?.mainWindow?.webContents) {
+            this.mainWindow.webContents.send("store-update-available", {
+              version: latestVersion,
+            });
+          }
+        } else {
+          this.showUpdateAvailableDialog(releaseData, manual ? 0 : 3000);
+        }
         return { updateAvailable: true, version: latestVersion, releaseData };
       } else {
         console.log("Application is up to date.");

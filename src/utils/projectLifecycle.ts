@@ -75,7 +75,7 @@ export async function handleResetPathWithConfirmation(
     }
 
     if (unsaved) {
-      message += "\n\n⚠ WARNING: You have unsaved changes that will be lost!";
+      message += "\n\nWARNING: You have unsaved changes that will be lost!";
     }
   } else {
     message += "This will reset to the default starting path.";

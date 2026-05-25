@@ -17,8 +17,10 @@ import {
   GridIcon,
   OnionSkinIcon,
   VelocityHeatmapIcon,
+  LockIcon,
   FeedbackIcon,
   GithubIcon,
+  DiscordIcon,
   ShowRobotIcon,
   ShowFakeHeadingArrowIcon,
   ValidateFieldBoundariesIcon,
@@ -34,6 +36,8 @@ import {
   QuestionMarkIcon,
   PhotoIcon,
   ExportGifIcon,
+  SearchIcon,
+  KeyboardIcon,
   RobotPlaceholderIcon,
 } from "../lib/components/icons";
 
@@ -55,6 +59,20 @@ export const SIDEBAR_ITEMS: SidebarItemConfig[] = [
     type: "system",
     shortcutKey: "toggle-file-manager",
     iconComponent: FolderIcon,
+  },
+  {
+    id: "keyboardShortcuts",
+    label: "Keyboard Shortcuts",
+    type: "system",
+    shortcutKey: "show-help",
+    iconComponent: KeyboardIcon,
+  },
+  {
+    id: "commandPalette",
+    label: "Command Palette",
+    type: "system",
+    shortcutKey: "toggle-command-palette",
+    iconComponent: SearchIcon,
   },
   {
     id: "undo",
@@ -119,6 +137,13 @@ export const SIDEBAR_ITEMS: SidebarItemConfig[] = [
     iconComponent: VelocityHeatmapIcon,
   },
   {
+    id: "lockView",
+    label: "Lock Field View",
+    type: "system",
+    shortcutKey: "toggle-lock-view",
+    iconComponent: LockIcon,
+  },
+  {
     id: "newPath",
     label: "New Path",
     type: "system",
@@ -137,6 +162,12 @@ export const SIDEBAR_ITEMS: SidebarItemConfig[] = [
     label: "Feedback",
     type: "system",
     iconComponent: FeedbackIcon,
+  },
+  {
+    id: "discord",
+    label: "Discord Server",
+    type: "system",
+    iconComponent: DiscordIcon,
   },
   {
     id: "github",

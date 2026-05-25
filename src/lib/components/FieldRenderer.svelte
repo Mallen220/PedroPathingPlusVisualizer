@@ -1,7 +1,9 @@
 <!-- Copyright 2026 Matthew Allen. Licensed under the Modified Apache License, Version 2.0. -->
 <script lang="ts">
-  import { run } from "svelte/legacy";
-
+  import {
+    hoverRobotXYStore,
+    hoverRobotHeadingStore,
+  } from "../../lib/projectStore";
   import { onMount, onDestroy } from "svelte";
   import { get } from "svelte/store";
   import Two from "two.js";
@@ -36,6 +38,7 @@
   } from "../registries";
   import { actionRegistry } from "../actionRegistry";
   import ContextMenu from "./tools/ContextMenu.svelte";
+  import VelocityTooltip from "./VelocityTooltip.svelte";
   import {
     linesStore,
     startPointStore,
@@ -82,7 +85,6 @@
     getRandomColor,
     updateRobotImageDisplay,
     getLineStartHeading,
-    getInitialTangentialHeading,
   } from "../../utils";
   import { getAlignmentMenuItems } from "../../utils/alignmentMenu";
   import { toUser } from "../../utils/coordinates";
@@ -99,6 +101,7 @@
   import { generateCollisionElements } from "./renderer/CollisionMarkerGenerator";
   import { generateOnionLayerElements } from "./renderer/OnionLayerGenerator";
   import { generateFacingLineElements } from "./renderer/FacingLineGenerator";
+  import { findClosestT, getCurvePoint, getDistance } from "../../utils/math";
   import { type RenderContext } from "./renderer/GeneratorUtils";
 
   import { updateLinkedWaypoints } from "../../utils/pointLinking";
@@ -174,6 +177,21 @@
   let isDown = false;
   let isPanning = false;
   let isDrawing = false;
+  let hoverRobotXY = $derived($hoverRobotXYStore);
+  let hoverRobotHeading = $derived($hoverRobotHeadingStore);
+
+  // Box Selection State
+  let tooltipVisible = $state(false);
+  let tooltipX = $state(0);
+  let tooltipY = $state(0);
+  let tooltipVelocity = $state(0);
+  let tooltipTime = $state(0);
+  let tooltipDistance = $state(0);
+  let isBoxSelecting = false;
+  let boxSelectStart: { x: number; y: number } | null = null;
+  let boxSelectCurrent: { x: number; y: number } | null = null;
+  let boxSelectElement: InstanceType<typeof Two.Rectangle> | null = null;
+
   let drawPoints: { x: number; y: number }[] = [];
   let drawPathElement: InstanceType<typeof Two.Path> | null = null;
   let multiDragOffsets = new Map<string, { x: number; y: number }>();
@@ -190,10 +208,178 @@
 
   // Follow Robot Logic (Loop for playback)
   let followLoopId: number;
+  function isPointInBox(
+    px: number,
+    py: number,
+    minX: number,
+    maxX: number,
+    minY: number,
+    maxY: number,
+  ) {
+    return px >= minX && px <= maxX && py >= minY && py <= maxY;
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  function checkEventMarkerSelections(
+    line: any,
+    lIdx: number,
+    minX: number,
+    maxX: number,
+    minY: number,
+    maxY: number,
+    newSelections: string[],
+  ) {
+    if (!line.eventMarkers) return;
+    line.eventMarkers.forEach((em: any, eIdx: number) => {
+      if (
+        em.type === "pose" &&
+        em.poseX !== undefined &&
+        em.poseY !== undefined
+      ) {
+        if (isPointInBox(em.poseX, em.poseY, minX, maxX, minY, maxY)) {
+          newSelections.push(`event-${lIdx}-${eIdx}`);
+        }
+      }
+    });
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  function getLinePoints(
+    line: any,
+    lIdx: number,
+    minX: number,
+    maxX: number,
+    minY: number,
+    maxY: number,
+    newSelections: string[],
+  ) {
+    if (
+      isPointInBox(line.endPoint.x, line.endPoint.y, minX, maxX, minY, maxY)
+    ) {
+      newSelections.push(`point-${lIdx + 1}-0`);
+    }
+    line.controlPoints.forEach((cp: any, cpIdx: number) => {
+      if (isPointInBox(cp.x, cp.y, minX, maxX, minY, maxY)) {
+        newSelections.push(`point-${lIdx + 1}-${cpIdx + 1}`);
+      }
+    });
+  }
+
+  function checkLineSelections(
+    minX: number,
+    maxX: number,
+    minY: number,
+    maxY: number,
+    newSelections: string[],
+  ) {
+    lines.forEach((line, lIdx) => {
+      getLinePoints(line, lIdx, minX, maxX, minY, maxY, newSelections);
+      checkEventMarkerSelections(
+        line,
+        lIdx,
+        minX,
+        maxX,
+        minY,
+        maxY,
+        newSelections,
+      );
+    });
+  }
+
+  function checkObstacleSelections(
+    minX: number,
+    maxX: number,
+    minY: number,
+    maxY: number,
+    newSelections: string[],
+  ) {
+    shapes.forEach((shape, sIdx) => {
+      if (!shape.vertices) return;
+      shape.vertices.forEach((v, vIdx) => {
+        if (isPointInBox(v.x, v.y, minX, maxX, minY, maxY)) {
+          newSelections.push(`obstacle-${sIdx}-${vIdx}`);
+        }
+      });
+    });
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  function handleBoxSelectionComplete(
+    minX: number,
+    maxX: number,
+    minY: number,
+    maxY: number,
+  ) {
+    const newSelections: string[] = [];
+
+    if (isPointInBox(startPoint.x, startPoint.y, minX, maxX, minY, maxY)) {
+      newSelections.push("point-0-0");
+    }
+
+    checkLineSelections(minX, maxX, minY, maxY, newSelections);
+    checkObstacleSelections(minX, maxX, minY, maxY, newSelections);
+
+    if (newSelections.length > 0) {
+      multiSelectedPointIds.update((ids) => {
+        const set = new Set([...ids, ...newSelections]);
+        return Array.from(set);
+      });
+
+      const firstLineId = newSelections.find((s) => s.startsWith("point-"));
+      if (firstLineId && firstLineId !== "point-0-0") {
+        const parts = firstLineId.split("-");
+        const lIdx = Number(parts[1]) - 1;
+        if (lines[lIdx]) selectedLineId.set(lines[lIdx].id as string);
+      }
+
+      notification.set({
+        message: `Selected ${newSelections.length} items`,
+        type: "info",
+        timeout: 1500,
+      });
+    }
+  }
+
+  let turtlePhases = $state({ fl: 0, fr: 0, bl: 0, br: 0, tail: 0 });
+  let lastTurtleTime = performance.now();
+
   function followLoop() {
     if ($followRobotStore && $playingStore && robotXY) {
       panToField(robotXY.x, robotXY.y);
     }
+
+    const now = performance.now();
+    const dt = (now - lastTurtleTime) / 1000;
+    lastTurtleTime = now;
+
+    if (
+      $playingStore &&
+      $showRobot &&
+      settings.robotImage === "turtle" &&
+      mecanumSpeeds
+    ) {
+      const fl = mecanumSpeeds.frontLeft || 0;
+      const fr = mecanumSpeeds.frontRight || 0;
+      const bl = mecanumSpeeds.backLeft || 0;
+      const br = mecanumSpeeds.backRight || 0;
+      const total =
+        (Math.abs(fl) + Math.abs(fr) + Math.abs(bl) + Math.abs(br)) / 4;
+      const WIGGLE_SPEED = 25;
+
+      // Cap the wiggling factors to 1.0 to enforce the maximum flapping cap
+      const factorFl = Math.min(1.0, Math.abs(fr));
+      const factorFr = Math.min(1.0, Math.abs(fl));
+      const factorBl = Math.min(1.0, Math.abs(br));
+      const factorBr = Math.min(1.0, Math.abs(bl));
+      const factorTail = Math.min(1.0, total);
+
+      turtlePhases.fl += dt * factorFl * WIGGLE_SPEED;
+      turtlePhases.fr += dt * factorFr * WIGGLE_SPEED;
+      turtlePhases.bl += dt * factorBl * WIGGLE_SPEED * 1.3;
+      turtlePhases.br += dt * factorBr * WIGGLE_SPEED * 1.3;
+      turtlePhases.tail += dt * factorTail * WIGGLE_SPEED * 1.8;
+    }
+
     followLoopId = requestAnimationFrame(followLoop);
   }
 
@@ -416,6 +602,117 @@
         currentMouseY = Math.max(0, Math.min(FIELD_SIZE, rawInchYForDisplay));
         isMouseOverField = true;
 
+        // Velocity Tooltip Logic
+        if (
+          settings.showVelocityTooltip &&
+          effectiveTimePrediction?.timeline &&
+          !isDown &&
+          !$isDrawingMode &&
+          !isPanning &&
+          !isBoxSelecting
+        ) {
+          let foundTooltip = false;
+          let bestDist = 0.5; // Snap threshold
+          let bestLineIdx = -1;
+          let bestT = 0;
+          let bestCps: any[] = [];
+
+          lines.forEach((line, idx) => {
+            if (line.hidden) return;
+            const prevP = idx === 0 ? startPoint : lines[idx - 1].endPoint;
+            const cps = [prevP, ...line.controlPoints, line.endPoint];
+            const t = findClosestT(
+              { x: rawInchXForDisplay, y: rawInchYForDisplay },
+              cps,
+            );
+            const pt = getCurvePoint(t, cps);
+            const dist = getDistance(
+              { x: rawInchXForDisplay, y: rawInchYForDisplay },
+              pt,
+            );
+            if (dist < bestDist) {
+              bestDist = dist;
+              bestLineIdx = idx;
+              bestT = t;
+              bestCps = cps;
+            }
+          });
+
+          if (bestLineIdx !== -1) {
+            const tlEvent = effectiveTimePrediction.timeline.find(
+              (e: any) => e.type === "travel" && e.lineIndex === bestLineIdx,
+            );
+
+            if (
+              tlEvent?.velocityProfile &&
+              tlEvent.velocityProfile.length > 0
+            ) {
+              const vProfile = tlEvent.velocityProfile;
+              const profileIndex = Math.floor(bestT * (vProfile.length - 1));
+              const safeIndex = Math.min(
+                vProfile.length - 1,
+                Math.max(0, profileIndex),
+              );
+
+              tooltipVelocity = vProfile[safeIndex];
+              tooltipTime = tlEvent.startTime + bestT * tlEvent.duration;
+
+              // We'll calculate a fast estimate instead of a heavy loop for cumulative distance
+              // The timeCalculator already computed total lengths per segment (in segments length array or meta)
+              // but since we only have timeline here easily, let's just do a cheap calculation
+              // using line length approximations or just linear dist if fast.
+
+              let priorDist = 0;
+              for (
+                let i = 0;
+                i < effectiveTimePrediction.timeline.length;
+                i++
+              ) {
+                const evtItem = effectiveTimePrediction.timeline[i];
+                if (evtItem === tlEvent) break;
+                if (
+                  evtItem.type === "travel" &&
+                  evtItem.lineIndex !== undefined
+                ) {
+                  const line = lines[evtItem.lineIndex];
+                  if ((line as any).length) {
+                    priorDist += (line as any).length;
+                  } else {
+                    const p1 =
+                      evtItem.lineIndex === 0
+                        ? startPoint
+                        : lines[evtItem.lineIndex - 1].endPoint;
+                    priorDist += getDistance(p1, line.endPoint);
+                  }
+                }
+              }
+
+              const currentLine = lines[bestLineIdx];
+              const prevPForCurrent =
+                bestLineIdx === 0
+                  ? startPoint
+                  : lines[bestLineIdx - 1].endPoint;
+              const approxLineLength =
+                (currentLine as any).length ||
+                getDistance(prevPForCurrent, currentLine.endPoint);
+
+              tooltipDistance = priorDist + approxLineLength * bestT;
+
+              // The original DOM event parameter is named "evt" in this scope.
+              tooltipX = evt.clientX;
+              tooltipY = evt.clientY;
+              tooltipVisible = true;
+              foundTooltip = true;
+            }
+          }
+
+          if (!foundTooltip) {
+            tooltipVisible = false;
+          }
+        } else {
+          tooltipVisible = false;
+        }
+
         // HUD obstruction check
         if (wrapperDiv) {
           const wrapperRect =
@@ -469,12 +766,36 @@
         // Cursor and Dragging Logic
         // Optimization: Don't use elementFromPoint here. It forces a reflow.
 
-        if (isDown && currentElem) {
+        if (isBoxSelecting && boxSelectStart && boxSelectElement) {
+          boxSelectCurrent = { x: rawInchXForDisplay, y: rawInchYForDisplay };
+
+          const minX = Math.min(boxSelectStart.x, boxSelectCurrent.x);
+          const maxX = Math.max(boxSelectStart.x, boxSelectCurrent.x);
+          const minY = Math.min(boxSelectStart.y, boxSelectCurrent.y);
+          const maxY = Math.max(boxSelectStart.y, boxSelectCurrent.y);
+
+          const px1 = x(minX);
+          const py1 = y(minY);
+          const px2 = x(maxX);
+          const py2 = y(maxY);
+
+          const width = px2 - px1;
+          const height = py2 - py1;
+          const centerX = px1 + width / 2;
+          const centerY = py1 + height / 2;
+
+          boxSelectElement.translation.set(centerX, centerY);
+          (boxSelectElement as any).width = width;
+          (boxSelectElement as any).height = height;
+
+          two!.update();
+        } else if (isDown && currentElem) {
           // Dragging Logic
 
           let linesChanged = false;
           let shapesChanged = false;
           let startPointChanged = false;
+          let sequenceChanged = false;
 
           $multiSelectedPointIds.forEach((id) => {
             // If the element is a line point, verify it is not locked
@@ -728,6 +1049,156 @@
                   linesChanged = true;
                 }
               }
+            } else if (id.startsWith("event-")) {
+              const parts = id.split("-");
+              let lIdx = Number(parts[1]);
+              let eIdx = Number(parts[2]);
+              const evMarkers = lines[lIdx]?.eventMarkers;
+              if (evMarkers?.[eIdx]) {
+                const ev = evMarkers[eIdx];
+                if (ev.type === "pose") {
+                  ev.poseX = Math.round(inchX * 100) / 100;
+                  ev.poseY = Math.round(inchY * 100) / 100;
+
+                  // Find best path to attach to
+                  let bestDist = Infinity;
+                  let bestLineIdx = lIdx;
+                  lines.forEach((line, idx) => {
+                    if (line.hidden) return;
+                    const prevP =
+                      idx === 0 ? startPoint : lines[idx - 1].endPoint;
+                    const cps = [prevP, ...line.controlPoints, line.endPoint];
+                    const t = findClosestT({ x: inchX, y: inchY }, cps);
+                    const pt = getCurvePoint(t, cps);
+                    const dist = getDistance({ x: inchX, y: inchY }, pt);
+                    if (dist < bestDist) {
+                      bestDist = dist;
+                      bestLineIdx = idx;
+                    }
+                  });
+
+                  if (bestLineIdx === lIdx) {
+                    lines[lIdx].eventMarkers = [...evMarkers];
+                  } else {
+                    // Move marker to new line
+                    const marker = evMarkers.splice(eIdx, 1)[0];
+                    lines[lIdx].eventMarkers = [...evMarkers];
+
+                    if (!lines[bestLineIdx].eventMarkers)
+                      lines[bestLineIdx].eventMarkers = [];
+                    lines[bestLineIdx].eventMarkers!.push(marker);
+                    const newEIdx = lines[bestLineIdx].eventMarkers!.length - 1;
+
+                    // Update selection and ID
+                    const newId = `event-${bestLineIdx}-${newEIdx}`;
+                    multiSelectedPointIds.update((ids) =>
+                      ids.map((sid) => (sid === id ? newId : sid)),
+                    );
+                    const offset = multiDragOffsets.get(id);
+                    if (offset) {
+                      multiDragOffsets.set(newId, offset);
+                      multiDragOffsets.delete(id);
+                    }
+                    if (currentElem === id) currentElem = newId;
+                  }
+                  linesChanged = true;
+                } else {
+                  // Parametric or Temporal
+                  let bestDist = Infinity;
+                  let bestLineIdx = lIdx;
+                  let bestT = 0;
+
+                  lines.forEach((line, idx) => {
+                    if (line.hidden) return;
+                    const prevP =
+                      idx === 0 ? startPoint : lines[idx - 1].endPoint;
+                    const cps = [prevP, ...line.controlPoints, line.endPoint];
+                    const t = findClosestT({ x: inchX, y: inchY }, cps);
+                    const pt = getCurvePoint(t, cps);
+                    const dist = getDistance({ x: inchX, y: inchY }, pt);
+                    if (dist < bestDist) {
+                      bestDist = dist;
+                      bestLineIdx = idx;
+                      bestT = t;
+                    }
+                  });
+
+                  if (ev.type === "temporal" && timePrediction?.timeline) {
+                    const travelEvents = timePrediction.timeline.filter(
+                      (e: any) => e.type === "travel",
+                    );
+                    const matchingEvent = travelEvents.find(
+                      (e: any) => e.line && e.line.id === lines[bestLineIdx].id,
+                    );
+                    if (matchingEvent) {
+                      const newTime =
+                        (matchingEvent.startTime +
+                          bestT * matchingEvent.duration) *
+                        1000;
+                      ev.time = newTime;
+                      ev.endTime = newTime;
+                    }
+                  } else {
+                    ev.position = bestT;
+                  }
+
+                  if (bestLineIdx === lIdx) {
+                    lines[lIdx].eventMarkers = [...evMarkers];
+                  } else {
+                    // Move marker to new line
+                    const marker = evMarkers.splice(eIdx, 1)[0];
+                    lines[lIdx].eventMarkers = [...evMarkers];
+
+                    if (!lines[bestLineIdx].eventMarkers)
+                      lines[bestLineIdx].eventMarkers = [];
+                    lines[bestLineIdx].eventMarkers!.push(marker);
+                    const newEIdx = lines[bestLineIdx].eventMarkers!.length - 1;
+
+                    // Update selection and ID
+                    const newId = `event-${bestLineIdx}-${newEIdx}`;
+                    multiSelectedPointIds.update((ids) =>
+                      ids.map((sid) => (sid === id ? newId : sid)),
+                    );
+                    const offset = multiDragOffsets.get(id);
+                    if (offset) {
+                      multiDragOffsets.set(newId, offset);
+                      multiDragOffsets.delete(id);
+                    }
+                    if (currentElem === id) currentElem = newId;
+                  }
+                  linesChanged = true;
+                }
+              }
+            } else if (id.startsWith("wait-event-")) {
+              const parts = id.split("-");
+              const waitId = parts[2];
+              const eIdx = Number(parts[3]);
+              const waitItem = sequence.find(
+                (s) => s.kind === "wait" && (s as any).id === waitId,
+              );
+              if (waitItem && (waitItem as any).eventMarkers?.[eIdx]) {
+                const ev = (waitItem as any).eventMarkers[eIdx];
+                if (ev.type === "pose") {
+                  ev.poseX = Math.round(inchX * 100) / 100;
+                  ev.poseY = Math.round(inchY * 100) / 100;
+                  sequenceChanged = true;
+                }
+              }
+            } else if (id.startsWith("rotate-event-")) {
+              const parts = id.split("-");
+              const rotateId = parts[2];
+              const eIdx = Number(parts[3]);
+              const rotateItem = sequence.find(
+                (s) => s.kind === "rotate" && (s as any).id === rotateId,
+              );
+              if (rotateItem && (rotateItem as any).eventMarkers?.[eIdx]) {
+                const ev = (rotateItem as any).eventMarkers[eIdx];
+                if (ev.type === "pose") {
+                  ev.poseX = Math.round(inchX * 100) / 100;
+                  ev.poseY = Math.round(inchY * 100) / 100;
+                  sequenceChanged = true;
+                }
+              }
             } else {
               const line = Number(id.split("-")[1]) - 1;
               const point = Number(id.split("-")[2]);
@@ -773,6 +1244,7 @@
           if (linesChanged) linesStore.set([...lines]);
           if (shapesChanged) shapesStore.set([...shapes]);
           if (startPointChanged) startPointStore.set({ ...startPoint });
+          if (sequenceChanged) sequenceStore.set([...sequence]);
         } else if (isPanning) {
           // Panning Logic
           followRobotStore.set(false);
@@ -987,11 +1459,41 @@
           }
         }
 
-        if (!clickedElem && !evt.shiftKey && !evt.ctrlKey && !evt.metaKey) {
-          selectedPointId.set(null);
-          selectedLineId.set(null);
-          multiSelectedPointIds.set([]);
-          multiSelectedLineIds.set([]);
+        if (!clickedElem) {
+          if (evt.shiftKey) {
+            // Start Box Selection
+            isBoxSelecting = true;
+
+            const rectForMouse =
+              two!.renderer.domElement.getBoundingClientRect();
+            const transformedForMouse = getTransformedCoordinates(
+              evt.clientX,
+              evt.clientY,
+              rectForMouse,
+              settings.fieldRotation || 0,
+            );
+            let inchX = x.invert(transformedForMouse.x);
+            let inchY = y.invert(transformedForMouse.y);
+
+            boxSelectStart = { x: inchX, y: inchY };
+            boxSelectCurrent = { x: inchX, y: inchY };
+
+            if (boxSelectElement) boxSelectElement.remove();
+
+            // Create a rectangle for the box
+            boxSelectElement = new Two.Rectangle(x(inchX), y(inchY), 0, 0);
+            boxSelectElement.fill = "rgba(59, 130, 246, 0.2)"; // blue-500 with opacity
+            boxSelectElement.stroke = "#3b82f6";
+            boxSelectElement.linewidth = 1;
+            two!.add(boxSelectElement);
+            two!.update();
+            return;
+          } else if (!evt.ctrlKey && !evt.metaKey) {
+            selectedPointId.set(null);
+            selectedLineId.set(null);
+            multiSelectedPointIds.set([]);
+            multiSelectedLineIds.set([]);
+          }
         }
 
         if (clickedElem) {
@@ -1142,6 +1644,55 @@
                 objectY = lines[line].controlPoints[point - 1].y;
               }
             }
+          } else if (currentElem.startsWith("event-")) {
+            const parts = currentElem.split("-");
+            const lIdx = Number(parts[1]);
+            const eIdx = Number(parts[2]);
+            const ev = lines[lIdx]?.eventMarkers?.[eIdx];
+            if (ev) {
+              if (ev.type === "pose") {
+                objectX = ev.poseX ?? 0;
+                objectY = ev.poseY ?? 0;
+              } else {
+                // For parametric/temporal, we could calculate the path position,
+                // but for now let's just use mouse position as object start
+                // if we don't want to do complex path math here.
+                // However, the user wants "initial + change relative".
+                // Let's approximate.
+                objectX = mouseX;
+                objectY = mouseY;
+              }
+            }
+          } else if (currentElem.startsWith("wait-event-")) {
+            const parts = currentElem.split("-");
+            const waitId = parts[2];
+            const eIdx = Number(parts[3]);
+            const waitItem = sequence.find(
+              (s) => s.kind === "wait" && (s as any).id === waitId,
+            );
+            const ev = (waitItem as any)?.eventMarkers?.[eIdx];
+            if (ev?.type === "pose") {
+              objectX = ev.poseX ?? 0;
+              objectY = ev.poseY ?? 0;
+            } else {
+              objectX = mouseX;
+              objectY = mouseY;
+            }
+          } else if (currentElem.startsWith("rotate-event-")) {
+            const parts = currentElem.split("-");
+            const rotateId = parts[2];
+            const eIdx = Number(parts[3]);
+            const rotateItem = sequence.find(
+              (s) => s.kind === "rotate" && (s as any).id === rotateId,
+            );
+            const ev = (rotateItem as any)?.eventMarkers?.[eIdx];
+            if (ev?.type === "pose") {
+              objectX = ev.poseX ?? 0;
+              objectY = ev.poseY ?? 0;
+            } else {
+              objectX = mouseX;
+              objectY = mouseY;
+            }
           }
           multiDragOffsets.clear();
           const currentIds = $multiSelectedPointIds;
@@ -1201,6 +1752,48 @@
                   oy = lines[line].controlPoints[point - 1].y;
                 }
               }
+            } else if (id.startsWith("event-")) {
+              const parts = id.split("-");
+              const lIdx = Number(parts[1]);
+              const eIdx = Number(parts[2]);
+              const ev = lines[lIdx]?.eventMarkers?.[eIdx];
+              if (ev?.type === "pose") {
+                ox = ev.poseX ?? 0;
+                oy = ev.poseY ?? 0;
+              } else {
+                ox = mouseX;
+                oy = mouseY;
+              }
+            } else if (id.startsWith("wait-event-")) {
+              const parts = id.split("-");
+              const waitId = parts[2];
+              const eIdx = Number(parts[3]);
+              const waitItem = sequence.find(
+                (s) => s.kind === "wait" && (s as any).id === waitId,
+              );
+              const ev = (waitItem as any)?.eventMarkers?.[eIdx];
+              if (ev?.type === "pose") {
+                ox = ev.poseX ?? 0;
+                oy = ev.poseY ?? 0;
+              } else {
+                ox = mouseX;
+                oy = mouseY;
+              }
+            } else if (id.startsWith("rotate-event-")) {
+              const parts = id.split("-");
+              const rotateId = parts[2];
+              const eIdx = Number(parts[3]);
+              const rotateItem = sequence.find(
+                (s) => s.kind === "rotate" && (s as any).id === rotateId,
+              );
+              const ev = (rotateItem as any)?.eventMarkers?.[eIdx];
+              if (ev?.type === "pose") {
+                ox = ev.poseX ?? 0;
+                oy = ev.poseY ?? 0;
+              } else {
+                ox = mouseX;
+                oy = mouseY;
+              }
             }
             multiDragOffsets.set(id, { x: ox - mouseX, y: oy - mouseY });
           });
@@ -1215,6 +1808,30 @@
 
     two!.renderer.domElement.addEventListener("mouseup", () => {
       snapGuides = [];
+      if (isBoxSelecting) {
+        isBoxSelecting = false;
+        if (boxSelectElement) {
+          boxSelectElement.remove();
+          boxSelectElement = null;
+          two!.update();
+        }
+
+        if (boxSelectStart && boxSelectCurrent) {
+          const minX = Math.min(boxSelectStart.x, boxSelectCurrent.x);
+          const maxX = Math.max(boxSelectStart.x, boxSelectCurrent.x);
+          const minY = Math.min(boxSelectStart.y, boxSelectCurrent.y);
+          const maxY = Math.max(boxSelectStart.y, boxSelectCurrent.y);
+
+          // We only want to select if the box has some area to prevent accidental tiny selections
+          if (maxX - minX > 0.5 || maxY - minY > 0.5) {
+            handleBoxSelectionComplete(minX, maxX, minY, maxY);
+          }
+        }
+        boxSelectStart = null;
+        boxSelectCurrent = null;
+        return;
+      }
+
       if ($isDrawingMode && isDrawing) {
         isDrawing = false;
         if (drawPathElement) {
@@ -1811,7 +2428,7 @@
         height / 2 - (baseSize * scaleFactor) / 2 + pan.y,
       ]),
   );
-  run(() => {
+  $effect(() => {
     fieldViewStore.set({ xScale: x, yScale: y, width, height });
   });
   let lines = $derived($linesStore);
@@ -1840,13 +2457,13 @@
   );
   let robotXY = $derived($robotXYStore);
   // Follow Robot Logic (Reactive for scrubbing/stepping)
-  run(() => {
+  $effect(() => {
     if ($followRobotStore && robotXY && !$playingStore) {
       panToField(robotXY.x, robotXY.y);
     }
   });
   // Resume Follow on Play Logic
-  run(() => {
+  $effect(() => {
     if ($playingStore && settings.followRobot) {
       followRobotStore.set(true);
     }
@@ -1867,7 +2484,7 @@
   // This ensures generated code (and any UI showing `startDeg`) updates as the
   // start position or first path changes — fixing cases where heading looked
   // "locked" to an old value after moving the start point.
-  run(() => {
+  $effect(() => {
     if (
       startPoint &&
       startPoint.heading === "linear" &&
@@ -1891,7 +2508,7 @@
   let isLiveTelemetryVisible = $derived($showTelemetry);
   let isImportedGhostVisible = $derived($showTelemetryGhost);
   // Compute imported ghost robot from imported telemetry data and time offset.
-  run(() => {
+  $effect(() => {
     if (
       $importedTelemetryData &&
       $importedTelemetryData.length > 0 &&
@@ -2111,7 +2728,7 @@
     ),
   );
   // Render Loop
-  run(() => {
+  $effect(() => {
     if (two) {
       $pluginRedrawTrigger; // Subscribe to plugin redraw requests
 
@@ -2278,13 +2895,83 @@
         }}
       />
     {/if}
+
+    <!-- Robot Features helper for reuse inside different robot representations -->
+    {#snippet renderRobotFeatures(
+      features: any[] | undefined,
+      baseWidth: number,
+      baseHeight: number,
+      snippetPpI: number,
+    )}
+      {#if features && features.length > 0}
+        <div
+          class="absolute inset-0 pointer-events-none"
+          style="width: 100%; height: 100%; top: 0; left: 0;"
+        >
+          <svg
+            class="w-full h-full overflow-visible"
+            viewBox="0 0 {baseWidth} {baseHeight}"
+          >
+            {#each features as feature}
+              {#if feature.visible !== false}
+                {@const px = feature.x * snippetPpI}
+                {@const py = feature.y * snippetPpI}
+                {@const cx = baseWidth / 2 + px}
+                {@const cy = baseHeight / 2 + py}
+                {@const fill = feature.filled ? feature.color : "transparent"}
+                {@const stroke = feature.color}
+
+                {#if feature.visible !== false}
+                  {#if feature.type === "rectangle"}
+                    <rect
+                      x={cx - ((feature.width || 4) * snippetPpI) / 2}
+                      y={cy - ((feature.height || 4) * snippetPpI) / 2}
+                      width={(feature.width || 4) * snippetPpI}
+                      height={(feature.height || 4) * snippetPpI}
+                      {fill}
+                      {stroke}
+                      stroke-width={2}
+                      opacity="0.8"
+                    />
+                  {:else if feature.type === "circle"}
+                    <circle
+                      {cx}
+                      {cy}
+                      r={(feature.radius || 2) * snippetPpI}
+                      {fill}
+                      {stroke}
+                      stroke-width={2}
+                      opacity="0.8"
+                    />
+                  {:else if feature.type === "line"}
+                    {@const angleRad = ((feature.angle || 0) * Math.PI) / 180}
+                    {@const len = (feature.length || 6) * snippetPpI}
+                    <line
+                      x1={cx}
+                      y1={cy}
+                      x2={cx + Math.cos(angleRad) * len}
+                      y2={cy + Math.sin(angleRad) * len}
+                      {stroke}
+                      stroke-width={(feature.thickness || 1) * snippetPpI}
+                      stroke-linecap="round"
+                      opacity="0.8"
+                    />
+                  {/if}
+                {/if}
+              {/if}
+            {/each}
+          </svg>
+        </div>
+      {/if}
+    {/snippet}
+
     <MathTools {x} {y} {twoElement} {robotXY} />
     {#if !isDiffMode && $showRobot}
       {#if settings.robotImage === "none"}
         <!-- Current (Green Square) -->
         <div
           class="flex items-center justify-center relative shadow-sm"
-          style={`position: absolute; top: ${y(robotXY.y)}px; left: ${x(robotXY.x)}px; transform: translate(-50%, -50%) rotate(${robotHeading}deg); z-index: 20; width: ${Math.abs(x(settings.rLength || DEFAULT_ROBOT_LENGTH) - x(0))}px; height: ${Math.abs(x(settings.rWidth || DEFAULT_ROBOT_WIDTH) - x(0))}px; pointer-events: none; background-color: rgba(34, 197, 94, 0.10); border: 2px solid #16a34a; border-radius: 8px;`}
+          style={`overflow: visible; position: absolute; top: ${y(robotXY.y)}px; left: ${x(robotXY.x)}px; transform: translate(-50%, -50%) rotate(${robotHeading}deg); z-index: 20; width: ${Math.abs(x(settings.rLength || DEFAULT_ROBOT_LENGTH) - x(0))}px; height: ${Math.abs(x(settings.rWidth || DEFAULT_ROBOT_WIDTH) - x(0))}px; pointer-events: none; background-color: rgba(34, 197, 94, 0.10); border: 2px solid #16a34a; border-radius: 8px;`}
         >
           {#if settings.showRobotArrows}
             <!-- Mecanum / Swerve wheel arrows -->
@@ -2325,6 +3012,83 @@
               style="filter: drop-shadow(0px 0px 2px rgba(255,255,255,0.8));"
             />
           </div>
+          {@render renderRobotFeatures(
+            settings.robotFeatures,
+            Math.abs(x(settings.rLength || DEFAULT_ROBOT_LENGTH) - x(0)),
+            Math.abs(x(settings.rWidth || DEFAULT_ROBOT_WIDTH) - x(0)),
+            ppI,
+          )}
+        </div>
+      {:else if settings.robotImage === "turtle"}
+        <div
+          style={`position: absolute; top: ${y(robotXY.y)}px; left: ${x(robotXY.x)}px; transform: translate(-50%, -50%) rotate(${robotHeading}deg); z-index: 20; width: ${Math.abs(x(settings.rLength || DEFAULT_ROBOT_LENGTH) - x(0))}px; height: ${Math.abs(x(settings.rWidth || DEFAULT_ROBOT_WIDTH) - x(0))}px; pointer-events: none;`}
+        >
+          <!-- Turtle Parts Container -->
+          <div
+            class="relative w-full h-full"
+            style="transform: rotate(90deg) scale(1.2);"
+          >
+            <!-- Tail -->
+            <img
+              src="/BodyParts/tail.webp"
+              alt="Tail"
+              class="absolute w-[10%] h-[12%] bottom-[-4%] left-[45%] object-fill"
+              style={`transform: rotate(${Math.sin(turtlePhases.tail) * 8}deg); transform-origin: top center;`}
+            />
+
+            <!-- Back Left Leg -->
+            <img
+              src="/BodyParts/backleft.webp"
+              alt="Back Left"
+              class="absolute w-[15%] h-[27%] bottom-[-5%] left-[20%] object-fill"
+              style={`transform: rotate(${Math.cos(turtlePhases.bl) * 10}deg); transform-origin: top center;`}
+            />
+
+            <!-- Back Right Leg -->
+            <img
+              src="/BodyParts/backright.webp"
+              alt="Back Right"
+              class="absolute w-[15%] h-[27%] bottom-[-5%] right-[20%] object-fill"
+              style={`transform: rotate(${Math.sin(turtlePhases.br) * 10}deg); transform-origin: top center;`}
+            />
+
+            <!-- Front Left Leg -->
+            <div
+              class="w-full h-full absolute inset-0"
+              style={`transform: rotate(${Math.sin(turtlePhases.fl) * 20}deg);`}
+            >
+              <img
+                src="/BodyParts/frontLeft.webp"
+                alt="Front Left"
+                class="absolute w-[46%] h-[26%] top-[30%] left-[0%] object-fill"
+              />
+            </div>
+
+            <!-- Front Right Leg -->
+            <div
+              class="w-full h-full absolute inset-0"
+              style={`transform: rotate(${Math.cos(turtlePhases.fr) * 20}deg);`}
+            >
+              <img
+                src="/BodyParts/FrontRight.webp"
+                alt="Front Right"
+                class="absolute w-[46%] h-[26%] top-[30%] right-[0%] object-fill"
+              />
+            </div>
+
+            <!-- Body -->
+            <img
+              src="/BodyParts/body.webp"
+              alt="Body"
+              class="absolute w-[58%] h-[93%] left-[21%] top-[3.5%] object-fill z-10"
+            />
+          </div>
+          {@render renderRobotFeatures(
+            settings.robotFeatures,
+            Math.abs(x(settings.rLength || DEFAULT_ROBOT_LENGTH) - x(0)),
+            Math.abs(x(settings.rWidth || DEFAULT_ROBOT_WIDTH) - x(0)),
+            ppI,
+          )}
         </div>
       {:else}
         <div
@@ -2354,6 +3118,12 @@
               />
             </div>
           {/if}
+          {@render renderRobotFeatures(
+            settings.robotFeatures,
+            Math.abs(x(settings.rLength || DEFAULT_ROBOT_LENGTH) - x(0)),
+            Math.abs(x(settings.rWidth || DEFAULT_ROBOT_WIDTH) - x(0)),
+            ppI,
+          )}
         </div>
       {/if}
     {:else}
@@ -2370,6 +3140,66 @@
       {/if}
     {/if}
 
+    <!-- Timeline Hover Ghost Robot -->
+    {#if hoverRobotXY && hoverRobotHeading !== null && $showRobot && settings.robotImage !== "none" && settings.robotImage !== "turtle"}
+      <div
+        class="field-element transition-all duration-[20ms] ease-linear pointer-events-none"
+        style={`position: absolute; top: ${y(hoverRobotXY.y)}px; left: ${x(hoverRobotXY.x)}px; transform: translate(-50%, -50%) rotate(${hoverRobotHeading}deg); z-index: 21; width: ${Math.abs(x(settings.rLength || DEFAULT_ROBOT_LENGTH) - x(0))}px; height: ${Math.abs(x(settings.rWidth || DEFAULT_ROBOT_WIDTH) - x(0))}px; opacity: 0.5;`}
+      >
+        <img
+          src={settings.robotImage || "/robot.png"}
+          alt="Hover Ghost Robot"
+          class="w-full h-full object-contain pointer-events-none"
+          draggable="false"
+          style={`filter: drop-shadow(0px 2px 8px rgba(0,0,0,0.4)) ${
+            settings.robotImage === "/robot.png"
+              ? ""
+              : "drop-shadow(0px 0px 4px rgba(255,255,255,0.6))"
+          };`}
+        />
+        {#if settings.showFakeHeadingArrow && settings.robotImage !== "/robot.png"}
+          <!-- heading arrow indicator for custom robot image -->
+          <div
+            class="absolute pointer-events-none"
+            style="left: 100%; top: 50%; transform: translate(-10%, -50%);"
+          >
+            <div
+              class="w-0 h-0"
+              style="border-top: 6px solid transparent; border-bottom: 6px solid transparent; border-left: 10px solid #16a34a;"
+            ></div>
+          </div>
+        {/if}
+        {@render renderRobotFeatures(
+          settings.robotFeatures,
+          Math.abs(x(settings.rLength || DEFAULT_ROBOT_LENGTH) - x(0)),
+          Math.abs(x(settings.rWidth || DEFAULT_ROBOT_WIDTH) - x(0)),
+          ppI,
+        )}
+      </div>
+    {:else if hoverRobotXY && hoverRobotHeading !== null && $showRobot && (settings.robotImage === "none" || settings.robotImage === "turtle")}
+      <div
+        class="field-element transition-all duration-[20ms] ease-linear pointer-events-none"
+        style={`position: absolute; top: ${y(hoverRobotXY.y)}px; left: ${x(hoverRobotXY.x)}px; transform: translate(-50%, -50%) rotate(${hoverRobotHeading}deg); z-index: 21; width: ${Math.abs(x(settings.rLength || DEFAULT_ROBOT_LENGTH) - x(0))}px; height: ${Math.abs(x(settings.rWidth || DEFAULT_ROBOT_WIDTH) - x(0))}px; background-color: rgba(100, 116, 139, 0.3); border: 2px dashed #94a3b8; border-radius: 8px;`}
+      >
+        <!-- heading arrow indicator for no-image robot -->
+        <div
+          class="absolute pointer-events-none"
+          style="left: 100%; top: 50%; transform: translate(-10%, -50%);"
+        >
+          <div
+            class="w-0 h-0"
+            style="border-top: 8px solid transparent; border-bottom: 8px solid transparent; border-left: 12px solid #94a3b8;"
+          ></div>
+        </div>
+        {@render renderRobotFeatures(
+          settings.robotFeatures,
+          Math.abs(x(settings.rLength || DEFAULT_ROBOT_LENGTH) - x(0)),
+          Math.abs(x(settings.rWidth || DEFAULT_ROBOT_WIDTH) - x(0)),
+          ppI,
+        )}
+      </div>
+    {/if}
+
     <!-- Telemetry Ghost Robot -->
     {#if ghostRobotState}
       <div
@@ -2380,6 +3210,57 @@
             class="w-full h-full"
             style="background-color: rgba(107, 114, 128, 0.3);"
           ></div>
+        {:else if settings.robotImage === "turtle"}
+          <div
+            class="relative w-full h-full grayscale opacity-50"
+            style="transform: rotate(90deg) scale(1.2);"
+          >
+            <!-- Tail -->
+            <img
+              src="/BodyParts/tail.webp"
+              alt="Ghost Tail"
+              class="absolute w-[10%] h-[12%] bottom-[-4%] left-[45%] object-fill"
+              style="transform-origin: top center;"
+            />
+
+            <!-- Back Left Leg -->
+            <img
+              src="/BodyParts/backleft.webp"
+              alt="Ghost Back Left"
+              class="absolute w-[15%] h-[27%] bottom-[-5%] left-[20%] object-fill"
+              style="transform-origin: top center;"
+            />
+
+            <!-- Back Right Leg -->
+            <img
+              src="/BodyParts/backright.webp"
+              alt="Ghost Back Right"
+              class="absolute w-[15%] h-[27%] bottom-[-5%] right-[20%] object-fill"
+              style="transform-origin: top center;"
+            />
+            <!-- Front Left Leg -->
+            <div class="w-full h-full absolute inset-0">
+              <img
+                src="/BodyParts/frontLeft.webp"
+                alt="Ghost Front Left"
+                class="absolute w-[46%] h-[26%] top-[30%] left-[0%] object-fill"
+              />
+            </div>
+            <!-- Front Right Leg -->
+            <div class="w-full h-full absolute inset-0">
+              <img
+                src="/BodyParts/FrontRight.webp"
+                alt="Ghost Front Right"
+                class="absolute w-[46%] h-[26%] top-[30%] right-[0%] object-fill"
+              />
+            </div>
+            <!-- Body -->
+            <img
+              src="/BodyParts/body.webp"
+              alt="Ghost Body"
+              class="absolute w-[58%] h-[93%] left-[21%] top-[3.5%] object-fill z-10"
+            />
+          </div>
         {:else}
           <img
             src={settings.robotImage || "/robot.png"}
@@ -2415,7 +3296,18 @@
       x={contextMenuX}
       y={contextMenuY}
       items={contextMenuItems}
-      on:close={() => (showContextMenu = false)}
+      onclose={() => (showContextMenu = false)}
+    />
+  {/if}
+
+  {#if tooltipVisible && isMouseOverField}
+    <VelocityTooltip
+      visible={tooltipVisible}
+      x={tooltipX}
+      y={tooltipY}
+      velocity={tooltipVelocity}
+      time={tooltipTime}
+      distance={tooltipDistance}
     />
   {/if}
 

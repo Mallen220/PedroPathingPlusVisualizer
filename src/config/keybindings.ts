@@ -212,6 +212,13 @@ export const DEFAULT_KEY_BINDINGS: KeyBinding[] = [
     category: "Editing",
   },
   {
+    id: "select-all",
+    key: "cmd+a, ctrl+a",
+    description: "Select all paths/points",
+    action: "selectAll",
+    category: "Editing",
+  },
+  {
     id: "deselect-all",
     key: "escape",
     description: "Deselect all",
@@ -391,6 +398,13 @@ export const DEFAULT_KEY_BINDINGS: KeyBinding[] = [
     category: "View",
   },
   {
+    id: "toggle-lock-view",
+    key: "alt+l",
+    description: "Toggle field view lock",
+    action: "toggleLockFieldView",
+    category: "View",
+  },
+  {
     id: "toggle-collapse-all",
     key: "shift+c",
     description: "Toggle collapse/expand all",
@@ -469,7 +483,7 @@ export const DEFAULT_KEY_BINDINGS: KeyBinding[] = [
   },
   {
     id: "toggle-protractor-lock",
-    key: "alt+l",
+    key: "alt+q",
     description: "Toggle Protractor Lock",
     action: "toggleProtractorLock",
     category: "View",
@@ -1067,5 +1081,12 @@ export const DEFAULT_KEY_BINDINGS: KeyBinding[] = [
     description: "Start Interactive Tutorial",
     action: "startTutorial",
     category: "Help",
+  },
+  {
+    id: "toggle-velocity-tooltip",
+    key: "",
+    description: "Toggle Velocity Tooltip",
+    action: "toggleVelocityTooltip",
+    category: "View",
   },
 ];

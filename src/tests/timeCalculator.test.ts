@@ -215,8 +215,6 @@ describe("Time Calculator", () => {
       maxAngularAcceleration: 10, // High acceleration!
     };
 
-    const diffDegrees = 90;
-    const diffRad = diffDegrees * (Math.PI / 180);
     // maxVel = PI/2 = 1.57 rad/s
     // maxAccel = 10 rad/s^2
     // Time to reach maxVel: 1.57 / 10 = 0.157s.
@@ -297,7 +295,6 @@ describe("Time Calculator", () => {
       const p1 = { x: 0, y: 0 };
       const p2 = { x: 10, y: 0 };
       const controlPoints: Point[] = [];
-      const headingConfig = { heading: "constant", degrees: 0 } as any;
 
       const steps = analyzePathSegment(
         p1,
@@ -317,7 +314,6 @@ describe("Time Calculator", () => {
       const p1 = { x: 0, y: 0 };
       const p2 = { x: 10, y: 10 };
       const controlPoints = [{ x: 10, y: 0 }]; // Quadratic bezier
-      const headingConfig = { heading: "constant", degrees: 0 } as any;
 
       const steps = analyzePathSegment(
         p1,

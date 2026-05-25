@@ -13,6 +13,7 @@
     SpinnerIcon,
     ChevronRightSolidIcon,
     PlayIcon,
+    TriangleWarningIcon,
   } from "../icons/index";
   import {
     PathOptimizer,
@@ -389,16 +390,20 @@
         <div
           class="mt-2 rounded-md bg-yellow-50 border-l-4 border-yellow-400 p-3 text-sm text-yellow-800"
         >
-          ⚠️ <strong>{optimizationError}</strong> The path's structure is currently
-          invalid.
+          <TriangleWarningIcon className="size-5 inline-block mr-2" />
+          <strong>{optimizationError}</strong> The path's structure is currently invalid.
         </div>
       {:else if optimizationFailed}
         <div
-          class="mt-2 rounded-md bg-yellow-50 border-l-4 border-yellow-400 p-3 text-sm text-yellow-800"
+          class="mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded text-red-600 dark:text-red-400 text-sm flex items-start gap-2"
         >
-          ⚠️ <strong>No valid path found.</strong> The optimizer finished but the
-          best candidates still collide with obstacles. Try creating an initial path
-          that avoids obstacles to guide the optimizer.
+          <TriangleWarningIcon className="size-5 shrink-0 mt-0.5" />
+          <span>
+            <strong class="font-bold">Collision Avoidance Failed:</strong> The optimizer
+            could not find a valid path because the best candidates still collide
+            with obstacles. Try creating an initial path that avoids obstacles to
+            guide the optimizer.
+          </span>
         </div>
       {/if}
 
@@ -435,6 +440,9 @@
               class="flex-1 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-md text-sm font-medium transition-colors"
               disabled={isRunning}
               title={isRunning
+                ? "Optimization already running"
+                : "Retry optimization with current path"}
+              aria-label={isRunning
                 ? "Optimization already running"
                 : "Retry optimization with current path"}
             >

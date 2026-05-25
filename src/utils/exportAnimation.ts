@@ -211,7 +211,11 @@ async function prepareResources(
 
   // Optionally preload the robot overlay image
   let robotImage: HTMLImageElement | null = null;
-  if (options.robotImageSrc) {
+  if (
+    options.robotImageSrc &&
+    options.robotImageSrc !== "none" &&
+    options.robotImageSrc !== "turtle"
+  ) {
     robotImage = new Image();
     robotImage.crossOrigin = "anonymous";
     robotImage.src = options.robotImageSrc;

@@ -1,6 +1,5 @@
 <!-- Copyright 2026 Matthew Allen. Licensed under the Modified Apache License, Version 2.0. -->
 <script lang="ts">
-  import { createEventDispatcher } from "svelte";
   import { fade, fly } from "svelte/transition";
   import { cubicInOut } from "svelte/easing";
   import type { CustomFieldConfig } from "../../../types";
@@ -9,12 +8,16 @@
   interface Props {
     isOpen?: boolean;
     currentConfig?: CustomFieldConfig | undefined;
+    onclose?: () => void;
+    onsave?: (config: CustomFieldConfig) => void;
   }
 
-  let { isOpen = $bindable(false), currentConfig = undefined }: Props =
-    $props();
-
-  const dispatch = createEventDispatcher();
+  let {
+    isOpen = $bindable(false),
+    currentConfig = undefined,
+    onclose,
+    onsave,
+  }: Props = $props();
 
   let step = $state(1); // 1: Upload, 2: Calibrate Field Bounds, 3: Review
   let imageData: string | null = $state(null);
@@ -52,7 +55,7 @@
   });
 
   function handleClose() {
-    dispatch("close");
+    onclose?.();
   }
 
   function handleImageUpload(e: Event) {
@@ -135,8 +138,8 @@
   function handleSave() {
     const config = calculateConfig();
     if (config) {
-      dispatch("save", config);
-      dispatch("close");
+      onsave?.(config);
+      onclose?.();
     }
   }
 
@@ -253,7 +256,9 @@
           Custom Field Map Wizard
         </h2>
         <button
+          title="Close"
           onclick={handleClose}
+          aria-label="Close"
           class="text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded"
         >
           <CloseIcon className="h-6 w-6" />

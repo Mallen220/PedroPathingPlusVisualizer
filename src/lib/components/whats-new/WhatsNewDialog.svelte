@@ -60,7 +60,7 @@
               title: `Version ${id.replaceAll(/^v/g, "")} Highlights`,
               content,
             });
-          } catch (e) {}
+          } catch {}
         }
 
         out.sort((a, b) => {
@@ -79,7 +79,7 @@
           return 0;
         });
         runtimeFeatures = out;
-      } catch (e) {}
+      } catch {}
     }
   });
 
@@ -209,7 +209,9 @@
           </div>
           <!-- Mobile Close -->
           <button
+            title="Close"
             onclick={close}
+            aria-label="Close"
             class="md:hidden p-2 -mr-2 text-neutral-500 hover:text-neutral-700 dark:text-neutral-400"
           >
             <CloseIcon className="h-5 w-5" />
@@ -299,7 +301,9 @@
 
           <!-- Desktop Close -->
           <button
+            title="Close"
             onclick={close}
+            aria-label="Close"
             class="hidden md:block p-2 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800"
           >
             <CloseIcon className="h-5 w-5" />
@@ -333,6 +337,7 @@
                     <div
                       class="prose dark:prose-invert max-w-none text-neutral-600 dark:text-neutral-300 prose-purple prose-headings:text-neutral-900 dark:prose-headings:text-white prose-a:text-purple-600 dark:prose-a:text-purple-400 text-lg md:text-xl leading-relaxed"
                     >
+                      <!-- eslint-disable-next-line svelte/no-at-html-tags -->
                       {@html md.render(feature.content)}
                     </div>
                   </div>
@@ -366,6 +371,7 @@
               <div
                 class="prose dark:prose-invert max-w-none prose-purple text-lg md:text-xl leading-relaxed text-neutral-600 dark:text-neutral-300"
               >
+                <!-- eslint-disable-next-line svelte/no-at-html-tags -->
                 {@html activeContentHtml}
               </div>
             </div>

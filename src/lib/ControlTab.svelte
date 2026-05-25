@@ -61,8 +61,6 @@
 </script>
 
 <script lang="ts">
-  import { run } from "svelte/legacy";
-
   import type {
     Point,
     Line,
@@ -183,8 +181,8 @@
     }
   }
 
-  function handleMarkerChange(e: CustomEvent) {
-    const { id, percent } = e.detail;
+  function handleMarkerChange(detail: { id: string; percent: number }) {
+    const { id, percent } = detail;
     if (!timePrediction || timePrediction.totalTime <= 0) return;
 
     const globalTime = (percent / 100) * timePrediction.totalTime;
@@ -297,6 +295,13 @@
     if (found && oldMarker) {
       // Update properties
       oldMarker.position = localPos;
+
+      // Update endTime if temporal
+      if (oldMarker.type === "temporal") {
+        oldMarker.endTime = globalTime * 1000;
+        oldMarker.time = oldMarker.endTime; // Maintain legacy property
+      }
+
       // Remove old association fields
       delete oldMarker.lineIndex;
       delete oldMarker.waitId;
@@ -321,8 +326,8 @@
     }
   }
 
-  function handleMarkerAction(e: CustomEvent) {
-    const { id, action } = e.detail;
+  function handleMarkerAction(detail: { id: string; action: string }) {
+    const { id, action } = detail;
     if (action === "delete") {
       let found = false;
 
@@ -412,13 +417,13 @@
     typeof navigator === "undefined" ? true : navigator.onLine,
   );
   // If code tab is active but setting is disabled, switch to path
-  run(() => {
+  $effect(() => {
     if (activeTab === "code" && settings?.autoExportCode === false) {
       activeTab = "path";
     }
   });
   // collapse telemetry tab if user disabled it
-  run(() => {
+  $effect(() => {
     if (activeTab === "telemetry" && settings?.showTelemetryTab === false) {
       activeTab = "path";
     }
@@ -522,8 +527,12 @@
               if (ev.motionProfile) {
                 const steps = ev.motionProfile.length - 1;
                 if (steps > 0) {
-                  const idx = Math.min(Math.floor(m.position * steps), steps);
-                  timeOffset = ev.motionProfile[idx];
+                  const rawIdx = m.position * steps;
+                  const i = Math.min(Math.floor(rawIdx), steps - 1);
+                  const f = rawIdx - i;
+                  const t0 = ev.motionProfile[i];
+                  const t1 = ev.motionProfile[i + 1];
+                  timeOffset = t0 + f * (t1 - t0);
                 }
               } else {
                 timeOffset = ev.duration * m.position;
@@ -681,6 +690,7 @@
               {recordChange}
               {onPreviewChange}
               isActive={activeTab === tab.id}
+              {timePrediction}
             />
           </div>
         {/if}
@@ -704,8 +714,8 @@
       {totalSeconds}
       {settings}
       {splitPath}
-      on:markerChange={handleMarkerChange}
-      on:markerAction={handleMarkerAction}
+      onmarkerChange={handleMarkerChange}
+      onmarkerAction={handleMarkerAction}
     />
   </div>
 </div>

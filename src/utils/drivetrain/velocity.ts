@@ -15,7 +15,11 @@ export function calculateDrivetrainSpeeds(
   settings: any,
   showRobot: boolean,
 ): WheelSpeeds | null {
-  if (!showRobot || settings.robotImage !== "none") return null;
+  if (
+    !showRobot ||
+    (settings.robotImage !== "none" && settings.robotImage !== "turtle")
+  )
+    return null;
 
   if (!timePrediction?.timeline || timePrediction.timeline.length === 0) {
     return { frontLeft: 0, backLeft: 0, frontRight: 0, backRight: 0 };
@@ -67,7 +71,7 @@ export function calculateDrivetrainSpeeds(
   const headingRad = (state1.heading * Math.PI) / 180;
 
   // Calculate normalized magnitudes based on typical robot speeds
-  const maxV = 60;
+  const maxV = settings.maxVelocity || 60;
   const maxOmega = 3;
 
   const normalizedForward = forwardVel / maxV;

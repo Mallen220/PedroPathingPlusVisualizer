@@ -1,8 +1,5 @@
 <!-- Copyright 2026 Matthew Allen. Licensed under the Modified Apache License, Version 2.0. -->
 <script lang="ts">
-  import { run, createBubbler, stopPropagation } from "svelte/legacy";
-
-  const bubble = createBubbler();
   import {
     showFeedbackDialog,
     showRatingDialog,
@@ -167,7 +164,7 @@
       isSubmitting = false;
     }
   }
-  run(() => {
+  $effect(() => {
     if ($showFeedbackDialog) {
       // Check cooldown
       const lastSubmitStr = $settingsStore.lastFeedbackSubmit;
@@ -200,7 +197,9 @@
       aria-modal="true"
       tabindex="-1"
       bind:this={dialogContainer}
-      onclick={stopPropagation(bubble("click"))}
+      onclick={(e) => {
+        e.stopPropagation();
+      }}
       class="bg-white dark:bg-neutral-800 rounded-xl shadow-2xl w-full max-w-2xl overflow-hidden border border-neutral-200 dark:border-neutral-700"
       in:fly={{ y: 20, duration: 200, delay: 50 }}
       out:fly={{ y: 20, duration: 150 }}
@@ -218,6 +217,7 @@
           Report Issue / Feedback / Features
         </h2>
         <button
+          aria-label="Close dialog"
           onclick={closeDialog}
           disabled={isSubmitting}
           class="text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-200 transition-colors disabled:opacity-50"

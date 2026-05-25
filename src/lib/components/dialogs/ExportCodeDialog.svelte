@@ -1,7 +1,5 @@
 <!-- Copyright 2026 Matthew Allen. Licensed under the Modified Apache License, Version 2.0. -->
 <script lang="ts">
-  import { run, self } from "svelte/legacy";
-
   import type { Point, Line, SequenceItem, Shape } from "../../../types/index";
   import Highlight from "svelte-highlight";
   import { java } from "svelte-highlight/languages";
@@ -91,7 +89,7 @@
   }
 
   // Update sequential class name when file changes
-  run(() => {
+  $effect(() => {
     if ($currentFilePath) {
       const fileName = $currentFilePath.split(/[\\/]/).pop();
       if (fileName) {
@@ -429,7 +427,9 @@
     transition:fade={{ duration: 200 }}
     class="fixed inset-0 z-[1000] bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 sm:p-6"
     role="presentation"
-    onclick={self(() => (isOpen = false))}
+    onclick={(e) => {
+      if (e.target === e.currentTarget) isOpen = false;
+    }}
   >
     <!-- Dialog Panel -->
     <div
@@ -518,6 +518,7 @@
                 {/if}
               </span>
               <button
+                title="Previous match"
                 onclick={prevMatch}
                 disabled={searchMatches.length === 0}
                 class="p-1 hover:bg-neutral-200 dark:hover:bg-neutral-700 rounded text-neutral-600 dark:text-neutral-400 disabled:opacity-30"
@@ -526,6 +527,7 @@
                 <ChevronUpIcon strokeWidth={2} className="size-4" />
               </button>
               <button
+                title="Next match"
                 onclick={nextMatch}
                 disabled={searchMatches.length === 0}
                 class="p-1 hover:bg-neutral-200 dark:hover:bg-neutral-700 rounded text-neutral-600 dark:text-neutral-400 disabled:opacity-30"
@@ -803,6 +805,7 @@
               class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-neutral-700 dark:text-neutral-200 bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 rounded-lg transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-neutral-500"
               onclick={handleSaveFile}
               title="Save the generated content to a file"
+              aria-label="Save the generated content to a file"
             >
               <DownloadIcon className="size-4" />
               Save to File

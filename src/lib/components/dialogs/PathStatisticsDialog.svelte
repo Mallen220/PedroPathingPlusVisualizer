@@ -18,8 +18,8 @@
     ErrorIcon,
     WarningIcon,
     InfoIcon,
-    PhotoIcon,
     ClipboardIcon,
+    DotIcon,
   } from "../icons";
   import { getAngularDifference } from "../../../utils/math";
   import { notification } from "../../../stores";
@@ -653,6 +653,7 @@
           <button
             class={`px-3 py-1 rounded-md transition-all ${activeTab === "insights" ? "bg-white dark:bg-neutral-600 shadow-sm text-neutral-900 dark:text-white" : "text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-300"}`}
             onclick={() => (activeTab = "insights")}
+            aria-label="Insights view"
           >
             Insights
           </button>
@@ -666,11 +667,14 @@
           title={activeTab === "graphs"
             ? "Copy SVG to Clipboard"
             : "Copy as Markdown"}
-          aria-label="Copy content"
+          aria-label={activeTab === "graphs"
+            ? "Copy SVG to Clipboard"
+            : "Copy as Markdown"}
         >
           <ClipboardIcon className="size-5" />
         </button>
         <button
+          title="Close"
           onclick={onClose}
           class="p-2 text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300 rounded-lg hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors"
           aria-label="Close"
@@ -941,7 +945,10 @@
                         At {formatTime(insight.startTime)}
                       {/if}
                       {#if insight.value}
-                        • Max Value: {insight.value.toFixed(1)}
+                        <div class="flex items-center gap-1.5">
+                          <DotIcon className="-mx-0.5 opacity-50" />
+                          <span>Max Value: {insight.value.toFixed(1)}</span>
+                        </div>
                       {/if}
                     </div>
                   </div>

@@ -236,7 +236,7 @@
         // Try both namespaced and non-namespaced href for compatibility
         try {
           imgEl.setAttributeNS("http://www.w3.org/1999/xlink", "href", bgSrc);
-        } catch (e) {
+        } catch {
           /* ignore */
         }
         imgEl.setAttribute("href", bgSrc);
@@ -369,7 +369,7 @@
     // Dynamic import to avoid bundling issues
     const html2pdf = (await import("html2pdf.js")).default;
     const printableSheet = document.querySelector(
-      ".max-w-\\[210mm\\]",
+      String.raw`.max-w-\[210mm\]`,
     ) as HTMLElement;
     if (!printableSheet) return;
 
@@ -398,10 +398,12 @@
   }
 
   // Helpers for table data
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   function getSegmentName(line: Line, index: number) {
     return line.name || `Path ${index + 1}`;
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   function getEventsForLine(line: Line) {
     return line.eventMarkers || [];
   }
@@ -424,7 +426,7 @@
       // items.push({ type: 'start', name: 'Start', details: `(${startPoint.x.toFixed(1)}, ${startPoint.y.toFixed(1)})`, events: [] });
 
       // Iterate Sequence
-      sequence.forEach((seqItem, idx) => {
+      sequence.forEach((seqItem, _idx) => {
         if (seqItem.kind === "path") {
           const line = findLine(seqItem.lineId);
           if (line) {
@@ -528,7 +530,9 @@
             Download PDF
           </button>
           <button
+            title="Close"
             onclick={handleClose}
+            aria-label="Close"
             class="p-2 rounded-lg text-neutral-500 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
           >
             <CloseIcon className="size-5" />
@@ -697,7 +701,7 @@
                 <div
                   class="absolute inset-0 pointer-events-none z-[-1] print:block hidden flex-col"
                 >
-                  {#each Array(6) as _, i}
+                  {#each Array(6) as _, _i}
                     <div class="border-b border-gray-300 h-10 w-full"></div>
                   {/each}
                 </div>

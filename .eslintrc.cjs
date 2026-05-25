@@ -9,7 +9,7 @@ module.exports = {
     ecmaVersion: "latest",
     sourceType: "module",
   },
-  plugins: ["@typescript-eslint", "unicorn"],
+  plugins: ["@typescript-eslint", "unicorn", "unused-imports"],
   ignorePatterns: [
     "node_modules/",
     "dist/",
@@ -20,6 +20,18 @@ module.exports = {
   ],
   extends: ["plugin:prettier/recommended"],
   rules: {
+    "no-unused-vars": "off",
+    "@typescript-eslint/no-unused-vars": "off",
+    "unused-imports/no-unused-imports": "error",
+    "unused-imports/no-unused-vars": [
+      "error",
+      {
+        vars: "all",
+        varsIgnorePattern: "^_",
+        args: "after-used",
+        argsIgnorePattern: "^_",
+      },
+    ],
     "no-lonely-if": "error",
     "unicorn/prefer-global-this": "error",
     "unicorn/prefer-array-find": "error",
@@ -34,6 +46,7 @@ module.exports = {
     "unicorn/prefer-export-from": "error",
     "unicorn/no-zero-fractions": "error",
     "unicorn/prefer-number-properties": "error",
+    "unicorn/prefer-string-raw": "error",
   },
   overrides: [
     {
@@ -46,6 +59,8 @@ module.exports = {
       },
       extends: ["plugin:prettier/recommended"],
       rules: {
+        "no-unused-vars": "off",
+        "@typescript-eslint/no-unused-vars": "off",
         "@typescript-eslint/prefer-optional-chain": "error",
         "@typescript-eslint/prefer-promise-reject-errors": "error",
       },

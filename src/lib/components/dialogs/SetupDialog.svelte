@@ -1,17 +1,14 @@
 <!-- Copyright 2026 Matthew Allen. Licensed under the Modified Apache License, Version 2.0. -->
 <script lang="ts">
-  import { createEventDispatcher } from "svelte";
-
   import { saveAutoPathsDirectory } from "../../../utils/directorySettings";
   import { RocketIcon, FolderIcon } from "../icons";
 
   interface Props {
     show?: boolean;
+    onsetupComplete?: () => void;
   }
 
-  let { show = $bindable(false) }: Props = $props();
-
-  const dispatch = createEventDispatcher();
+  let { show = $bindable(false), onsetupComplete }: Props = $props();
 
   async function selectDirectory() {
     const electronAPI = (globalThis as any).electronAPI;
@@ -21,7 +18,7 @@
         if (selected) {
           await saveAutoPathsDirectory(selected);
           show = false;
-          dispatch("setupComplete");
+          onsetupComplete?.();
         }
       } catch (err) {}
     }

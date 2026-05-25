@@ -375,6 +375,7 @@
           disabled={!selectedProfileId}
           class="px-3 py-1.5 text-xs bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
           title="Load settings from selected profile"
+          aria-label="Load settings from selected profile"
         >
           Load
         </button>
@@ -396,6 +397,7 @@
                   : "hover:bg-blue-50 dark:hover:bg-blue-900/20 text-neutral-400 hover:text-blue-500 w-8"
               }`}
               title="Overwrite profile with current settings"
+              aria-label="Overwrite profile with current settings"
             >
               {#if updateConfirming}
                 <span
@@ -414,6 +416,7 @@
 
             <!-- Export Button -->
             <button
+              aria-label="Export Profile"
               onclick={handleExportProfile}
               class="ml-1 p-1.5 rounded-md transition-all duration-200 flex items-center justify-center hover:bg-neutral-100 dark:hover:bg-neutral-700 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 w-8"
               title="Export Profile"

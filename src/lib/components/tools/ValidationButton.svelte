@@ -72,6 +72,7 @@
   role="presentation"
 >
   <button
+    title="Toggle Validation"
     onclick={toggleValidation}
     class="flex items-center justify-center p-2 bg-transparent text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors rounded-md focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500"
     aria-label="Toggle Validation"

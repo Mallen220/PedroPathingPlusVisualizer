@@ -5,8 +5,12 @@
   import { cubicInOut } from "svelte/easing";
   import { menuNavigation } from "../actions/menuNavigation";
   import { formatTime, getShortcutFromSettings } from "../../utils";
-  import { createEventDispatcher, onMount, onDestroy } from "svelte";
-  import { loopRangeActiveStore, loopRangeStore } from "../../lib/projectStore";
+  import { onMount, onDestroy } from "svelte";
+  import {
+    loopRangeActiveStore,
+    loopRangeStore,
+    hoverPercentStore,
+  } from "../../lib/projectStore";
   import ContextMenu from "./tools/ContextMenu.svelte";
   import {
     ArrowCircleIcon,
@@ -45,6 +49,8 @@
     totalSeconds?: number;
     settings: Settings | undefined;
     splitPath?: () => void;
+    onmarkerChange?: (data: { id: string; percent: number }) => void;
+    onmarkerAction?: (data: { id: string; action: string }) => void;
   }
 
   let {
@@ -60,9 +66,9 @@
     totalSeconds = 0,
     settings,
     splitPath = () => {},
+    onmarkerChange,
+    onmarkerAction,
   }: Props = $props();
-
-  const dispatch = createEventDispatcher();
 
   // Speed dropdown state & helpers
   let showSpeedMenu = $state(false);
@@ -70,6 +76,8 @@
 
   // Drag State
   let draggingMarkerIndex: number | null = $state(null);
+  let hoverX = $state<number | null>(null);
+  let hoverPercentRaw = $state<number | null>(null);
   let draggingMarkerId: string | null = null;
   let draggingMarkerPercent: number = $state(0);
   let wasPlayingBeforeDrag: boolean = false;
@@ -159,6 +167,23 @@
     let newPercent = percent + amount;
     newPercent = Math.max(0, Math.min(100, newPercent));
     handleSeek(newPercent);
+  }
+
+  function handleSliderMouseMove(e: MouseEvent) {
+    if (draggingMarkerIndex !== null) return;
+    const target = e.currentTarget as HTMLElement;
+    const rect = target.getBoundingClientRect();
+    const x = Math.max(0, Math.min(e.clientX - rect.left, rect.width));
+    const p = (x / rect.width) * 100;
+    hoverX = x;
+    hoverPercentRaw = p;
+    hoverPercentStore.set(p);
+  }
+
+  function handleSliderMouseLeave() {
+    hoverX = null;
+    hoverPercentRaw = null;
+    hoverPercentStore.set(null);
   }
 
   function handleSeekInput(e: Event) {
@@ -316,7 +341,7 @@
     if (draggingMarkerIndex !== null) {
       // Commit change
       if (draggingMarkerId) {
-        dispatch("markerChange", {
+        onmarkerChange?.({
           id: draggingMarkerId,
           percent: draggingMarkerPercent,
         });
@@ -346,7 +371,7 @@
 
   function handleContextMenuAction(action: string) {
     if (contextMenuTargetId) {
-      dispatch("markerAction", { id: contextMenuTargetId, action });
+      onmarkerAction?.({ id: contextMenuTargetId, action });
     }
     showContextMenu = false;
   }
@@ -363,8 +388,8 @@
         danger: true,
       },
     ]}
-    on:close={() => (showContextMenu = false)}
-    on:action={(e) => handleContextMenuAction(e.detail)}
+    onclose={() => (showContextMenu = false)}
+    onaction={(action) => handleContextMenuAction(action)}
   />
 {/if}
 
@@ -481,6 +506,24 @@
       </div>
     {/if}
 
+    <!-- Hover Tooltip -->
+    {#if hoverX !== null && hoverPercentRaw !== null && draggingMarkerIndex === null}
+      <div
+        class="absolute z-30 bottom-full mb-2 -ml-6 w-12 text-center pointer-events-none"
+        style="left: {hoverPercentRaw}%;"
+      >
+        <div
+          class="px-2 py-1 bg-neutral-800 dark:bg-neutral-200 text-neutral-100 dark:text-neutral-800 text-[10px] font-mono rounded shadow-lg"
+        >
+          {formatTime((hoverPercentRaw / 100) * totalSeconds)}
+        </div>
+        <!-- Little triangle arrow -->
+        <div
+          class="w-0 h-0 border-l-[4px] border-l-transparent border-r-[4px] border-r-transparent border-t-[4px] border-t-neutral-800 dark:border-t-neutral-200 mx-auto"
+        ></div>
+      </div>
+    {/if}
+
     <!-- The Slider -->
     <input
       id="timeline-slider"
@@ -494,6 +537,8 @@
       style={draggingMarkerIndex === null ? "" : "pointer-events: none;"}
       oninput={handleSeekInput}
       onkeydown={handleSliderKeydown}
+      onmousemove={handleSliderMouseMove}
+      onmouseleave={handleSliderMouseLeave}
     />
 
     <!-- Event Markers Layer (Top, Map Pins) -->
@@ -540,16 +585,21 @@
         </div>
       {:else if item.type === "dot"}
         <div
-          class="absolute z-20 group ring-2 ring-black/5 dark:ring-white/20 rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-1 dark:focus-visible:ring-offset-neutral-900"
+          class="absolute z-20 group rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-1 dark:focus-visible:ring-offset-neutral-900 flex items-center justify-center"
           role="button"
           tabindex="0"
           onclick={() => handleSeek(item.percent)}
           onkeydown={(e) => {
             if (e.key === "Enter" || e.key === " ") handleSeek(item.percent);
           }}
-          style={`left: ${item.percent}%; top: 50%; transform: translate(-50%, -50%); width: 14px; height: 14px; background: ${item.color}; cursor: pointer;`}
+          style={`left: ${item.percent}%; top: 50%; transform: translate(-50%, -50%); width: 24px; height: 24px; cursor: pointer;`}
           aria-label={item.name}
         >
+          <!-- Visual Dot (14x14px) to preserve exact original look -->
+          <div
+            class="rounded-full ring-2 ring-black/5 dark:ring-white/20"
+            style={`width: 14px; height: 14px; background: ${item.color};`}
+          ></div>
           <!-- Tooltip (CSS Hover) -->
           <div
             class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded shadow-lg text-xs text-neutral-800 dark:text-neutral-100 z-[100] pointer-events-none whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200"
@@ -629,7 +679,7 @@
       <!-- Split Path -->
       <button
         title="Split Path Here"
-        aria-label="Split path here"
+        aria-label="Split Path Here"
         onclick={splitPath}
         class="p-1 rounded-md text-neutral-400 hover:text-neutral-600 dark:text-neutral-500 dark:hover:text-neutral-300 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500"
       >
@@ -639,7 +689,7 @@
       <!-- Skip to Start -->
       <button
         title="Skip to Start"
-        aria-label="Skip to start"
+        aria-label="Skip to Start"
         onclick={() => handleSeek(0)}
         class="p-1 rounded-md text-neutral-400 hover:text-neutral-600 dark:text-neutral-500 dark:hover:text-neutral-300 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500"
       >
@@ -649,7 +699,7 @@
       <!-- Step Back -->
       <button
         title="Step Back"
-        aria-label="Step back"
+        aria-label="Step Back"
         onclick={() => step(-0.5)}
         class="p-1 rounded-md text-neutral-400 hover:text-neutral-600 dark:text-neutral-500 dark:hover:text-neutral-300 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500"
       >
@@ -685,7 +735,7 @@
       <!-- Step Forward -->
       <button
         title="Step Forward"
-        aria-label="Step forward"
+        aria-label="Step Forward"
         onclick={() => step(0.5)}
         class="p-1 rounded-md text-neutral-400 hover:text-neutral-600 dark:text-neutral-500 dark:hover:text-neutral-300 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500"
       >
@@ -695,7 +745,7 @@
       <!-- Skip to End -->
       <button
         title="Skip to End"
-        aria-label="Skip to end"
+        aria-label="Skip to End"
         onclick={() => handleSeek(100)}
         class="p-1 rounded-md text-neutral-400 hover:text-neutral-600 dark:text-neutral-500 dark:hover:text-neutral-300 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500"
       >

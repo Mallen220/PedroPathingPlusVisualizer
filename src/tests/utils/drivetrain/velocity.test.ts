@@ -94,6 +94,26 @@ describe("calculateDrivetrainSpeeds", () => {
     expect(speeds?.backRight).toBeCloseTo(0.3333);
   });
 
+  it("should calculate correct speeds using maxVelocity from settings", () => {
+    const timePrediction = { timeline: [{ endTime: 10 }] };
+    mockRobotStates({ x: 0, y: 0, heading: 0 }, { x: 1, y: 0, heading: 0 });
+
+    const speeds = calculateDrivetrainSpeeds(
+      0,
+      timePrediction,
+      [],
+      {},
+      { ...defaultSettings, maxVelocity: 100 },
+      true,
+    );
+    // vx = 20, vy = 0. maxV = 100. normalizedForward = 20/100 = 0.20.
+    expect(speeds).toBeTruthy();
+    expect(speeds?.frontLeft).toBeCloseTo(0.2);
+    expect(speeds?.backLeft).toBeCloseTo(0.2);
+    expect(speeds?.frontRight).toBeCloseTo(0.2);
+    expect(speeds?.backRight).toBeCloseTo(0.2);
+  });
+
   it("should calculate correct angles for swerve", () => {
     const timePrediction = { timeline: [{ endTime: 10 }] };
     mockRobotStates({ x: 0, y: 0, heading: 0 }, { x: 1, y: 0, heading: 0 });

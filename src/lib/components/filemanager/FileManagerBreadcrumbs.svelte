@@ -1,22 +1,25 @@
 <!-- Copyright 2026 Matthew Allen. Licensed under the Modified Apache License, Version 2.0. -->
 <!-- src/lib/components/filemanager/FileManagerBreadcrumbs.svelte -->
 <script lang="ts">
-  import { createEventDispatcher, tick } from "svelte";
+  import { tick } from "svelte";
   import { FolderIcon, UndoIcon } from "../icons";
   import { isBrowser } from "../../../utils/platform";
 
   interface Props {
     currentPath: string;
     isAtBase?: boolean;
+    onchangeDir?: (path: string) => void;
+    onchangeDirDialog?: () => void;
+    ongoUp?: () => void;
   }
 
-  let { currentPath, isAtBase = false }: Props = $props();
-
-  const dispatch = createEventDispatcher<{
-    "change-dir": string;
-    "change-dir-dialog": void;
-    "go-up": void;
-  }>();
+  let {
+    currentPath,
+    isAtBase = false,
+    onchangeDir,
+    onchangeDirDialog,
+    ongoUp,
+  }: Props = $props();
 
   let isEditing = $state(false);
   let inputPath = $state("");
@@ -66,7 +69,7 @@
     if (!isEditing) return;
     isEditing = false;
     if (inputPath !== currentPath && inputPath.trim() !== "") {
-      dispatch("change-dir", inputPath.trim());
+      onchangeDir?.(inputPath.trim());
     }
   }
 
@@ -96,7 +99,7 @@
     {#if !isAtBase}
       <button
         class="p-1 mr-2 rounded hover:bg-neutral-200 dark:hover:bg-neutral-700 shrink-0"
-        onclick={() => dispatch("go-up")}
+        onclick={() => ongoUp?.()}
         title="Go up one directory"
         aria-label="Go Up"
       >
@@ -116,7 +119,7 @@
 
     {#if !isBrowser}
       <button
-        onclick={() => dispatch("change-dir-dialog")}
+        onclick={() => onchangeDirDialog?.()}
         class="p-1 ml-1 text-neutral-500 hover:text-blue-600 dark:text-neutral-400 dark:hover:text-blue-400 rounded hover:bg-neutral-200 dark:hover:bg-neutral-700 transition-colors shrink-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
         title="Change Directory"
         aria-label="Change Directory"

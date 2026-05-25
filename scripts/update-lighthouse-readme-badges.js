@@ -51,6 +51,7 @@ function runLighthouseBadges(url) {
   const npxCommand = process.platform === "win32" ? "npx.cmd" : "npx";
   const repoRootPath = getRepoRootPath();
   const outputDirPath = getOutputDirPath();
+  const configPath = path.resolve(repoRootPath, "lighthouse-config.json");
   const args = [
     "--yes",
     "lighthouse-badges",
@@ -65,6 +66,10 @@ function runLighthouseBadges(url) {
       cwd: repoRootPath,
       stdio: "inherit",
       shell: false,
+      env: {
+        ...process.env,
+        LIGHTHOUSE_BADGES_CONFIGURATION_PATH: configPath,
+      },
     });
 
     child.on("close", (code) => {
