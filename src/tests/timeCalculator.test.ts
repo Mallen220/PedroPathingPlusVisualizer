@@ -1,4 +1,5 @@
 // Copyright 2026 Matthew Allen. Licensed under the Modified Apache License, Version 2.0.
+import { sharedTimeCalcStartPoint, sharedTimeCalcSettings } from "./sharedTimeCalc";
 import { describe, it, expect, beforeEach } from "vitest";
 import {
   calculatePathTime,

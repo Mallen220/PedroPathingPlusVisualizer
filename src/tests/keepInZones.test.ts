@@ -1,4 +1,5 @@
 // Copyright 2026 Matthew Allen. Licensed under the Modified Apache License, Version 2.0.
+import { sharedOptimizerSettings, sharedOptimizerStartPoint, createKeepInZone } from "./sharedOptimizer";
 import { describe, it, expect, beforeEach } from "vitest";
 import { PathOptimizer } from "../utils/pathOptimizer";
 import type { Line, Point, SequenceItem, Settings, Shape } from "../types";
@@ -108,21 +109,7 @@ describe("PathOptimizer Keep-In Zones", () => {
     // Robot is at y=10, moves x=10->40. Size 10x10.
     // Robot extents: y: 5 to 15. x: 5 to 45 (approx).
     // Zone: 0,0 to 100,100
-    shapes = [
-      {
-        id: "keepin1",
-        vertices: [
-          { x: 0, y: 0 },
-          { x: 100, y: 0 },
-          { x: 100, y: 100 },
-          { x: 0, y: 100 },
-        ],
-        color: "green",
-        fillColor: "green",
-        type: "keep-in",
-        visible: true,
-      },
-    ];
+    shapes = [createKeepInZone("keepin1", 0, 100, 0, 100)];
 
     const optimizer = new PathOptimizer(
       startPoint,
@@ -140,21 +127,7 @@ describe("PathOptimizer Keep-In Zones", () => {
   it("should report violation if robot leaves keep-in zone", () => {
     // Zone covers start but not end
     // Robot moves x=10->40. Zone ends at x=25.
-    shapes = [
-      {
-        id: "keepin1",
-        vertices: [
-          { x: 0, y: 0 },
-          { x: 25, y: 0 },
-          { x: 25, y: 100 },
-          { x: 0, y: 100 },
-        ],
-        color: "green",
-        fillColor: "green",
-        type: "keep-in",
-        visible: true,
-      },
-    ];
+    shapes = [createKeepInZone("keepin1", 0, 25, 0, 100)];
 
     const optimizer = new PathOptimizer(
       startPoint,

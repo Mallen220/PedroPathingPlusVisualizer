@@ -1,6 +1,51 @@
 // Copyright 2026 Matthew Allen. Licensed under the Modified Apache License, Version 2.0.
 import type { Line, Point, BasePoint } from "../types";
 
+
+const getPointsToUpdate = (multiSel: string[], startPoint: Point, lines: Line[]) => {
+  const pointsToUpdate: { point: BasePoint; isStart: boolean }[] = [];
+  multiSel.forEach((id) => {
+    const parts = id.split("-");
+    const lineNum = Number(parts[1]);
+    const ptIdx = Number(parts[2]);
+
+    if (lineNum === 0 && ptIdx === 0) {
+      if (!startPoint.locked) {
+        pointsToUpdate.push({ point: startPoint, isStart: true });
+      }
+    } else {
+      const line = lines[lineNum - 1];
+      if (line && !line.locked) {
+        let p: BasePoint;
+        if (ptIdx === 0) p = line.endPoint;
+        else p = line.controlPoints[ptIdx - 1];
+        if (p) {
+          pointsToUpdate.push({ point: p, isStart: false });
+        }
+      }
+    }
+  });
+  return pointsToUpdate;
+};
+
+const distributePoints = (pointsToUpdate: { point: BasePoint; isStart: boolean }[], dimension: 'x' | 'y', onUpdate: Function, lines: Line[], startPoint: Point, onRecordChange: Function, recordMsg: string) => {
+  if (pointsToUpdate.length > 2) {
+    pointsToUpdate.sort((a, b) => a.point[dimension] - b.point[dimension]);
+    const min = pointsToUpdate[0].point[dimension];
+    const max = pointsToUpdate[pointsToUpdate.length - 1].point[dimension];
+    const step = (max - min) / (pointsToUpdate.length - 1);
+
+    pointsToUpdate.forEach((item, index) => {
+      if (index > 0 && index < pointsToUpdate.length - 1) {
+        item.point[dimension] = min + step * index;
+      }
+    });
+
+    onUpdate(lines, startPoint);
+    onRecordChange(recordMsg);
+  }
+};
+
 export function getAlignmentMenuItems(
   multiSel: string[],
   startPoint: Point,

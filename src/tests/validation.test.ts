@@ -1,4 +1,10 @@
 // Copyright 2026 Matthew Allen. Licensed under the Modified Apache License, Version 2.0.
+const createValidTestLine = () => ({
+  endPoint: { x: 10, y: 10, heading: "linear", startDeg: 0, endDeg: 0 } as any,
+  controlPoints: [],
+  color: "red",
+  id: "l1",
+});
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { validatePath } from "../utils/validation";
 import type {

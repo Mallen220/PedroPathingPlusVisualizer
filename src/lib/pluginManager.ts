@@ -171,23 +171,23 @@ export class PluginManager {
     const proxyAPI = new Proxy(() => {}, handler);
 
     const shadowGlobals = [
-      "window",
-      "document",
-      "location",
-      "top",
-      "parent",
-      "self",
-      "globalThis",
-      "electronAPI",
-      "localStorage",
-      "sessionStorage",
-      "indexedDB",
-      "fetch",
-      "XMLHttpRequest",
-      "WebSocket",
-      "process",
-      "require",
-    ];
+  "window",
+  "document",
+  "location",
+  "top",
+  "parent",
+  "self",
+  "globalThis",
+  "electronAPI",
+  "localStorage",
+  "sessionStorage",
+  "indexedDB",
+  "fetch",
+  "XMLHttpRequest",
+  "WebSocket",
+  "process",
+  "require",
+];
     const shadowValues = shadowGlobals.map(() => undefined);
 
     try {
@@ -507,24 +507,24 @@ export class PluginManager {
     // Execute safely-ish by shadowing sensitive globals and enforcing strict mode
     try {
       const shadowGlobals = [
-        "window",
-        "document",
-        "location",
-        "top",
-        "parent",
-        "self",
-        "globalThis",
-        "electronAPI",
-        "localStorage",
-        "sessionStorage",
-        "indexedDB",
-        "fetch",
-        "XMLHttpRequest",
-        "WebSocket",
-        "process",
-        "require",
-      ];
-      const shadowValues = shadowGlobals.map(() => undefined);
+  "window",
+  "document",
+  "location",
+  "top",
+  "parent",
+  "self",
+  "globalThis",
+  "electronAPI",
+  "localStorage",
+  "sessionStorage",
+  "indexedDB",
+  "fetch",
+  "XMLHttpRequest",
+  "WebSocket",
+  "process",
+  "require",
+];
+    const shadowValues = shadowGlobals.map(() => undefined);
 
       // pass 'turtle' (and legacy 'pedro') as the argument names
       const fn = new Function(

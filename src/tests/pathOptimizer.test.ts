@@ -1,4 +1,5 @@
 // Copyright 2026 Matthew Allen. Licensed under the Modified Apache License, Version 2.0.
+import { sharedOptimizerSettings, sharedOptimizerStartPoint } from "./sharedOptimizer";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { PathOptimizer } from "../utils/pathOptimizer";
 import { calculatePathTime } from "../utils/timeCalculator";

@@ -1,3 +1,7 @@
+const assertLine = (line: any, name: string, heading: string) => {
+  expect(line.name).toBe(name);
+  expect(line.endPoint.heading).toBe(heading);
+};
 // Copyright 2026 Matthew Allen. Licensed under the Modified Apache License, Version 2.0.
 import { describe, it, expect } from "vitest";
 import { importJavaProject } from "../utils/javaImporter";
@@ -86,8 +90,7 @@ public class Everythingtest extends SequentialCommandGroup {
     expect(data.startPoint.degrees).toBe(90);
     expect(data.lines.length).toBe(8);
     expect(data.sequence.length).toBe(10);
-    expect(data.lines[0].name).toBe("a");
-    expect(data.lines[0].endPoint.heading).toBe("linear");
+    assertLine(data.lines[0], "a", "linear");
     expect((data.lines[0].endPoint as any).startDeg).toBe(90);
     expect((data.lines[0].endPoint as any).endDeg).toBe(180);
     expect((data.lines[0].endPoint as any).reverse).toBe(false);
@@ -249,8 +252,7 @@ public class reference extends Command {
     expect(data.startPoint.degrees).toBe(90);
     expect(data.lines.length).toBe(2);
 
-    expect(data.lines[0].name).toBe("a");
-    expect(data.lines[0].endPoint.heading).toBe("linear");
+    assertLine(data.lines[0], "a", "linear");
 
     expect(data.lines[1].name).toBe("b");
     expect((data.lines[1].endPoint as any).reverse).toBe(true);
