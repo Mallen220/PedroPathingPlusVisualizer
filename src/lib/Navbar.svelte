@@ -514,7 +514,7 @@
     <button
       id="sidebar-toggle-btn"
       title={`${showSidebar ? "Hide Sidebar" : "Show Sidebar"}${getShortcutFromSettings(settings, "toggle-sidebar")}`}
-      aria-label={showSidebar ? "Hide Sidebar" : "Show Sidebar"}
+      aria-label={`${showSidebar ? "Hide Sidebar" : "Show Sidebar"}${getShortcutFromSettings(settings, "toggle-sidebar")}`}
       onclick={() => (showSidebar = !showSidebar)}
       class="p-2 rounded-md hover:bg-neutral-100 dark:hover:bg-neutral-800 text-neutral-600 dark:text-neutral-300 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500"
     >

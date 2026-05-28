@@ -26,7 +26,7 @@ describe("PlaybackControls", () => {
       props: createProps({ play }),
     });
 
-    const btn = screen.getByLabelText("Play animation");
+    const btn = screen.getByLabelText("Play Animation");
     expect(btn).toBeInTheDocument();
 
     await fireEvent.click(btn);
@@ -39,7 +39,7 @@ describe("PlaybackControls", () => {
       props: createProps({ playing: true, pause }),
     });
 
-    const btn = screen.getByLabelText("Pause animation");
+    const btn = screen.getByLabelText("Pause Animation");
     expect(btn).toBeInTheDocument();
 
     await fireEvent.click(btn);
@@ -51,7 +51,7 @@ describe("PlaybackControls", () => {
       props: createProps(),
     });
 
-    const loopBtn = screen.getByLabelText("Loop animation");
+    const loopBtn = screen.getByLabelText("Enable Loop");
     expect(loopBtn).toBeInTheDocument();
     expect(loopBtn).toHaveAttribute("aria-pressed", "false");
 
@@ -66,7 +66,7 @@ describe("PlaybackControls", () => {
       props: createProps({ setPlaybackSpeed }),
     });
 
-    const speedBtn = screen.getByLabelText(/Playback speed options/);
+    const speedBtn = screen.getByLabelText(/Open playback speed menu/);
     await fireEvent.click(speedBtn);
 
     const speedOption = screen.getByText("2.00x");
