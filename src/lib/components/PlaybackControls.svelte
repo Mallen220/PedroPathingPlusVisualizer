@@ -712,7 +712,7 @@
         title={playing
           ? `Pause Animation${getShortcutFromSettings(settings, "play-pause")}`
           : `Play Animation${getShortcutFromSettings(settings, "play-pause")}`}
-        aria-label={playing ? "Pause animation" : "Play animation"}
+        aria-label={playing ? `Pause Animation${getShortcutFromSettings(settings, "play-pause")}` : `Play Animation${getShortcutFromSettings(settings, "play-pause")}`}
         onclick={() => {
           if (playing) {
             pause();

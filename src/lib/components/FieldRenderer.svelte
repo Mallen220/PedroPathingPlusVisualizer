@@ -3330,7 +3330,7 @@
               ? 'bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 hover:bg-purple-200 dark:hover:bg-purple-900/50'
               : 'hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-200'}"
             onclick={toggleDiff}
-            aria-label={isDiffMode ? "Exit Visual Diff" : "Toggle Visual Diff"}
+            aria-label={isDiffMode ? "Exit Diff Mode" : "Compare with Saved"}
             title={isDiffMode ? "Exit Diff Mode" : "Compare with Saved"}
           >
             {#if $isLoadingDiff}

@@ -418,7 +418,7 @@
       onclick={handleDownloadJava}
       class={`flex items-center gap-2 px-4 py-2 text-sm font-medium text-white rounded-md shadow-sm transition-colors focus:outline-none focus:ring-2 ${getButtonFilledClass("purple")}`}
       title={`Download as ${format === "points" || format === "custom" ? ".txt" : format === "json" ? ".turt" : ".java"}${getShortcutFromSettings(settings, "download-java")}`}
-      aria-label="Download generated file"
+      aria-label={`Download as ${format === "points" || format === "custom" ? ".txt" : format === "json" ? ".turt" : ".java"}${getShortcutFromSettings(settings, "download-java")}`}
       disabled={!code}
       aria-disabled={!code}
     >
@@ -438,7 +438,7 @@
         : `Copy Code${getShortcutFromSettings(settings, "copy-code")}`}
       disabled={isGenerating || !code}
       aria-disabled={isGenerating || !code}
-      aria-label="Copy generated code"
+      aria-label={copyButtonText === "Copied!" ? "Copied!" : `Copy Code${getShortcutFromSettings(settings, "copy-code")}`}
     >
       {#if isGenerating}
         <LoadingSpinner size="sm" color="text-white" showText={false} />

@@ -611,12 +611,12 @@
             <!-- Kebab menu overlay (visible on hover) -->
             <button
               class="absolute top-1 right-1 p-1 rounded-full bg-white/80 dark:bg-neutral-800/80 shadow-sm opacity-0 group-hover:opacity-100 focus:opacity-100 transition-opacity"
+              title="More actions"
               aria-label="More actions"
               onclick={(e) => {
                 e.stopPropagation();
                 openContextMenuFromEvent(e, file);
               }}
-              title="More actions"
             >
               <EllipsisHorizontalIcon
                 className="size-4 text-neutral-600 dark:text-neutral-300"
