@@ -73,16 +73,19 @@ describe("calculateDrivetrainSpeeds", () => {
       .mockReturnValueOnce(state2);
   };
 
-  const setupTestAndCalculateSpeeds = (settingsOverride: any = {}) => {
+  const setupTestAndCalculateSpeeds = (
+    settingsOverride: Record<string, unknown> = {},
+  ) => {
     const timePrediction = { timeline: [{ endTime: 10 }] };
     mockRobotStates({ x: 0, y: 0, heading: 0 }, { x: 1, y: 0, heading: 0 });
 
+    const mergedSettings = { ...defaultSettings, ...settingsOverride };
     return calculateDrivetrainSpeeds(
       0,
-      timePrediction as any,
+      timePrediction as unknown as any,
       [],
       {},
-      { ...defaultSettings, ...settingsOverride } as any,
+      mergedSettings as unknown as any,
       true,
     );
   };

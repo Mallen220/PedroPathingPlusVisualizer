@@ -169,7 +169,7 @@ describe("properties shortcuts", () => {
   const testEventMarkerIncrement = (
     storeToMock: any,
     pointId: string,
-    mockData: any,
+    mockData: Record<string, unknown>,
   ) => {
     const recordChange = vi.fn();
     selectedPointId.set(pointId);
@@ -177,7 +177,7 @@ describe("properties shortcuts", () => {
 
     modifyValue(1, recordChange);
 
-    const items = get(storeToMock as any) as any;
+    const items = get(storeToMock as unknown as any) as any;
     expect(items[0].eventMarkers[0].position).toBe(0.51);
     expect(recordChange).toHaveBeenCalledWith("Move Event Marker");
   };
