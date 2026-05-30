@@ -108,6 +108,8 @@
           </div>
           <input
             type="text"
+            aria-label="Search plugins"
+            title="Search plugins"
             bind:value={searchQuery}
             placeholder="Search installed plugins..."
             class="w-full pl-10 pr-4 py-2.5 bg-neutral-100 dark:bg-neutral-800 border border-transparent focus:bg-white dark:focus:bg-neutral-900 focus:border-purple-500 rounded-xl text-neutral-900 dark:text-white placeholder-neutral-500 transition-all outline-none"
@@ -234,6 +236,8 @@
                     >
                       <input
                         type="checkbox"
+                        aria-label="Toggle plugin"
+                        title="Toggle plugin"
                         checked={plugin.enabled}
                         onchange={(e) =>
                           PluginManager.togglePlugin(

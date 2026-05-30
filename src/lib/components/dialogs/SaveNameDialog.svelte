@@ -89,6 +89,8 @@
       <input
         bind:this={inputElement}
         type="text"
+        aria-label="Save name"
+        title="Save name"
         bind:value={name}
         onkeydown={handleKeydown}
         onkeyup={(e) => e.stopPropagation()}

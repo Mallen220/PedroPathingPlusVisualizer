@@ -497,6 +497,8 @@
               >
                 <input
                   type="text"
+                  aria-label="Rename file"
+                  title="Rename file"
                   bind:value={renameInput}
                   use:focusInput
                   class="w-full px-1 py-0.5 text-sm border border-blue-400 rounded focus:outline-none dark:bg-neutral-700"

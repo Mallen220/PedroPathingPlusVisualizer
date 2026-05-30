@@ -48,6 +48,8 @@
       </div>
       <input
         type="text"
+        aria-label="Search files"
+        title="Search files"
         value={searchQuery}
         oninput={handleSearch}
         placeholder="Search files..."

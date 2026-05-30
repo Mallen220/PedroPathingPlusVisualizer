@@ -148,6 +148,8 @@
         >
         <input
           bind:this={xInput}
+          aria-label="Starting X coordinate"
+          title="Starting X coordinate"
           value={xDraft}
           oninput={(e) => {
             xDraft = e.currentTarget.value;
@@ -165,7 +167,7 @@
           class="w-full pl-6 pr-2 py-1.5 text-sm bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-lg focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 outline-none transition-all"
           step="0.1"
           disabled={startPoint.locked}
-          aria-label="Starting X position"
+
           placeholder="0"
         />
       </div>
@@ -176,6 +178,8 @@
         >
         <input
           bind:this={yInput}
+          aria-label="Starting Y coordinate"
+          title="Starting Y coordinate"
           value={yDraft}
           oninput={(e) => {
             yDraft = e.currentTarget.value;
@@ -193,7 +197,7 @@
           class="w-full pl-6 pr-2 py-1.5 text-sm bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-lg focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 outline-none transition-all"
           step="0.1"
           disabled={startPoint.locked}
-          aria-label="Starting Y position"
+
           placeholder="0"
         />
       </div>

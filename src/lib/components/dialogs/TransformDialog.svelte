@@ -290,6 +290,8 @@
                   <label class="flex items-center gap-2 cursor-pointer">
                     <input
                       type="checkbox"
+                      aria-label="Flip horizontal"
+                      title="Flip horizontal"
                       bind:checked={flipHorizontal}
                       class="w-4 h-4 rounded text-blue-600 focus:ring-blue-500 border-neutral-300 dark:border-neutral-600 bg-neutral-50 dark:bg-neutral-800"
                     />
@@ -301,6 +303,8 @@
                   <label class="flex items-center gap-2 cursor-pointer">
                     <input
                       type="checkbox"
+                      aria-label="Flip vertical"
+                      title="Flip vertical"
                       bind:checked={flipVertical}
                       class="w-4 h-4 rounded text-blue-600 focus:ring-blue-500 border-neutral-300 dark:border-neutral-600 bg-neutral-50 dark:bg-neutral-800"
                     />
@@ -328,6 +332,8 @@
                     <input
                       type="radio"
                       bind:group={pivotMode}
+                      aria-label="Center pivot"
+                      title="Center pivot"
                       value="center"
                       name="pivot-mode"
                       class="text-blue-600 focus:ring-blue-500 border-neutral-300 dark:border-neutral-600"
@@ -339,6 +345,8 @@
                     <input
                       type="radio"
                       bind:group={pivotMode}
+                      aria-label="Origin pivot"
+                      title="Origin pivot"
                       value="origin"
                       name="pivot-mode"
                       class="text-blue-600 focus:ring-blue-500 border-neutral-300 dark:border-neutral-600"
@@ -350,6 +358,8 @@
                     <input
                       type="radio"
                       bind:group={pivotMode}
+                      aria-label="Custom pivot"
+                      title="Custom pivot"
                       value="custom"
                       name="pivot-mode"
                       class="text-blue-600 focus:ring-blue-500 border-neutral-300 dark:border-neutral-600"

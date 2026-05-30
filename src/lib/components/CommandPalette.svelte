@@ -176,6 +176,8 @@
         <input
           bind:this={inputElement}
           type="text"
+          aria-label="Search commands"
+          title="Search command palette"
           bind:value={searchQuery}
           placeholder="Type a command or search..."
           class="w-full bg-transparent border-none focus:ring-0 text-xl text-neutral-900 dark:text-white placeholder-neutral-400 font-medium outline-none"
@@ -185,7 +187,7 @@
           aria-activedescendant={filteredCommands.length > 0
             ? `command-option-${selectedIndex}`
             : undefined}
-          aria-label="Search commands"
+
         />
       </div>
 

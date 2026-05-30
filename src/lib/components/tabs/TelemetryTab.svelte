@@ -95,6 +95,8 @@
         <input
           type="radio"
           bind:group={protocol}
+          aria-label="TCP protocol"
+          title="TCP protocol"
           value="tcp"
           onchange={updateDefaultPort}
           disabled={$isConnected}
@@ -108,6 +110,8 @@
         <input
           type="radio"
           bind:group={protocol}
+          aria-label="WebSocket protocol"
+          title="WebSocket protocol"
           value="websocket"
           onchange={updateDefaultPort}
           disabled={$isConnected}
@@ -122,6 +126,8 @@
     <div class="flex gap-2 items-center">
       <input
         type="text"
+        aria-label="IP Address"
+        title="IP Address"
         bind:value={ip}
         placeholder="IP Address"
         class="flex-1 px-3 py-2 bg-neutral-100 dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-700 rounded focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm dark:text-white"
@@ -129,6 +135,8 @@
       />
       <input
         type="number"
+        aria-label="Port"
+        title="Port"
         bind:value={port}
         placeholder="Port"
         class="w-24 px-3 py-2 bg-neutral-100 dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-700 rounded focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm dark:text-white"

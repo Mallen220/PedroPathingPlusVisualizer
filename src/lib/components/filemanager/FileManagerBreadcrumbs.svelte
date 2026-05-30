@@ -86,6 +86,8 @@
   <div class="px-2 py-1 bg-white dark:bg-neutral-900 border-b border-blue-500">
     <input
       bind:this={inputElement}
+      aria-label="File path"
+      title="File path"
       bind:value={inputPath}
       onblur={finishEditing}
       onkeydown={handleKeydown}

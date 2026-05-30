@@ -148,6 +148,8 @@
               <span class="block mb-1">X Delta</span>
               <input
                 type="number"
+                aria-label="Translate X"
+                title="Translate X"
                 bind:value={dx}
                 class="w-full px-2 py-1 bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded text-sm focus:ring-1 focus:ring-blue-500 outline-none"
               />
@@ -158,6 +160,8 @@
               <span class="block mb-1">Y Delta</span>
               <input
                 type="number"
+                aria-label="Translate Y"
+                title="Translate Y"
                 bind:value={dy}
                 class="w-full px-2 py-1 bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded text-sm focus:ring-1 focus:ring-blue-500 outline-none"
               />
@@ -171,6 +175,8 @@
               <span class="block mb-1">Angle (deg)</span>
               <input
                 type="number"
+                aria-label="Rotation in degrees"
+                title="Rotation in degrees"
                 bind:value={degrees}
                 class="w-full px-2 py-1 bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded text-sm focus:ring-1 focus:ring-blue-500 outline-none"
               />
@@ -186,6 +192,8 @@
                 <input
                   type="radio"
                   bind:group={pivotType}
+                  aria-label="Center"
+                  title="Center"
                   value="center"
                   class="w-3 h-3 text-blue-600 focus:ring-blue-500"
                 />
@@ -195,6 +203,8 @@
                 <input
                   type="radio"
                   bind:group={pivotType}
+                  aria-label="Origin"
+                  title="Origin"
                   value="origin"
                   class="w-3 h-3 text-blue-600 focus:ring-blue-500"
                 />
@@ -205,6 +215,8 @@
                 <input
                   type="radio"
                   bind:group={pivotType}
+                  aria-label="Custom"
+                  title="Custom"
                   value="custom"
                   class="w-3 h-3 text-blue-600 focus:ring-blue-500"
                 />
@@ -218,12 +230,16 @@
                 <input
                   type="number"
                   placeholder="X"
+                  aria-label="Pivot X"
+                  title="Pivot X"
                   bind:value={pivotX}
                   class="w-full px-2 py-1 bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded text-sm"
                 />
                 <input
                   type="number"
                   placeholder="Y"
+                  aria-label="Pivot Y"
+                  title="Pivot Y"
                   bind:value={pivotY}
                   class="w-full px-2 py-1 bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded text-sm"
                 />
@@ -244,6 +260,8 @@
                 <input
                   type="radio"
                   bind:group={flipAxis}
+                  aria-label="Horizontal flip"
+                  title="Horizontal flip"
                   value="horizontal"
                   class="w-3 h-3 text-blue-600 focus:ring-blue-500"
                 />
@@ -255,6 +273,8 @@
                 <input
                   type="radio"
                   bind:group={flipAxis}
+                  aria-label="Vertical flip"
+                  title="Vertical flip"
                   value="vertical"
                   class="w-3 h-3 text-blue-600 focus:ring-blue-500"
                 />
@@ -272,6 +292,8 @@
                 <input
                   type="radio"
                   bind:group={pivotType}
+                  aria-label="Center"
+                  title="Center"
                   value="center"
                   class="w-3 h-3 text-blue-600 focus:ring-blue-500"
                 />
@@ -281,6 +303,8 @@
                 <input
                   type="radio"
                   bind:group={pivotType}
+                  aria-label="Origin"
+                  title="Origin"
                   value="origin"
                   class="w-3 h-3 text-blue-600 focus:ring-blue-500"
                 />
@@ -290,6 +314,8 @@
                 <input
                   type="radio"
                   bind:group={pivotType}
+                  aria-label="Custom"
+                  title="Custom"
                   value="custom"
                   class="w-3 h-3 text-blue-600 focus:ring-blue-500"
                 />
@@ -303,12 +329,16 @@
                 <input
                   type="number"
                   placeholder="X"
+                  aria-label="Pivot X"
+                  title="Pivot X"
                   bind:value={pivotX}
                   class="w-full px-2 py-1 bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded text-sm"
                 />
                 <input
                   type="number"
                   placeholder="Y"
+                  aria-label="Pivot Y"
+                  title="Pivot Y"
                   bind:value={pivotY}
                   class="w-full px-2 py-1 bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded text-sm"
                 />

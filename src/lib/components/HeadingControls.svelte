@@ -667,6 +667,8 @@
           <button
             class="text-[11px] bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-600 dark:text-neutral-300 px-3 py-1 rounded-full transition-colors font-semibold shadow-sm border border-neutral-200 dark:border-neutral-700 flex items-center gap-1 w-fit"
             onclick={addSegment}
+            title="Add segment"
+            aria-label="Add segment"
           >
             <svg
               class="w-3 h-3"

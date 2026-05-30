@@ -536,6 +536,7 @@
                 >X</span
               >
               <input
+                aria-label="Target X"
                 bind:this={xInput}
                 class="w-full pl-6 pr-2 py-1.5 text-sm bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-lg focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 outline-none transition-all"
                 step={$snapToGrid && $showGrid ? $gridSize : 0.1}
@@ -555,7 +556,6 @@
                 }}
                 disabled={line.locked}
                 title={snapToGridTitle}
-                aria-label="Target X position"
                 placeholder="0"
               />
             </div>
@@ -565,6 +565,7 @@
                 >Y</span
               >
               <input
+                aria-label="Target Y"
                 bind:this={yInput}
                 class="w-full pl-6 pr-2 py-1.5 text-sm bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 rounded-lg focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 outline-none transition-all"
                 step={$snapToGrid && $showGrid ? $gridSize : 0.1}
@@ -584,7 +585,6 @@
                 }}
                 disabled={line.locked}
                 title={snapToGridTitle}
-                aria-label="Target Y position"
                 placeholder="0"
               />
             </div>
@@ -649,6 +649,8 @@
             <label class="flex items-center gap-2 cursor-pointer w-fit">
               <input
                 type="checkbox"
+                aria-label="Enable global heading"
+                title="Enable global heading"
                 checked={hasGlobalHeadingDef}
                 onchange={(e) => {
                   const targetIdx =

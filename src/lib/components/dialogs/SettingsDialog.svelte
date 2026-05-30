@@ -341,6 +341,8 @@
               <input
                 type="text"
                 placeholder="Search settings..."
+                aria-label="Search settings"
+                title="Search settings"
                 bind:value={searchQuery}
                 class="w-full pl-9 pr-3 py-2 bg-white dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />

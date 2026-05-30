@@ -277,6 +277,8 @@
                 </button>
 
                 <input
+                  aria-label="Obstacle name"
+                  title="Obstacle name"
                   bind:value={shape.name}
                   placeholder="{shape.type === 'keep-in'
                     ? 'Keep-In'
@@ -411,6 +413,7 @@
                           >X</span
                         >
                         <input
+                          aria-label="Vertex X"
                           value={toUserCoordinate(
                             vertex.x,
                             $settingsStore.coordinateSystem || "Pedro",
@@ -452,6 +455,7 @@
                           >Y</span
                         >
                         <input
+                          aria-label="Vertex Y"
                           value={toUserCoordinate(
                             vertex.y,
                             $settingsStore.coordinateSystem || "Pedro",

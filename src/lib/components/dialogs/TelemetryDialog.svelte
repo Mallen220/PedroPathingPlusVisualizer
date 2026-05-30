@@ -212,6 +212,8 @@
           >
             <input
               type="checkbox"
+              aria-label="Show telemetry"
+              title="Show telemetry"
               bind:checked={$showTelemetry}
               class="rounded border-neutral-300 text-blue-600 focus:ring-blue-500"
             />
@@ -223,6 +225,8 @@
           >
             <input
               type="checkbox"
+              aria-label="Show telemetry ghost"
+              title="Show telemetry ghost"
               bind:checked={$showTelemetryGhost}
               class="rounded border-neutral-300 text-blue-600 focus:ring-blue-500"
             />

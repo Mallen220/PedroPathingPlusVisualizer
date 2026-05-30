@@ -333,6 +333,8 @@
               >
                 <input
                   type="checkbox"
+                  aria-label="Select optimization item"
+                  title="Select optimization item"
                   checked={selectionState[id]}
                   onchange={() => toggleSelection(id)}
                   class="rounded border-neutral-300 text-blue-600 focus:ring-blue-500"

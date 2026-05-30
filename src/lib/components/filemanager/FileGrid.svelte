@@ -630,6 +630,8 @@
               <div class="w-full px-1">
                 <input
                   type="text"
+                  aria-label="Rename file"
+                  title="Rename file"
                   bind:value={renameInput}
                   use:focusInput
                   onclick={(e) => {

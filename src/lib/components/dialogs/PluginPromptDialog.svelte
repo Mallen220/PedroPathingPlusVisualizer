@@ -82,6 +82,8 @@
       <input
         bind:this={inputElement}
         type="text"
+        aria-label="Plugin prompt"
+        title="Plugin prompt"
         bind:value
         onkeydown={handleKeydown}
         onkeyup={(e) => e.stopPropagation()}

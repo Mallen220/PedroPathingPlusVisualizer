@@ -662,6 +662,8 @@
                 <div class="relative flex items-center">
                   <input
                     type="checkbox"
+                    aria-label="Auto export embed pose data"
+                    title="Auto export embed pose data"
                     bind:checked={$settingsStore.autoExportEmbedPoseData}
                     onchange={refreshCode}
                     class="peer h-4 w-4 rounded border-neutral-300 text-blue-600 focus:ring-blue-500 dark:border-neutral-600 dark:bg-neutral-700 dark:ring-offset-neutral-800"
@@ -704,6 +706,8 @@
               <div class="relative flex items-center">
                 <input
                   type="checkbox"
+                  aria-label="Auto export full class"
+                  title="Auto export full class"
                   bind:checked={$settingsStore.autoExportFullClass}
                   onchange={refreshCode}
                   class="peer h-4 w-4 rounded border-neutral-300 text-blue-600 focus:ring-blue-500 dark:border-neutral-600 dark:bg-neutral-700 dark:ring-offset-neutral-800"
@@ -727,6 +731,8 @@
                   <input
                     type="radio"
                     name="codeUnits"
+                    aria-label="Imperial code units"
+                    title="Imperial code units"
                     value="imperial"
                     bind:group={$settingsStore.codeUnits}
                     onchange={refreshCode}
@@ -740,6 +746,8 @@
                   <input
                     type="radio"
                     name="codeUnits"
+                    aria-label="Metric code units"
+                    title="Metric code units"
                     value="metric"
                     bind:group={$settingsStore.codeUnits}
                     onchange={refreshCode}
