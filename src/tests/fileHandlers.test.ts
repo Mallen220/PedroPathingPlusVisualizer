@@ -1,6 +1,13 @@
 // Copyright 2026 Matthew Allen. Licensed under the Modified Apache License, Version 2.0.
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { get } from "svelte/store";
+
+const assertProjectHeader = (header: any) => {
+  expect(header).toBeDefined();
+  expect(header.info).toBe("Created with Turtle Tracer");
+  expect(header.copyright).toContain("Copyright");
+  expect(header.link).toBe("https://github.com/Mallen220/TurtleTracer");
+};
 import * as fileHandlers from "../utils/fileHandlers";
 import { currentFilePath, isUnsaved, notification } from "../stores";
 import {
@@ -299,12 +306,7 @@ describe("fileHandlers", () => {
 
       expect(content.version).toBe(pkg.version);
       expect(content.version).toBe(pkg.version);
-      expect(content.header).toBeDefined();
-      expect(content.header.info).toBe("Created with Turtle Tracer");
-      expect(content.header.copyright).toContain("Copyright");
-      expect(content.header.link).toBe(
-        "https://github.com/Mallen220/TurtleTracer",
-      );
+      assertProjectHeader(content.header);
     });
 
     it("should NOT save settings in the project file", async () => {
@@ -482,12 +484,7 @@ describe("fileHandlers", () => {
 
       const content = JSON.parse(callArgs![1] as string);
 
-      expect(content.header).toBeDefined();
-      expect(content.header.info).toBe("Created with Turtle Tracer");
-      expect(content.header.copyright).toContain("Copyright");
-      expect(content.header.link).toBe(
-        "https://github.com/Mallen220/TurtleTracer",
-      );
+      assertProjectHeader(content.header);
     });
 
     it("updates startPoint headings based on path geometry", async () => {

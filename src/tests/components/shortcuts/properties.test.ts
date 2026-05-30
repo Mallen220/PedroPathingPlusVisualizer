@@ -166,55 +166,45 @@ describe("properties shortcuts", () => {
     expect(recordChange).toHaveBeenCalledWith("Modify Rotation");
   });
 
-  it("should handle event marker increment", () => {
+  const testEventMarkerIncrement = (
+    storeToMock: any,
+    pointId: string,
+    mockData: any,
+  ) => {
     const recordChange = vi.fn();
-    selectedPointId.set("event-wait-123-0");
-    sequenceStore.set([
-      {
-        id: "123",
-        kind: "wait",
-        locked: false,
-        eventMarkers: [{ position: 0.5 }],
-      },
-    ]);
+    selectedPointId.set(pointId);
+    storeToMock.set([mockData]);
 
     modifyValue(1, recordChange);
 
-    const seq = get(sequenceStore as any) as any;
-    expect(seq[0].eventMarkers[0].position).toBe(0.51); // 0.5 + 0.01 * 1
+    const items = get(storeToMock as any) as any;
+    expect(items[0].eventMarkers[0].position).toBe(0.51);
     expect(recordChange).toHaveBeenCalledWith("Move Event Marker");
+  };
+
+  it("should handle event marker increment", () => {
+    testEventMarkerIncrement(sequenceStore, "event-wait-123-0", {
+      id: "123",
+      kind: "wait",
+      locked: false,
+      eventMarkers: [{ position: 0.5 }],
+    });
   });
 
   it("should handle rotate event marker increment", () => {
-    const recordChange = vi.fn();
-    selectedPointId.set("event-rotate-123-0");
-    sequenceStore.set([
-      {
-        id: "123",
-        kind: "rotate",
-        locked: false,
-        eventMarkers: [{ position: 0.5 }],
-      },
-    ]);
-
-    modifyValue(1, recordChange);
-
-    const seq = get(sequenceStore as any) as any;
-    expect(seq[0].eventMarkers[0].position).toBe(0.51); // 0.5 + 0.01 * 1
-    expect(recordChange).toHaveBeenCalledWith("Move Event Marker");
+    testEventMarkerIncrement(sequenceStore, "event-rotate-123-0", {
+      id: "123",
+      kind: "rotate",
+      locked: false,
+      eventMarkers: [{ position: 0.5 }],
+    });
   });
 
   it("should handle line event marker increment", () => {
-    const recordChange = vi.fn();
-    selectedPointId.set("event-0-0");
-    linesStore.set([
-      { id: "line-0", locked: false, eventMarkers: [{ position: 0.5 }] },
-    ]);
-
-    modifyValue(1, recordChange);
-
-    const lines = get(linesStore as any) as any;
-    expect(lines[0].eventMarkers[0].position).toBe(0.51); // 0.5 + 0.01 * 1
-    expect(recordChange).toHaveBeenCalledWith("Move Event Marker");
+    testEventMarkerIncrement(linesStore, "event-0-0", {
+      id: "line-0",
+      locked: false,
+      eventMarkers: [{ position: 0.5 }],
+    });
   });
 });

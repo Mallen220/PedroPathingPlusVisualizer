@@ -130,22 +130,38 @@ describe("PathTab", () => {
     ).toBeInTheDocument();
   });
 
-  it("renders a list of sequences when there are paths", () => {
-    const sequenceItem: SequenceItem = {
+  const createMockSequenceItem = (idSuffix: string): SequenceItem =>
+    ({
       type: "path",
       kind: "path",
-      lineId: "line-1",
-      id: "seq-1",
-    } as any;
+      lineId: `line-${idSuffix}`,
+      id: `seq-${idSuffix}`,
+    }) as any;
 
-    const mockLine: Line = {
-      id: "line-1",
+  const createMockLine = (
+    idSuffix: string,
+    coord: number,
+    name?: string,
+  ): Line =>
+    ({
+      id: `line-${idSuffix}`,
       startPoint: defaultStartPoint,
-      endPoint: { id: "end-1", x: 10, y: 10, locked: false, controlPoints: [] },
+      endPoint: {
+        id: `end-${idSuffix}`,
+        x: coord,
+        y: coord,
+        locked: false,
+        controlPoints: [],
+      },
       points: [],
       type: "linear",
       controlPoints: [],
-    } as any;
+      name,
+    }) as any;
+
+  it("renders a list of sequences when there are paths", () => {
+    const sequenceItem = createMockSequenceItem("1");
+    const mockLine = createMockLine("1", 10);
 
     render(PathTab, {
       startPoint: defaultStartPoint,
@@ -160,37 +176,11 @@ describe("PathTab", () => {
   });
 
   it("handles switching between distinct paths", async () => {
-    const sequenceItem1: SequenceItem = {
-      type: "path",
-      kind: "path",
-      lineId: "line-1",
-      id: "seq-1",
-    } as any;
-    const sequenceItem2: SequenceItem = {
-      type: "path",
-      kind: "path",
-      lineId: "line-2",
-      id: "seq-2",
-    } as any;
+    const sequenceItem1 = createMockSequenceItem("1");
+    const sequenceItem2 = createMockSequenceItem("2");
 
-    const mockLine1: Line = {
-      id: "line-1",
-      startPoint: defaultStartPoint,
-      endPoint: { id: "end-1", x: 10, y: 10, locked: false, controlPoints: [] },
-      points: [],
-      type: "linear",
-      controlPoints: [],
-      name: "Path 1",
-    } as any;
-    const mockLine2: Line = {
-      id: "line-2",
-      startPoint: defaultStartPoint,
-      endPoint: { id: "end-2", x: 20, y: 20, locked: false, controlPoints: [] },
-      points: [],
-      type: "linear",
-      controlPoints: [],
-      name: "Path 2",
-    } as any;
+    const mockLine1 = createMockLine("1", 10, "Path 1");
+    const mockLine2 = createMockLine("2", 20, "Path 2");
 
     const { rerender } = render(PathTab, {
       startPoint: defaultStartPoint,

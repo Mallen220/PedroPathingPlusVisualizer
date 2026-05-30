@@ -100,15 +100,21 @@ describe("Renderer Generators", () => {
     expect(boundaryMarker.children.length).toBeGreaterThan(0);
   });
 
-  it("generateCollisionElements should handle time ranges", () => {
+  const createMockProjectState = (eventMarkers: any[] = []) => {
     const startPoint = { x: 0, y: 0 } as any;
     const lines = [
       {
         id: "line-1",
         endPoint: { x: 10, y: 10 },
         controlPoints: [],
+        eventMarkers,
       } as any,
     ];
+    return { startPoint, lines };
+  };
+
+  it("generateCollisionElements should handle time ranges", () => {
+    const { startPoint, lines } = createMockProjectState();
     const markers = [{ type: "obstacle", x: 5, y: 5, time: 1, endTime: 2 }];
     const prediction = {
       timeline: [
@@ -137,15 +143,9 @@ describe("Renderer Generators", () => {
   });
 
   it("generateEventMarkerElements should generate elements correctly", () => {
-    const startPoint = { x: 0, y: 0 } as any;
-    const lines = [
-      {
-        id: "line-1",
-        endPoint: { x: 10, y: 10 },
-        controlPoints: [],
-        eventMarkers: [{ position: 0.5, name: "test-event" }],
-      } as any,
-    ];
+    const { startPoint, lines } = createMockProjectState([
+      { position: 0.5, name: "test-event" },
+    ]);
 
     const sequence = [
       {

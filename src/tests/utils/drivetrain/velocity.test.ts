@@ -73,18 +73,22 @@ describe("calculateDrivetrainSpeeds", () => {
       .mockReturnValueOnce(state2);
   };
 
-  it("should calculate correct speeds for mecanum", () => {
+  const setupTestAndCalculateSpeeds = (settingsOverride: any = {}) => {
     const timePrediction = { timeline: [{ endTime: 10 }] };
     mockRobotStates({ x: 0, y: 0, heading: 0 }, { x: 1, y: 0, heading: 0 });
 
-    const speeds = calculateDrivetrainSpeeds(
+    return calculateDrivetrainSpeeds(
       0,
-      timePrediction,
+      timePrediction as any,
       [],
       {},
-      defaultSettings,
+      { ...defaultSettings, ...settingsOverride } as any,
       true,
     );
+  };
+
+  it("should calculate correct speeds for mecanum", () => {
+    const speeds = setupTestAndCalculateSpeeds();
     // vx = 20, vy = 0. maxV = 60. normalizedForward = 20/60 = 0.333.
     // Mecanum straight forward
     expect(speeds).toBeTruthy();
@@ -95,17 +99,7 @@ describe("calculateDrivetrainSpeeds", () => {
   });
 
   it("should calculate correct speeds using maxVelocity from settings", () => {
-    const timePrediction = { timeline: [{ endTime: 10 }] };
-    mockRobotStates({ x: 0, y: 0, heading: 0 }, { x: 1, y: 0, heading: 0 });
-
-    const speeds = calculateDrivetrainSpeeds(
-      0,
-      timePrediction,
-      [],
-      {},
-      { ...defaultSettings, maxVelocity: 100 },
-      true,
-    );
+    const speeds = setupTestAndCalculateSpeeds({ maxVelocity: 100 });
     // vx = 20, vy = 0. maxV = 100. normalizedForward = 20/100 = 0.20.
     expect(speeds).toBeTruthy();
     expect(speeds?.frontLeft).toBeCloseTo(0.2);
@@ -115,17 +109,7 @@ describe("calculateDrivetrainSpeeds", () => {
   });
 
   it("should calculate correct angles for swerve", () => {
-    const timePrediction = { timeline: [{ endTime: 10 }] };
-    mockRobotStates({ x: 0, y: 0, heading: 0 }, { x: 1, y: 0, heading: 0 });
-
-    const speeds = calculateDrivetrainSpeeds(
-      0,
-      timePrediction,
-      [],
-      {},
-      { ...defaultSettings, robotDriveType: "swerve" },
-      true,
-    );
+    const speeds = setupTestAndCalculateSpeeds({ robotDriveType: "swerve" });
     // Straight forward should be 90 degrees
     expect(speeds).toBeTruthy();
     expect(speeds?.frontLeft).toBeCloseTo(90);
