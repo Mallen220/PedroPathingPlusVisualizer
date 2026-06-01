@@ -574,7 +574,7 @@
                 e.stopPropagation();
                 handleContextMenu(e, file);
               }}
-              title="More actions"
+              title="File actions"
               aria-label="File actions"
             >
               <EllipsisHorizontalIcon className="size-5" />

@@ -438,7 +438,7 @@
         : `Copy Code${getShortcutFromSettings(settings, "copy-code")}`}
       disabled={isGenerating || !code}
       aria-disabled={isGenerating || !code}
-      aria-label="Copy generated code"
+      aria-label={copyButtonText === "Copied!" ? "Copied!" : `Copy Code${getShortcutFromSettings(settings, "copy-code")}`}
     >
       {#if isGenerating}
         <LoadingSpinner size="sm" color="text-white" showText={false} />

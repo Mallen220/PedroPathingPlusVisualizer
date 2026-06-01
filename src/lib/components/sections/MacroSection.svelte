@@ -178,7 +178,7 @@
       </button>
 
       <button
-        title={macro.locked ? "Unlock Macro" : "Lock Macro"}
+
         aria-label={macro.locked ? "Unlock Macro" : "Lock Macro"}
         onclick={(e) => {
           e.stopPropagation();

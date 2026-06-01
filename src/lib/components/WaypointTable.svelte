@@ -1456,7 +1456,7 @@
                   title={(item as any).isChain
                     ? "Unchain paths"
                     : "Chain paths together"}
-                  aria-label="Toggle Path Chain"
+                  aria-label={(item as any).isChain ? "Unchain paths" : "Chain paths together"}
                 >
                   <LinkIcon
                     className={`w-3.5 h-3.5 ${(item as any).isChain ? "text-green-500 dark:text-green-400" : "text-neutral-400 opacity-50"}`}

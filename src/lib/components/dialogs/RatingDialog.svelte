@@ -221,7 +221,7 @@
           onclick={closeDialog}
           disabled={isSubmitting}
           class="text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-200 transition-colors disabled:opacity-50"
-          title="Close dialog"
+
         >
           <CloseIcon className="h-5 w-5" />
         </button>

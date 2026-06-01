@@ -244,8 +244,8 @@
                 class="flex items-center bg-white dark:bg-neutral-800 rounded border border-neutral-200 dark:border-neutral-700 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity"
               >
                 <button
-                  title={line.locked ? "Locked" : "Move up"}
-                  aria-label="Move control point up"
+                  title={line.locked ? "Locked" : "Move control point up"}
+                  aria-label={line.locked ? "Locked" : "Move control point up"}
                   onclick={(e) => {
                     e.stopPropagation();
                     moveControlPoint(idx, -1);
@@ -261,8 +261,8 @@
                   aria-hidden="true"
                 ></div>
                 <button
-                  title={line.locked ? "Locked" : "Move down"}
-                  aria-label="Move control point down"
+                  title={line.locked ? "Locked" : "Move control point down"}
+                  aria-label={line.locked ? "Locked" : "Move control point down"}
                   onclick={(e) => {
                     e.stopPropagation();
                     moveControlPoint(idx, 1);
