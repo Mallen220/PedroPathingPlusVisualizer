@@ -51,7 +51,7 @@ describe("PlaybackControls", () => {
       props: createProps(),
     });
 
-    const loopBtn = screen.getByLabelText("Loop animation");
+    const loopBtn = screen.getByLabelText("Enable Loop");
     expect(loopBtn).toBeInTheDocument();
     expect(loopBtn).toHaveAttribute("aria-pressed", "false");
 
