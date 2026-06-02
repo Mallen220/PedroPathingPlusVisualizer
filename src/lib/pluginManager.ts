@@ -49,29 +49,6 @@ export class PluginManager {
   private static allExporters: CustomExporter[] = [];
   private static allThemes: CustomTheme[] = [];
 
-  static readonly SHADOW_GLOBALS = [
-    "window",
-    "document",
-    "location",
-    "top",
-    "parent",
-    "self",
-    "globalThis",
-    "electronAPI",
-    "localStorage",
-    "sessionStorage",
-    "indexedDB",
-    "fetch",
-    "XMLHttpRequest",
-    "WebSocket",
-    "process",
-    "require",
-  ];
-
-  static readonly SHADOW_VALUES = PluginManager.SHADOW_GLOBALS.map(
-    () => undefined,
-  );
-
   static async init() {
     const electronAPI = (globalThis as any).electronAPI;
     if (!electronAPI?.listPlugins) return;
@@ -193,15 +170,35 @@ export class PluginManager {
 
     const proxyAPI = new Proxy(() => {}, handler);
 
+    const shadowGlobals = [
+      "window",
+      "document",
+      "location",
+      "top",
+      "parent",
+      "self",
+      "globalThis",
+      "electronAPI",
+      "localStorage",
+      "sessionStorage",
+      "indexedDB",
+      "fetch",
+      "XMLHttpRequest",
+      "WebSocket",
+      "process",
+      "require",
+    ];
+    const shadowValues = shadowGlobals.map(() => undefined);
+
     try {
       // Force strict mode and shadow sensitive globals
-      const fn = new Function( // NOSONAR
+      const fn = new Function(
         "turtle",
         "pedro",
-        ...PluginManager.SHADOW_GLOBALS,
+        ...shadowGlobals,
         `"use strict";\n${code}`,
       );
-      fn(proxyAPI, proxyAPI, ...PluginManager.SHADOW_VALUES);
+      fn(proxyAPI, proxyAPI, ...shadowValues);
     } catch (e) {
       // Ignore errors during metadata extraction
     }
@@ -509,14 +506,34 @@ export class PluginManager {
 
     // Execute safely-ish by shadowing sensitive globals and enforcing strict mode
     try {
+      const shadowGlobals = [
+        "window",
+        "document",
+        "location",
+        "top",
+        "parent",
+        "self",
+        "globalThis",
+        "electronAPI",
+        "localStorage",
+        "sessionStorage",
+        "indexedDB",
+        "fetch",
+        "XMLHttpRequest",
+        "WebSocket",
+        "process",
+        "require",
+      ];
+      const shadowValues = shadowGlobals.map(() => undefined);
+
       // pass 'turtle' (and legacy 'pedro') as the argument names
-      const fn = new Function( // NOSONAR
+      const fn = new Function(
         "turtle",
         "pedro",
-        ...PluginManager.SHADOW_GLOBALS,
+        ...shadowGlobals,
         `"use strict";\n${codeToExecute}`,
       );
-      fn(turtleAPI, turtleAPI, ...PluginManager.SHADOW_VALUES);
+      fn(turtleAPI, turtleAPI, ...shadowValues);
     } catch (e) {
       throw new Error(`Execution failed: ${e}`);
     }
