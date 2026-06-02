@@ -70,6 +70,17 @@ describe("PathOptimizer Keep-In Zones", () => {
     shapes = [];
   });
 
+  function getCollisions(shapesArg: Shape[]) {
+    const optimizer = new PathOptimizer(
+      startPoint,
+      lines,
+      settings,
+      sequence,
+      shapesArg,
+    );
+    return optimizer.getCollisions();
+  }
+
   it("should report violation if robot is outside keep-in zone", () => {
     // Define a keep-in zone far away
     shapes = [
@@ -88,16 +99,7 @@ describe("PathOptimizer Keep-In Zones", () => {
       },
     ];
 
-    const optimizer = new PathOptimizer(
-      startPoint,
-      lines,
-      settings,
-      sequence,
-      shapes,
-    );
-
-    // Use getCollisions directly
-    const collisions = optimizer.getCollisions();
+    const collisions = getCollisions(shapes);
 
     expect(collisions.length).toBeGreaterThan(0);
     expect(collisions.some((c) => c.type === "keep-in")).toBe(true);
@@ -124,15 +126,7 @@ describe("PathOptimizer Keep-In Zones", () => {
       },
     ];
 
-    const optimizer = new PathOptimizer(
-      startPoint,
-      lines,
-      settings,
-      sequence,
-      shapes,
-    );
-
-    const collisions = optimizer.getCollisions();
+    const collisions = getCollisions(shapes);
 
     expect(collisions.length).toBe(0);
   });
@@ -156,15 +150,7 @@ describe("PathOptimizer Keep-In Zones", () => {
       },
     ];
 
-    const optimizer = new PathOptimizer(
-      startPoint,
-      lines,
-      settings,
-      sequence,
-      shapes,
-    );
-
-    const collisions = optimizer.getCollisions();
+    const collisions = getCollisions(shapes);
 
     expect(collisions.length).toBeGreaterThan(0);
     expect(collisions.some((c) => c.type === "keep-in")).toBe(true);
@@ -202,15 +188,7 @@ describe("PathOptimizer Keep-In Zones", () => {
       },
     ];
 
-    const optimizer = new PathOptimizer(
-      startPoint,
-      lines,
-      settings,
-      sequence,
-      shapes,
-    );
-
-    const collisions = optimizer.getCollisions();
+    const collisions = getCollisions(shapes);
 
     // Should have collisions in the gap
     // Collision might start before 40 (due to robot width) and end after 60

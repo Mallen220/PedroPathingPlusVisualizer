@@ -119,10 +119,7 @@ describe("Geometry Utils", () => {
   describe("convexHull", () => {
     it("returns convex hull of points", () => {
       const points = [
-        { x: 0, y: 0 },
-        { x: 10, y: 0 },
-        { x: 10, y: 10 },
-        { x: 0, y: 10 },
+        ...square,
         { x: 5, y: 5 }, // Inside point
       ];
 

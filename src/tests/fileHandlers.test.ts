@@ -18,6 +18,13 @@ import { registerCoreUI } from "../lib/coreRegistrations";
 import type { SequenceMacroItem } from "../types";
 import pkg from "../../package.json";
 
+function expectDefaultHeader(header: any) {
+  expect(header).toBeDefined();
+  expect(header.info).toBe("Created with Turtle Tracer");
+  expect(header.copyright).toContain("Copyright");
+  expect(header.link).toBe("https://github.com/Mallen220/TurtleTracer");
+}
+
 const macroKind = (): SequenceMacroItem["kind"] =>
   (actionRegistry.getAll().find((a: any) => a.isMacro)
     ?.kind as SequenceMacroItem["kind"]) ?? "macro";
@@ -299,12 +306,7 @@ describe("fileHandlers", () => {
 
       expect(content.version).toBe(pkg.version);
       expect(content.version).toBe(pkg.version);
-      expect(content.header).toBeDefined();
-      expect(content.header.info).toBe("Created with Turtle Tracer");
-      expect(content.header.copyright).toContain("Copyright");
-      expect(content.header.link).toBe(
-        "https://github.com/Mallen220/TurtleTracer",
-      );
+      expectDefaultHeader(content.header);
     });
 
     it("should NOT save settings in the project file", async () => {
@@ -481,13 +483,7 @@ describe("fileHandlers", () => {
       expect(callArgs).toBeDefined();
 
       const content = JSON.parse(callArgs![1] as string);
-
-      expect(content.header).toBeDefined();
-      expect(content.header.info).toBe("Created with Turtle Tracer");
-      expect(content.header.copyright).toContain("Copyright");
-      expect(content.header.link).toBe(
-        "https://github.com/Mallen220/TurtleTracer",
-      );
+      expectDefaultHeader(content.header);
     });
 
     it("updates startPoint headings based on path geometry", async () => {
