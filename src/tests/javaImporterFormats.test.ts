@@ -3,6 +3,13 @@ import { describe, it, expect } from "vitest";
 import { importJavaProject } from "../utils/javaImporter";
 
 describe("Java Importer Format Compatibility", () => {
+  function verifyCommonData(d: any) {
+    expect(d.startPoint.degrees).toBe(90);
+    expect(d.lines[0].name).toBe("a");
+    expect(d.lines[0].endPoint.heading).toBe("linear");
+    expect(d.lines[1].name).toBe("b");
+  }
+
   it("parses Format 1 correctly (SequentialCommandGroup + InstantCommand)", () => {
     const code1 = `
 package org.firstinspires.ftc.teamcode.Commands.AutoCommands;
@@ -83,16 +90,13 @@ public class Everythingtest extends SequentialCommandGroup {
     `;
     const data = importJavaProject(code1);
 
-    expect(data.startPoint.degrees).toBe(90);
+    verifyCommonData(data);
     expect(data.lines.length).toBe(8);
     expect(data.sequence.length).toBe(10);
-    expect(data.lines[0].name).toBe("a");
-    expect(data.lines[0].endPoint.heading).toBe("linear");
     expect((data.lines[0].endPoint as any).startDeg).toBe(90);
     expect((data.lines[0].endPoint as any).endDeg).toBe(180);
     expect((data.lines[0].endPoint as any).reverse).toBe(false);
 
-    expect(data.lines[1].name).toBe("b");
     expect((data.lines[1].endPoint as any).reverse).toBe(true);
 
     expect(data.lines[2].name).toBe("c");
@@ -160,14 +164,13 @@ public class TurtleTracerAutonomous extends OpMode {
     `;
 
     const data = importJavaProject(code2);
-    expect(data.startPoint.degrees).toBe(90);
+    verifyCommonData(data);
     expect(data.lines.length).toBe(8);
 
     // OpMode export does not generate actions in our standard Sequence array output for Wait/Turn
     // due to lack of a unified block in the actual Java export. The visualizer relies on paths.
     // Testing purely paths for this case.
 
-    expect(data.lines[1].name).toBe("b");
     expect(data.lines[1].endPoint.heading).toBe("linear");
     expect((data.lines[1].endPoint as any).startDeg).toBe(0);
     expect((data.lines[1].endPoint as any).endDeg).toBe(0);
@@ -246,13 +249,9 @@ public class reference extends Command {
 
     const data = importJavaProject(code3);
 
-    expect(data.startPoint.degrees).toBe(90);
+    verifyCommonData(data);
     expect(data.lines.length).toBe(2);
 
-    expect(data.lines[0].name).toBe("a");
-    expect(data.lines[0].endPoint.heading).toBe("linear");
-
-    expect(data.lines[1].name).toBe("b");
     expect((data.lines[1].endPoint as any).reverse).toBe(true);
 
     expect((data.sequence[2] as any).durationMs).toBe(110);

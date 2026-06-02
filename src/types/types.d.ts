@@ -1,34 +1,36 @@
 // Copyright 2026 Matthew Allen. Licensed under the Modified Apache License, Version 2.0.
 declare global {
+  var electronAPI: {
+    getDirectory: () => Promise<string>;
+    setDirectory: (path?: string) => Promise<string | null>;
+    listFiles: (directory: string) => Promise<FileInfo[]>;
+    readFile: (filePath: string) => Promise<string>;
+    writeFile: (filePath: string, content: string) => Promise<boolean>;
+    deleteFile: (filePath: string) => Promise<boolean>;
+    fileExists: (filePath: string) => Promise<boolean>;
+    getSavedDirectory: () => Promise<string>;
+    createDirectory: (dirPath: string) => Promise<boolean>;
+    getDirectoryStats: (dirPath: string) => Promise<any>;
+    resolvePath: (base: string, relative: string) => Promise<string>;
+    makeRelativePath?: (base: string, relative: string) => Promise<string>;
+    renameFile: (
+      oldPath: string,
+      newPath: string,
+    ) => Promise<{ success: boolean; newPath: string }>;
+    openExternal?: (url: string) => Promise<boolean>;
+    onMenuAction?: (callback: (action: string) => void) => void;
+    showSaveDialog?: (options: any) => Promise<string | null>;
+    rendererReady?: () => Promise<void>;
+    onOpenFilePath?: (callback: (path: string) => void) => void;
+    saveFile?: (
+      content: string,
+      path?: string,
+    ) => Promise<{ success: boolean; filepath: string; error?: string }>;
+    copyFile?: (src: string, dest: string) => Promise<boolean>;
+    gitShow?: (filePath: string) => Promise<string | null>;
+  };
   interface Window {
-    electronAPI: {
-      getDirectory: () => Promise<string>;
-      setDirectory: (path?: string) => Promise<string | null>;
-      listFiles: (directory: string) => Promise<FileInfo[]>;
-      readFile: (filePath: string) => Promise<string>;
-      writeFile: (filePath: string, content: string) => Promise<boolean>;
-      deleteFile: (filePath: string) => Promise<boolean>;
-      fileExists: (filePath: string) => Promise<boolean>;
-      getSavedDirectory: () => Promise<string>;
-      createDirectory: (dirPath: string) => Promise<boolean>;
-      getDirectoryStats: (dirPath: string) => Promise<any>;
-      resolvePath: (base: string, relative: string) => Promise<string>;
-      renameFile: (
-        oldPath: string,
-        newPath: string,
-      ) => Promise<{ success: boolean; newPath: string }>;
-      openExternal?: (url: string) => Promise<boolean>;
-      onMenuAction?: (callback: (action: string) => void) => void;
-      showSaveDialog?: (options: any) => Promise<string | null>;
-      rendererReady?: () => Promise<void>;
-      onOpenFilePath?: (callback: (path: string) => void) => void;
-      saveFile?: (
-        content: string,
-        path?: string,
-      ) => Promise<{ success: boolean; filepath: string; error?: string }>;
-      copyFile?: (src: string, dest: string) => Promise<boolean>;
-      gitShow?: (filePath: string) => Promise<string | null>;
-    };
+    electronAPI: typeof electronAPI;
   }
 }
 
